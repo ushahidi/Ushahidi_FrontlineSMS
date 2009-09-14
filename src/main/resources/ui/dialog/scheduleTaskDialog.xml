@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<dialog closable="true" close="removeDialog(this)" bottom="10" columns="1" gap="10" icon="/icons/task.png" left="10" name="scheduleTaskDialog" resizable="true" right="10" text="i18n.common.schedule.task" top="10">
+    <panel gap="10" name="pnType" weightx="1">
+        <label name="lbType" text="i18n.common.type"/>
+        <checkbox action="taskTypeChanged(scheduleTaskDialog, this)" group="type" icon="/icons/externalCommand_plainText.png" name="rbPlainText" selected="true" text="i18n.common.plain.text" weightx="1"/>
+        <checkbox action="taskTypeChanged(scheduleTaskDialog, this)" group="type" icon="/icons/httpRequest.png" name="rbHTTP" text="i18n.common.http.call" weightx="1"/>
+        <checkbox action="taskTypeChanged(scheduleTaskDialog, this)" group="type" icon="/icons/cmd.png" name="rbCMD" text="i18n.common.external.command" weightx="1"/>
+    </panel>
+    <separator/>
+    <panel columns="2" gap="10" name="pnInfo" weightx="1" weighty="1">
+        <label icon="/icons/message.png" name="lbText" text="i18n.common.message"/>
+        <textfield perform="saveTaskDetails(scheduleTaskDialog)" name="tfText" weightx="1"/>
+        <label icon="/icons/sms_autoForward.png" name="lbSendTo" text="i18n.common.send.to"/>
+        <list name="groupList" weightx="1" weighty="1"/>
+        <separator colspan="2"/>
+        <panel colspan="2" columns="4" gap="10" name="pnFrequency" weightx="1">
+            <label icon="/icons/date_start.png" name="lbFrom" text="i18n.common.from"/>
+            <panel weightx="1">
+                <textfield perform="saveTaskDetails(scheduleTaskDialog)" name="tfStartDate" tooltip="i18n.tooltip.task.start.date" weightx="1"/>
+                <button action="showDateSelecter(tfStartDate)" icon="/icons/date.png"/>
+            </panel>
+            <label icon="/icons/date_time_start.png"/>
+            <textfield perform="saveTaskDetails(scheduleTaskDialog)" name="tfStartTime" tooltip="i18n.tooltip.task.start.time" weightx="1"/>
+            <label icon="/icons/date_end.png" name="lbUntil" text="i18n.common.until"/>
+            <panel weightx="1">
+                <textfield perform="saveTaskDetails(scheduleTaskDialog)" name="tfEndDate" tooltip="i18n.tooltip.task.start.time" weightx="1"/>
+                <button action="showDateSelecter(tfEndDate)" icon="/icons/date.png"/>
+            </panel>
+            <label icon="/icons/date_time_end.png"/>
+            <textfield perform="saveTaskDetails(scheduleTaskDialog)" name="tfEndTime" tooltip="i18n.tooltip.task.end.time"/>
+            <label icon="/icons/frequency.png" name="lbFrequency" text="i18n.common.frequency"/>
+            <combobox colspan="3" editable="false" name="cbFrequency" selected="0" text="i18n.frequency.once" weightx="1">
+                <choice text="i18n.frequency.once"/>
+                <choice text="i18n.frequency.hour"/>
+                <choice text="i18n.frequency.day"/>
+                <choice text="i18n.frequency.week"/>
+                <choice text="i18n.frequency.month"/>
+                <choice text="i18n.frequency.year"/>
+            </combobox>
+        </panel>
+    </panel>
+    <separator/>
+    <panel gap="5" halign="center">
+        <button action="saveTaskDetails(scheduleTaskDialog)" icon="/icons/tick.png" name="btSave" text="i18n.action.save"/>
+        <button action="removeDialog(scheduleTaskDialog)" icon="/icons/cross.png" name="btCancel" text="i18n.action.cancel"/>
+    </panel>
+</dialog>

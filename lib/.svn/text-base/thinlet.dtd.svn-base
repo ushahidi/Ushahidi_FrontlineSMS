@@ -1,0 +1,273 @@
+<!ENTITY lt "&#60;">
+<!ENTITY gt "&#61;">
+<!ENTITY amp "&#38;">
+<!ENTITY quot "&#34;">
+<!ENTITY apos "&#39;">
+
+<!ENTITY % componententity "(label | button | checkbox | togglebutton |
+	combobox | textfield | passwordfield | textarea | tabbedpane |
+	panel | desktop | dialog | spinbox | progressbar | slider | splitpane |
+	list | table | tree | separator | menubar | bean)">
+
+<!ELEMENT component EMPTY>
+<!ENTITY % componentattlist "
+	name CDATA #IMPLIED
+	enabled (true | false) 'true'
+	visible (true | false) 'true'
+	tooltip CDATA #IMPLIED
+	font CDATA #IMPLIED
+	foreground CDATA #IMPLIED
+	background CDATA #IMPLIED
+	width CDATA '0'
+	height CDATA '0'
+	colspan CDATA '1'
+	rowspan CDATA '1'
+	weightx CDATA '0'
+	weighty CDATA '0'
+	halign (fill | center | left | right) 'fill'
+	valign (fill | center | top | bottom) 'fill'
+	property CDATA #IMPLIED
+	init CDATA #IMPLIED
+	focuslost CDATA #IMPLIED
+	focusgained CDATA #IMPLIED">
+<!ATTLIST component %componentattlist;>
+
+<!ELEMENT label (popupmenu?)>
+<!ENTITY % labelattlist "
+	%componentattlist;
+	text CDATA #IMPLIED
+	icon CDATA #IMPLIED
+	alignment (left | center | right) 'left'
+	mnemonic CDATA '-1'
+	for CDATA #IMPLIED">
+<!ATTLIST label %labelattlist;>
+
+<!ELEMENT button (popupmenu?)>
+<!ATTLIST button
+	%componentattlist;
+	text CDATA #IMPLIED
+	icon CDATA #IMPLIED
+	alignment (center | left | right) 'center'
+	mnemonic CDATA '-1'
+	action CDATA #IMPLIED
+	type (normal | default | cancel | link) 'normal'>
+
+<!ELEMENT checkbox (popupmenu?)>
+<!ENTITY % checkboxattlist "
+	%labelattlist;
+	selected (true | false) 'false'
+	group CDATA #IMPLIED
+	action CDATA #IMPLIED">
+<!ATTLIST checkbox %checkboxattlist;>
+
+<!ELEMENT togglebutton (popupmenu?)>
+<!ATTLIST togglebutton
+	%checkboxattlist;>
+
+<!ELEMENT textfield (popupmenu?)>
+<!ENTITY % textfieldattlist "
+	%componentattlist;
+	text CDATA #IMPLIED
+	columns CDATA '0'
+	editable (true | false) 'true'
+	alignment (left | center | right) 'left'
+	start CDATA '0'
+	end CDATA '0'
+	action CDATA #IMPLIED
+	insert CDATA #IMPLIED
+	remove CDATA #IMPLIED
+	caret CDATA #IMPLIED
+	perform CDATA #IMPLIED">
+<!ATTLIST textfield %textfieldattlist;>
+
+<!ELEMENT combobox (choice*, popupmenu?)>
+<!ATTLIST combobox
+	%textfieldattlist;
+	icon CDATA #IMPLIED
+	selected CDATA '-1'>
+
+<!ELEMENT choice EMPTY>
+<!ENTITY % choiceattlist "
+	name CDATA #IMPLIED
+	enabled (true | false) 'true'
+	text CDATA #IMPLIED
+	icon CDATA #IMPLIED
+	alignment (left | center | right) 'left'
+	tooltip CDATA #IMPLIED
+	font CDATA #IMPLIED
+	foreground CDATA #IMPLIED
+	background CDATA #IMPLIED
+	property CDATA #IMPLIED">
+<!ATTLIST choice %choiceattlist;>
+
+<!ELEMENT passwordfield (popupmenu?)>
+<!ATTLIST passwordfield
+	%textfieldattlist;>
+
+<!ELEMENT textarea (popupmenu?)>
+<!ATTLIST textarea
+	%textfieldattlist;
+	rows CDATA '0'
+	border (true | false) 'true'
+	wrap (true | false) 'false'>
+
+<!ELEMENT tabbedpane (tab*, popupmenu?)>
+<!ATTLIST tabbedpane
+	%componentattlist;
+	placement (top | left | bottom | right | stacked) 'top'
+	selected CDATA '0'
+	action CDATA #IMPLIED>
+
+<!ELEMENT tab (%componententity;)?>
+<!ATTLIST tab
+	%choiceattlist;
+	mnemonic CDATA '-1'>
+
+<!ELEMENT panel ((%componententity;)*, popupmenu?)>
+<!ENTITY % panelattlist "
+	%componentattlist;
+	columns CDATA '0'
+	top CDATA '0'
+	left CDATA '0'
+	bottom CDATA '0'
+	right CDATA '0'
+	gap CDATA '0'
+	text CDATA #IMPLIED
+	icon CDATA #IMPLIED
+	border (true | false) 'false'
+	scrollable (true | false) 'false'">
+<!ATTLIST panel %panelattlist;>
+
+<!ELEMENT desktop ((%componententity;)*, popupmenu?)>
+<!ATTLIST desktop
+	%panelattlist;>
+
+<!ELEMENT dialog ((%componententity;)*, popupmenu?)>
+<!ATTLIST dialog
+	%panelattlist;
+	text CDATA #IMPLIED
+	icon CDATA #IMPLIED
+	modal (true | false) 'false'
+	resizable (true | false) 'false'
+	closable (true | false) 'false'
+	maximizable (true | false) 'false'
+	iconifiable (true | false) 'false'>
+
+<!ELEMENT spinbox (popupmenu?)>
+<!ATTLIST spinbox
+	%textfieldattlist;
+	minimum CDATA '0'
+	maximum CDATA '100'
+	step CDATA '1'
+	value CDATA '0'>
+
+<!ELEMENT progressbar (popupmenu?)>
+<!ENTITY % progressbarattlist "
+	%componentattlist;
+	orientation (horizontal | vertical) 'horizontal'
+	minimum CDATA '0'
+	maximum CDATA '100'
+	value CDATA '0'">
+<!ATTLIST progressbar
+	%progressbarattlist;>
+
+<!ELEMENT slider (popupmenu?)>
+<!ATTLIST slider
+	%progressbarattlist;
+	unit CDATA '5'
+	block CDATA '25'
+	action CDATA #IMPLIED>
+
+<!ELEMENT splitpane ((%componententity;)*, popupmenu?)>
+<!ATTLIST splitpane
+	%componentattlist;
+	orientation (horizontal | vertical) 'horizontal'
+	divider CDATA '-1'>
+
+<!ELEMENT list (item*, popupmenu?)>
+<!ENTITY % listattlist "
+	%componentattlist;
+	selection (single | interval | multiple) 'single'
+	action CDATA #IMPLIED
+	perform CDATA #IMPLIED
+	line (true | false) 'true'">
+<!ATTLIST list
+	%listattlist;>
+
+<!ELEMENT item EMPTY>
+<!ATTLIST item
+	%choiceattlist;
+	selected (true | false) 'false'>
+
+<!ELEMENT table (header?, row*, popupmenu?)>
+<!ATTLIST table
+	%listattlist;>
+
+<!ELEMENT header (column*)>
+
+<!ELEMENT column EMPTY>
+<!ATTLIST column
+	%choiceattlist;
+	width CDATA '80'
+	sort (none | ascent | descent) 'none'>
+
+<!ELEMENT row (cell*)>
+<!ATTLIST row
+	selected (true | false) 'false'>
+
+<!ELEMENT cell EMPTY>
+<!ATTLIST cell
+	%choiceattlist;>
+
+<!ELEMENT tree (node*, popupmenu?)>
+<!ATTLIST tree
+	%listattlist;
+	angle (true | false) 'false'
+	expand CDATA #IMPLIED
+	collapse CDATA #IMPLIED>
+
+<!ELEMENT node (node*)>
+<!ATTLIST node
+	%choiceattlist;	
+	selected (true | false) 'false'
+	expanded (true | false) 'true'>
+
+<!ELEMENT separator (popupmenu?)>
+<!ATTLIST separator
+	%componentattlist;>
+
+<!ELEMENT menubar (menu*, popupmenu?)>
+<!ATTLIST menubar
+	%componentattlist;>
+
+<!ENTITY % menuentity "(menu | menuitem | checkboxmenuitem | separator)">
+
+<!ELEMENT menu (%menuentity;)*>
+<!ATTLIST menu
+	%choiceattlist;
+	mnemonic CDATA '-1'>
+
+<!ELEMENT menuitem EMPTY>
+<!ENTITY % menuitemattlist "
+	%choiceattlist;
+	accelerator CDATA #IMPLIED
+	action CDATA #IMPLIED
+	mnemonic CDATA '-1'">
+<!ATTLIST menuitem
+	%menuitemattlist;>
+
+<!ELEMENT checkboxmenuitem EMPTY>
+<!ATTLIST checkboxmenuitem
+	%menuitemattlist;
+	selected (true | false) 'false'
+	group CDATA #IMPLIED>
+
+<!ELEMENT popupmenu (%menuentity;)*>
+<!ATTLIST popupmenu
+	%componentattlist;
+	menushown CDATA #IMPLIED>
+
+<!ELEMENT bean (popupmenu?)>
+<!ATTLIST bean
+	%componentattlist;
+	bean CDATA #IMPLIED>

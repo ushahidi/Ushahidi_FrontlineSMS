@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<dialog icon="/icons/sms_http.png" closable="true" bottom="10" close="removeDialog(this)" columns="1" gap="8" left="10" modal="true" name="pnSmsInternetServiceSettings" right="10" top="10" text="i18n.smsdevice.internet.settings" width="320" height="300">
+	<label text="i18n.smsdevice.internet.provider.select"/>
+	<list action="selectionChanged(this, pnButtons)" perform="configureNewService(lsProviders)" name="lsProviders" weightx="1" weighty="1" colspan="2"/>
+
+	<!--
+		Eventually, we will need an interface for specifying new SmsInternetServices.  For now, we can get away
+		with just a properties file.
+		<button text="i18n.smsdevice.internet.provider.new" colspan="2" halign="right" type="link"/>
+	-->
+	<panel name="pnButtons" gap="8" weightx="1">
+		<button name="btCancel" weightx="1" text="i18n.action.cancel" icon="/icons/cross.png" action="showSettingsDialog"/>
+		<button name="btNext" weightx="1" text="i18n.action.next" icon="/icons/right.png" action="configureNewService(lsProviders)"/>
+	</panel>
+</dialog>

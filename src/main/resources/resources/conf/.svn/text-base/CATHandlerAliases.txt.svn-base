@@ -1,0 +1,11 @@
+# These phones are Nokia Series40 3rd Edition (Initial Release).
+# Details of these phones can be got from http://www.forum.nokia.com/devices/matrix_s40_3ed_fp0_1.html
+Nokia_S40_3ed			Nokia_6280, Nokia_6288, Nokia_6275i, Nokia_2865i, Nokia_6282, Nokia_6265i, Nokia_6265, Nokia_6270
+
+# These phones are Nokia Series40 3rd Edition (FP1).
+# Details of these phones can be got from http://www.forum.nokia.com/devices/matrix_s40_3ed_fp1_1.html
+Nokia_S40_3ed			Nokia_6125, Nokia_6126, Nokia_6131, Nokia_6133, Nokia_6136, Nokia_6151, Nokia_6233, Nokia_6234, Nokia_8600, Nokia_8600Luna, Nokia_8800, Nokia_8800Sirocco
+
+# These phones are Nokia Series40 3rd Edition (FP2).
+# Details of these phones can be got from http://www.forum.nokia.com/devices/matrix_s40_3ed_fp2_1.html
+Nokia_S40_3ed			Nokia_3500classic, Nokia_3109classic, Nokia_3110classic, Nokia_6086, Nokia_6300, Nokia_5200, Nokia_5300, Nokia_6085, Nokia_7390, Nokia_7373

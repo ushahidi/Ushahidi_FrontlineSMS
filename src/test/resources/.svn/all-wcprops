@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/frontlinesms/!svn/ver/67/trunk/src/test/resources
+END
+log4j.properties
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/frontlinesms/!svn/ver/67/trunk/src/test/resources/log4j.properties
+END
+MANIFEST.MF
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/frontlinesms/!svn/ver/67/trunk/src/test/resources/MANIFEST.MF
+END
+frontlinesms-spring-hibernate-junit.xml
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/frontlinesms/!svn/ver/67/trunk/src/test/resources/frontlinesms-spring-hibernate-junit.xml
+END
+TestValues.properties
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/frontlinesms/!svn/ver/67/trunk/src/test/resources/TestValues.properties
+END

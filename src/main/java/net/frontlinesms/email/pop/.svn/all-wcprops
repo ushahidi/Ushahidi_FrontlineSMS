@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/email/pop
+END
+PopReceiveException.java
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/email/pop/PopReceiveException.java
+END
+PopMessageProcessor.java
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/email/pop/PopMessageProcessor.java
+END
+PopMessageReceiver.java
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/email/pop/PopMessageReceiver.java
+END

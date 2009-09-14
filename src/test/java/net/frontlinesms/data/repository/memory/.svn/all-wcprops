@@ -1,0 +1,59 @@
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/frontlinesms/!svn/ver/67/trunk/src/test/java/net/frontlinesms/data/repository/memory
+END
+InMemorySmsInternetServiceSettingsDaoTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 132
+/frontlinesms/!svn/ver/67/trunk/src/test/java/net/frontlinesms/data/repository/memory/InMemorySmsInternetServiceSettingsDaoTest.java
+END
+InMemoryEmailDaoTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 111
+/frontlinesms/!svn/ver/67/trunk/src/test/java/net/frontlinesms/data/repository/memory/InMemoryEmailDaoTest.java
+END
+InMemoryEmailAccountDaoTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 118
+/frontlinesms/!svn/ver/67/trunk/src/test/java/net/frontlinesms/data/repository/memory/InMemoryEmailAccountDaoTest.java
+END
+InMemoryGroupDaoTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 111
+/frontlinesms/!svn/ver/67/trunk/src/test/java/net/frontlinesms/data/repository/memory/InMemoryGroupDaoTest.java
+END
+InMemoryKeywordActionDaoTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 119
+/frontlinesms/!svn/ver/67/trunk/src/test/java/net/frontlinesms/data/repository/memory/InMemoryKeywordActionDaoTest.java
+END
+InMemoryContactDaoTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 113
+/frontlinesms/!svn/ver/67/trunk/src/test/java/net/frontlinesms/data/repository/memory/InMemoryContactDaoTest.java
+END
+InMemorySmsModemSettingsDaoTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 122
+/frontlinesms/!svn/ver/67/trunk/src/test/java/net/frontlinesms/data/repository/memory/InMemorySmsModemSettingsDaoTest.java
+END
+InMemoryMessageDaoTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 113
+/frontlinesms/!svn/ver/67/trunk/src/test/java/net/frontlinesms/data/repository/memory/InMemoryMessageDaoTest.java
+END
+InMemoryKeywordDaoTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 113
+/frontlinesms/!svn/ver/67/trunk/src/test/java/net/frontlinesms/data/repository/memory/InMemoryKeywordDaoTest.java
+END

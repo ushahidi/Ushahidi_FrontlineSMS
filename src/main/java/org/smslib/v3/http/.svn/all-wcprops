@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/frontlinesms/!svn/ver/67/trunk/src/main/java/org/smslib/v3/http
+END
+HTTPGateway.java
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/frontlinesms/!svn/ver/67/trunk/src/main/java/org/smslib/v3/http/HTTPGateway.java
+END
+ClickatellHTTPGateway.java
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/frontlinesms/!svn/ver/67/trunk/src/main/java/org/smslib/v3/http/ClickatellHTTPGateway.java
+END

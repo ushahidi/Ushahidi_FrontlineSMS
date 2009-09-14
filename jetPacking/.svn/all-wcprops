@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/frontlinesms/!svn/ver/63/trunk/jetPacking
+END
+build_FrontlineSMS.bat
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/frontlinesms/!svn/ver/63/trunk/jetPacking/build_FrontlineSMS.bat
+END
+FrontlineSMS.jpn
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/frontlinesms/!svn/ver/63/trunk/jetPacking/FrontlineSMS.jpn
+END
+FrontlineSMS.xbind.script
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/frontlinesms/!svn/ver/63/trunk/jetPacking/FrontlineSMS.xbind.script
+END
+FrontlineSMS.prj
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/frontlinesms/!svn/ver/63/trunk/jetPacking/FrontlineSMS.prj
+END
+FrontlineSMS.usg
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/frontlinesms/!svn/ver/63/trunk/jetPacking/FrontlineSMS.usg
+END
+run_FrontlineSMS.bat
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/frontlinesms/!svn/ver/63/trunk/jetPacking/run_FrontlineSMS.bat
+END
+pack_FrontlineSMS.bat
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/frontlinesms/!svn/ver/63/trunk/jetPacking/pack_FrontlineSMS.bat
+END
+javarun_FrontlineSMS.bat
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/frontlinesms/!svn/ver/63/trunk/jetPacking/javarun_FrontlineSMS.bat
+END

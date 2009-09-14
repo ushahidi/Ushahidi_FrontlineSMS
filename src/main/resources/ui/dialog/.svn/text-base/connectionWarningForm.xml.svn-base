@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<dialog closable="true" close="removeDialog(this)" bottom="5" columns="1" gap="5" icon="/icons/status_problem.png" left="5" name="connectionWarning" right="5" text="i18n.common.attention" top="5">
+    <label text="i18n.sentence.impossible.to.connect"/>
+    <label text="i18n.sentence.would.you.like.to.create.account"/>
+    <panel gap="10" halign="center">
+    	<button action="createAccount(connectionWarning)" icon="/icons/vote_yes.png" name="btYes" text="i18n.action.yes"/>
+        <button action="removeDialog(connectionWarning)" icon="/icons/vote_no.png" name="btNo" text="i18n.action.no"/>
+        <button action="removeDialog(connectionWarning)" icon="/icons/cross.png" name="btCancel" text="i18n.action.cancel"/>
+    </panel>
+</dialog>

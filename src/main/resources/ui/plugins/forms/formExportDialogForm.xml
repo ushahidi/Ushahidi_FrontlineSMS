@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<dialog closable="true" bottom="5" close="removeDialog(this)" columns="3" font="bold" gap="5" icon="/icons/export.png" left="5" modal="true" name="formExportDialog" right="5" text="i18n.common.export" top="5">
+    <panel bottom="5" columns="2" gap="10" left="5" right="5" top="5">
+        <checkbox action="formsTab_exportDialogEnableFields(formExportDialog,this.selected)" colspan="2" icon="/icons/aggregate.png" name="cbAggregate" text="i18n.common.aggregate.values"/>
+        <checkbox icon="/icons/user.png" name="cbContactName" selected="true" text="i18n.common.contact.name"/>
+	    <checkbox icon="/icons/phone_number.png" name="cbContactOtherNumber" selected="true" text="i18n.common.contact.other.phone.number"/>
+	    <checkbox icon="/icons/email.png" name="cbContactEmail" selected="true" text="i18n.common.contact.email"/>
+	    <checkbox icon="/icons/note.png" name="cbContactNotes" selected="true" text="i18n.common.contact.notes"/>
+        <panel colspan="2" bottom="3" gap="5" top="3">
+            <label icon="/icons/file.png" text="i18n.common.filename"/>
+            <textfield columns="35" name="tfFilename"/>
+            <button action="showSaveModeFileChooser(tfFilename)" icon="/icons/browse.png" text="i18n.action.browse" weightx="1"/>
+        </panel>
+        <panel colspan="2" gap="5" halign="center">
+            <button action="formsTab_exportResults(cbAggregate.selected, tfFilename.text, formExportDialog)" halign="right" icon="/icons/export.png" text="i18n.common.export"/>
+            <button action="removeDialog(formExportDialog)" halign="right" icon="/icons/cross.png" text="i18n.action.cancel"/>
+        </panel>
+    </panel>
+</dialog>

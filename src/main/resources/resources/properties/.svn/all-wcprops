@@ -1,0 +1,77 @@
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/frontlinesms/!svn/ver/72/trunk/src/main/resources/resources/properties
+END
+mysql.database.xml
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/frontlinesms/!svn/ver/71/trunk/src/main/resources/resources/properties/mysql.database.xml
+END
+app.properties
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/frontlinesms/!svn/ver/72/trunk/src/main/resources/resources/properties/app.properties
+END
+plugins.properties
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/frontlinesms/!svn/ver/168/trunk/src/main/resources/resources/properties/plugins.properties
+END
+comm.properties
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/resources/properties/comm.properties
+END
+sqlite.properties
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/resources/properties/sqlite.properties
+END
+log4j.properties
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/resources/properties/log4j.properties
+END
+derby.properties
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/resources/properties/derby.properties
+END
+mem.database.xml
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/resources/properties/mem.database.xml
+END
+ui.properties
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/resources/properties/ui.properties
+END
+javax.comm.properties
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/resources/properties/javax.comm.properties
+END
+mysql.properties
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/resources/properties/mysql.properties
+END
+sms.internet.icons.properties
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/resources/properties/sms.internet.icons.properties
+END

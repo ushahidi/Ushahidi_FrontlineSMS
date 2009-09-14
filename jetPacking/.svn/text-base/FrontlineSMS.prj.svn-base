@@ -1,0 +1,53 @@
+%%Excelsior JET v6.0 project file
+%%Happily modified by Alex
+
+-compilewithfixedheap-
+-gendll-
+-genstackalloc+
+-genstacktrace+
+-global-
+-gui+
+-ignoreclassduplication+
+-ignorememberabsence+
+-inline+
+-jetcpenablemanualsettings+
+-splashcloseonawtwindow-
+-splashcloseonclick+
+-splashgetfrommanifest-
+
+-classabsence=HANDLE
+-compilerheap=0
+-heaplimit=0
+-inlinelimit=100
+-inlinetolimit=1000
+-jetcplastpage:=PageClasspath
+-jetrt=Classic
+-jetvmprop=-Djet.jit.fast -Djet.gc.heaplimit:0 -Djet.stack.trace 
+-jpiiproject=./FrontlineSMS.jpn
+-main=net/frontlinesms/DesktopLauncher
+-outputdir=./package
+-outputname=FrontlineSMS
+-runarguments:=-cp comm.jar;masabiFormsMessageHandler.jar
+-splash=../FrontlineSMS_Splash_Logo.jpg
+-stacklimit=900000
+
+
+
+!classpathentry ./package/FrontlineSMS.jar
+  -pack=noncompiled
+  -protect=all
+  -optimize=all
+!end
+!classpathentry ./package/comm.jar
+  -pack=noncompiled
+  -protect=nomatter
+  -optimize=all
+!end
+!classpathentry ./package/masabiFormsMessageHandler.jar
+  -pack=noncompiled
+  -protect=all
+  -optimize=autodetect
+!end
+
+!module ../FrontlineSMS.ico
+!module ./FrontlineSMS.usg

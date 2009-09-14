@@ -1,0 +1,588 @@
+﻿#### LANGUAGE DETAILS #### N.B. DO NOT REMOVE THIS LINE!!! ####
+bundle.language=zh
+bundle.language.name=中文
+bundle.language.country=cn
+
+#### ACTIONS ####
+action.add=附加
+action.add.action=填加行为...
+action.add.keyword=添加关键词...
+action.add.to.group=添加到组...
+action.browse=浏览...
+action.cancel=取消
+action.clear=清除
+action.continue=继续
+action.create=建立
+action.create.auto.reply=自动回复
+action.create.email=电邮
+action.create.external.command=外部指令
+action.create.forward.msg=转发
+action.create.join.group=加入组
+action.create.leave.group=离开组
+action.create.reply=建立回复
+action.create.task=建立任务
+action.delete=删除
+action.delete.from.group=从组中删除
+action.delete.selected=删除选项
+action.delete.selected.contacts=删除联系人
+action.delete.selected.contacts.from.group=从组中删除联系人
+action.delete.survey=删除问卷调查
+action.detect.phones=自动搜索
+action.done=完成
+action.edit=编辑
+action.edit.blacklist=编辑黑名单
+action.edit.survey=编辑问卷调查
+action.edit.whitelist=编辑通用用户
+action.execute=执行
+action.export.response.data=输出联系数据
+action.export.results=输出结果
+action.export.selected=输出选项
+action.find.contact=查找联系人
+action.go.to.advanced=点击进入高级系统
+action.go.up.directory=上一目录
+action.include.response=包括回复
+action.message.history=短信记录
+action.move.to.group=移动到组...
+action.new=新建
+action.new.contact=新建联系人
+action.new.group=新建组
+action.new.survey=新建问卷调查
+action.new.keyword=新建关键词
+action.next=下一个
+action.no=否
+action.ok=确定
+action.phone.connect=连接
+action.previous=前一个
+action.resend=重新发送选项
+action.save=保存
+action.send.message=发送信息
+action.send.sms=发送 SMS
+action.start.frontline=开始 FrontlineSMS
+action.view.edit.contact=查看/编辑联系人
+action.view.edit.phone=查看/编辑电话内容
+action.view.messages=查看信息
+action.yes=是
+action.refresh=刷新
+#### ACTIONS ####
+
+#### COMMON ####
+common.action=行为
+common.active=启动
+common.all.messages=所有信息
+common.at.speed= 百分比 %
+common.attention=注意
+common.at.least.one.group=组
+common.auto.forward=自动转发
+common.auto.forward.for.keyword=自动转发关于关键词
+common.auto.join.group=自动加入组
+common.auto.leave.group=自动离开组
+common.auto.reply.to.keyword=自动回复关键词
+common.baud.rate=波特率
+common.blacklist=禁止令
+common.clear.database=使用此数据库前请清除
+common.command=指令
+common.command.line.execution=执行指令
+common.compose.new.message=创建新信息
+common.connected=连接
+common.contact.is=联系(s) '%'
+common.contacts=联系人
+common.contact.details=联系人信息
+common.contact.details.merge=合并联系人信息
+common.contact.email=联系人电邮地址
+common.contact.name=联系人姓名
+common.contact.notes=联系人记录
+common.contact.other.phone.number=连接其它电话号码
+common.contacts.in.group=联系人中%
+common.content=内容
+common.cost.estimator=预计费用:
+common.create.new.group.here=新建组
+common.csv.export=CSV 输出
+common.current.status=当前状况
+common.database.config=数据库配置
+common.database.name=数据库名称:
+common.database.pass=数据库密码:
+common.database.port=Database Port:
+common.database.server=数据库服务器:
+common.database.type=数据库类型:
+common.database.user=数据库用户名:
+common.date=日期
+common.date.format=(日/月/年)
+common.delete.from.phone=从电话中删除已接收信息
+common.description=表述
+common.directory=目录
+common.disconnect=取消连接
+common.do.not.wait.response=不等待回应
+common.dormant=睡眠状态
+common.editing.keyword=编辑关键词'%'
+common.editing.keyword.blacklist=编辑关键词'%' 黑名单
+common.editing.keyword.whitelist=编辑关键词'%' 用户名单
+common.email=电邮
+common.email.account=电邮帐户
+common.email.account.password=帐户密码
+common.email.account.server=帐户服务器
+common.email.account.settings=电邮帐户设置
+common.email.address=电邮地址
+common.end=结束
+common.end.date=结束日期
+common.estimated.cost=预计成本:
+common.execution.details=执行细节
+common.execution.type=执行类型
+common.export=输出
+common.external.command=外部指令
+common.filename=文件名
+common.file.chooser=文件选择器
+common.first.time.wizard=First-time Wizard
+common.forward.message=转发信息
+common.forward.to.group=转发到组
+common.frequency=经常性
+common.from=从
+common.frontline.commands=FrontlineSMS 指令
+common.group=组
+common.groups=组
+common.group.members=组成员
+common.group.member.details=成员信息
+common.hits=击中
+common.http.call=HTTP 呼唤
+common.http.request=HTTP 请求
+common.import=输入
+common.intended.recipient=预定接收器
+common.join=加入
+common.join.leave.group=加入/离开组
+common.keyword=关键词
+common.keyword.actions=关键词行为
+common.keyword.actions.of=关键词行为'%'
+common.keyword.description=关键词表述
+common.keywords=关键词
+common.latest.events=最新事件
+common.leave=离开
+common.live=激活的
+common.make=构造
+common.make.model=构造和型号
+common.message=信息
+common.messages=信息
+common.messages.colon=信息:
+common.message.history.of=信息记录of '%'
+common.messages.from.registered=电话中的存储信息
+common.messages.from.unregistered=非注册电话中的存储信息
+common.message.content=信息内容
+common.message.date=信息日期
+common.message.recipient=信息接收器
+common.message.recipient.name=接收器名称
+common.message.recipient.number=接收器号码
+common.message.sender=信息发送人
+common.message.sender.name=发送人姓名
+common.message.sender.number=发送人号码
+common.message.status=信息状态
+common.message.type=信息类型
+common.model=型号
+common.name=名称
+common.new.keyword=新建关键词
+common.next.execution=下一个执行
+common.non.pending.messages=已递送/失败/未知结果/过期信息
+common.non.working.devices=非工作装置
+common.notes=记录
+common.of=从…中
+common.other.phone.number=其它电话号码
+common.page=页码
+common.pending.messages=待发送信息
+common.per.sms=/短信
+common.phone=电话
+common.phone.connected=电话连接
+common.phone.number=电话号码
+common.plain.text=空白短信
+common.port=通讯口
+common.receive.phones=用来服务于接收的电话:
+common.received=接收
+common.received.messages=接收信息
+common.recipient=接收器
+common.reply=回复
+common.reply.details=回复细节
+common.reply.manager.entries=进入回复管理数据库
+common.reply.text=回复信息
+common.response.type=回复类型
+common.responses=回复
+common.results.per.page=每页结果
+common.results.window=结果窗口
+common.schedule.task=任务时间表
+common.search=搜索
+common.select.contact=选择联系人
+common.select.language=选择语言:
+common.select.phone=选择电话
+common.selected.contacts=选择联系人
+common.send=发送
+common.sender=发送人
+common.sender.name=发送人姓名
+common.send.auto.reply=发送自动回复
+common.send.msg.to=发送一个中断的信息到
+common.send.to=发送到
+common.sent=已发送
+common.sent.at=已发送到
+common.sent.messages=已发送信息
+common.serial=连载器
+common.settings.for.phone=连接电话的设置
+common.start=开始
+common.start.date=开始日期
+common.status=状态
+common.subject=目标
+common.survey=问卷调查
+common.surveys=问卷调查
+common.survey.details=问卷调查细节
+common.switch.language=转换语言:
+common.text=文本
+common.time=时间
+common.to=到
+common.to.group=到组
+common.type=类型
+common.type.delivered=已递送
+common.type.draft=草稿
+common.type.failed=失败
+common.type.outbox=发送信箱
+common.type.pending=等待发送
+common.type.received=已接收类型
+common.type.retrying=重试
+common.type.sent=Type Sent
+common.undefined=未定义
+common.ungrouped=未分组
+common.unknown.action.type=未知行为类型
+common.unnamed=未命名
+common.unnamed.contact=未命名联系人
+common.until=直到
+common.url=统一资源定位器
+common.use.delivery.reports=使用递送报告
+common.use.for.receiving=使用接收
+common.use.for.sending=使用发送
+common.use.ssl=使用SSL
+common.visit=访问
+common.warning=警告
+common.what.to.do.response=请确定回复内容
+common.whitelist=允许
+common.working.devices=可使用装置
+#### COMMON ####
+
+#### DATE FORMATS ####
+date.export.format=年/月/日 小时：分钟：秒钟
+date.keyword.action.format=日/月/年
+date.message.format=日/月/年 小时：分钟：秒钟
+date.task.format=日/月/年 小时：分钟
+#### DATE FORMATS ####
+
+#### MONTHS ####
+month.jan=一月
+month.feb=二月	
+month.mar=三月
+month.apr=四月
+month.may=五月
+month.jun=六月
+month.jul=七月
+month.aug=八月
+month.sep=九月
+month.oct=十月
+month.nov=十一月
+month.dec=十二月
+#### MONTHS ####
+
+#### DAYS OF WEEK ####
+day.mon=星期一
+day.tue=星期二
+day.wed=星期三
+day.thu=星期四
+day.fri=星期五
+day.sat=星期六
+day.sun=星期日
+#### DAYS OF WEEK ####
+
+#### FREQUENCY VALUES ####
+frequency.day=每日
+frequency.hour=每小时
+frequency.month=每月
+frequency.once=一次
+frequency.week=每星期
+frequency.year=每年
+#### FREQUENCY VALUES ####
+
+#### MENUBAR ####
+menubar.debug=调试
+menubar.settings=设置
+menubar.file=文件
+menubar.view=查看
+menubar.help=帮助
+menuitem.help.manual=FrontlineSMS 帮助
+menuitem.help.about=关于FrontlineSMS
+menuitem.advanced.view=转换到新视频
+menuitem.classic.view=转换到经典视频
+menuitem.db.access=直接访问数据库
+menuitem.edit.db.settings=数据库设置
+menuitem.email.settings=邮件设置
+menu.export=输出...
+menu.language=语言
+menuitem.import=输入...
+#### MENUBAR ####
+
+#### MESSAGES ####
+message.about=FrontlineSMS 从以下来源中使用免费图标，特此感谢!
+message.account.already.exists=电子邮件帐户已存在
+message.account.name.blank=电子邮件帐户不能为空
+message.contacts.deleted=联系人已成功删除
+message.contact.already.exists=此联系电话已存在 - 不可重复存储!
+message.contact.is.already.listed=联系人'%'已在禁止/通用清单中关于此关键词
+message.contact.manager.loaded=已下载联系人管理
+message.continuing.to.search.for.higher.speed=继续搜索高速连接...
+message.delivery.report.received=已接收到递送报告
+message.directory.not.found=无法找到该目录
+message.duplicate.connection=再次连接
+message.emails.deleted=邮件已成功删除
+message.emails.loaded=已下载邮件
+message.exported.message.to.file=输出信息到文件
+message.export.failed=输出任务失败
+message.export.successful=输出成功
+message.exporting.all.contacts=输出所有联系人...
+message.exporting.all.keywords=输出所有关键词...
+message.exporting.all.messages=输出所有信息...
+message.exporting.selected.contacts=输出所选联系人
+message.exporting.selected.keywords=输出所选关键词...
+message.exporting.selected.messages=输出所选信息...
+message.failed.to.connect=连接失败
+message.filename.blank=文件名不可为空
+message.group.already.exists=建立组已存在
+message.group.and.contacts.deleted=已成功删除组和联系人
+message.group.is.already.listed=组'%'关于此关键词已在禁止/通用清单中
+message.group.manager.loaded=组管理器已下载
+message.group.name.blank=未命名组名
+message.gsm.registration.failed=GSM网络注册失败
+message.impossible.to.create.group.here=不可以在此组中另建组
+message.impossible.to.go.up=不可以到上一目录
+message.invalid.sim.card=电话卡无效
+message.keyword.already.exists=不可以建立已存在关键词
+message.keyword.blank=关键词为空
+message.keywords.loaded=关键词下载
+message.keyword.actions.deleted=已成功删除关键词的行为.
+message.keyword.saved=成功保存关键词
+message.keyword.and.actions.deleted=已成功删除关键词与之行为
+message.max.speed.found=发现最大速度
+message.messages.deleted=成功删除信息
+message.messages.loaded=信息下载
+message.message.or.cmd.blank=信息或指令为空
+message.message.blank=请在此短信中输入文本信息
+message.message.received=收到信息
+message.modem.list.loaded=调制解调旗清单已更新
+message.no.contact.selected=无选择联系人
+message.no.email.account.selected=未选择发送人电子邮件帐户
+message.no.field.selected=请至少选择一项领域
+message.no.file.selected=无选择文件
+message.no.group.created.by.users=除预设组外，用户未建立任何组
+message.no.group.selected=无选择组
+message.no.group.selected.to.send=请选择一个组来发送此消息
+message.no.members=无联系人在此组中
+message.no.phone.detected=未探测到电话
+message.no.phone.number.to.send=请选择一个电话号码来发送此消息
+message.only.dormants=只有休眠状态的用户在此组中
+message.owner.is=所有者为'%'.
+message.phone.detected=探测
+message.phone.manager.initialised=电话管理开始
+message.phone.number.blank=联系人必须有一个有效的电话号码
+message.ready.to.connect=连接已准备好
+message.recipients.blank=未定义接受器
+message.removing.contacts=移动联系人
+message.removing.emails=移动电子邮件...
+message.removing.groups.and.contacts=移动组到联系人...
+message.removing.keywords.and.actions=移动关键词和行为...
+message.removing.keyword.actions=移动关键词的行为...
+message.removing.messages=移动信息...
+message.removing.tasks=移动任务...
+message.reply.manager.loaded=回复管理下载
+message.searching.for.devices=搜索装置
+message.send.console.loaded=发送已下载的控制台
+message.start.date.after.end=开始日期在结束日期之后，请另外选择开始日期
+message.starting=开始...
+message.starting.phone.manager=开始电话管理...
+message.survey.analyst.loaded=问卷调查分析下载
+message.survey.manager.loaded=问卷调查管理下载
+message.tasks.loaded=任务时间表下载
+message.tasks.deleted=已成功删除任务
+message.trying.to.connect=重新连接
+message.wrong.format.date=日期格式错误
+message.import.data.failed=输入信息时发生错误
+message.importing.contacts.groups=输入联系人和组...
+message.importing.keywordactions=输入关键词的行为...
+message.importing.sent.messages=输入已发送信息...
+message.importing.received.messages=输入已接收信息...
+message.for.info.tutorials=关于进一步的信息和解说
+#### MESSAGES ####
+
+#### SENTENCES ####
+sentence.add.sender.to.group=填加发送人到此组:
+sentence.all.incoming.messages=所有接收信息包括:
+sentence.contact.added.automatically=FrontlineSMS自动填加联系人
+sentence.for.each.message.include=以下为每一个关键词的信息:
+sentence.from.database=来自数据库?
+sentence.impossible.to.connect=连接不到服务器
+sentence.keyword.tab.tip=如果你想增加高级行为，请简单按日期排定不同回应
+sentence.part.of.selected.groups=所选择组的一部分
+sentence.pending.messages=仍有待发送信息，继续退出吗?
+sentence.remaining.characters=剩余字数:
+sentence.remove.sender.from.group=移动发送人到组:
+sentence.save.this.list.to.subkeywords=复制此清单到所有子关键词中
+sentence.select.message.recipient=选择接受器
+sentence.send.this.message.auto.reply=发送此信息作为自动回复:
+sentence.what.do.you.want.to.export=请确定输出内容:
+sentence.what.do.you.want.to.export.from.contacts=请确定从联系人中输出的内容:
+sentence.what.do.you.want.to.export.from.keywords=请确定从关键词中输出的内容:
+sentence.what.do.you.want.to.export.from.messages=请确定从信息中输出的内容:
+sentence.what.do.you.want.to.import=请确定输入的内容:
+sentence.would.you.like.to.create.account=仍继续建立帐户吗?
+sentence.would.you.like.to.remove.contacts=请确定要移动此联系人吗
+sentence.you.can.include=点击包括:
+sentence.are.you.sure=此选项将移动所选事项，请确定要继续吗?
+sentence.have.you.used.before=是否使用过FrontlineSMS?
+sentence.try.new.mode=是否想尝试此软件的新视频?
+sentence.no.i.want.classic=不，我想使用经典视频
+sentence.yes.recommended=是(建议使用)
+sentence.want.to.import.data=确定要从旧视频中输入数据吗?
+sentence.please.wait=此要求需要几分钟，请等待
+#### SENTENCES ####
+
+#### TAB NAMES ####
+tab.contact.manager=内容
+tab.email=邮件
+tab.home=主页
+tab.keyword.manager=关键词
+tab.message.history=信息
+tab.message.tracker=信息跟踪器
+tab.phone.manager=电话
+tab.receive.console=接收
+tab.reply.manager=回复
+tab.schedule.tasks=任务排期
+tab.send.console=发送
+tab.sql=SQL
+tab.survey.analyst=问卷调查分析
+tab.survey.manager=问卷调查
+tab.tables=表格
+tab.traffic.monitor=交易监督
+#### TAB NAMES ####
+
+#### TOOLTIPS ####
+tooltip.create.new.contact=建立新联系人
+tooltip.delete.from.group=从组中删除所选联系人
+tooltip.detect.phones=扫描COM电话连接口
+tooltip.enable.action=可操作/使不可操作此事项
+tooltip.end.date=设置此选项为空白，使之永远持续
+tooltip.remove.contacts.and.groups=从组中移动所选联系人；删除所选组
+tooltip.search.here=在此填加搜索
+tooltip.start.date=设置此选项为空白，使之从今日开始
+tooltip.task.end.date=设置此选项为空白，使之永远持续(日/月/年).
+tooltip.task.start.date=设置此选项为空白，使之从今日开始(日/月/年).
+tooltip.task.end.time=设置此选项为空白，直到末尾为00:00 (小时/分钟).
+tooltip.task.start.time=设置此选项为空白，直到开始为00:00 (小时/分钟).
+tooltip.view.contact.details=查看所选联系人信息
+tooltip.group.unnamed=所有未命名的联系人
+tooltip.group.ungrouped=不在其它组中的所有联系人
+tooltip.go.to.phones.tab=联接到电话管理
+#### TOOLTIPS ####
+
+error.phone.receive.not.supported=抱歉，此电话不支持接收短信功能
+common.phone.use=使用此电话为:
+common.phone.dont.use=禁止此电话使用
+
+# ISO 4217 currency code
+common.currency=CNY
+
+# GOOGLE'S
+common.all=全部
+common.account.username=帐户的用户名
+common.connecting=连接
+common.low.credit=帐户的信用额度低 (%)
+common.new.account=新帐户
+menuitem.sms.http.settings=Clickatell 帐户管理
+common.editing.email.account=电邮帐户 '%'
+common.account.api=帐户 API
+common.failed.connect=连接失败
+common.help=帮助
+action.disconnect=断开
+common.edting.sms.service=SMS 服务帐户 '%'
+
+menuitem.import.contacts=导入联系人
+menuitem.exit=退出
+action.close=关闭
+common.version=版本
+
+action.auto.connect=自动连接
+action.manually.connect=手动连接
+action.stop.detection=停止检测
+
+tooltip.click.for.help=点击这里寻求帮助
+common.disconnecting=断开
+
+common.handler=处理器
+message.invalid.baud.rate=无效的波特率 [%]
+message.port.not.found=无法找到端口 [%]
+message.port.already.connected=已有一部电话连接到端口[%]，请先取消此连接
+
+menuitem.website=FrontlineSMS 网址
+common.thanks.to=感谢:
+
+message.database.warning=警告：使用此功能可能致命的腐败您的数据库并提供 FrontlineSMS 使用！
+
+common.blank=空白
+message.clickatell.account.blank=帐户不可为空
+
+# ADDED ON VERSION 1.4.5
+
+menuitem.error.report=提交错误信息报告
+message.log.files.sent=日志文件已成功发送到frontlineSMS技术支持小组
+message.failed.to.send.report=报告电邮发送失败。保存压缩日志...
+message.failed.to.copy.logs=复制失败[%]
+message.logs.location=您的日志保存位置为[%]
+message.logs.saved.please.report=日志保存成功。请电邮已保存日志到frontlinesupport@kiwanja.net.
+
+message.forms.loaded=形式加载。
+
+common.aggregate.values=累计值
+
+common.submitter=提交
+common.result=结果
+
+tooltip.drag.to.remove=把选项托到此处清除
+tooltip.drag.to.preview=把选项托到预览
+sentence.delete.key=删除键：清除所选选项
+sentence.up.key=上移键：向上移动选项
+sentence.down.key= 下移键：向下移动选项
+
+# Forms
+common.button=键
+common.checkbox=选项方框
+common.creditcard=信用卡
+forms.field.currency=汇率
+common.dropdownlist=下落菜单
+common.menuitem=菜单选项
+common.number=数字
+common.password=密码
+common.phonenumber=电话号码
+common.radiobutton=高级选项
+common.textarea=文本区
+common.textfield=文本行
+common.truncatedtext=单行信息
+common.wrappedtext=多行信息
+common.forms.editor=表格编辑器
+common.properties=道具
+common.form.name=表格名称
+message.form.name.blank=表格名称不可为空
+common.palette=调色板
+common.preview=预览
+common.property=道具
+common.value=值
+
+common.results=结果
+action.remove.from.list=从菜单中移走
+common.forms=表格
+action.copy=复制
+
+common.message.details=消息详情
+
+message.send.form=发送此表格后，任务将完结(用户无法确认)。确定继续吗?
+message.forms.limit=系统为发送表格已到达极限。为确保发送其它表格，请取消终极完结表格。
+
+common.tabs=转换
+
+common.incoming.number.settings=接收电话号码设置
+common.remove.from.incoming.number=删除接收电话号码
+common.add.to.incoming.number=填加置接收电话号码

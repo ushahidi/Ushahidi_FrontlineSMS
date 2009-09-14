@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<dialog closable="true" close="removeDialog(this)" name="editListDialog" bottom="10" columns="3" gap="10" height="500" left="10" modal="true" right="10" top="10" width="700">
+    <panel columns="2" gap="10" weightx="1" weighty="1">
+        <label icon="/icons/users.png" text="i18n.common.contacts"/>
+        <label icon="/icons/group.png" text="i18n.common.groups"/>
+        <list selection="multiple" name="contactList" rowspan="18" weightx="1" weighty="1"/>
+        <list selection="multiple" name="groupList" rowspan="18" weightx="1" weighty="1"/>
+        <button action="addToList(editListDialog, contactList, list)" halign="center" icon="/icons/user.png" name="btAddContactToList" text="i18n.action.add"/>
+        <button action="addToList(editListDialog, groupList, list)" halign="center" icon="/icons/group.png" name="btAddGroupToList" text="i18n.action.add"/>
+    </panel>
+    <separator/>
+    <panel columns="1" gap="10" weightx="1" weighty="1">
+        <label name="lbList"/>
+        <list delete="deleteFromList(editListDialog, list)" selection="multiple" name="list" rowspan="20" weightx="1" weighty="1"/>
+        <button action="deleteFromList(editListDialog, list)" halign="center" icon="/icons/deleteFromWhiteOrBlackList.png" name="btDelete" text="i18n.action.delete"/>
+    </panel>
+    <separator colspan="3"/>
+    <checkbox name="cbReplicate" text="i18n.sentence.save.this.list.to.subkeywords" colspan="3"/>
+    <panel colspan="3" gap="5" halign="center" weightx="1">
+        <button action="closeKeywordListDialog(editListDialog, cbReplicate.selected, list)" icon="/icons/tick.png" text="i18n.action.ok"/>
+        <!--  button action="removeDialog(editListDialog)" icon="/icons/cross.png" name="btCancel" text="i18n.action.cancel"/>-->
+    </panel>
+</dialog>

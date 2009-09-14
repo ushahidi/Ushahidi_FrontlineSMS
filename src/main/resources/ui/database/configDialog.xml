@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<dialog closable="true" close="removeDialog(this)" icon="/icons/database_edit.png" modal="true" text="i18n.common.database.config">
+    <!-- here we add the panel -->
+</dialog>

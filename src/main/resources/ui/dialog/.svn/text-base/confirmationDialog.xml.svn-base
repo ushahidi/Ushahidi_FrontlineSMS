@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<dialog columns="1" closable="true" close="removeDialog(this)" bottom="4" gap="8" icon="/icons/status_attention.png" left="4" modal="true" name="confirmDialog" right="4" text="i18n.common.attention" top="4">
+    <label name="lbText" text="i18n.sentence.are.you.sure"/>
+    <panel gap="5" halign="center" >
+    	<button name="btContinue" icon="/icons/tick.png" text="i18n.action.continue"/>
+    	<button action="removeDialog(confirmDialog)" icon="/icons/cross.png" text="i18n.action.cancel"/>
+    </panel>
+</dialog>

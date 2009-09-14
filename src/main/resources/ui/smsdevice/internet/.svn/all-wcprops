@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/smsdevice/internet
+END
+chooseProvider.xml
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/smsdevice/internet/chooseProvider.xml
+END
+settings.xml
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/smsdevice/internet/settings.xml
+END
+configure.xml
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/smsdevice/internet/configure.xml
+END

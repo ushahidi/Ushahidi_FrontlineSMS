@@ -1,0 +1,43 @@
+10
+
+dir
+83
+http://192.168.170.45/frontlinesms/trunk/src/main/java
+http://192.168.170.45/frontlinesms
+
+
+
+2009-08-27T11:29:19.262779Z
+82
+ekala
+
+
+svn:special svn:externals svn:needs-lock
+
+
+
+
+
+
+
+
+
+
+
+b2039536-754e-4714-9a36-ebe2063c1ec8
+
+IntelliSoftware
+dir
+
+com
+dir
+
+net
+dir
+
+org
+dir
+
+thinlet
+dir
+

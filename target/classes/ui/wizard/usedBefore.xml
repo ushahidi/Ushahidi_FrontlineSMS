@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<panel bottom="10" columns="1" gap="10" left="10" right="10" top="10">
+    <panel columns="1" gap="6" weightx="1" weighty="1">
+        <label icon="/icons/help.png" font="bold" text="i18n.sentence.have.you.used.before"/>
+        <panel columns="1" gap="5" left="20">
+            <checkbox group="g" selected="true" text="i18n.action.no"/>
+            <checkbox name="cbYes" group="g" text="i18n.action.yes"/>
+        </panel>
+    </panel>
+    <panel gap="5" halign="right" weightx="1">
+    	<button action="goBack()" icon="/icons/left.png" text="i18n.action.previous"/>
+        <button action="selectedUsedBefore(cbYes.selected)" icon="/icons/right.png" text="i18n.action.next"/>
+    </panel>
+</panel>

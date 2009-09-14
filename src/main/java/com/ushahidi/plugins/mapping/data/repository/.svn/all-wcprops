@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/frontlinesms/!svn/ver/78/trunk/src/main/java/com/ushahidi/plugins/mapping/data/repository
+END
+IncidentDao.java
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/frontlinesms/!svn/ver/170/trunk/src/main/java/com/ushahidi/plugins/mapping/data/repository/IncidentDao.java
+END
+LocationDao.java
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/frontlinesms/!svn/ver/144/trunk/src/main/java/com/ushahidi/plugins/mapping/data/repository/LocationDao.java
+END
+CategoryDao.java
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/frontlinesms/!svn/ver/144/trunk/src/main/java/com/ushahidi/plugins/mapping/data/repository/CategoryDao.java
+END
+MappingSetupDao.java
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/frontlinesms/!svn/ver/111/trunk/src/main/java/com/ushahidi/plugins/mapping/data/repository/MappingSetupDao.java
+END

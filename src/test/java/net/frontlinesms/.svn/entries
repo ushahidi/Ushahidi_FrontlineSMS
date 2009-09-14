@@ -1,0 +1,86 @@
+10
+
+dir
+83
+http://192.168.170.45/frontlinesms/trunk/src/test/java/net/frontlinesms
+http://192.168.170.45/frontlinesms
+
+
+
+2009-06-27T08:14:33.656976Z
+2
+bmuita
+
+
+svn:special svn:externals svn:needs-lock
+
+
+
+
+
+
+
+
+
+
+
+b2039536-754e-4714-9a36-ebe2063c1ec8
+
+AbstractTestCase.java
+file
+
+
+
+
+2009-08-27T11:40:56.000000Z
+6c3edc73fd14bfc70bd74ab236e644da
+2009-06-27T08:14:33.656976Z
+2
+bmuita
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1475
+
+csv
+dir
+
+data
+dir
+
+email
+dir
+
+hex
+dir
+
+junit
+dir
+
+message
+dir
+
+plugins
+dir
+
+smsdevice
+dir
+

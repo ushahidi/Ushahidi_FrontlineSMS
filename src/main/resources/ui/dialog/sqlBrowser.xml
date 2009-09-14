@@ -1,0 +1,34 @@
+<desktop>
+    <tabbedpane background="0xffffff">
+    	<tab background="0xffffff" icon="/icons/database_warning.png" text="i18n.common.attention">
+            <panel background="0xffffff" columns="1" valign="center" halign="center" weightx="1" weighty="1">
+                <label valign="center" halign="center" icon="/icons/big_debug_warning.png" weightx="1" weighty="1"/>
+                <label foreground="0xFF0000" font="bold" valign="center" halign="center" text="i18n.message.database.warning" weightx="1" weighty="1"/>
+            </panel>
+        </tab>
+        <tab background="0xffffff" icon="/icons/database_table.png" text="i18n.tab.tables">
+            <splitpane divider="300">
+                <list name="dbTables" action="tableSelectionChanged(dbTables)">
+                    <!-- Contains a list of the tables visible in the database, populated at runtime -->
+                </list>
+                <table name="dbTable.contents">
+                    <header>
+                        <!-- Contains the names of the columns in the selected table -->
+                    </header>
+                    <!-- Contains contents of the selected rows in this DB table -->
+                </table>
+            </splitpane>
+        </tab>
+        <tab background="0xffffff" icon="/icons/database_sql.png" text="i18n.tab.sql">
+            <panel bottom="5" top="5" left="5" right="5" columns="4" gap="3">
+                <label text="i18n.tab.sql"/>
+                <textfield name="sqlStatement" weightx="1" perform="sqlExecute(sqlStatement.text, sqlResults)"/>
+                <button icon="/icons/database_execute.png" text="i18n.action.execute" action="sqlExecute(sqlStatement.text, sqlResults)"/>
+                <button icon="/icons/clear.png" text="i18n.action.clear" action="clearTextfield(sqlStatement)"/>
+                <table colspan="4" name="sqlResults" weighty="1">
+                    <header/>
+                </table>
+            </panel>
+        </tab>
+    </tabbedpane>
+</desktop>

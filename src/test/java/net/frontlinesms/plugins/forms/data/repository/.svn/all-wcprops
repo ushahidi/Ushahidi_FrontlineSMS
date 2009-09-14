@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/frontlinesms/!svn/ver/67/trunk/src/test/java/net/frontlinesms/plugins/forms/data/repository
+END
+ReusableFormDaoTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 117
+/frontlinesms/!svn/ver/67/trunk/src/test/java/net/frontlinesms/plugins/forms/data/repository/ReusableFormDaoTest.java
+END
+ReusableFormResponseDaoTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 125
+/frontlinesms/!svn/ver/67/trunk/src/test/java/net/frontlinesms/plugins/forms/data/repository/ReusableFormResponseDaoTest.java
+END

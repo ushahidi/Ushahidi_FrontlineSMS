@@ -1,0 +1,52 @@
+<tab icon="/icons/classic_sendConsole.png" name=":sendConsole">
+	<splitpane orientation="horizontal" divider="340">
+		<panel columns="2" top="9" bottom="9" left="9" right="9" gap="9">
+			<label valign="top" icon="/icons/header/sendConsole.png"/>
+			<panel rowspan="2" border="true" text="i18n.common.message.recipient" weightx="1" weighty="1" columns="2" top="9" bottom="9" left="9" right="9" gap="9">
+				<tree action="sendConsole_selectionChanged(this)" name="sendConsole_groupTree" colspan="2" weightx="1" weighty="1">
+					<!-- Populated at runtime -->
+				</tree>
+				<label text="i18n.common.send.msg.to" colspan="2" name="sendConsole_loneRecipientToggle" />
+				<textfield action="sendConsole_loneRecipientToggle(this.text, sendConsole_groupTree)" weightx="1" name="sendConsole_loneRecipient"/>
+				<button tooltip="i18n.action.find.contact" icon="/icons/user.png" name="sendConsole_loneRecipientButton" action="selectMessageRecipient"/>
+			</panel>
+			<button tooltip="i18n.tooltip.click.for.help" valign="bottom" action="showHelpPage('sendconsole.htm')" icon="/icons/big_help.png" type="link"/>
+		</panel>
+		<panel columns="2" top="9" bottom="9" left="9" right="9" gap="9">
+			<panel name="pnSend" border="true" text="i18n.common.message" columns="1" top="9" bottom="9" left="9" right="9" gap="9">
+			</panel>
+			<panel border="true" text="i18n.common.select.phone" top="10" bottom="8" left="9" right="9" gap="3" columns="1">
+				<table weightx="1" weighty="1" name="sendConsole_modemList">
+					<header>
+						<column icon="/icons/port_open.png" text="i18n.common.port" width="50"/>
+						<column icon="/icons/phone_make_model.png" text="i18n.common.make.model" width="115"/>
+						<column icon="/icons/phone_number.png" text="i18n.common.phone.number"/>
+						<!-- This table will be populated at runtime -->
+					</header>
+					<popupmenu menushown="editPhoneEnabled(sendConsole_modemList, this)" name="popMenu">
+						<menuitem name="miEditPhone_sendConsole" text="i18n.action.view.edit.phone" icon="/icons/phone_edit.png" action="showPhoneSettingsDialog(sendConsole_modemList)"/>
+					</popupmenu>
+				</table>
+				<button tooltip="i18n.tooltip.detect.phones" text="i18n.action.detect.phones" action="phoneManager_detectModems" halign="right" icon="/icons/phone_autoDetect.png"/>
+			</panel>
+			<panel colspan="2" border="true" text="i18n.common.results.window" columns="2" weightx="1" weighty="1" top="9" bottom="9" left="9" right="9" gap="9" name="sendConsole_messageListPanel">
+				<table perform="showMessageDetails(this)" delete="showConfirmationDialog('sendConsole_removeMessages')" weightx="1" weighty="1" colspan="2" name="sendConsole_messageList" selection="multiple">
+					<header>
+						<column icon="/icons/status.png" text="i18n.common.status" width="60"/>
+						<column icon="/icons/time.png" text="i18n.common.date" width="120"/>
+						<column icon="/icons/user_sender.png" text="i18n.common.sender" width="100"/>
+						<column icon="/icons/user_receiver.png" text="i18n.common.recipient"/>
+						<column icon="/icons/message.png" text="i18n.common.message"/>
+					</header>
+					<popupmenu menushown="classicMode_enableOptionsMessageList(this, sendConsole_messageList)" name="menu">
+						<menuitem action="showMessageDetails(sendConsole_messageList)" icon="/icons/sms_details.png" text="i18n.common.message.details"/>
+						<menuitem text="i18n.action.resend" icon="/icons/sms_send.png" action="resendSelectedFromMessageList(sendConsole_messageList)"/>
+						<menuitem text="i18n.action.delete.selected" icon="/icons/sms_delete.png" action="showConfirmationDialog('sendConsole_removeMessages')"/>
+					</popupmenu>
+				</table>
+				<button text="i18n.action.refresh" icon="/icons/refresh.png" action="sendConsole_refreshMessageList"/>
+				<label name="pageControlsPanel"/>
+			</panel>
+		</panel>
+	</splitpane>
+</tab>

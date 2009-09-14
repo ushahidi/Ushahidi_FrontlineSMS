@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite failures="0" time="2.489" errors="0" skipped="0" tests="1" name="net.frontlinesms.data.repository.hibernate.HibernateSmsModemSettingsDaoTest">
+  <properties>
+    <property name="java.runtime.name" value="Java(TM) SE Runtime Environment"/>
+    <property name="sun.boot.library.path" value="/usr/lib/jvm/java-6-sun-1.6.0.16/jre/lib/i386"/>
+    <property name="java.vm.version" value="14.2-b01"/>
+    <property name="java.vm.vendor" value="Sun Microsystems Inc."/>
+    <property name="java.vendor.url" value="http://java.sun.com/"/>
+    <property name="path.separator" value=":"/>
+    <property name="java.vm.name" value="Java HotSpot(TM) Server VM"/>
+    <property name="file.encoding.pkg" value="sun.io"/>
+    <property name="user.country" value="US"/>
+    <property name="sun.java.launcher" value="SUN_STANDARD"/>
+    <property name="sun.os.patch.level" value="unknown"/>
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+    <property name="user.dir" value="/media/KALA/Personal/dev/FrontlineSMS"/>
+    <property name="java.runtime.version" value="1.6.0_16-b01"/>
+    <property name="java.awt.graphicsenv" value="sun.awt.X11GraphicsEnvironment"/>
+    <property name="basedir" value="/media/KALA/Personal/dev/FrontlineSMS"/>
+    <property name="java.endorsed.dirs" value="/usr/lib/jvm/java-6-sun-1.6.0.16/jre/lib/endorsed"/>
+    <property name="os.arch" value="i386"/>
+    <property name="surefire.real.class.path" value="/tmp/surefirebooter7485506406688479242.jar"/>
+    <property name="java.io.tmpdir" value="/tmp"/>
+    <property name="line.separator" value="
+"/>
+    <property name="java.vm.specification.vendor" value="Sun Microsystems Inc."/>
+    <property name="os.name" value="Linux"/>
+    <property name="sun.jnu.encoding" value="UTF-8"/>
+    <property name="java.library.path" value="/usr/lib/jvm/java-6-sun-1.6.0.16/jre/lib/i386/server:/usr/lib/jvm/java-6-sun-1.6.0.16/jre/lib/i386:/usr/lib/jvm/java-6-sun-1.6.0.16/jre/../lib/i386:/usr/java/packages/lib/i386:/lib:/usr/lib"/>
+    <property name="surefire.test.class.path" value="/media/KALA/Personal/dev/FrontlineSMS/target/test-classes:/media/KALA/Personal/dev/FrontlineSMS/target/classes:/home/ekala/.m2/repository/javax/activation/activation/1.1/activation-1.1.jar:/home/ekala/.m2/repository/javax/comm/comm/2.0.3/comm-2.0.3.jar:/home/ekala/.m2/repository/org/jdom/jdom/1.1/jdom-1.1.jar:/home/ekala/.m2/repository/log4j/log4j/1.2.15/log4j-1.2.15.jar:/home/ekala/.m2/repository/javax/mail/mail/1.4.1/mail-1.4.1.jar:/home/ekala/.m2/repository/javax/jms/jms/1.1/jms-1.1.jar:/home/ekala/.m2/repository/com/sun/jdmk/jmxtools/1.2.1/jmxtools-1.2.1.jar:/home/ekala/.m2/repository/com/sun/jmx/jmxri/1.2.1/jmxri-1.2.1.jar:/home/ekala/.m2/repository/org/hibernate/hibernate-annotations/3.4.0.GA/hibernate-annotations-3.4.0.GA.jar:/home/ekala/.m2/repository/org/hibernate/ejb3-persistence/1.0.2.GA/ejb3-persistence-1.0.2.GA.jar:/home/ekala/.m2/repository/org/hibernate/hibernate-commons-annotations/3.1.0.GA/hibernate-commons-annotations-3.1.0.GA.jar:/home/ekala/.m2/repository/org/slf4j/slf4j-api/1.4.2/slf4j-api-1.4.2.jar:/home/ekala/.m2/repository/org/hibernate/hibernate-core/3.3.1.GA/hibernate-core-3.3.1.GA.jar:/home/ekala/.m2/repository/antlr/antlr/2.7.6/antlr-2.7.6.jar:/home/ekala/.m2/repository/commons-collections/commons-collections/3.1/commons-collections-3.1.jar:/home/ekala/.m2/repository/dom4j/dom4j/1.6.1/dom4j-1.6.1.jar:/home/ekala/.m2/repository/xml-apis/xml-apis/1.0.b2/xml-apis-1.0.b2.jar:/home/ekala/.m2/repository/javax/transaction/jta/1.1/jta-1.1.jar:/home/ekala/.m2/repository/javassist/javassist/3.8.0.GA/javassist-3.8.0.GA.jar:/home/ekala/.m2/repository/org/springframework/spring-orm/2.5.6/spring-orm-2.5.6.jar:/home/ekala/.m2/repository/aopalliance/aopalliance/1.0/aopalliance-1.0.jar:/home/ekala/.m2/repository/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar:/home/ekala/.m2/repository/org/springframework/spring-beans/2.5.6/spring-beans-2.5.6.jar:/home/ekala/.m2/repository/org/springframework/spring-core/2.5.6/spring-core-2.5.6.jar:/home/ekala/.m2/repository/org/springframework/spring-context/2.5.6/spring-context-2.5.6.jar:/home/ekala/.m2/repository/org/springframework/spring-tx/2.5.6/spring-tx-2.5.6.jar:/home/ekala/.m2/repository/org/springframework/spring-jdbc/2.5.6/spring-jdbc-2.5.6.jar:/home/ekala/.m2/repository/org/springframework/spring-aop/2.5.6/spring-aop-2.5.6.jar:/home/ekala/.m2/repository/org/springframework/spring-test/2.5.6/spring-test-2.5.6.jar:/home/ekala/.m2/repository/junit/junit/3.8.1/junit-3.8.1.jar:/home/ekala/.m2/repository/org/slf4j/slf4j-log4j12/1.5.2/slf4j-log4j12-1.5.2.jar:/home/ekala/.m2/repository/hsqldb/hsqldb/1.8.0.7/hsqldb-1.8.0.7.jar:/home/ekala/.m2/repository/commons-httpclient/commons-httpclient/3.1/commons-httpclient-3.1.jar:/home/ekala/.m2/repository/commons-codec/commons-codec/1.2/commons-codec-1.2.jar:"/>
+    <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="java.class.version" value="50.0"/>
+    <property name="sun.management.compiler" value="HotSpot Tiered Compilers"/>
+    <property name="os.version" value="2.6.28-15-generic"/>
+    <property name="user.home" value="/home/ekala"/>
+    <property name="user.timezone" value="Africa/Nairobi"/>
+    <property name="java.awt.printerjob" value="sun.print.PSPrinterJob"/>
+    <property name="file.encoding" value="UTF-8"/>
+    <property name="java.specification.version" value="1.6"/>
+    <property name="user.name" value="ekala"/>
+    <property name="java.class.path" value="/media/KALA/Personal/dev/FrontlineSMS/target/test-classes:/media/KALA/Personal/dev/FrontlineSMS/target/classes:/home/ekala/.m2/repository/javax/activation/activation/1.1/activation-1.1.jar:/home/ekala/.m2/repository/javax/comm/comm/2.0.3/comm-2.0.3.jar:/home/ekala/.m2/repository/org/jdom/jdom/1.1/jdom-1.1.jar:/home/ekala/.m2/repository/log4j/log4j/1.2.15/log4j-1.2.15.jar:/home/ekala/.m2/repository/javax/mail/mail/1.4.1/mail-1.4.1.jar:/home/ekala/.m2/repository/javax/jms/jms/1.1/jms-1.1.jar:/home/ekala/.m2/repository/com/sun/jdmk/jmxtools/1.2.1/jmxtools-1.2.1.jar:/home/ekala/.m2/repository/com/sun/jmx/jmxri/1.2.1/jmxri-1.2.1.jar:/home/ekala/.m2/repository/org/hibernate/hibernate-annotations/3.4.0.GA/hibernate-annotations-3.4.0.GA.jar:/home/ekala/.m2/repository/org/hibernate/ejb3-persistence/1.0.2.GA/ejb3-persistence-1.0.2.GA.jar:/home/ekala/.m2/repository/org/hibernate/hibernate-commons-annotations/3.1.0.GA/hibernate-commons-annotations-3.1.0.GA.jar:/home/ekala/.m2/repository/org/slf4j/slf4j-api/1.4.2/slf4j-api-1.4.2.jar:/home/ekala/.m2/repository/org/hibernate/hibernate-core/3.3.1.GA/hibernate-core-3.3.1.GA.jar:/home/ekala/.m2/repository/antlr/antlr/2.7.6/antlr-2.7.6.jar:/home/ekala/.m2/repository/commons-collections/commons-collections/3.1/commons-collections-3.1.jar:/home/ekala/.m2/repository/dom4j/dom4j/1.6.1/dom4j-1.6.1.jar:/home/ekala/.m2/repository/xml-apis/xml-apis/1.0.b2/xml-apis-1.0.b2.jar:/home/ekala/.m2/repository/javax/transaction/jta/1.1/jta-1.1.jar:/home/ekala/.m2/repository/javassist/javassist/3.8.0.GA/javassist-3.8.0.GA.jar:/home/ekala/.m2/repository/org/springframework/spring-orm/2.5.6/spring-orm-2.5.6.jar:/home/ekala/.m2/repository/aopalliance/aopalliance/1.0/aopalliance-1.0.jar:/home/ekala/.m2/repository/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar:/home/ekala/.m2/repository/org/springframework/spring-beans/2.5.6/spring-beans-2.5.6.jar:/home/ekala/.m2/repository/org/springframework/spring-core/2.5.6/spring-core-2.5.6.jar:/home/ekala/.m2/repository/org/springframework/spring-context/2.5.6/spring-context-2.5.6.jar:/home/ekala/.m2/repository/org/springframework/spring-tx/2.5.6/spring-tx-2.5.6.jar:/home/ekala/.m2/repository/org/springframework/spring-jdbc/2.5.6/spring-jdbc-2.5.6.jar:/home/ekala/.m2/repository/org/springframework/spring-aop/2.5.6/spring-aop-2.5.6.jar:/home/ekala/.m2/repository/org/springframework/spring-test/2.5.6/spring-test-2.5.6.jar:/home/ekala/.m2/repository/junit/junit/3.8.1/junit-3.8.1.jar:/home/ekala/.m2/repository/org/slf4j/slf4j-log4j12/1.5.2/slf4j-log4j12-1.5.2.jar:/home/ekala/.m2/repository/hsqldb/hsqldb/1.8.0.7/hsqldb-1.8.0.7.jar:/home/ekala/.m2/repository/commons-httpclient/commons-httpclient/3.1/commons-httpclient-3.1.jar:/home/ekala/.m2/repository/commons-codec/commons-codec/1.2/commons-codec-1.2.jar:"/>
+    <property name="java.vm.specification.version" value="1.0"/>
+    <property name="sun.arch.data.model" value="32"/>
+    <property name="java.home" value="/usr/lib/jvm/java-6-sun-1.6.0.16/jre"/>
+    <property name="java.specification.vendor" value="Sun Microsystems Inc."/>
+    <property name="user.language" value="en"/>
+    <property name="java.vm.info" value="mixed mode"/>
+    <property name="java.version" value="1.6.0_16"/>
+    <property name="java.ext.dirs" value="/usr/lib/jvm/java-6-sun-1.6.0.16/jre/lib/ext:/usr/java/packages/lib/ext"/>
+    <property name="sun.boot.class.path" value="/usr/lib/jvm/java-6-sun-1.6.0.16/jre/lib/resources.jar:/usr/lib/jvm/java-6-sun-1.6.0.16/jre/lib/rt.jar:/usr/lib/jvm/java-6-sun-1.6.0.16/jre/lib/sunrsasign.jar:/usr/lib/jvm/java-6-sun-1.6.0.16/jre/lib/jsse.jar:/usr/lib/jvm/java-6-sun-1.6.0.16/jre/lib/jce.jar:/usr/lib/jvm/java-6-sun-1.6.0.16/jre/lib/charsets.jar:/usr/lib/jvm/java-6-sun-1.6.0.16/jre/classes"/>
+    <property name="java.vendor" value="Sun Microsystems Inc."/>
+    <property name="localRepository" value="/home/ekala/.m2/repository"/>
+    <property name="file.separator" value="/"/>
+    <property name="java.vendor.url.bug" value="http://java.sun.com/cgi-bin/bugreport.cgi"/>
+    <property name="sun.cpu.endian" value="little"/>
+    <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
+    <property name="sun.desktop" value="gnome"/>
+    <property name="sun.cpu.isalist" value=""/>
+  </properties>
+  <testcase time="2.424" classname="net.frontlinesms.data.repository.hibernate.HibernateSmsModemSettingsDaoTest" name="test"/>
+</testsuite>

@@ -1,0 +1,26 @@
+what,kind,bundleId,bundleVersion,description,time
+started,bundle,org.eclipse.wst.web,1.1.300.v200901261500,"org.eclipse.wst.web",1252943487940
+started,bundle,org.eclipse.wst.ws.service.policy.ui,1.0.102.v200903070248,"org.eclipse.wst.ws.service.policy.ui",1252943487941
+started,bundle,org.eclipse.wst.xml.core,1.1.400.v200904300540,"org.eclipse.wst.xml.core",1252943487942
+started,bundle,org.eclipse.mylyn.bugzilla.core,3.2.1.v20090722-0200-e3x,"org.eclipse.mylyn.bugzilla.core",1252943487944
+started,bundle,org.eclipse.mylyn.bugzilla.ui,3.2.1.v20090722-0200-e3x,"org.eclipse.mylyn.bugzilla.ui",1252943487944
+started,bundle,org.eclipse.mylyn.commons.ui,3.2.1.v20090722-0200-e3x,"org.eclipse.mylyn.commons.ui",1252943487945
+started,bundle,org.eclipse.mylyn.context.core,3.2.1.v20090722-0200-e3x,"org.eclipse.mylyn.context.core",1252943487945
+started,bundle,org.eclipse.mylyn.context.ui,3.2.1.v20090722-0200-e3x,"org.eclipse.mylyn.context.ui",1252943487946
+started,bundle,org.eclipse.mylyn.monitor.ui,3.2.1.v20090722-0200-e3x,"org.eclipse.mylyn.monitor.ui",1252943487946
+started,bundle,org.eclipse.mylyn.tasks.ui,3.2.1.v20090722-0200-e3x,"org.eclipse.mylyn.tasks.ui",1252943487947
+started,bundle,org.eclipse.mylyn.team.ui,3.2.1.v20090722-0200-e3x,"org.eclipse.mylyn.team.ui",1252943487951
+started,bundle,org.maven.ide.components.maven_model_edit,1.0.0.200905041413,"org.maven.ide.components.maven_model_edit",1252943487952
+started,bundle,org.maven.ide.eclipse,0.9.8.200905041413,"org.maven.ide.eclipse",1252943487952
+started,bundle,com.collabnet.subversion.merge,1.10.0,"com.collabnet.subversion.merge",1252943487952
+started,bundle,org.tigris.subversion.clientadapter,1.6.4.1,"org.tigris.subversion.clientadapter",1252943487952
+started,bundle,org.tigris.subversion.subclipse.core,1.6.5,"org.tigris.subversion.subclipse.core",1252943487952
+started,bundle,org.tigris.subversion.subclipse.mylyn,3.0.0,"org.tigris.subversion.subclipse.mylyn",1252943487952
+started,bundle,org.tigris.subversion.subclipse.ui,1.6.5,"org.tigris.subversion.subclipse.ui",1252943487960
+os,sysinfo,,,"linux",1252943487963
+arch,sysinfo,,,"x86",1252943487963
+ws,sysinfo,,,"gtk",1252943487963
+locale,sysinfo,,,"en_US",1252943487963
+processors,sysinfo,,,"2",1252943487964
+java.runtime.name,sysinfo,,,"Java(TM) SE Runtime Environment",1252943487964
+java.runtime.version,sysinfo,,,"1.6.0_16-b01",1252943487964

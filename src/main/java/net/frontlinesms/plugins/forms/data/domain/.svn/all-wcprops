@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/plugins/forms/data/domain
+END
+FormFieldType.java
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/plugins/forms/data/domain/FormFieldType.java
+END
+ResponseValue.java
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/plugins/forms/data/domain/ResponseValue.java
+END
+FormField.java
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/plugins/forms/data/domain/FormField.java
+END
+FormResponse.java
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/plugins/forms/data/domain/FormResponse.java
+END
+Form.java
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/plugins/forms/data/domain/Form.java
+END

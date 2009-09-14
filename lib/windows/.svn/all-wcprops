@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/frontlinesms/!svn/ver/63/trunk/lib/windows
+END
+rxtxSerial.dll
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/frontlinesms/!svn/ver/63/trunk/lib/windows/rxtxSerial.dll
+END
+win32com.dll
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/frontlinesms/!svn/ver/63/trunk/lib/windows/win32com.dll
+END
+sqlitejdbc.dll
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/frontlinesms/!svn/ver/63/trunk/lib/windows/sqlitejdbc.dll
+END

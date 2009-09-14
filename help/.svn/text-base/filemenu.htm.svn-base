@@ -1,0 +1,94 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-gb">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>FrontlineSMS Help :: File Menu</title>
+</head>
+
+<style type="text/css">
+A:link {text-decoration: none}
+A:visited {text-decoration: none}
+A:active {text-decoration: none}
+A:hover {text-decoration: underline; }
+</style>
+
+<body bgcolor="#F4F4F4">
+
+<p>&nbsp;</p>
+<div align="center">
+  <center>
+  <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="950">
+    <tr>
+      <td width="763" style="border-bottom-style: solid; border-bottom-width: 1" bordercolor="#CC0066">
+      <br>
+&nbsp;<p>&nbsp;</p>
+      <p>&nbsp;</td>
+      <td width="187" valign="top" style="border-bottom-style: solid; border-bottom-width: 1" bordercolor="#CC0066">
+      <a href="help-menu.htm">
+      <img border="0" src="img/flsmslogo.png" align="right" hspace="0" width="150" height="87"></a></td>
+    </tr>
+  </table>
+  </center>
+</div>
+<div align="center">
+  <center>
+  <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="950">
+    <tr>
+      <td><b><font face="Arial" size="4"><br>
+      </font><font face="Arial" size="5">The File menu</font></b><p>
+      <i><font face="Arial" size="2" color="#666666">In the </font>
+      <font face="Arial" size="2" color="#111111"><b>Classic </b></font>
+      <font face="Arial" size="2" color="#666666">and </font><b>
+      <font face="Arial" size="2" color="#111111">New V</font></b><font face="Arial" size="2" color="#111111"><b>iew</b></font><font face="Arial" size="2" color="#666666">, 
+      the File menu allows you to import and export your data into and out of 
+      FrontlineSMS</font></i></p>
+      <p>
+      <img border="0" src="img/filemenu.jpg" width="121" height="109"></p>
+      <p><b><font face="Arial" color="#333333">Exporting your FrontlineSMS data 
+      into other programs</font></b></p>
+      <p><font face="Arial" size="2" color="#666666">FrontlineSMS allows you to 
+      export all of your Contact information, incoming and outgoing message 
+      data, and Keyword information to separate <i>comma separated</i> files 
+      (CSV) for importing into other programs such as Open Office or Microsoft 
+      Office. To export your data, select </font><b>
+      <font face="Arial" size="2" color="#008000">Export...</font></b><font face="Arial" size="2" color="#666666"> 
+      from the menu and follow the screen prompts</font></p>
+      <p><b><font face="Arial" color="#333333"><br>
+      Importing data from other applications</font></b></p>
+      <p><font face="Arial" size="2" color="#666666">If you have a large number 
+      of Contacts and mobile numbers in other applications that you want to add to FrontlineSMS, you 
+      can do this through the </font><b>
+      <font face="Arial" size="2" color="#008000">Import contacts...</font></b><font face="Arial" size="2" color="#666666"> 
+      menu option. </font><b><font face="Arial" size="2" color="#008000">Import 
+      contacts...</font></b><font face="Arial" size="2" color="#666666"> will 
+      read any comma separated file (CSV), which needs to be in the following 
+      format:</font></p>
+      <p><i><font face="Arial" size="2" color="#111111">&lt;Contact name&gt;</font><b><font face="Arial" size="2" color="#FF0000">,</font></b><font face="Arial" size="2" color="#111111"> 
+      &lt;Mobile number&gt;</font><b><font face="Arial" size="2" color="#FF0000">,</font></b><font face="Arial" size="2" color="#111111"> 
+      &lt;Email address&gt;</font><b><font face="Arial" size="2" color="#FF0000">,</font></b><font face="Arial" size="2" color="#111111"> 
+      &lt;Notes&gt;</font></i></p>
+      <p><font face="Arial" size="2" color="#666666">
+      Refer to the application user guide if you don't know how to export your 
+      data into a CSV file</font></p>
+      <p><b><font face="Arial" color="#333333"><br>
+      Exit</font></b></p>
+      <p><font face="Arial" size="2" color="#666666">Quits FrontlineSMS. All 
+      processing and checking/receiving of messages will stop until you re-start 
+      the program</font></p>
+      <p>&nbsp;</p>
+      </td>
+    </tr>
+    <tr>
+      <td><font size="1" face="Arial"><a href="help-menu.htm">Return to Help 
+      main menu</a></font><p>&nbsp;</td>
+    </tr>
+  </table>
+  </center>
+</div>
+
+</body>
+
+</html>

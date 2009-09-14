@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<dialog closable="true" icon="/icons/emailAccount_edit.png" bottom="10" close="removeDialog(this)" columns="1" gap="10" left="10" modal="true" name="editEmailAccount" right="10" top="10">
+    <panel bottom="4" columns="3" gap="15" halign="center" left="4" right="4" top="4">
+        <label icon="/icons/emailAccount_server.png" name="lbMailServer" text="i18n.common.email.account.server"/>
+        <textfield perform="saveEmailAccount(editEmailAccount)" columns="25" name="tfMailServer"/>
+        <label text="(e.g. smtp.server.com)"/>
+        <label icon="/icons/port_open.png" name="lbAccount" text="i18n.common.email.account.server.port"/>
+        <textfield perform="saveEmailAccount(editEmailAccount)" name="tfPort"/>
+        <label text="(e.g SMTP:25, SMTPS:465)"/>
+        <label icon="/icons/emailAccount.png" name="lbAccount" text="i18n.common.email.account"/>
+        <textfield perform="saveEmailAccount(editEmailAccount)" name="tfAccount"/>
+        <label text="(e.g. account@server.com)"/>
+        <label icon="/icons/emailAccount_password.png" name="lbAccountPass" text="i18n.common.email.account.password"/>
+        <passwordfield perform="saveEmailAccount(editEmailAccount)" colspan="2" name="tfAccountPass"/>
+        <checkbox icon="/icons/lock.png" name="cbUseSSL" selected="true" text="i18n.common.use.ssl"/>
+    </panel>
+    <separator/>
+    <panel columns="2" gap="7" halign="center">
+        <button action="saveEmailAccount(editEmailAccount)" icon="/icons/tick.png" name="btSave" text="i18n.action.save"/>
+        <button action="removeDialog(editEmailAccount)" icon="/icons/cross.png" name="btCancel" text="i18n.action.cancel"/>
+    </panel>
+</dialog>

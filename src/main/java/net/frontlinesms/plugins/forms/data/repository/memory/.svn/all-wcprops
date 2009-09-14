@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/plugins/forms/data/repository/memory
+END
+InMemoryFormDao.java
+K 25
+svn:wc:ra_dav:version-url
+V 120
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/plugins/forms/data/repository/memory/InMemoryFormDao.java
+END
+InMemoryFormResponseDao.java
+K 25
+svn:wc:ra_dav:version-url
+V 128
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/plugins/forms/data/repository/memory/InMemoryFormResponseDao.java
+END

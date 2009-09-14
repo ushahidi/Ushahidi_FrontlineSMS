@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/frontlinesms/!svn/ver/67/trunk/src/main/java/IntelliSoftware/Common
+END
+StringUtils.java
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/frontlinesms/!svn/ver/67/trunk/src/main/java/IntelliSoftware/Common/StringUtils.java
+END
+TickTime.java
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/frontlinesms/!svn/ver/67/trunk/src/main/java/IntelliSoftware/Common/TickTime.java
+END
+HTTPConnection.java
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/frontlinesms/!svn/ver/67/trunk/src/main/java/IntelliSoftware/Common/HTTPConnection.java
+END
+HexEncoder.java
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/frontlinesms/!svn/ver/67/trunk/src/main/java/IntelliSoftware/Common/HexEncoder.java
+END

@@ -1,0 +1,65 @@
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/data/repository/hibernate
+END
+HibernateEmailAccountDao.java
+K 25
+svn:wc:ra_dav:version-url
+V 118
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/data/repository/hibernate/HibernateEmailAccountDao.java
+END
+HibernateMessageDao.java
+K 25
+svn:wc:ra_dav:version-url
+V 113
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/data/repository/hibernate/HibernateMessageDao.java
+END
+HibernateSmsModemSettingsDao.java
+K 25
+svn:wc:ra_dav:version-url
+V 122
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/data/repository/hibernate/HibernateSmsModemSettingsDao.java
+END
+HibernateKeywordDao.java
+K 25
+svn:wc:ra_dav:version-url
+V 113
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/data/repository/hibernate/HibernateKeywordDao.java
+END
+HibernateEmailDao.java
+K 25
+svn:wc:ra_dav:version-url
+V 111
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/data/repository/hibernate/HibernateEmailDao.java
+END
+HibernateGroupDao.java
+K 25
+svn:wc:ra_dav:version-url
+V 111
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/data/repository/hibernate/HibernateGroupDao.java
+END
+HibernateKeywordActionDao.java
+K 25
+svn:wc:ra_dav:version-url
+V 119
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/data/repository/hibernate/HibernateKeywordActionDao.java
+END
+HibernateContactDao.java
+K 25
+svn:wc:ra_dav:version-url
+V 113
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/data/repository/hibernate/HibernateContactDao.java
+END
+HibernateSmsInternetServiceSettingsDao.java
+K 25
+svn:wc:ra_dav:version-url
+V 132
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/data/repository/hibernate/HibernateSmsInternetServiceSettingsDao.java
+END
+BaseHibernateDao.java
+K 25
+svn:wc:ra_dav:version-url
+V 110
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/data/repository/hibernate/BaseHibernateDao.java
+END

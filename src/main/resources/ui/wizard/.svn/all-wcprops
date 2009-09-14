@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/wizard
+END
+modeSelection.xml
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/wizard/modeSelection.xml
+END
+usedBefore.xml
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/wizard/usedBefore.xml
+END
+importData.xml
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/wizard/importData.xml
+END
+languageSelect.xml
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/wizard/languageSelect.xml
+END
+startForm.xml
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/wizard/startForm.xml
+END

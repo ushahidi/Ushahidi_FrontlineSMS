@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/frontlinesms/!svn/ver/82/trunk/src/main/java/com/ushahidi/plugins/mapping/ui
+END
+MapListener.java
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/frontlinesms/!svn/ver/67/trunk/src/main/java/com/ushahidi/plugins/mapping/ui/MapListener.java
+END
+MappingUIController.java
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/frontlinesms/!svn/ver/175/trunk/src/main/java/com/ushahidi/plugins/mapping/ui/MappingUIController.java
+END
+MapBean.java
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/frontlinesms/!svn/ver/172/trunk/src/main/java/com/ushahidi/plugins/mapping/ui/MapBean.java
+END
+DragBean.java
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/frontlinesms/!svn/ver/67/trunk/src/main/java/com/ushahidi/plugins/mapping/ui/DragBean.java
+END

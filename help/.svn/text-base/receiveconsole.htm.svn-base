@@ -1,0 +1,87 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-gb">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>FrontlineSMS Help :: ReceiveConsole</title>
+</head>
+
+<style type="text/css">
+A:link {text-decoration: none}
+A:visited {text-decoration: none}
+A:active {text-decoration: none}
+A:hover {text-decoration: underline; }
+</style>
+
+<body bgcolor="#F4F4F4">
+
+<p>&nbsp;</p>
+<div align="center">
+  <center>
+  <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="950">
+    <tr>
+      <td width="763" style="border-bottom-style: solid; border-bottom-width: 1" bordercolor="#CC0066">
+      <br>
+&nbsp;<p>&nbsp;</p>
+      <p>&nbsp;</td>
+      <td width="187" valign="top" style="border-bottom-style: solid; border-bottom-width: 1" bordercolor="#CC0066">
+      <a href="help-menu.htm">
+      <img border="0" src="img/flsmslogo.png" align="right" hspace="0" width="150" height="87"></a></td>
+    </tr>
+  </table>
+  </center>
+</div>
+<div align="center">
+  <center>
+  <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="950">
+    <tr>
+      <td><b><font face="Arial" size="4"><br>
+      </font><font face="Arial" size="5" color="#111111">Receive</font><font face="Arial" size="5" color="#666666">Console</font></b><p>
+      <i><font face="Arial" size="2" color="#666666">In the </font>
+      <font face="Arial" size="2" color="#111111"><b>Classic View</b></font><font face="Arial" size="2" color="#666666">, 
+      ReceiveConsole allows you to view all of FrontlineSMS's incoming 
+      text messages </font></i></p>
+      <p>
+      <img border="0" src="img/receiveconsole.jpg" vspace="10" width="950" height="548"></p>
+      <p><b><font face="Arial" color="#333333">How do I view messages as they 
+      come into FrontlineSMS?</font></b></p>
+      <p><font face="Arial" size="2" color="#666666">All incoming messages, from 
+      one or all of your attached phones, are processed in the </font>
+      <font face="Arial" size="2" color="#111111"><b>ReceiveConsole</b></font><font face="Arial" size="2" color="#666666"> 
+      module. All messages, regardless of sender, and regardless of their status 
+      (i.e. if they are part of a <a href="surveymanager.htm">
+      <font color="#990000">Survey</font></a>, or an
+      <a href="replymanager.htm"><font color="#990000">Autoreply</font></a>) appear 
+      on this screen </font><font face="Arial" size="2" color="#FF9900">[<b>1</b>]</font><font face="Arial" size="2" color="#666666">. 
+      The </font><b><font face="Arial" size="2" color="#111111">ReceiveConsole</font></b><font face="Arial" size="2" color="#666666"> 
+      is, if you like, a 'window' onto <u>all</u> your incoming messages</font></p>
+      <p><font face="Arial" size="2" color="#666666">Although the screen will 
+      regularly update during normal use, sometimes it may be necessary to do a 
+      manual refresh. This is done using the </font><b>
+      <font face="Arial" size="2" color="#008000">Refresh</font></b><font face="Arial" size="2" color="#666666"> 
+      button </font><font face="Arial" size="2" color="#FF9900">[<b>2</b>]</font></p>
+      <p><font face="Arial" size="2" color="#666666">The screen also tells you 
+      how many phones are being monitored for incoming messages along the </font>
+      <b><font face="Arial" size="2" color="#111111">Phones Used for Receiving</font></b><font face="Arial" size="2" color="#666666"> 
+      line </font><font face="Arial" size="2" color="#FF9900">[<b>3</b>]</font><font face="Arial" size="2" color="#666666">. 
+      You can tell FrontlineSMS whether or not you want specific phones to be 
+      monitored by changing its settings in the <a href="phonemanager.htm">
+      <font color="#990000">PhoneManager</font></a> 
+      module<br>
+      <br>
+&nbsp;</font></p>
+      </td>
+    </tr>
+    <tr>
+      <td><font size="1" face="Arial"><a href="help-menu.htm">Return to Help 
+      main menu</a></font><p>&nbsp;</td>
+    </tr>
+  </table>
+  </center>
+</div>
+
+</body>
+
+</html>

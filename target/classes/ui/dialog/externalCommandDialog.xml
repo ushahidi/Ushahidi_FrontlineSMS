@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<dialog closable="true" close="removeDialog(this)" bottom="10" columns="3" gap="10" icon="/icons/cmd.png" left="5" modal="true" name="externalCommandDialog" resizable="true" right="5" text="i18n.common.external.command" top="10">
+    <panel bottom="-5" colspan="3" gap="20" left="1" right="1" weightx="1">
+        <label text="i18n.common.execution.type"/>
+        <checkbox action="setText(tfCommand,'http://')" group="cmdType" icon="/icons/httpRequest.png" name="rbTypeHTTP" selected="true" text="i18n.common.http.request" weightx="1"/>
+        <checkbox action="setText(tfCommand,'')" group="cmdType" icon="/icons/cmd.png" name="rbTypeCL" text="i18n.common.command.line.execution" weightx="1"/>
+    </panel>
+    <panel border="true" bottom="5" colspan="3" columns="2" gap="10" left="5" right="5" text="i18n.common.execution.details" top="5" weightx="1" weighty="1">
+        <label icon="/icons/cmd.png" text="i18n.common.command"/>
+        <textfield columns="60" name="tfCommand" text="http://" weightx="1"/>
+        <label text="i18n.sentence.you.can.include"/>
+        <panel gap="10">
+            <button action="addConstantToCommand(tfCommand.text, tfCommand, 0)" icon="/icons/user_sender.png" name="btSenderName" text="i18n.common.sender.name" weightx="1"/>
+            <button action="addConstantToCommand(tfCommand.text, tfCommand, 1)" icon="/icons/phone_number.png" name="btSenderNumber" text="i18n.common.message.sender.number" weightx="1"/>
+            <button action="addConstantToCommand(tfCommand.text, tfCommand, 3)" icon="/icons/keyword.png" name="btKeyword" text="i18n.common.keyword" weightx="1"/>
+            <button action="addConstantToCommand(tfCommand.text, tfCommand, 2)" icon="/icons/message.png" name="btMsgContent" text="i18n.common.message.content" weightx="1"/>
+            <button action="addConstantToCommand(tfCommand.text, tfCommand, 5)" icon="/icons/sms_key.png" name="btSMSId" text="i18n.common.sms.id" weightx="1"/>
+        </panel>
+        <separator colspan="2"/>
+        <label text="i18n.common.response.type"/>
+        <panel gap="10">
+            <checkbox action="activate(pnResponse)" group="responseType" icon="/icons/externalCommand_plaintText.png" name="rbPlainText" selected="true" text="i18n.common.plain.text" weightx="1"/>
+            <checkbox action="deactivate(pnResponse)" group="responseType" icon="/icons/externalCommand_listCommands.png" name="rbFrontlineCommands" text="i18n.common.frontline.commands" weightx="1"/>
+            <checkbox action="deactivate(pnResponse)" group="responseType" icon="/icons/externalCommand_noResponse.png" name="rbNoResponse" text="i18n.common.do.not.wait.response" weightx="1"/>
+        </panel>
+        <panel border="true" bottom="5" colspan="2" columns="1" gap="10" left="5" name="pnResponse" right="5" text="i18n.common.what.to.do.response" top="5" weighty="1">
+            <label icon="/icons/message.png" text="i18n.common.message"/>
+            <panel gap="7" name="pnReply" weighty="1">
+                <textarea colspan="2" name="tfMessage" weightx="1" weighty="1"/>
+                <button action="addConstantToCommand(tfMessage.text,tfMessage, 4)" icon="/icons/externalCommand_response.png" name="btIncludeResponse" text="i18n.action.include.response" valign="center"/>
+            </panel>
+            <checkbox icon="/icons/sms_autoReply.png" name="cbAutoReply" selected="true" text="i18n.common.send.auto.reply" weightx="1"/>
+            <checkbox action="controlExternalCommandResponseType(groupList, this.selected)" icon="/icons/sms_autoForward.png" name="cbForward" text="i18n.common.forward.to.group" weightx="1"/>
+            <list enabled="false" name="groupList" weightx="1"/>
+        </panel>
+    </panel>
+    <separator colspan="3"/>
+    <panel colspan="3" gap="20" halign="center" left="5" right="5">
+        <button icon="/icons/tick.png" text="i18n.action.done" action="do_newKActionExternalCommand(externalCommandDialog)"/>
+        <button action="removeDialog(externalCommandDialog)" icon="/icons/cross.png" text="i18n.action.cancel"/>
+    </panel>
+</dialog>

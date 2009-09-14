@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<dialog closable="true" close="removeDialog(this)" name="historyDialog" height="450" icon="/icons/history.png" modal="true" resizable="true" width="600">
+    <panel bottom="9" columns="3" gap="9" left="9" right="9" top="9" weightx="1" weighty="1" name="pnClassicHistory">
+        <checkbox icon="/icons/sms_receive.png" name="historyReceivedMessagesToggle" selected="true" text="i18n.common.received" action="classicMode_sortMessageHistory(this)"/>
+        <checkbox icon="/icons/sms_send.png" name="historySentMessagesToggle" selected="true" text="i18n.common.sent" action="classicMode_sortMessageHistory(this)"/>
+        <label name="pageControlsPanel"/>
+        <table colspan="3" name="history_messageList" selection="multiple" weightx="2" weighty="2">
+            <header resizable="true" action="classicMode_sortMessageHistory(this)">
+                <column width="18"/>
+                <column icon="/icons/status.png" text="i18n.common.status"/>
+                <column icon="/icons/time.png" text="i18n.common.date" width="120"/>
+                <column icon="/icons/user_sender.png" sort="ascent" text="i18n.common.sender" width="120"/>
+                <column icon="/icons/user_receiver.png" text="i18n.common.recipient" width="120"/>
+                <column icon="/icons/message.png" text="i18n.common.message"/>
+            </header>
+        </table>
+        <panel colspan="3">
+        	<button action="removeDialog(historyDialog)" halign="center" icon="/icons/tick.png" text="i18n.action.ok"/>
+        </panel>
+    </panel>
+</dialog>

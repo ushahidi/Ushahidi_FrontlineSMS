@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/frontlinesms/!svn/ver/67/trunk/src/test/java/net/frontlinesms/smsdevice
+END
+TestIntelliSMSJavaSending.java
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/frontlinesms/!svn/ver/67/trunk/src/test/java/net/frontlinesms/smsdevice/TestIntelliSMSJavaSending.java
+END
+TestIntelliSMSReceivingPOP3.java
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/frontlinesms/!svn/ver/67/trunk/src/test/java/net/frontlinesms/smsdevice/TestIntelliSMSReceivingPOP3.java
+END
+TestIntelliSMSHttpSending.java
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/frontlinesms/!svn/ver/67/trunk/src/test/java/net/frontlinesms/smsdevice/TestIntelliSMSHttpSending.java
+END
+AbstractInternetServiceTestCase.java
+K 25
+svn:wc:ra_dav:version-url
+V 109
+/frontlinesms/!svn/ver/67/trunk/src/test/java/net/frontlinesms/smsdevice/AbstractInternetServiceTestCase.java
+END
+AbstractSmsInternetServicePropertiesTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 118
+/frontlinesms/!svn/ver/67/trunk/src/test/java/net/frontlinesms/smsdevice/AbstractSmsInternetServicePropertiesTest.java
+END

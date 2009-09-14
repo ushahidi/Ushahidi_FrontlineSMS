@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<dialog closable="true" close="removeDialog(this)" bottom="4" columns="1" gap="8" icon="/icons/keyword.png" left="4" modal="true" name="newKeywordForm" resizable="true" right="4" text="i18n.common.new.keyword" top="4">
+    <label name="newKeywordForm_title"/>
+    <textfield perform="do_createKeyword(newKeywordForm, this.text, newKeywordForm_description.text)" columns="30" name="newKeywordForm_keyword" weightx="1"/>
+    <label text="i18n.common.description"/>
+    <textarea name="newKeywordForm_description" weighty="1" weightx="1"/>
+    <panel gap="5" halign="center">
+	    <button name="btDone" action="do_createKeyword(newKeywordForm, newKeywordForm_keyword.text, newKeywordForm_description.text)" icon="/icons/tick.png" text="i18n.action.save"/>
+	    <button action="removeDialog(newKeywordForm)" icon="/icons/cross.png" text="i18n.action.cancel"/>
+    </panel>
+</dialog>

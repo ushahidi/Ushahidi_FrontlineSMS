@@ -1,0 +1,95 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-gb">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>FrontlineSMS Help :: Using Views</title>
+</head>
+
+<style type="text/css">
+A:link {text-decoration: none}
+A:visited {text-decoration: none}
+A:active {text-decoration: none}
+A:hover {text-decoration: underline; }
+</style>
+
+<body bgcolor="#F4F4F4">
+
+<p>&nbsp;</p>
+<div align="center">
+  <center>
+  <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="950">
+    <tr>
+      <td width="763" style="border-bottom-style: solid; border-bottom-width: 1" bordercolor="#CC0066">
+      <br>
+&nbsp;<p>&nbsp;</p>
+      <p>&nbsp;</td>
+      <td width="187" valign="top" style="border-bottom-style: solid; border-bottom-width: 1" bordercolor="#CC0066">
+      <a href="help-menu.htm">
+      <img border="0" src="img/flsmslogo.png" align="right" hspace="0" width="150" height="87"></a></td>
+    </tr>
+  </table>
+  </center>
+</div>
+<div align="center">
+  <center>
+  <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="950">
+    <tr>
+      <td><b><font face="Arial" size="4"><br>
+      </font><font face="Arial" size="5">Using Views</font></b><p><i>
+      <font face="Arial" size="2" color="#666666">FrontlineSMS comes with two Views - one to 
+      help get you up and running quickly, and the other to introduce some of the 
+      more advanced functionality</font></i></p>
+      <p>
+      <img border="0" src="img/using-views.png" vspace="10" width="950" height="325"></p>
+      <p><b><font face="Arial" color="#333333">Why two Views?</font></b></p>
+      <p><font size="2"><font face="Arial" color="#666666">FrontlineSMS was 
+      originally released in late 2005, and at the time only supported a limited 
+      number of handsets, only ran in Windows, and had powerful but limited 
+      functionality. Many NGOs found the user interface on this original version 
+      easy to use and understand, and found themselves very quickly able to 
+      start running their mobile campaigns with the minimum of fuss, and with 
+      the need for little additional learning. When we were designing the new 
+      FrontlineSMS, we naturally wanted to keep the best elements of the 
+      original version, and didn't want to change what people were already used 
+      to. As a result, FrontlineSMS has two screen designs, accessible via the</font><font face="Arial" color="#333333"> </font>
+      <b><font face="Arial" color="#008000">View</font></b><font face="Arial" color="#333333"> </font>
+      <font face="Arial" color="#666666">menu along the top of the screen</font></font></p>
+      <p><b><font face="Arial" color="#333333"><br>
+      What is Classic View?</font></b></p>
+      <p><font size="2"><font face="Arial" color="#666666">The &quot;</font><font face="Arial" color="#111111"><b>Classic View</b>&quot;</font><font face="Arial" color="#666666">, 
+      pictured on the left, reflects the screen layout and functionality of the 
+      earlier version. If you're new to FrontlineSMS, and want to get up and 
+      running in the shortest possible time, the &quot;</font><font face="Arial" color="#111111"><b>Classic View</b></font><font face="Arial" color="#666666">&quot; 
+      is the best place to start. Generally speaking the FrontlineSMS Help 
+      screens cover the &quot;</font><font face="Arial" color="#111111"><b>Classic 
+      View</b></font><font face="Arial" color="#666666">&quot; menus in more detail 
+      than the &quot;</font><font face="Arial" color="#111111"><b>New View</b></font><font face="Arial" color="#666666">&quot;</font></font></p>
+      <p><b><font face="Arial" color="#333333"><br>
+      What is New View?</font></b></p>
+      <p><font face="Arial" size="2" color="#333333">I</font><font face="Arial" size="2" color="#666666">n 
+      order to add new functions and features to FrontlineSMS, while at the same 
+      time maintaining the original screen layouts that everyone liked, we 
+      decided to create a second &quot;</font><font face="Arial" size="2" color="#111111"><b>New View</b></font><font face="Arial" size="2" color="#666666">&quot; 
+      (pictured on the right). Once you've got to grips with how FrontlineSMS 
+      works you're probably ready to try out some of these new advanced 
+      features. To do this, simply switch views in the</font><font face="Arial" size="2" color="#333333"> </font><b>
+      <font face="Arial" size="2" color="#008000">View</font></b><font face="Arial" size="2" color="#333333">
+      </font><font face="Arial" size="2" color="#666666">menu along the top of the screen. You can switch back at any time<br>
+      </font><font face="Arial" color="#333333"><b><br>
+      &nbsp;</b></font></p>
+      </td>
+    </tr>
+    <tr>
+      <td><font size="1" face="Arial"><a href="help-menu.htm">Return to Help 
+      main menu</a></font><p>&nbsp;</td>
+    </tr>
+  </table>
+  </center>
+</div>
+
+</body>
+
+</html>

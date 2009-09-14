@@ -1,0 +1,59 @@
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/data/repository
+END
+SmsModemSettingsDao.java
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/data/repository/SmsModemSettingsDao.java
+END
+MessageDao.java
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/data/repository/MessageDao.java
+END
+KeywordDao.java
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/data/repository/KeywordDao.java
+END
+EmailDao.java
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/data/repository/EmailDao.java
+END
+SmsInternetServiceSettingsDao.java
+K 25
+svn:wc:ra_dav:version-url
+V 113
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/data/repository/SmsInternetServiceSettingsDao.java
+END
+GroupDao.java
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/data/repository/GroupDao.java
+END
+KeywordActionDao.java
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/data/repository/KeywordActionDao.java
+END
+ContactDao.java
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/data/repository/ContactDao.java
+END
+EmailAccountDao.java
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/data/repository/EmailAccountDao.java
+END

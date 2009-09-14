@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<panel name="pnDatabaseConfig" columns="2" left="10" gap="15" bottom="10" right="10" top="10" weightx="1" weighty="1">
+	<label icon="/icons/database/config/database_connect.png" text="i18n.common.database.type"/>
+	
+    <combobox name="cbDatabaseType" action="databaseTypeChanged" editable="false" selected="0">
+        <choice text="SQLite"/>
+        <choice text="MySQL"/>
+        <choice text="Derby"/>
+    </combobox>
+    
+    <separator colspan="2"/>
+    <label icon="/icons/database/config/database.png" name="lbDatabaseName" text="i18n.common.database.name"/>
+    <textfield columns="50" name="tfDatabaseName"/>
+    <label icon="/icons/database/config/database_server.png" name="lbDatabaseServer" text="i18n.common.database.server"/>
+    <textfield name="tfDatabaseServer"/>
+    <label icon="/icons/database/config/port_open.png" name="lbDatabasePort" text="i18n.common.database.port"/>
+    <textfield name="tfDatabasePort"/>
+    <label icon="/icons/database/config/user.png" name="lbDatabaseUser" text="i18n.common.database.user"/>
+    <textfield name="tfDatabaseUser"/>
+    <label icon="/icons/database/config/database_key.png" name="lbDatabasePass" text="i18n.common.database.pass"/>
+    <passwordfield name="tfDatabasePass"/>
+    <checkbox colspan="2" font="9" name="cbClearDatabase" text="i18n.common.clear.database"/>
+    <panel colspan="2" gap="5" halign="center">
+        <button icon="/icons/tick.png" name="btSave" text="i18n.action.save" action="saveDatabaseDetails" />
+        <button action="testDatabaseConnection" icon="/icons/database/config/testConnection.png" name="btTest" text="i18n.common.test.connection"/>
+    </panel>
+</panel>

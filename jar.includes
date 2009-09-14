@@ -1,0 +1,7 @@
+mail.jar
+activation.jar
+jdom.jar
+log4j-1.2.15.jar
+derby.jar
+mysql-connector-java-5.1.7-bin.jar
+sqlitejdbc-v054-native.jar

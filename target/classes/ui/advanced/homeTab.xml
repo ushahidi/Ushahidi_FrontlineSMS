@@ -1,0 +1,35 @@
+<tab text="i18n.tab.home" icon="/icons/big_home.png" name=":home">
+	<panel bottom="9" gap="9" left="9" right="9" top="9" weightx="1" weighty="1">
+	    <panel columns="1" gap="5">
+	        <label icon="/icons/frontlineSMS_logo.png"/>
+	        <panel gap="7">
+	            <label font="bold" icon="/icons/language.png" text="i18n.common.switch.language"/>
+	            <panel gap="10" top="3" name="fastLanguageSwitch">
+	            	<!-- This should be populated at runtime -->
+	            </panel>
+	        </panel>
+	        <separator/>
+	        <panel columns="1" gap="6" name="pnSend">
+	            <label weightx="1" font="20 bold" icon="/icons/big_sms_send.png" text="i18n.action.send.sms"/>
+	            <panel gap="10">
+	                <label icon="/icons/sms_receive.png" text="i18n.common.to"/>
+	                <textfield columns="20" name="tfRecipient"/>
+	                <button action="selectMessageRecipientHome" icon="/icons/user_receiver.png"/>
+	            </panel>
+	        </panel>
+	    </panel>
+	    <separator weighty="1"/>
+	    <panel columns="2" gap="9" weightx="1" weighty="1">
+	        <label font="20 bold" text="i18n.common.latest.events" weightx="1"/>
+	        <button tooltip="i18n.tooltip.click.for.help" valign="bottom" action="showHelpPage('home.htm')" icon="/icons/big_help.png" type="link"/>
+	        <table colspan="2" name="eventsList" weightx="1" weighty="1">
+	            <header>
+	                <column width="19"/>
+	                <column icon="/icons/description.png" text="i18n.common.description" width="350"/>
+	                <column icon="/icons/time.png" text="i18n.common.time" width="110"/>
+	            </header>
+	        </table>
+	        <button colspan="2" action="removeAll(eventsList)" halign="right" icon="/icons/clear.png" name="btClear" text="i18n.action.clear"/>
+	    </panel>
+	</panel>
+</tab>

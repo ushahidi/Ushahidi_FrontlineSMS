@@ -1,0 +1,46 @@
+<tab icon="/icons/classic_replyManager.png" name=":replyManager">
+	<panel columns="2" top="9" bottom="9" left="9" right="9" gap="9">
+		<label valign="top" icon="/icons/header/replyManager.png"/>
+		<panel border="true" text="i18n.common.reply.manager.entries" columns="1" top="9" bottom="9" left="9" right="9" gap="9" weightx="1" weighty="1">
+			<table delete="showConfirmationDialog('replyManager_delete')" selection="multiple" weightx="1" weighty="1" name="replyManager_keywordList" action="onClick(this)">
+				<header>
+					<column icon="/icons/status.png" text="i18n.common.status"/>
+					<column icon="/icons/keyword.png" text="i18n.common.keyword" width="200"/>
+					<column icon="/icons/message.png" text="i18n.common.reply.text" width="400"/>
+					<column icon="/icons/date_start.png" text="i18n.common.start"/>
+					<column icon="/icons/date_end.png" text="i18n.common.end"/>
+					<column icon="/icons/sms_receive.png" text="i18n.common.responses"/>
+				</header>
+			</table>
+			<panel gap="5">
+				<button name="replyManager_createButton" text="i18n.action.create.reply" action="onClick(this)" icon="/icons/big_sms_autoReply_add.png" weightx="1" weighty="1"/>
+				<button name="replyManager_editButton" text="i18n.action.edit" action="onClick(this)" icon="/icons/big_sms_autoReply_edit.png" weightx="1" weighty="1"/>
+				<button name="replyManager_deleteButton" text="i18n.action.delete" icon="/icons/big_sms_autoReply_delete.png" action="showConfirmationDialog('replyManager_delete')" weightx="1" weighty="1"/>
+				<button name="replyManager_exportButton" text="i18n.action.export.response.data" action="show_exportDialogForm(this)" icon="/icons/big_export.png" weightx="1" weighty="1"/>
+			</panel>
+		</panel>
+		<button tooltip="i18n.tooltip.click.for.help" valign="bottom" action="showHelpPage('replymanager.htm')" icon="/icons/big_help.png" type="link"/>
+		<panel name="replyManager_keywordDetails" border="true" text="i18n.common.reply.details" columns="2" top="9" bottom="9" left="9" right="9" gap="9">
+			<label text="i18n.common.keyword"/>
+			<textfield perform="replyManagerDetails_update(replyManager_keywordDetails)" name="replyManager_keyword"/>
+			<label text="i18n.common.reply.text"/>
+			<textfield perform="replyManagerDetails_update(replyManager_keywordDetails)" name="replyManager_replyText" weightx="1" weighty="1"/>
+			<label text="i18n.common.start.date" />
+			<panel>
+				<textfield name="tfStartDate" tooltip="i18n.tooltip.start.date" />
+				<button action="replyManager_showDateSelecter(replyManager_keywordDetails, 's')" icon="/icons/date.png" />
+			</panel>
+			<label text="i18n.common.end.date" />
+			<panel>
+				<textfield focusgained="removeUndefinedString(this)" name="tfEndDate" tooltip="i18n.tooltip.end.date" />
+				<button action="replyManager_showDateSelecter(replyManager_keywordDetails, 'e')" icon="/icons/date.png" />
+			</panel>
+			
+			<separator colspan="2"/>
+			<panel colspan="2" gap="5" halign="center">
+				<button text="i18n.action.save" icon="/icons/tick.png" action="replyManagerDetails_update(replyManager_keywordDetails)"/>
+				<button text="i18n.action.cancel" icon="/icons/cross.png" action="replyManagerDetails_cancel()"/>
+			</panel>
+		</panel>
+	</panel>
+</tab>

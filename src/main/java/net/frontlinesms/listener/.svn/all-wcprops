@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/listener
+END
+EmailListener.java
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/listener/EmailListener.java
+END
+SmsListener.java
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/listener/SmsListener.java
+END
+UIListener.java
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/listener/UIListener.java
+END
+IncomingMessageListener.java
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/listener/IncomingMessageListener.java
+END

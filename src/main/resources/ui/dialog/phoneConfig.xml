@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<dialog closable="true" close="removeDialog(this)" bottom="10" columns="3" gap="15" icon="/icons/phone_manualConfigure.png" left="10" modal="true" name="phoneConfigDialog" right="10" text="i18n.action.manually.connect" top="10">
+    <label icon="/icons/port_open.png" text="i18n.common.port"/>
+    <combobox name="lbPortName" weightx="1"/>
+    <button tooltip="i18n.tooltip.click.for.help" halign="right" action="showHelpPage('troubleshooting.htm')" icon="/icons/help.png" type="link"/>
+    
+    <label icon="/icons/baudrate.png" text="i18n.common.baud.rate"/>
+    <combobox colspan="2" columns="40" name="lbBaudRate">
+    	<choice text="9600"/>
+    	<choice text="19200"/>
+    	<choice text="57600"/>
+    	<choice text="115200"/>
+    	<choice text="230400"/>
+    	<choice text="460800"/>
+    	<choice text="921600"/>
+    </combobox>
+        
+    <label icon="/icons/phone_driver.png" text="i18n.common.handler"/>
+    <combobox colspan="2" name="lbCATHandlers" selected="0" editable="false"/>
+
+    <panel colspan="3" gap="5" halign="center">
+        <button icon="/icons/tick.png" name="btSave" text="i18n.action.phone.connect" action="connectToPhone(phoneConfigDialog)" />
+        <button action="removeDialog(phoneConfigDialog)" icon="/icons/cross.png" name="btCancel" text="i18n.action.cancel"/>
+    </panel>
+</dialog>

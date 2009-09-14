@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/data
+END
+XMLMessage.java
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/data/XMLMessage.java
+END
+Order.java
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/data/Order.java
+END
+DuplicateKeyException.java
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/data/DuplicateKeyException.java
+END
+EntityField.java
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/data/EntityField.java
+END

@@ -1,0 +1,10 @@
+-------------------------------------------------------------------------------
+Test set: net.frontlinesms.data.repository.hibernate.HibernateGroupDaoTest
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 0.806 sec <<< FAILURE!
+test(net.frontlinesms.data.repository.hibernate.HibernateGroupDaoTest)  Time elapsed: 0.802 sec  <<< FAILURE!
+junit.framework.AssertionFailedError: Saving duplicate group should have failed.
+	at junit.framework.Assert.fail(Assert.java:47)
+	at net.frontlinesms.data.repository.ReusableGroupDaoTest.test(ReusableGroupDaoTest.java:50)
+	at net.frontlinesms.data.repository.hibernate.HibernateGroupDaoTest.test(HibernateGroupDaoTest.java:27)
+

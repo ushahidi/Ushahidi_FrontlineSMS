@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<panel bottom="10" columns="1" gap="10" left="10" right="10" top="10">
+    <panel name="pnInfo" columns="1" gap="6" weightx="1">
+        <label icon="/icons/help.png" text="i18n.sentence.want.to.import.data"/>
+        <panel columns="1" gap="5" left="20" weightx="1">
+            <checkbox action="deactivate(pnBrowse)" group="g" selected="true" text="i18n.action.no"/>
+            <checkbox name="cbYes" action="activate(pnBrowse)" group="g" text="i18n.action.yes"/>
+            <panel enabled="false" name="pnBrowse" gap="5" left="20" weightx="1">
+                <label enabled="false" text="i18n.common.directory"/>
+                <textfield name="tfDirectory" enabled="false" columns="25" weightx="1"/>
+                <button action="showSaveModeFileChooser(tfDirectory)" enabled="false" icon="/icons/browse.png" text="i18n.action.browse"/>
+            </panel>
+        </panel>
+    </panel>
+    <panel columns="1" valign="center" weightx="1" weighty="1" gap="5">
+	    <label weightx="1" visible="false" font="bold" name="lbWait" text="i18n.sentence.please.wait" />
+	    <panel gap="3" weightx="1">
+		    <label visible="false" font="bold" name="status" />
+		    <progressbar visible="false" name="progress" minimum="0" maximum="4" value="0" weightx="1"/>
+	    </panel>
+    </panel>
+    <panel name="pnBottom" gap="5" halign="right" weightx="1">
+    	<button action="goBack()" icon="/icons/left.png" text="i18n.action.previous"/>
+        <button action="selectedImportData(cbYes.selected, tfDirectory.text)" icon="/icons/right.png" text="i18n.action.next"/>
+    </panel>
+</panel>

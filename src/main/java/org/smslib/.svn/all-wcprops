@@ -1,0 +1,197 @@
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/frontlinesms/!svn/ver/67/trunk/src/main/java/org/smslib
+END
+NoTextSupportException.java
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/frontlinesms/!svn/ver/67/trunk/src/main/java/org/smslib/NoTextSupportException.java
+END
+NoResponseException.java
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/frontlinesms/!svn/ver/67/trunk/src/main/java/org/smslib/NoResponseException.java
+END
+SMSLibDeviceException.java
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/frontlinesms/!svn/ver/67/trunk/src/main/java/org/smslib/SMSLibDeviceException.java
+END
+ISmsMessageListener.java
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/frontlinesms/!svn/ver/67/trunk/src/main/java/org/smslib/ISmsMessageListener.java
+END
+CMessage.java
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/frontlinesms/!svn/ver/67/trunk/src/main/java/org/smslib/CMessage.java
+END
+TpduUtils.java
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/frontlinesms/!svn/ver/67/trunk/src/main/java/org/smslib/TpduUtils.java
+END
+NoPduSupportException.java
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/frontlinesms/!svn/ver/67/trunk/src/main/java/org/smslib/NoPduSupportException.java
+END
+CSerialDriver.java
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/frontlinesms/!svn/ver/67/trunk/src/main/java/org/smslib/CSerialDriver.java
+END
+CIncomingMessage.java
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/frontlinesms/!svn/ver/67/trunk/src/main/java/org/smslib/CIncomingMessage.java
+END
+ICallListener.java
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/frontlinesms/!svn/ver/67/trunk/src/main/java/org/smslib/ICallListener.java
+END
+NotConnectedException.java
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/frontlinesms/!svn/ver/67/trunk/src/main/java/org/smslib/NotConnectedException.java
+END
+IllegalSmsEncodingException.java
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/frontlinesms/!svn/ver/67/trunk/src/main/java/org/smslib/IllegalSmsEncodingException.java
+END
+COutgoingMessage.java
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/frontlinesms/!svn/ver/67/trunk/src/main/java/org/smslib/COutgoingMessage.java
+END
+AbstractATHandler.java
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/frontlinesms/!svn/ver/67/trunk/src/main/java/org/smslib/AbstractATHandler.java
+END
+GsmAlphabet.java
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/frontlinesms/!svn/ver/67/trunk/src/main/java/org/smslib/GsmAlphabet.java
+END
+CService.java
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/frontlinesms/!svn/ver/67/trunk/src/main/java/org/smslib/CService.java
+END
+AtCmsError.java
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/frontlinesms/!svn/ver/67/trunk/src/main/java/org/smslib/AtCmsError.java
+END
+CUtils.java
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/frontlinesms/!svn/ver/67/trunk/src/main/java/org/smslib/CUtils.java
+END
+GsmNetworkRegistrationException.java
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/frontlinesms/!svn/ver/67/trunk/src/main/java/org/smslib/GsmNetworkRegistrationException.java
+END
+CDeviceInfo.java
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/frontlinesms/!svn/ver/67/trunk/src/main/java/org/smslib/CDeviceInfo.java
+END
+CIncomingCall.java
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/frontlinesms/!svn/ver/67/trunk/src/main/java/org/smslib/CIncomingCall.java
+END
+AlreadyConnectedException.java
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/frontlinesms/!svn/ver/67/trunk/src/main/java/org/smslib/AlreadyConnectedException.java
+END
+CStatusReportMessage.java
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/frontlinesms/!svn/ver/67/trunk/src/main/java/org/smslib/CStatusReportMessage.java
+END
+DebugException.java
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/frontlinesms/!svn/ver/67/trunk/src/main/java/org/smslib/DebugException.java
+END
+UnrecognizedHandlerProtocolException.java
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/frontlinesms/!svn/ver/67/trunk/src/main/java/org/smslib/UnrecognizedHandlerProtocolException.java
+END
+NoPinException.java
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/frontlinesms/!svn/ver/67/trunk/src/main/java/org/smslib/NoPinException.java
+END
+InvalidPin2Exception.java
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/frontlinesms/!svn/ver/67/trunk/src/main/java/org/smslib/InvalidPin2Exception.java
+END
+MessageDecodeException.java
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/frontlinesms/!svn/ver/67/trunk/src/main/java/org/smslib/MessageDecodeException.java
+END
+CNewMsgMonitor.java
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/frontlinesms/!svn/ver/67/trunk/src/main/java/org/smslib/CNewMsgMonitor.java
+END
+InvalidPinException.java
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/frontlinesms/!svn/ver/67/trunk/src/main/java/org/smslib/InvalidPinException.java
+END
+ReceiveNotSupportedException.java
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/frontlinesms/!svn/ver/67/trunk/src/main/java/org/smslib/ReceiveNotSupportedException.java
+END
+NoPin2Exception.java
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/frontlinesms/!svn/ver/67/trunk/src/main/java/org/smslib/NoPin2Exception.java
+END

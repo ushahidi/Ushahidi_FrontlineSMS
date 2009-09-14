@@ -1,0 +1,128 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-gb">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>FrontlineSMS Help :: SurveyAnalyst</title>
+</head>
+
+<style type="text/css">
+A:link {text-decoration: none}
+A:visited {text-decoration: none}
+A:active {text-decoration: none}
+A:hover {text-decoration: underline; }
+</style>
+
+<body bgcolor="#F4F4F4">
+
+<p>&nbsp;</p>
+<div align="center">
+  <center>
+  <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="950">
+    <tr>
+      <td width="763" style="border-bottom-style: solid; border-bottom-width: 1" bordercolor="#CC0066">
+      <br>
+&nbsp;<p>&nbsp;</p>
+      <p>&nbsp;</td>
+      <td width="187" valign="top" style="border-bottom-style: solid; border-bottom-width: 1" bordercolor="#CC0066">
+      <a href="help-menu.htm">
+      <img border="0" src="img/flsmslogo.png" align="right" hspace="0" width="150" height="87"></a></td>
+    </tr>
+  </table>
+  </center>
+</div>
+<div align="center">
+  <center>
+  <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="950">
+    <tr>
+      <td><b><font face="Arial" size="4"><br>
+      </font><font face="Arial" size="5"><font color="#111111">Survey</font></font><font face="Arial" size="5" color="#666666">Analyst</font></b><p>
+      <i><font face="Arial" size="2" color="#666666">In the </font>
+      <font face="Arial" size="2" color="#111111"><b>Classic View</b></font><font face="Arial" size="2" color="#666666">, 
+      SurveyAnalyst is where you view and manage responses from your audiences 
+      to your surveys and competitions</font></i></p>
+      <p>
+      <img border="0" src="img/surveyanalyst.jpg" vspace="10" width="950" height="548"></p>
+      <p><b><font face="Arial" color="#333333">What is a Survey?</font></b></p>
+      <p><font face="Arial" size="2" color="#666666">In popular television 
+      programs, or on radio or in newspaper competitions, audiences are often 
+      asked to text in their opinions on a certain topic, or to vote for a 
+      candidate, or to enter a competition. Often they are requested to send in 
+      their comments or answers following a pre-determined keyword. For example, 
+      on Big Brother, viewers may be asked to text in the word <b>EVICT</b> 
+      followed by the name of the person they want evicted from the house. A 
+      radio station may ask <i>&quot;Text in the word <b>REQUEST</b> followed by the 
+      name of a song you'd like to hear&quot;</i>, or a newspaper <i>&quot;Text in the 
+      word <b>ELECTION</b> followed by your comments on what you thought about 
+      the recent presidential elections&quot;</i>. In each of these examples, <b>
+      EVICT</b>, <b>REQUEST</b> and <b>ELECTION</b> are <u>keywords</u>, and 
+      these tell the organisation running the competition or survey that the 
+      message coming in belongs to that particular survey or competition. Some 
+      newspapers or radio stations may have a number of competitions or surveys 
+      running at once, so having a separate keyword helps separate the responses 
+      and keep things organised</font></p>
+      <p><font face="Arial" size="2" color="#666666">FrontlineSMS allows you to 
+      run surveys, competitions or questionnaires in the same way.
+      <a href="surveymanager.htm"><font color="#990000">SurveyManager</font></a> 
+      is where you create the keywords and </font>
+      <b>
+      <font face="Arial" size="2" color="#111111">SurveyAnalyst</font></b><font face="Arial" size="2" color="#666666"> 
+      is where you view and manage responses from your audiences for each Survey</font></p>
+      <p><b><font face="Arial" color="#333333"><br>
+      Viewing responses to a Survey</font></b></p>
+      <p><font face="Arial" size="2" color="#666666">All Surveys, either Live or 
+      Dormant, are displayed in the </font><b>
+      <font face="Arial" size="2" color="#111111">Surveys</font></b><font face="Arial" size="2" color="#666666"> 
+      window </font><font face="Arial" size="2" color="#FF9900">[<b>1</b>]</font><font face="Arial" size="2" color="#666666">. 
+      To view responses to a Survey, simply click on the Survey keyword. 
+      Messages that have come in for that Survey from people you 'know', i.e. 
+      their Contact information exists in the </font><b>
+      <font face="Arial" size="2" color="#111111">ContactManager</font></b><font face="Arial" size="2" color="#666666"> 
+      module, appear in the top </font><b>
+      <font face="Arial" size="2" color="#111111">Messages from Registered 
+      Mobiles</font></b><font face="Arial" size="2" color="#666666"> window
+      </font><font face="Arial" size="2" color="#FF9900">[<b>2</b>]</font><font face="Arial" size="2" color="#666666">. 
+      Messages which have come in from people 'unknown' to you, i.e. not in the </font>
+      <b><font face="Arial" size="2" color="#111111">ContactManager</font></b><font face="Arial" size="2" color="#666666"> 
+      module, appear in the 
+      bottom </font><font face="Arial" size="2" color="#111111"><b>Messages from 
+      Unregistered Mobiles</b></font><font face="Arial" size="2" color="#666666"> 
+      window </font><font face="Arial" size="2" color="#FF9900">[<b>3</b>]</font></p>
+      <p><b><font face="Arial" color="#333333"><br>
+      Taking Survey data into other programs</font></b></p>
+      <p><font size="2" color="#666666" face="Arial">The </font><b>
+      <font size="2" color="#111111" face="Arial">SurveyAnalyst</font></b><font size="2" color="#666666" face="Arial"> module 
+      allows you to view incoming messages for each of your Surveys, but does 
+      not allow you to create graphs, sort the data into a different order, or 
+      add it to other information you might hold. If you want to manipulate the 
+      Survey information, you can 'export' this data out of FrontlineSMS and 
+      into other packages such as Open Office, Microsoft Office, and so on. To 
+      export the Survey data, click on the keyword for the Survey you wish to 
+      export (in the </font><b><font size="2" face="Arial" color="#111111">
+      Surveys</font></b><font size="2" color="#666666" face="Arial"> window
+      </font><font size="2" face="Arial" color="#FF9900">[<b>1</b>]</font><font face="Arial" size="2" color="#666666">) 
+      and then click on the </font><b>
+      <font face="Arial" size="2" color="#008000">Export results</font></b><font face="Arial" size="2" color="#666666"> 
+      button </font><font face="Arial" size="2" color="#FF9900">[<b>4</b>]</font><font face="Arial" size="2" color="#666666">. 
+      You will then be asked to give the data a filename, and choose a location 
+      for the file using the Browse button. The exported data is saved as a <i>
+      comma separated file (CSV)</i>, a format which is read by many programs 
+      including Microsoft Excel. You can now open, and manipulate, the data in 
+      the exported CSV file without affecting the main FrontlineSMS database<br>
+      </font><b><font face="Arial" color="#333333"><br>
+      &nbsp;</font></b></p>
+      </td>
+    </tr>
+    <tr>
+      <td><font size="1" face="Arial"><a href="help-menu.htm">Return to Help 
+      main menu</a></font><p>&nbsp;</td>
+    </tr>
+  </table>
+  </center>
+</div>
+
+</body>
+
+</html>

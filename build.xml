@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="FrontlineSMS_Spring" basedir=".">
+	<property file="build.properties"/>
+
+	<!-- Wirless Toolkit directory -->
+	<property name="wtk.home" value="C:\WTK2.5.2"/>
+
+	<!-- Location to Antenna JAR file -->
+	<property name="antenna" value="${lib.dir}/antenna-bin-1.0.0.jar"/>
+
+	<!-- Antenna Setup -->
+	<taskdef classpath="${antenna}" name="wtkpreprocess" classname="de.pleumann.antenna.WtkPreprocess"/>
+
+	<target name="jar" description="Builds distributable JAR" depends="compile">
+		<manifest file="${built.dir}/MANIFEST.MF">
+			<attribute name="Main-Class" value="${main.class}"/>
+			<attribute name="Class-Path" value="${lib.dir}/comm.jar"/>
+			<attribute name="Version" value="${version}"/>
+		</manifest>
+		<antcall target="zipResources"/>
+		<jar destfile="${jar.file}" basedir="${built.dir}" manifest="${built.dir}/MANIFEST.MF" compress="${jar.compress}">
+			<zipgroupfileset dir="${lib.dir}" includesfile="jar.includes"/>
+		</jar>
+	</target>
+
+	<target name="jar_rxtx" description="Builds distributable JAR" depends="compile_rxtx">
+		<manifest file="${built.dir}/MANIFEST.MF">
+			<attribute name="Main-Class" value="${main.class}"/>
+			<attribute name="Class-Path" value="${lib.dir}/RXTXcomm.jar"/>
+			<attribute name="Version" value="${version}"/>
+		</manifest>
+		<antcall target="zipResources"/>
+		<jar destfile="${jar.rxtx.file}" basedir="${built.dir}" manifest="${built.dir}/MANIFEST.MF" compress="${jar.compress}">
+			<zipgroupfileset dir="${lib.dir}" includesfile="jar.includes"/>
+		</jar>
+	</target>
+
+	<target name="clean_all" depends="clean, clean_rxtx"/>
+
+	<target name="zipResources">
+		<delete file="${src.res.dir}/resources.zip"/>
+		<zip destfile="${src.res.dir}/resources.zip" basedir="${src.res.dir}/resources" compress="${jar.compress}"/>
+	</target>
+
+	<target name="package_mac" depends="jar_rxtx">
+		<zip destfile="${release.dir}/${version}/mac/${release.file.name}_mac_${version}.zip" basedir="." compress="${jar.compress}">
+			<include name="${jar.rxtx.file}"/>
+			<fileset dir="${lib.dir}">
+				<include name="RXTXcomm.jar" />
+				<include name="masabiFormsMessageHandler.jar"/>
+			</fileset>
+			<fileset dir="${lib.dir}/mac">
+				<include name="librxtxSerial.jnilib" />
+				<include name="libsqlitejdbc.jnilib" />
+			</fileset>
+			<fileset dir="doc/mac"/>
+			<fileset dir=".">
+				<include name="help/*"/>
+			</fileset>
+			<fileset dir=".">
+				<include name="help/img/*"/>
+			</fileset>
+		</zip>
+	</target>
+	
+	<!-- Package the application as a "native" mac application, complete with snazzy scalable icon!
+		N.B. This task need to be run on a mac in it's current state. -->
+	<target name="package_mac_app">
+		<taskdef name="jarbundler" classname="net.sourceforge.jarbundler.JarBundler"/>
+		<jarbundler
+				dir="${release.dir}/${version}/mac/"
+				name="${mac.app.name}"
+				mainclass="${main.class}"
+				icon="${mac.icns}"
+				shortname="${mac.app.shortname}"
+				verbose="${verbose}"
+				version="${version}"
+				jvmversion="1.5+"
+			>
+			<jarfileset dir="${classpath.dir}"/>
+		</jarbundler>
+	</target>
+
+	<target name="package_windows" depends="jar">
+		<zip destfile="${release.dir}/${version}/windows/${release.file.name}_windows_${version}.zip" basedir="." compress="${jar.compress}">
+			<include name="${jar.file}"/>
+			<fileset dir="${lib.dir}">
+				<include name="comm.jar"/>
+				<include name="masabiFormsMessageHandler.jar"/>
+			</fileset>
+			<fileset dir="${lib.dir}/windows">
+				<include name="win32com.dll"/>
+				<include name="sqlitejdbc.dll"/>
+			</fileset>
+			<!-- include help, and place it in the help/ subdirectory -->
+			<fileset dir=".">
+				<include name="help/"/>
+			</fileset>
+		</zip>
+	</target>
+
+	<target name="package_windows_jet" depends="jar, clean_windows_jet">
+		<!-- Copy the files required in the jet package to the desired directory
+			TODO untested -->
+		<copy todir="${jet.package.dir}">
+			<!-- include the FrontlineSMS JAR using javax.comm -->
+			<fileset file="${jar.file}"/>
+			<fileset dir="${lib.dir}">
+				<include name="comm.jar"/>
+				<include name="masabiFormsMessageHandler.jar"/>
+			</fileset>
+			<fileset dir="${lib.dir}/windows">
+				<include name="win32com.dll"/>
+				<include name="sqlitejdbc.dll"/>
+			</fileset>
+			<!-- include help, and place it in the help/ subdirectory -->
+			<fileset dir=".">
+				<include name="help/"/>
+			</fileset>
+		</copy>
+		<!-- TODO do the jet packaging -->
+	</target>
+	
+	<target name="clean_windows_jet" description="delete and recreate the target directory for jet packing">
+		<delete dir="${jet.package.dir}" verbose="${verbose}"/>
+		<mkdir dir="${jet.package.dir}"/>
+	</target>
+
+	<target name="package_windows_rxtx" depends="jar_rxtx">
+		<zip destfile="${release.dir}/${version}/windows/${release.file.name}_windows_rxtx_${version}.zip" basedir="." compress="${jar.compress}">
+			<!-- include the FrontlineSMS JAR using javax.comm -->
+			<include name="${jar.file}"/>
+			<fileset dir="${lib.dir}">
+				<include name="RXTXcomm.jar" />
+				<include name="masabiFormsMessageHandler.jar"/>
+			</fileset>
+			<fileset dir="${lib.dir}/windows">
+				<include name="rxtxSerial.dll"/>
+				<include name="sqlitejdbc.dll"/>
+			</fileset>
+			<!-- include help, and place it in the help/ subdirectory -->
+			<fileset dir=".">
+				<include name="help/"/>
+			</fileset>
+		</zip>
+	</target>
+
+	<target name="package_linux" depends="jar_rxtx">
+		<tar basedir="." destfile="${built.dir}/pack.tar">
+			<!-- include the FrontlineSMS JAR using RXTXcomm -->
+			<include name="${jar.rxtx.file}"/>
+			<!-- include specific JARs from project lib folder -->
+			<tarfileset dir="${lib.dir}">
+				<include name="RXTXcomm.jar" />
+				<include name="masabiFormsMessageHandler.jar"/>
+			</tarfileset>
+			<!-- include linux-specific libraries -->
+			<tarfileset dir="${lib.dir}/linux"/>
+			<!-- include all linux documentation -->
+			<tarfileset dir="doc/linux"/>
+			<!-- include help, and place it in the help/ subdirectory -->
+			<tarfileset dir=".">
+				<include name="help/"/>
+			</tarfileset>
+		</tar>
+		<gzip destfile="${release.dir}/${version}/linux/${release.file.name}_linux_${version}.tar.gz" src="${built.dir}/pack.tar" />
+	</target>
+
+	<target name="preprocess_rxtx">
+		<wtkpreprocess
+			srcdir="${src.java.dir}"
+			destdir="${pre.dir}"
+			symbols=""
+		/>
+	</target>
+	
+	<target name="preprocess">
+		<wtkpreprocess
+			srcdir="${src.java.dir}"
+			destdir="${pre.dir}"
+			symbols="COMM_JAVAX='true'"
+			printsymbols="true"/>
+	</target>
+
+	<target name="compile" description="Compiles source files into .class files" depends="clean, preprocess">
+		<!-- Compile the java source into the built directory -->
+		<javac srcdir="${pre.dir}"
+			destdir="${built.dir}"
+			classpath="${lib.dir}/log4j-1.2.15.jar;${lib.dir}/comm.jar;${lib.dir}/jdom.jar;${lib.dir}/mail.jar"
+			source="1.5"
+			target="1.5"
+			verbose="${verbose}"/>
+		<!-- copy the resources into the built directory -->
+		<copy todir="${built.dir}">
+			<fileset dir="${src.res.dir}" excludes="resources/**"/>
+			<fileset dir="${src.res.dir}" includes="resources/languages/frontlineSMS.properties"/>
+		</copy>
+	</target>
+
+	<target name="compile_rxtx" description="Compiles source files into .class files" depends="clean_rxtx, preprocess_rxtx">
+		<!-- Compile the java source into the built directory -->
+		<javac srcdir="${pre.dir}"
+			destdir="${built.dir}"
+			classpath="${lib.dir}/log4j-1.2.15.jar;${lib.dir}/RXTXcomm.jar;${lib.dir}/jdom.jar;${lib.dir}/mail.jar"
+			source="1.5"
+			target="1.5"
+			verbose="${verbose}"/>
+		<!-- copy the resources into the built directory -->
+		<copy todir="${built.dir}">
+			<fileset dir="${src.res.dir}" excludes="resources/**"/>
+			<fileset dir="${src.res.dir}" includes="resources/languages/frontlineSMS.properties"/>
+		</copy>
+	</target>
+	
+	<target name="clean" depends="clean_releases" description="Deletes all temporary files generated while building">
+		<delete file="${jar.file}" verbose="${verbose}"/>
+		<delete dir="${built.dir}" verbose="${verbose}"/>
+		<delete dir="${pre.dir}" verbose="${verbose}"/>
+		<mkdir dir="${built.dir}"/>
+	</target>
+
+	<target name="clean_rxtx" depends="clean_releases" description="Deletes all temporary files generated while building">
+		<delete file="${jar.rxtx.file}" verbose="${verbose}"/>
+		<delete dir="${built.dir}" verbose="${verbose}"/>
+		<delete dir="${pre.dir}" verbose="${verbose}"/>
+		<mkdir dir="${built.dir}"/>
+	</target>
+
+	<target name="clean_releases" description="Deletes all temporary files generated while building">
+		<mkdir dir="${release.dir}"/>
+		<mkdir dir="${release.dir}/${version}"/>
+		<mkdir dir="${release.dir}/${version}/windows"/>
+		<mkdir dir="${release.dir}/${version}/linux"/>
+		<mkdir dir="${release.dir}/${version}/mac"/>
+	</target>
+</project>

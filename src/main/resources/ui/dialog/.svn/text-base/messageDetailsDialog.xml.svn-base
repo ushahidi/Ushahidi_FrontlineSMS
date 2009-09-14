@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<dialog closable="true" bottom="10" close="remove(this)" columns="2" gap="10" icon="/icons/sms_details.png" left="10" modal="true" name="messageDialog" resizable="true" right="10" text="i18n.common.message.details" top="10">
+    <label icon="/icons/status.png" text="i18n.common.status"/>
+    <textfield editable="false" name="tfStatus" weightx="1"/>
+    <label icon="/icons/time.png" text="i18n.common.date"/>
+    <textfield editable="false" name="tfDate" weightx="1"/>
+    <label icon="/icons/user_sender.png" text="i18n.common.sender"/>
+    <textfield editable="false" name="tfSender" weightx="1"/>
+    <label icon="/icons/user_receiver.png" text="i18n.common.recipient"/>
+    <textfield editable="false" name="tfRecipient" weightx="1"/>
+    <label icon="/icons/message.png" text="i18n.common.message" valign="top"/>
+    <textarea editable="false" columns="40" name="tfContent" rows="8" weightx="1" weighty="1"/>
+    <panel colspan="2" halign="center" weightx="1">
+        <button action="remove(messageDialog)" icon="/icons/tick.png" text="i18n.action.ok"/>
+    </panel>
+</dialog>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC "-//Hibernate/Hibernate Configuration DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+	<session-factory>
+		<mapping class="net.frontlinesms.data.domain.Contact" />
+		<mapping class="net.frontlinesms.data.domain.Email" />
+		<mapping class="net.frontlinesms.data.domain.EmailAccount" />
+		<mapping class="net.frontlinesms.data.domain.Group" />
+		<mapping class="net.frontlinesms.data.domain.Keyword" />
+		<mapping class="net.frontlinesms.data.domain.KeywordAction" />
+		<mapping class="net.frontlinesms.data.domain.Message" />
+		<mapping class="net.frontlinesms.data.domain.SmsInternetServiceSettings" />
+		<mapping class="net.frontlinesms.data.domain.SmsModemSettings" />
+		
+		<!-- Domain objects for the Ushahidi plugin -->
+		<mapping class="com.ushahidi.plugins.mapping.data.domain.Category" />
+		<mapping class="com.ushahidi.plugins.mapping.data.domain.Location" />
+		<mapping class="com.ushahidi.plugins.mapping.data.domain.MappingSetup" /> 
+		<mapping class="com.ushahidi.plugins.mapping.data.domain.Incident" />
+	</session-factory>
+</hibernate-configuration>

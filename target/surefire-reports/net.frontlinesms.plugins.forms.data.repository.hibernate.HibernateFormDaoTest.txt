@@ -1,0 +1,31 @@
+-------------------------------------------------------------------------------
+Test set: net.frontlinesms.plugins.forms.data.repository.hibernate.HibernateFormDaoTest
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 0.775 sec <<< FAILURE!
+test(net.frontlinesms.plugins.forms.data.repository.hibernate.HibernateFormDaoTest)  Time elapsed: 0.771 sec  <<< ERROR!
+org.springframework.orm.hibernate3.HibernateSystemException: Unknown entity: net.frontlinesms.plugins.forms.data.domain.Form; nested exception is org.hibernate.MappingException: Unknown entity: net.frontlinesms.plugins.forms.data.domain.Form
+	at org.springframework.orm.hibernate3.SessionFactoryUtils.convertHibernateAccessException(SessionFactoryUtils.java:676)
+	at org.springframework.orm.hibernate3.HibernateAccessor.convertHibernateAccessException(HibernateAccessor.java:412)
+	at org.springframework.orm.hibernate3.HibernateTemplate.doExecute(HibernateTemplate.java:424)
+	at org.springframework.orm.hibernate3.HibernateTemplate.executeWithNativeSession(HibernateTemplate.java:374)
+	at org.springframework.orm.hibernate3.HibernateTemplate.save(HibernateTemplate.java:694)
+	at net.frontlinesms.data.repository.hibernate.BaseHibernateDao.saveWithoutDuplicateHandling(BaseHibernateDao.java:48)
+	at net.frontlinesms.plugins.forms.data.repository.hibernate.HibernateFormDao.saveForm(HibernateFormDao.java:47)
+	at net.frontlinesms.plugins.forms.data.repository.ReusableFormDaoTest.test(ReusableFormDaoTest.java:39)
+	at net.frontlinesms.plugins.forms.data.repository.hibernate.HibernateFormDaoTest.test(HibernateFormDaoTest.java:21)
+Caused by: org.hibernate.MappingException: Unknown entity: net.frontlinesms.plugins.forms.data.domain.Form
+	at org.hibernate.impl.SessionFactoryImpl.getEntityPersister(SessionFactoryImpl.java:580)
+	at org.hibernate.impl.SessionImpl.getEntityPersister(SessionImpl.java:1365)
+	at org.hibernate.event.def.AbstractSaveEventListener.saveWithGeneratedId(AbstractSaveEventListener.java:121)
+	at org.hibernate.event.def.DefaultSaveOrUpdateEventListener.saveWithGeneratedOrRequestedId(DefaultSaveOrUpdateEventListener.java:210)
+	at org.hibernate.event.def.DefaultSaveEventListener.saveWithGeneratedOrRequestedId(DefaultSaveEventListener.java:56)
+	at org.hibernate.event.def.DefaultSaveOrUpdateEventListener.entityIsTransient(DefaultSaveOrUpdateEventListener.java:195)
+	at org.hibernate.event.def.DefaultSaveEventListener.performSaveOrUpdate(DefaultSaveEventListener.java:50)
+	at org.hibernate.event.def.DefaultSaveOrUpdateEventListener.onSaveOrUpdate(DefaultSaveOrUpdateEventListener.java:93)
+	at org.hibernate.impl.SessionImpl.fireSave(SessionImpl.java:562)
+	at org.hibernate.impl.SessionImpl.save(SessionImpl.java:550)
+	at org.hibernate.impl.SessionImpl.save(SessionImpl.java:546)
+	at org.springframework.orm.hibernate3.HibernateTemplate$12.doInHibernate(HibernateTemplate.java:697)
+	at org.springframework.orm.hibernate3.HibernateTemplate.doExecute(HibernateTemplate.java:419)
+	... 33 more
+

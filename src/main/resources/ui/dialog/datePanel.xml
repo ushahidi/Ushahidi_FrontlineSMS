@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<panel colspan="3" gap="10">
+	<panel gap="10">
+		<label 
+			text="i18n.common.start.date" />
+		<panel>
+			<textfield name="tfStartDate"
+				tooltip="i18n.tooltip.start.date" />
+			<button action="showDateSelecter(tfStartDate)"
+				icon="/icons/date_start.png" />
+		</panel>
+	</panel>
+	<panel gap="10">
+		<label 
+			text="i18n.common.end.date" />
+		<panel>
+			<textfield focusgained="removeUndefinedString(this)"
+				name="tfEndDate" tooltip="i18n.tooltip.end.date" />
+			<button action="showDateSelecter(tfEndDate)"
+				icon="/icons/date_end.png" />
+		</panel>
+	</panel>
+</panel>

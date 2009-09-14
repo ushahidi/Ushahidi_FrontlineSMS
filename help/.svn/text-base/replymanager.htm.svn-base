@@ -1,0 +1,191 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-gb">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>FrontlineSMS Help :: ReplyManager</title>
+</head>
+
+<style type="text/css">
+A:link {text-decoration: none}
+A:visited {text-decoration: none}
+A:active {text-decoration: none}
+A:hover {text-decoration: underline; }
+</style>
+
+<body bgcolor="#F4F4F4">
+
+<p>&nbsp;</p>
+<div align="center">
+  <center>
+  <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="950">
+    <tr>
+      <td width="763" style="border-bottom-style: solid; border-bottom-width: 1" bordercolor="#CC0066">
+      <br>
+&nbsp;<p>&nbsp;</p>
+      <p>&nbsp;</td>
+      <td width="187" valign="top" style="border-bottom-style: solid; border-bottom-width: 1" bordercolor="#CC0066">
+      <a href="help-menu.htm">
+      <img border="0" src="img/flsmslogo.png" align="right" hspace="0" width="150" height="87"></a></td>
+    </tr>
+  </table>
+  </center>
+</div>
+<div align="center">
+  <center>
+  <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="950">
+    <tr>
+      <td><b><font face="Arial" size="4"><br>
+      </font><font face="Arial" size="5" color="#111111">Reply</font><font face="Arial" size="5" color="#666666">Manager</font></b><p>
+      <i><font face="Arial" size="2" color="#666666">In the </font>
+      <font face="Arial" size="2" color="#111111"><b>Classic View</b></font><font face="Arial" size="2" color="#666666">, 
+      ReplyManager allows you to create automatic replies to incoming texts</font></i></p>
+      <p>
+      <img border="0" src="img/replymanager.jpg" vspace="10" width="950" height="548"></p>
+      <p><b><font face="Arial" color="#333333">What does ReplyManager do?</font></b></p>
+      <p><font face="Arial" size="2" color="#666666">Imagine you're running a 
+      health clinic, and patients want to know when you're going to be open 
+      before they embark on a four hour journey to visit you. Or you're trying 
+      to provide health information, such as symptoms for TB, or information on 
+      why people should get themselves tested for HIV. This kind of information 
+      and advice can be automated, since it's the same for each and every 
+      enquiry and doesn't require an individual, personalised response. </font>
+      <b><font face="Arial" size="2" color="#111111">ReplyManager</font></b><font face="Arial" size="2" color="#666666"> 
+      allows you to create keywords which, when they are texted in trigger an 
+      automated reply of your choosing. So, in our health example, you could 
+      tell community members that, to find out when your clinic is open, they 
+      simply need to text the word <b>CLINIC</b> to your FrontlineSMS number, 
+      and FrontlineSMS can be programmed to automatically send back a message 
+      such as <i>&quot;We are open Monday to Friday, 9am to 7pm, and Saturday 9am to 
+      2pm&quot;</i> message. In this example, <b>CLINIC</b> is the keyword and <i>&quot;We 
+      are open...&quot;</i> is your automated reply</font></p>
+      <p><font face="Arial" size="2" color="#111111"><b>ReplyManager</b></font><font face="Arial" size="2" color="#666666"> 
+      can be used to provide a wide range of information services. Non-profit 
+      organisations have already used it to provide information such as market 
+      prices to farmers, health advice to patients and information on courses 
+      for students</font></p>
+      <p><i><font face="Arial" size="2" color="#336699"><b>TIP</b>: During 
+      normal operation, message senders can expect to receive their automatic 
+      reply within a few minutes at most, depending on how busy FrontlineSMS is. 
+      If FrontlineSMS is not running, however, then no replies will be sent 
+      until it is re-started, at which point it will then automatically process 
+      any Autoreply backlog. If you are providing information services 
+      around-the-clock using this feature, then your laptop or computer will 
+      need to remain <b>switched on, with FrontlineSMS running at all times</b>. 
+      You will also need to make sure that any SIM card you're using has enough 
+      airtime credit to cover your outgoing messages, else they will fail to 
+      send</font></i></p>
+      <p><b><font face="Arial" color="#333333"><br>
+      Setting up an Autoreply</font></b></p>
+      <p><font face="Arial" size="2" color="#666666">To set up an Autoreply, 
+      firstly you need to choose a keyword and tell FrontlineSMS what that 
+      keyword is. Once you have decided on a keyword, click the </font>
+      <b><font face="Arial" size="2" color="#008000">Create a Reply</font></b><font face="Arial" size="2" color="#666666"> 
+      button </font><font face="Arial" size="2" color="#FF9900">[<b>3</b>]</font><font face="Arial" size="2" color="#666666"> 
+      and in the  </font><b><font face="Arial" size="2" color="#111111">Reply 
+      Details</font></b><font face="Arial" size="2" color="#666666"> window </font>
+      <font face="Arial" size="2" color="#FF9900">[<b>2</b>]</font><font face="Arial" size="2" color="#666666"> enter:</font></p>
+      <p><font face="Arial" size="2" color="#336699"><b>Keyword</b> - What 
+      keyword(s) you want to use to trigger the Autoreply. A keyword can only be used once<br>
+      <b>Text to send back in reply</b> - The text message that you want 
+      FrontlineSMS to automatically send back in response<br>
+      <b>Start date</b> - If you want FrontlineSMS to only start Autoreplying 
+      from a certain date, click the calendar icon </font>
+      <font face="Arial" size="2" color="#FF9900">[<b>9</b>]</font><font face="Arial" size="2" color="#336699"> 
+      and select the date you want it to start<br>
+      <b>End date</b> - If you want FrontlineSMS to stop Autoreplying 
+      after a certain date, click the calendar icon </font>
+      <font face="Arial" size="2" color="#FF9900">[<b>9</b>]</font><font face="Arial" size="2" color="#336699"> 
+      and select the date you want it to stop </font></p>
+      <p><font face="Arial" size="2" color="#666666">Once you've completed 
+      entering your new Autoreply, click the </font><b>
+      <font face="Arial" size="2" color="#008000">Save</font></b><font face="Arial" size="2" color="#666666"> 
+      button </font><font face="Arial" size="2" color="#FF9900">[<b>7</b>]</font><font face="Arial" size="2" color="#333333">.</font><font face="Arial" size="2" color="#666666"> 
+      The new Autoreply will appear in the </font><b>
+      <font face="Arial" size="2" color="#111111">Reply Manager Database Entries</font></b><font face="Arial" size="2" color="#666666"> 
+      window </font><font face="Arial" size="2" color="#FF9900">[<b>1</b>]</font><font face="Arial" size="2" color="#666666">. 
+      If you change your mind, click the </font><b>
+      <font face="Arial" size="2" color="#008000">Cancel</font></b><font face="Arial" size="2" color="#666666"> 
+      button </font><font face="Arial" size="2" color="#FF9900">[<b>8</b>]</font></p>
+      <p><i><font face="Arial" size="2" color="#336699"><b>TIP</b>: If you 
+      select Start or End dates the Autoreply will show as Live or Dormant in the
+      <b>Reply Manager Database Entries</b> window, telling you if the date range 
+      selected is current, future or 
+      expired</font></i></p>
+      <p><b><font face="Arial" color="#333333"><br>
+      Editing an Autoreply</font></b></p>
+      <p><font face="Arial" size="2" color="#666666">Once a Autoreply is created, 
+      you can edit the automated message and Start and End dates (but not the keyword 
+      itself, which for obvious reasons cannot be changed after the Autoreply has 
+      been created). To edit an Autoreply, select the relevant keyword in the </font>
+      <b><font face="Arial" size="2" color="#111111">Reply Manager Database 
+      Entries</font></b><font face="Arial" size="2" color="#666666"> window
+      </font><font face="Arial" size="2" color="#FF9900">[<b>1</b>]</font><font face="Arial" size="2" color="#666666"> 
+      and click on the </font><b><font face="Arial" size="2" color="#008000">
+      Edit </font></b><font face="Arial" size="2" color="#666666"> button
+      </font><font face="Arial" size="2" color="#FF9900">[<b>4</b>]</font><font face="Arial" size="2" color="#666666">. 
+      Edit any of the information required in the </font><b>
+      <font face="Arial" size="2" color="#111111">Reply Details</font></b><font face="Arial" size="2" color="#666666"> 
+      window </font><font face="Arial" size="2" color="#FF9900">[<b>2</b>]</font><font face="Arial" size="2" color="#666666"> 
+      and when finished click </font><b>
+      <font face="Arial" size="2" color="#008000">Save</font></b><font face="Arial" size="2" color="#666666">
+      </font><font face="Arial" size="2" color="#FF9900">[<b>7</b>]</font><font face="Arial" size="2" color="#666666"> 
+      to save the changes, or </font><b>
+      <font face="Arial" size="2" color="#008000">Cancel</font></b><font face="Arial" size="2" color="#666666">
+      </font><font face="Arial" size="2" color="#FF9900">[<b>8</b>]</font><font face="Arial" size="2" color="#666666"> 
+      if you change your mind</font></p>
+      <p><i><font face="Arial" size="2" color="#336699"><b>TIP</b>: The 
+      Responses 
+      column in the <b>Reply Manager Database Entries</b> window gives you a 
+      running total of the number of Autoreplies sent out for each keyword</font></i></p>
+      <p><b><font face="Arial" color="#333333"><br>
+      Deleting an Autoreply</font></b></p>
+      <p><font face="Arial" size="2" color="#666666">To delete an Autoreply in 
+      FrontlineSMS, select the relevant keyword in the </font><b>
+      <font face="Arial" size="2" color="#111111">Reply Manager Database Entries</font></b><font face="Arial" size="2" color="#666666"> 
+      window </font><font face="Arial" size="2" color="#FF9900">[<b>1</b>]</font><font face="Arial" size="2" color="#666666"> 
+      and click on the </font><b><font face="Arial" size="2" color="#008000">
+      Delete </font></b><font face="Arial" size="2" color="#666666"> 
+      button </font><font face="Arial" size="2" color="#FF9900">[<b>5</b>]</font></p>
+      <p><i><font face="Arial" size="2" color="#336699"><b>TIP</b>: Rather than 
+      delete an Autoreply, consider keeping all the data and simply make it Dormant 
+      instead. You can do this by editing the Autoreply and putting in an End Date 
+      which has already passed</font></i></p>
+      <p><b><font face="Arial" color="#333333"><br>
+      Taking Autoreply data into other programs</font></b></p>
+      <p><font face="Arial" color="#666666" size="2">The </font><b>
+      <font face="Arial" size="2" color="#111111">ReplyManager</font></b><font face="Arial" color="#666666" size="2"> 
+      module manages all of your keywords and Autoreplies, and gives you running 
+      totals for the number of automatic replies sent, but it does not allow you 
+      to create graphs, sort the Autoreply data into a different order, or add 
+      it to other information you might hold. If you want to manipulate the 
+      Autoreply information, you can 'export' this data out of FrontlineSMS and 
+      into other packages such as Open Office, Microsoft Office, and so on. To 
+      export Autoreply data, click on the keyword for the Autoreply you wish to 
+      export (in the </font><b><font face="Arial" size="2" color="#111111">Reply 
+      Manager Database Entries</font></b><font face="Arial" size="2" color="#666666"> 
+      window </font><font face="Arial" size="2" color="#FF9900">[<b>1</b>]</font><font face="Arial" color="#666666" size="2">) 
+      and then click on the </font><b>
+      <font face="Arial" color="#008000" size="2">Export response data</font></b><font face="Arial" color="#666666" size="2"> 
+      button </font><font face="Arial" color="#ff9900" size="2">[<b>6</b>]</font><font face="Arial" color="#666666" size="2">. 
+      You will then be asked to give the data a filename, and choose a location 
+      for the file using the Browse button. The exported data is saved as a <i>
+      comma separated file (CSV)</i>, a format which is read by many programs 
+      including Microsoft Excel. You can now open, and manipulate, the data in 
+      the exported CSV file without affecting the main FrontlineSMS database<br>
+      <br>
+&nbsp;</font></td>
+    </tr>
+    <tr>
+      <td><font size="1" face="Arial"><a href="help-menu.htm">Return to Help 
+      main menu</a></font><p>&nbsp;</td>
+    </tr>
+  </table>
+  </center>
+</div>
+
+</body>
+
+</html>

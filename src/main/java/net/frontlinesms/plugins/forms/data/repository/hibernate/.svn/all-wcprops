@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/plugins/forms/data/repository/hibernate
+END
+HibernateFormDao.java
+K 25
+svn:wc:ra_dav:version-url
+V 124
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/plugins/forms/data/repository/hibernate/HibernateFormDao.java
+END
+HibernateFormResponseDao.java
+K 25
+svn:wc:ra_dav:version-url
+V 132
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/plugins/forms/data/repository/hibernate/HibernateFormResponseDao.java
+END

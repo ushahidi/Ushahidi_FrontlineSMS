@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<dialog icon="/icons/date.png" closable="true" name="dateSelecter" modal="true" background="#ffffff" bottom="10" columns="1" gap="4">
+    <panel background="#8aadd1" columns="3" gap="4" weightx="1">
+        <label colspan="3"/>
+        <button name="btPrevious" icon="/icons/month_down.png" type="link"/>
+        <label name="lbMonth" font="bold" halign="center" text="" weightx="1"/>
+        <button name="btNext" icon="/icons/month_up.png" type="link"/>
+        <label colspan="3"/>
+    </panel>
+    <panel gap="10" left="10" right="10">
+        <label font="11 bold" text="i18n.day.sun"/>
+        <label font="11 bold" text="i18n.day.mon"/>
+        <label font="11 bold" text="i18n.day.tue"/>
+        <label font="11 bold" text="i18n.day.wed"/>
+        <label font="11 bold" text="i18n.day.thu"/>
+        <label font="11 bold" text="i18n.day.fri"/>
+        <label font="11 bold" text="i18n.day.sat"/>
+    </panel>
+    <panel name="pn1" columns="7" gap="10" left="10" right="10">
+        <button height="18" type="link" width="20"/>
+        <button height="18" type="link" width="26"/>
+        <button height="15" type="link" width="21"/>
+        <button height="15" type="link" width="27"/>
+        <button height="15" type="link" width="15"/>
+        <button height="15" type="link" width="18"/>
+        <button height="15" type="link" width="15"/>
+    </panel>
+    <panel name="pn2" columns="7" gap="10" left="10" right="10">
+        <button height="18" type="link" width="20"/>
+        <button height="18" type="link" width="26"/>
+        <button height="15" type="link" width="21"/>
+        <button height="15" type="link" width="27"/>
+        <button height="15" type="link" width="15"/>
+        <button height="15" type="link" width="18"/>
+        <button height="15" type="link" width="15"/>
+    </panel>
+    <panel name="pn3" columns="7" gap="10" left="10" right="10">
+        <button height="18" type="link" width="20"/>
+        <button height="18" type="link" width="26"/>
+        <button height="15" type="link" width="21"/>
+        <button height="15" type="link" width="27"/>
+        <button height="15" type="link" width="15"/>
+        <button height="15" type="link" width="18"/>
+        <button height="15" type="link" width="15"/>
+    </panel>
+    <panel name="pn4" columns="7" gap="10" left="10" right="10">
+        <button height="18" type="link" width="20"/>
+        <button height="18" type="link" width="26"/>
+        <button height="15" type="link" width="21"/>
+        <button height="15" type="link" width="27"/>
+        <button height="15" type="link" width="15"/>
+        <button height="15" type="link" width="18"/>
+        <button height="15" type="link" width="15"/>
+    </panel>
+    <panel name="pn5" columns="7" gap="10" left="10" right="10">
+        <button height="18" type="link" width="20"/>
+        <button height="18" type="link" width="26"/>
+        <button height="15" type="link" width="21"/>
+        <button height="15" type="link" width="27"/>
+        <button height="15" type="link" width="15"/>
+        <button height="15" type="link" width="18"/>
+        <button height="15" type="link" width="15"/>
+    </panel>
+    <panel name="pn6" columns="7" gap="10" left="10" right="10">
+        <button height="18" type="link" width="20"/>
+        <button height="18" type="link" width="26"/>
+        <button height="15" type="link" width="21"/>
+        <button height="15" type="link" width="27"/>
+        <button height="15" type="link" width="15"/>
+        <button height="15" type="link" width="18"/>
+        <button height="15" type="link" width="15"/>
+    </panel>
+</dialog>

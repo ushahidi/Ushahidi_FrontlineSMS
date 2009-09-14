@@ -1,0 +1,11 @@
+<panel name="pnResults" border="true" icon="/icons/form_results.png" text="i18n.common.results" weightx="1" weighty="1">
+	<panel name="pnFormResults" columns="2" bottom="4" gap="9" left="4" right="4" top="4" weightx="1" weighty="1">
+		<table colspan="2" name="formResultsList" weightx="1" weighty="1">
+			<header/>
+		</table>
+		<label name="pageControlsPanel"/>
+		<panel halign="right" weightx="1">
+			<button action="showFormExportDialog" halign="right" name="btExportFormResults" icon="/icons/export.png" text="i18n.action.export.results"/>
+		</panel>
+	</panel>
+</panel>

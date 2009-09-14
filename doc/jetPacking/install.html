@@ -1,0 +1,148 @@
+<html>
+	<head>
+		<title>FrontlineSMS :: Excelsior Jet :: Building an update</title>
+		<link type="text/css" rel="stylesheet" href="style.css"/>
+	</head>
+	<body>
+		<div id="menu">
+			<ul>
+				<li><a href="install.html">Install</a></li>
+				<li><a href="update.html">Update</a></li>
+			</ul>
+		</div>
+
+		<div id="content">
+			<h1>Building an install with Excelsior Jet</h1>
+			<p>This file contains instructions on how to build a distributable install for FrontlineSMS using Excelsior JET.</p>
+			<p>N.B. this builds an installer for the Windows binary distribution of FrontlineSMS.  It should therefore be done on a Windows machine.</p>
+			<p class="duration">Durations shown are rough times taken on Alex's computer - Athlon 64 X2 3800+ 2GHz with 2Gb of RAM.  It might take a while on older hardware.</p>
+			<ol>
+				<li>
+					<h2>Build the project</h2>
+					<p>Run the ANT task <code>package_windows_jet</code>.</p>
+					<p class="result">
+<pre>BUILD SUCCESSFUL
+Total time: 21 seconds</pre>
+					</p>
+				</li>
+				<li>
+					<h2>Build the project again</h2>
+					<p>Run the JET build with the following command: <code>jc -quiet =p =a ".\FrontlineSMS.prj"</code>.  This must be done inside the jetPacking directory.</p>
+					<p class="result">
+<pre>XDS Link Version 2.11.12 Copyright (c) Excelsior 1995-2007.
+No errors, no warnings
+
+Link time 0:36.87
+
+Total compilation time 14:14.57</pre>
+					</p>
+				</li>
+				<li>
+					<h2>Run JetPackII</h2>
+					<img class="screenshot" src="start_jetpack.png"/>
+				</li>
+				<li>
+					<h2>Select New</h2>
+					<img class="screenshot" src="jetpack_new.png"/>
+				</li>
+				<li>
+					<h2>Select Installation</h2>
+					<img class="screenshot" src="jetpack_install.png"/>
+				</li>
+				<li>
+					<h2>Browse to directory %PROJECT_HOME%/jetPacking/package</h2>
+					<p>This directory should contain the FrontlineSMS binary file we have just built, and any other resources we may need to package.</p>
+					<img class="screenshot" src="jetpack_browse.png"/>
+				</li>
+				<li>
+					<h2>Select Files to Package</h2>	
+					<p>
+						These are all the files that should be in the final package.  Currently the file required here are as follows:
+						<ul>
+							<li>FrontlineSMS.exe</li>
+							<li>help/</li>
+							<li>sqlitejdbc.dll</li>
+							<li>win32com.dll</li>
+						</ul>
+					</p>
+					<img class="screenshot" src="jetpack_install_files.png"/>
+				</li>
+				<li>
+					<h2>Go to the next screen</h2>
+					<p>Keep hitting next til you get to the backend setup</p>
+					<img class="screenshot" src="jetpack_install_files_done.png"/>
+				</li>
+				<li>
+					<h2>Select back-end</h2>
+					<p>Choose the Excelsior Installer backend, and then hit <em>Next</em></p>
+					<img class="screenshot" src="jetpack_install_backend.png"/>
+				</li>
+				<li>
+					<h2>Enter installation details</h2>
+					<p>
+						Enter the following installation details:
+						<table>
+							<tr class="head">
+								<td>label</td>
+								<td>value</td>
+							</tr>
+							<tr>
+								<td>Company Name</td>
+								<td>kiwanja.net</td>
+							</tr>
+							<tr>
+								<td>Product Name</td>
+								<td>FrontlineSMS</td>
+							</tr>
+							<tr>
+								<td>Version</td>
+								<td><em>e.g. 1.5.8</em></td>
+							</tr>
+							<tr>
+								<td>Registry Key</td>
+								<td><em>Leave as default</em></td>
+							</tr>
+							<tr>
+								<td>Installation Directory</td>
+								<td>Program Files\FrontlineSMS</td>
+							</tr>
+							<tr>
+								<td>Default Program Folder</td>
+								<td>FrontlineSMS</td>
+							</tr>
+						</table>
+					</p>
+					<img class="screenshot" src="jetpack_install_settings.png"/>
+				</li>
+				<li>
+					<h2>Edit post-install actions</h2>
+					<p>
+						Remove the post-install action <em>Run program: FrontlineSMS.exe</em>.
+					</p>
+					<p class="explanation">
+						The first time FrontlineSMS runs, it generates database and config files.  In Windows Vista, the FrontlineSMS installer
+						runs with Administrator priveleges.  If FrontlineSMS is launched from the installer, it will also have Administrator
+						priveleges, and so will the generated database and config files.  This means that subsequent runs of FrontlineSMS would
+						also require these priveleges in order to modify the config and database files.
+					</p>
+					<img class="screenshot" src="jetpack_install_post.png"/>
+				</li>
+				<li>
+					<h2>Go to the next screen</h2>
+					<p>Hit next to get to the <em>Create installation package</em> screen.</p>
+				</li>
+				<li>
+					<h2>Create the package</h2>
+						<p>Manually enter the package name.  It should be called InstallFrontlineSMS_%VERSION%.exe.  Locate it somewhere obvious; it will not be added to version control.</p>
+					<p>Once package is named, hit <em>Create</em>.</p>
+					<p>You will now be asked to save a .jpn file.  No use has been found for this yet.</p>
+					<img class="screenshot" src="jetpack_install_create.png"/>
+				</li>
+				<li>
+					<h2>Save as updateable</h2>
+						<p>We <strong>will</strong> require the update file to create update packages from.  This should be saved in the jetPacking/ directory with the following name: <em>FrontlineSMS_%VERSION%.jpu</em>. This file will be added to version control.</p>
+				</li>
+			</ol>
+		</div>
+	</body>
+</html>

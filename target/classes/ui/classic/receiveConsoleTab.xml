@@ -1,0 +1,24 @@
+<tab icon="/icons/classic_receiveConsole.png" name=":receiveConsole">
+	<panel columns="2" top="9" bottom="9" left="9" right="9" gap="9">
+		<label valign="top" icon="/icons/header/receiveConsole.png"/>
+		<panel rowspan="2" columns="4" weightx="1" weighty="1" gap="9" name="receiveConsolePanel">
+			<table perform="showMessageDetails(this)" delete="showConfirmationDialog('receiveConsole_removeMessages')" selection="multiple" name="receiveConsole_messageList" colspan="4" weightx="1" weighty="1">
+				<header>
+					<column icon="/icons/time.png" text="i18n.common.date" width="120"/>
+					<column icon="/icons/user_sender.png" text="i18n.common.sender" width="120"/>
+					<column icon="/icons/user_receiver.png" text="i18n.common.recipient" width="120"/>
+					<column icon="/icons/message.png" text="i18n.common.message"/>
+				</header>
+				<popupmenu menushown="classicMode_enableOptionsMessageList(this, receiveConsole_messageList)" name="menu">
+					<menuitem action="showMessageDetails(receiveConsole_messageList)" icon="/icons/sms_details.png" text="i18n.common.message.details"/>
+					<menuitem text="i18n.action.delete.selected" icon="/icons/sms_delete.png" action="showConfirmationDialog('receiveConsole_removeMessages')"/>
+				</popupmenu>
+			</table>
+			<button icon="/icons/phone_receive.png" text="i18n.common.receive.phones" type="link" action="switchToPhonesTab" tooltip="i18n.tooltip.go.to.phones.tab"/>
+			<label font="bold" text="?" name="lbReceiveConsoleConnectedPhones" weightx="1"/>
+			<button text="i18n.action.refresh" icon="/icons/refresh.png" action="receiveConsole_refresh" halign="right"/>
+			<label name="pageControlsPanel"/>
+		</panel>
+		<button tooltip="i18n.tooltip.click.for.help" valign="bottom" action="showHelpPage('receiveconsole.htm')" icon="/icons/big_help.png" type="link"/>
+	</panel>
+</tab>

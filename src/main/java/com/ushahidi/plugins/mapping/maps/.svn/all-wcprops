@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/frontlinesms/!svn/ver/67/trunk/src/main/java/com/ushahidi/plugins/mapping/maps
+END
+MapFactory.java
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/frontlinesms/!svn/ver/67/trunk/src/main/java/com/ushahidi/plugins/mapping/maps/MapFactory.java
+END
+Map.java
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/frontlinesms/!svn/ver/165/trunk/src/main/java/com/ushahidi/plugins/mapping/maps/Map.java
+END
+TileSaver.java
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/frontlinesms/!svn/ver/67/trunk/src/main/java/com/ushahidi/plugins/mapping/maps/TileSaver.java
+END
+TileRequestor.java
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/frontlinesms/!svn/ver/67/trunk/src/main/java/com/ushahidi/plugins/mapping/maps/TileRequestor.java
+END
+TileRequest.java
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/frontlinesms/!svn/ver/67/trunk/src/main/java/com/ushahidi/plugins/mapping/maps/TileRequest.java
+END

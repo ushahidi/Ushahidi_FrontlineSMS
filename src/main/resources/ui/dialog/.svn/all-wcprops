@@ -1,0 +1,257 @@
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/dialog
+END
+alert.xml
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/dialog/alert.xml
+END
+confirmationDialog.xml
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/dialog/confirmationDialog.xml
+END
+userDetailsDialog.xml
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/dialog/userDetailsDialog.xml
+END
+exportWizardForm.xml
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/dialog/exportWizardForm.xml
+END
+newGroupForm.xml
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/dialog/newGroupForm.xml
+END
+messageDetailsDialog.xml
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/dialog/messageDetailsDialog.xml
+END
+scheduleTaskDialog.xml
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/dialog/scheduleTaskDialog.xml
+END
+editKeywordListDialog.xml
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/dialog/editKeywordListDialog.xml
+END
+panelExportContact.xml
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/dialog/panelExportContact.xml
+END
+externalCommandDialog.xml
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/dialog/externalCommandDialog.xml
+END
+newKActionForwardForm.xml
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/dialog/newKActionForwardForm.xml
+END
+contactSelecter.xml
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/dialog/contactSelecter.xml
+END
+pendingMessagesDialog.xml
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/dialog/pendingMessagesDialog.xml
+END
+createContactDialog.xml
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/dialog/createContactDialog.xml
+END
+mergeContactDialog.xml
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/dialog/mergeContactDialog.xml
+END
+panelExportKeyword.xml
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/dialog/panelExportKeyword.xml
+END
+emailAccountSettings.xml
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/dialog/emailAccountSettings.xml
+END
+pagePanel.xml
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/dialog/pagePanel.xml
+END
+datePanel.xml
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/dialog/datePanel.xml
+END
+dateSelecter.xml
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/dialog/dateSelecter.xml
+END
+historyForm.xml
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/dialog/historyForm.xml
+END
+composeMessageForm.xml
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/dialog/composeMessageForm.xml
+END
+sqlBrowser.xml
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/dialog/sqlBrowser.xml
+END
+incomingNumberSettingsDialog.xml
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/dialog/incomingNumberSettingsDialog.xml
+END
+importContactsForm.xml
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/dialog/importContactsForm.xml
+END
+messagePanel.xml
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/dialog/messagePanel.xml
+END
+exportDialogForm.xml
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/dialog/exportDialogForm.xml
+END
+surveyDialog.xml
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/dialog/surveyDialog.xml
+END
+connectionWarningForm.xml
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/dialog/connectionWarningForm.xml
+END
+fileChooserForm.xml
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/dialog/fileChooserForm.xml
+END
+senderNamePanel.xml
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/dialog/senderNamePanel.xml
+END
+emailDialog.xml
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/dialog/emailDialog.xml
+END
+groupSelecter.xml
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/dialog/groupSelecter.xml
+END
+emailServerConfigDialog.xml
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/dialog/emailServerConfigDialog.xml
+END
+configurationLocation.xml
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/dialog/configurationLocation.xml
+END
+deleteOptionDialogForm.xml
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/dialog/deleteOptionDialogForm.xml
+END
+newKeywordForm.xml
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/dialog/newKeywordForm.xml
+END
+newKActionReplyForm.xml
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/dialog/newKActionReplyForm.xml
+END
+about.xml
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/dialog/about.xml
+END
+panelExportMessage.xml
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/dialog/panelExportMessage.xml
+END
+phoneConfig.xml
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/dialog/phoneConfig.xml
+END
+phoneSettingsForm.xml
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/frontlinesms/!svn/ver/67/trunk/src/main/resources/ui/dialog/phoneSettingsForm.xml
+END

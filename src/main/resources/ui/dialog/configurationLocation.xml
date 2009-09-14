@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<dialog closable="true" close="removeDialog(this)" bottom="10" columns="1" gap="8" icon="/icons/survey.png" left="10" modal="true" name="dgConfigurationLocation" right="10" text="i18n.settings.config.dialog.title" top="10" width="800">
+	<label text="i18n.settings.config.path"/>
+	<textfield name="tfConfigurationLocation" editable="false"/>
+	<button icon="/icons/tick.png" text="i18n.action.ok" action="removeDialog(dgConfigurationLocation)" halign="center" />
+</dialog>

@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/arcane/data
+END
+ArcaneReceivedMessage.java
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/arcane/data/ArcaneReceivedMessage.java
+END
+ArcaneReceivedMessage_UnknownSender.java
+K 25
+svn:wc:ra_dav:version-url
+V 115
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/arcane/data/ArcaneReceivedMessage_UnknownSender.java
+END
+AutoReplyTrigger.java
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/arcane/data/AutoReplyTrigger.java
+END
+AutoReply.java
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/arcane/data/AutoReply.java
+END
+ArcaneContact.java
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/arcane/data/ArcaneContact.java
+END
+BaseDataObject.java
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/arcane/data/BaseDataObject.java
+END
+Survey.java
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/arcane/data/Survey.java
+END
+ArcaneSentMessage.java
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/frontlinesms/!svn/ver/67/trunk/src/main/java/net/frontlinesms/arcane/data/ArcaneSentMessage.java
+END

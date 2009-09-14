@@ -1,0 +1,39 @@
+<tab icon="/icons/classic_messageTracker.png" name=":messageTracker">
+	<panel columns="2" top="9" bottom="9" left="9" right="9" gap="9">
+		<label valign="top" icon="/icons/header/messageTracker.png"/>
+		<splitpane rowspan="2" orientation="vertical" weightx="1" weighty="1" divider="280">
+			<panel border="true" text="i18n.common.pending.messages" columns="2" top="9" bottom="9" left="9" right="9" gap="9" weightx="1" weighty="1" name="messageTracker_pendingMessagePanel">
+				<table weightx="1" weighty="1" name="messageTracker_pendingMessageList" colspan="2">
+					<header>
+						<column icon="/icons/status.png" text="i18n.common.status"/>
+						<column icon="/icons/time.png" text="i18n.common.date" width="120"/>
+						<column icon="/icons/user_sender.png" text="i18n.common.sender" width="120"/>
+						<column icon="/icons/user_receiver.png" text="i18n.common.intended.recipient" width="140"/>
+						<column icon="/icons/message.png" text="i18n.common.message"/>
+					</header>
+				</table>
+				<button icon="/icons/refresh.png" text="i18n.action.refresh" action="messageTracker_refresh"/>
+				<label name="pageControlsPanel"/>
+			</panel>
+			<panel border="true" text="i18n.common.non.pending.messages" columns="2" top="9" bottom="9" left="9" right="9" gap="9" weightx="1" weighty="1" name="messageTracker_failedMessagePanel">
+				<table perform="showMessageDetails(this)" weightx="1" weighty="1" name="messageTracker_failedMessageList" selection="multiple" colspan="2">
+					<header>
+						<column icon="/icons/status.png" text="i18n.common.status"/>
+						<column icon="/icons/time.png" text="i18n.common.date" width="120"/>
+						<column icon="/icons/user_sender.png" text="i18n.common.sender" width="120"/>
+						<column icon="/icons/user_receiver.png" text="i18n.common.intended.recipient" width="140"/>
+						<column icon="/icons/message.png" text="i18n.common.message"/>
+					</header>
+					<popupmenu menushown="classicMode_enableOptionsMessageList(this, messageTracker_failedMessageList)" name="menu">
+						<menuitem action="showMessageDetails(messageTracker_failedMessageList)" icon="/icons/sms_details.png" text="i18n.common.message.details"/>
+						<menuitem text="i18n.action.resend" icon="/icons/sms_send.png" action="resendSelectedFromMessageList(messageTracker_failedMessageList)"/>
+						<menuitem text="i18n.action.delete.selected" icon="/icons/sms_delete.png" action="showConfirmationDialog('messageTracker_removeMessages')"/>
+					</popupmenu>
+				</table>
+				<button icon="/icons/refresh.png" text="i18n.action.refresh" action="messageTracker_refresh"/>
+				<label name="pageControlsPanel"/>
+			</panel>
+		</splitpane>
+		<button tooltip="i18n.tooltip.click.for.help" valign="bottom" action="showHelpPage('messagetracker.htm')" icon="/icons/big_help.png" type="link"/>
+	</panel>				
+</tab>

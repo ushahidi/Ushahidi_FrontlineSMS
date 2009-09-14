@@ -1,0 +1,98 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-gb">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>FrontlineSMS Help :: Emails</title>
+</head>
+
+<style type="text/css">
+A:link {text-decoration: none}
+A:visited {text-decoration: none}
+A:active {text-decoration: none}
+A:hover {text-decoration: underline; }
+</style>
+
+<body bgcolor="#F4F4F4">
+
+<p>&nbsp;</p>
+<div align="center">
+  <center>
+  <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="950">
+    <tr>
+      <td width="763" style="border-bottom-style: solid; border-bottom-width: 1" bordercolor="#CC0066">
+      <br>
+&nbsp;<p>&nbsp;</p>
+      <p>&nbsp;</td>
+      <td width="187" valign="top" style="border-bottom-style: solid; border-bottom-width: 1" bordercolor="#CC0066">
+      <a href="help-menu.htm">
+      <img border="0" src="img/flsmslogo.png" align="right" hspace="0" width="150" height="87"></a></td>
+    </tr>
+  </table>
+  </center>
+</div>
+<div align="center">
+  <center>
+  <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="950">
+    <tr>
+      <td><b><font face="Arial" size="4"><br>
+      </font><font face="Arial" size="5">Emails</font></b><p>
+      <i><font face="Arial" size="2" color="#666666">In the </font>
+      <b><font face="Arial" size="2" color="#111111">New View</font></b><font face="Arial" size="2" color="#666666">, 
+      Emails allows you to view email messages automatically sent by 
+      FrontlineSMS which were triggered by incoming text messages</font></i></p>
+      <p>
+      <img border="0" src="img/email.jpg" vspace="10" width="950" height="687"></p>
+      <p><b><font face="Arial" color="#333333">Why would I want FrontlineSMS to 
+      send emails?</font></b></p>
+      <p><font face="Arial" size="2" color="#666666">If you're running a global 
+      campaign and you want mobile phone owners to text in their address so you 
+      can send out information packs, or you're asking them to 'sign' a 
+      petition, you may want to send this information on to your head office or 
+      forward it on to an administrator who works in another office. You could 
+      forward the messages as new text messages, but these will incur additional 
+      costs, and in some cases international SMS rates. A quicker and cheaper 
+      way would be to have the incoming text message converted to an email, and 
+      then for FrontlineSMS to send the message over the internet for you to a 
+      recipient of your choice. Details on how to set up email forwarding are 
+      covered in the <a href="keywords.htm"><font color="#800000">Keywords</font></a> 
+      help screen</font></p>
+      <p><b><font face="Arial" color="#333333"><br>
+      Re-sending and removing emails</font></b></p>
+      <p><font face="Arial" size="2" color="#666666">Any emails that have been 
+      sent by FrontlineSMS are listed on the email screen </font>
+      <font face="Arial" size="2" color="#FF9900">[<b>1</b>]</font><font face="Arial" size="2" color="#666666">. 
+      If the computer is not connected to the internet, the messages will be 
+      held until a connection is made, at which point FrontlineSMS will begin 
+      sending automatically. If you want to manually re-send an email (perhaps 
+      it didn't arrive, or there was a problem with the recipient's Inbox being 
+      full), highlight the email in the list and click </font>
+      <font face="Arial" size="2" color="#008000"><b>Re-Send Selected</b></font><font face="Arial" size="2" color="#666666">
+      </font><font face="Arial" size="2" color="#FF9900">[<b>2</b>]</font><font face="Arial" size="2" color="#666666">. 
+      If you'd like to remove an email from the list, highlight it and click
+      </font><b><font face="Arial" size="2" color="#008000">Delete Selected</font><font face="Arial" size="2" color="#666666">
+      </font></b><font face="Arial" size="2" color="#FF9900">[<b>3</b>]</font></p>
+      <p><i><font face="Arial" size="2" color="#336699"><b>TIP</b>: If you 
+      delete an email which has not yet been sent, it will be removed from the 
+      queue permanently and not be sent. If you select the</font><font face="Arial" size="2" color="#666666">
+      </font><b><font face="Arial" size="2" color="#008000">Delete Selected</font><font face="Arial" size="2" color="#666666">
+      </font></b><font face="Arial" size="2" color="#FF9900">[<b>3</b>]</font><font face="Arial" size="2" color="#666666">
+      </font><font face="Arial" size="2" color="#336699">option for an email 
+      which has already been sent, it will just be removed from the list on the 
+      screen</font></i></p>
+      <p>&nbsp;</p>
+      </td>
+    </tr>
+    <tr>
+      <td><font size="1" face="Arial"><a href="help-menu.htm">Return to Help 
+      main menu</a></font><p>&nbsp;</td>
+    </tr>
+  </table>
+  </center>
+</div>
+
+</body>
+
+</html>

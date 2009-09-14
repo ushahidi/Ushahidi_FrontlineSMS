@@ -1,0 +1,22 @@
+-------------------------------------------------------------------------------
+Test set: net.frontlinesms.smsdevice.TestIntelliSMSJavaSending
+-------------------------------------------------------------------------------
+Tests run: 4, Failures: 0, Errors: 3, Skipped: 0, Time elapsed: 1.227 sec <<< FAILURE!
+testSendSMS(net.frontlinesms.smsdevice.TestIntelliSMSJavaSending)  Time elapsed: 0.491 sec  <<< ERROR!
+IntelliSoftware.SMSGateway.SDK.IntelliSMSJavaSDK.IntelliSMSException: IntelliSMS request failed (LoginInvalid)
+	at IntelliSoftware.SMSGateway.SDK.IntelliSMSJavaSDK.IntelliSMS.CheckResultCode(IntelliSMS.java:155)
+	at IntelliSoftware.SMSGateway.SDK.IntelliSMSJavaSDK.IntelliSMS.SendMessage(IntelliSMS.java:24)
+	at net.frontlinesms.smsdevice.TestIntelliSMSJavaSending.testSendSMS(TestIntelliSMSJavaSending.java:56)
+
+testSendBinarySMS(net.frontlinesms.smsdevice.TestIntelliSMSJavaSending)  Time elapsed: 0.239 sec  <<< ERROR!
+IntelliSoftware.SMSGateway.SDK.IntelliSMSJavaSDK.IntelliSMSException: IntelliSMS request failed (LoginInvalid)
+	at IntelliSoftware.SMSGateway.SDK.IntelliSMSJavaSDK.IntelliSMS.CheckResultCode(IntelliSMS.java:155)
+	at IntelliSoftware.SMSGateway.SDK.IntelliSMSJavaSDK.IntelliSMS.SendBinaryMessage(IntelliSMS.java:106)
+	at net.frontlinesms.smsdevice.TestIntelliSMSJavaSending.testSendBinarySMS(TestIntelliSMSJavaSending.java:80)
+
+testGetBalance(net.frontlinesms.smsdevice.TestIntelliSMSJavaSending)  Time elapsed: 0.246 sec  <<< ERROR!
+IntelliSoftware.SMSGateway.SDK.IntelliSMSJavaSDK.IntelliSMSException: IntelliSMS request failed (LoginInvalid)
+	at IntelliSoftware.SMSGateway.SDK.IntelliSMSJavaSDK.Internal.SMSGatewayProxy.GetBalance(SMSGatewayProxy.java:279)
+	at IntelliSoftware.SMSGateway.SDK.IntelliSMSJavaSDK.IntelliSMS.GetBalance(IntelliSMS.java:139)
+	at net.frontlinesms.smsdevice.TestIntelliSMSJavaSending.testGetBalance(TestIntelliSMSJavaSending.java:118)
+

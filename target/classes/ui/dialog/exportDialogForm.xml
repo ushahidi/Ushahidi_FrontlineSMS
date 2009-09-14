@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<dialog closable="true" close="removeDialog(this)" modal="true" bottom="5" columns="3" gap="5" icon="/icons/export.png" left="5" name="exportDialog" right="5" text="i18n.common.csv.export" top="5">
+    <label text="i18n.common.filename"/>
+    <textfield columns="50" name="tfFilename" perform="do_export(exportDialog, tfFilename.text)" weightx="2"/>
+    <button action="showSaveModeFileChooser(tfFilename)" icon="/icons/browse.png" text="i18n.action.browse" weightx="1"/>
+    <separator colspan="3"/>
+    <separator rowspan="0"/>
+    <button action="do_export(exportDialog, tfFilename.text)" halign="right" icon="/icons/tick.png" name="btDone" text="i18n.action.done"/>
+    <button action="removeDialog(exportDialog)" icon="/icons/cross.png" text="i18n.action.cancel"/>
+</dialog>
