@@ -48,7 +48,7 @@
 	                    <menuitem action="show_composeMessageForm(messageList)" name="miReply" icon="/icons/sms_send.png" text="i18n.common.reply"/>
 	                    <menuitem action="resendSelectedFromMessageList(messageList)" name="miResend" icon="/icons/sms_send.png" text="i18n.action.resend"/>
 	                    <menuitem name="miDelete" text="i18n.action.delete.selected" icon="/icons/sms_delete.png" action="showConfirmationDialog('messagesTab_removeMessages')"/>
-	                    <menuitem action="showExportWizard(messageList, 1)" name="miExport" icon="/icons/export.png" text="i18n.action.export.selected"/>
+	                    <menuitem action="showExportWizard(messageList, 'messages')" name="miExport" icon="/icons/export.png" text="i18n.action.export.selected"/>
 	                </popupmenu>
 	            </table>
 	            <panel name="pnBottom" columns="4" gap="5" weightx="1">

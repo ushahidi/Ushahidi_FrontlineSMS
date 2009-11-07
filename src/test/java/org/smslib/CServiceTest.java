@@ -17,13 +17,16 @@ import net.frontlinesms.junit.BaseTestCase;
  *
  */
 public class CServiceTest extends BaseTestCase {
-	private static final Logger LOG = Logger.getLogger(CServiceTest.class);
 	
+//> STATIC CONSTANTS
 	private static final int BAUD = 9200;
 	private static final String PORT = "COM0";
+	
+//> INSTANCE PROPERTIES
 	private CService service;
 	private MockSerialDriver serialDriver; 
 	
+//> TEST METHODS
 	@Override
 	protected void setUp() throws Exception {
 		this.service = new CService(PORT, BAUD, "Masabi", "Test Service", "Mock");
@@ -83,7 +86,7 @@ public class CServiceTest extends BaseTestCase {
 			BufferedReader reader = new BufferedReader(new StringReader(response));
 			for(String responsePart : responseParts) {
 				if(responsePart.length() == 0) {
-					LOG.trace("Ignoring empty line.");
+					log.trace("Ignoring empty line.");
 				} else {
 					assertEquals("Incorrect line fetched.", responsePart, CService.getNextUsefulLine(reader));
 				}

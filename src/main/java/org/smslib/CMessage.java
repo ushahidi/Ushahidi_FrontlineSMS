@@ -21,7 +21,8 @@
 
 package org.smslib;
 
-import java.util.*;
+import org.smslib.sms.SmsMessageEncoding;
+import org.smslib.util.TpduUtils;
 
 /**
  * This is the parent class defining a generic SMS message. In almost all cases, you will not work with this class, except for calling some methods for accessing info fields common for all types of messages.
@@ -29,21 +30,8 @@ import java.util.*;
  * @see CIncomingMessage
  * @see COutgoingMessage
  * @see CStatusReportMessage
- * @see WapSIMessage
  */
-public class CMessage {
-	/** Holds values representing message encodings. */
-	public static class MessageEncoding {
-		/** 7-Bit (default GSM alphabet) encoding. */
-		public static final int Enc7Bit = 1;
-		/** 8-Bit encoding. */
-		public static final int Enc8Bit = 2;
-		/** UCS2 (Unicode) encoding. Use this for Far-East languages. */
-		public static final int EncUcs2 = 3;
-		/** Custom encoding. When you set this value, you should also set the DCS (Data Coding Scheme) value yourself! */
-		public static final int EncCustom = 4;
-	}
-
+public abstract class CMessage {
 	/** Holds values representing message types. */
 	public static class MessageType {
 		/** Incoming (inbound) message. */
@@ -53,24 +41,31 @@ public class CMessage {
 		/** Delivery status report message. */
 		public static final int StatusReport = 3;
 	}
-
-	protected int type;
+	
+//> INSTANCE PROPERTIES
+	/** The type of message, from {@link MessageType}.  TODO {@link MessageType} should probably be an enum. */
+	protected final int type;
 	protected int refNo;
 	protected String id;
-	protected Date date;
+	/**
+	 * The date this message was created as a java timestamp.  This time is in UTC.
+	 * This value should only be changed by incoming messages.
+	 */
+	protected long date = System.currentTimeMillis();
+	/** The originator of the message */
 	protected String originator;
+	/** The recipient of the message */
 	protected String recipient;
 	/** message content of a text message */
 	protected String messageText;
 	/** data content of a binary message */
 	protected byte[] messageBinary;
-	protected int messageEncoding;
-	
+	/** The encoding of the message, from {@link SmsMessageEncoding}. */
+	protected SmsMessageEncoding messageEncoding;
 	/** Port to show this SMS as sent from */
 	protected int sourcePort;
 	/** Port to show this SMS as sent to */
 	protected int destinationPort;
-
 	/**
 	 * [MANDATORY: TP-PID] TP-Protocol-Identifier. 
 	 * Parameter identifying the above layer protocol, if any.
@@ -83,27 +78,46 @@ public class CMessage {
 	 */
 	protected int dataCodingScheme;
 
-
-	public CMessage(int type, Date date, String originator, String recipient, String text) {
+//> CONSTRUCTORS
+	/**
+	 * Creates a new {@link CMessage} with unspecified content and encoding.
+	 * @param type the {@link MessageType} of the message
+	 * @param originator the originator
+	 * @param recipient the recipient
+	 */
+	protected CMessage(int type, String originator, String recipient) {
 		this.type = type;
-		this.refNo = -1;
-		setDate(date);
 		this.originator = originator;
 		this.recipient = recipient;
-		this.messageText = text;
-		this.messageEncoding = MessageEncoding.Enc7Bit;
 	}
 
-	public CMessage(int type, Date date, String originator, String recipient, byte[] binary) {
-		this.type = type;
-		this.refNo = -1;
-		setDate(date);
-		this.originator = originator;
-		this.recipient = recipient;
+	/**
+	 * Creates a new {@link CMessage} with {@link SmsMessageEncoding#GSM_7BIT}.
+	 * @param type the {@link MessageType} of the message
+	 * @param originator the originator
+	 * @param recipient the recipient
+	 * @param text text content of the message
+	 */
+	protected CMessage(int type, String originator, String recipient, String text) {
+		this(type, originator, recipient);
+		this.messageText = text;
+		this.messageEncoding = SmsMessageEncoding.GSM_7BIT;
+	}
+
+	/**
+	 * Creates a new {@link CMessage} with {@link SmsMessageEncoding#BINARY_8BIT}.
+	 * @param type the {@link MessageType} of the message
+	 * @param originator the originator
+	 * @param recipient the recipient
+	 * @param binary binary content of the message
+	 */
+	protected CMessage(int type, String originator, String recipient, byte[] binary) {
+		this(type, originator, recipient);
 		this.messageBinary = binary;
-		this.messageEncoding = MessageEncoding.Enc8Bit;
+		this.messageEncoding = SmsMessageEncoding.BINARY_8BIT;
 	}
 	
+//> ACCESSORS
 	/**
 	 * Returns the message type.
 	 * @return The message type.
@@ -130,14 +144,6 @@ public class CMessage {
 	}
 
 	/**
-	 * Returns the message date.
-	 * @return The message date.
-	 */
-	public Date getDate() {
-		return date == null ? null : (Date) date.clone();
-	}
-
-	/**
 	 * Returns the message text.
 	 * @return The message text.
 	 */
@@ -148,10 +154,22 @@ public class CMessage {
 	/**
 	 * Returns the message encoding.
 	 * @return The message encoding.
-	 * @see MessageEncoding
+	 * @see SmsMessageEncoding
 	 */
-	public int getMessageEncoding() {
+	public SmsMessageEncoding getMessageEncoding() {
 		return messageEncoding;
+	}
+	
+	/** @return {@link #date} */
+	public Long getDate() {
+		return date;
+	}
+
+	/**
+	 * TODO not sure why it's useful to set the date to <code>null</code>; maybe this should be prevented.
+	 * @param date */
+	public void setDate(Long date) {
+		this.date = date;
 	}
 
 	/**
@@ -177,19 +195,10 @@ public class CMessage {
 	}
 
 	/**
-	 * Sets the message (create) date.
-	 * 
-	 * @param date The message date.
-	 */
-	public void setDate(Date date) {
-		this.date = (date != null ? (Date) date.clone() : new java.util.Date());
-	}
-
-	/**
 	 * Sets the message encoding.
-	 * @param messageEncoding The message encoding, one of {@link MessageEncoding}.
+	 * @param messageEncoding The message encoding, one of {@link SmsMessageEncoding}.
 	 */
-	public void setMessageEncoding(int messageEncoding) {
+	public void setMessageEncoding(SmsMessageEncoding messageEncoding) {
 		this.messageEncoding = messageEncoding;
 	}
 
@@ -216,30 +225,9 @@ public class CMessage {
 	}
 
 	/**
-	 * Sets the message's DCS (Data Coding Scheme). SMSLib will use this value if you set the message encoding to EncCustom.
-	 * 
-	 * @param dataCodingScheme
-	 *            The DCS value.
-	 * @see #setMessageEncoding(int)
-	 * @see #getDcs()
-	 * @deprecated DCS should never be explicitly set - should be generated from other properties.
-	 */
-	public void setDcs(int dcs) {
-		this.dataCodingScheme = dcs;
-	}
-
-	/**
-	 * Returns the message's DCS (Data Coding Scheme).
-	 * @return The DCS value.
-	 * @see #setDcs(int)
-	 * @deprecated DCS should never be explicitly set - should be generated from other properties.
-	 */
-	public int getDcs() {
-		return dataCodingScheme;
-	}
-
-	/**
 	 * A message-to-string mapping function. Used for debugging and for easy viewing of of message object's info fields.
+	 * 
+	 * TODO refactor this into the subclasses
 	 */
 	public String toString()
 	{
@@ -253,7 +241,7 @@ public class CMessage {
 		str += "\n";
 		str += " Type: " + (type == MessageType.Incoming ? "Incoming" : (type == MessageType.Outgoing ? "Outgoing" : "Status Report"));
 		str += "\n";
-		str += " Encoding: " + (messageEncoding == MessageEncoding.Enc7Bit ? "7-bit" : (messageEncoding == MessageEncoding.Enc8Bit ? "8-bit" : "UCS2 (Unicode)"));
+		str += " Encoding: " + messageEncoding.toString();
 		str += "\n";
 		str += " Date: " + date;
 		str += "\n";
@@ -320,7 +308,7 @@ public class CMessage {
 	 * @return
 	 */
 	protected final int getDcsByte() {
-		if(this.messageEncoding == MessageEncoding.EncCustom) {
+		if(this.messageEncoding == SmsMessageEncoding.EncCustom) {
 			if(this.dataCodingScheme == 0) throw new IllegalSmsEncodingException("TP-DCS (Data-Coding-Scheme) must not be zero for custom encoding.");
 			return this.dataCodingScheme;
 		} else {

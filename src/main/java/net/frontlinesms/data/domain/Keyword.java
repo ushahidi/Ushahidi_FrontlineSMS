@@ -34,22 +34,33 @@ import net.frontlinesms.data.EntityField;
  * @author Alex
  */
 @Entity
+@Table(uniqueConstraints={@UniqueConstraint(columnNames={Keyword.COLUMN_KEYWORD, Keyword.COLUMN_PARENT})})
 public class Keyword {
+
+//> DATABASE COLUMN NAMES
+	/**
+	 * Database column name for field {@link #keyword}
+	 * N.B. This cannot be private as it is referenced in the class annotation.  Otherwise, it *would* be private. 
+	 */
+	static final String COLUMN_KEYWORD = "keyword";
+	/**
+	 * Database column name for field {@link #parent}.  N.B. {@link #parent} is not a {@link Column}, so this value must be the same as the field name.
+	 * N.B. This cannot be private as it is referenced in the class annotation.  Otherwise, it *would* be private.
+	 */
+	static final String COLUMN_PARENT = "parent";
+	
 //> CONSTANTS
 	/** Pattern used for checking if a string contains any whitespace. */
 	private static final Pattern CONTAINS_WHITESPACE = Pattern.compile("\\s");
 	
-	public static final int TYPE_BLACKLIST = 0;
-	public static final int TYPE_WHITELIST = 1;
-	
-	public static final int REFERENCE_CONTACT = 0;
-	public static final int REFERENCE_GROUP = 1;
-	
 //> Entity Fields
 	/** Details of the fields that this class has. */
 	public enum Field implements EntityField<Keyword> {
-		KEYWORD("keyword"),
-		PARENT("parent");
+		/** Refers to {@link #keyword} */
+		KEYWORD(COLUMN_KEYWORD),
+		/** Refers to {@link #parent} */
+		PARENT(COLUMN_PARENT);
+		
 		/** name of a field */
 		private final String fieldName;
 		/**
@@ -63,12 +74,19 @@ public class Keyword {
 
 //> PROPERTIES
 	/** Unique id for this entity.  This is for hibernate usage. */
-	@Id @GeneratedValue(strategy=GenerationType.IDENTITY) @Column(unique=true,nullable=false,updatable=false) @SuppressWarnings("unused")
+	@SuppressWarnings("unused")
+	@Id @GeneratedValue(strategy=GenerationType.IDENTITY) @Column(unique=true,nullable=false,updatable=false)
 	private long id;
+
+	/** Actual text of the keyword */
+	@Column(name=COLUMN_KEYWORD, nullable=false, updatable=false)
 	private String keyword;
+
 	/** parent of this keyword */
-	@ManyToOne private Keyword parent;
-	@OneToMany(fetch=FetchType.EAGER) private Set<Keyword> children = new HashSet<Keyword>();
+	@ManyToOne(optional=true, targetEntity=Keyword.class)
+	@JoinColumn(name=COLUMN_PARENT, nullable=true, updatable=false)
+	private Keyword parent;
+
 	/** description of this keyword */
 	private String description;
 	/** actions attached to this keyword */
@@ -90,10 +108,7 @@ public class Keyword {
 		if (CONTAINS_WHITESPACE.matcher(keyword).find()) throw new IllegalArgumentException("Illegal keyword - contains whitespace: '" + keyword + "'");
 		this.keyword = keyword;
 		this.description = description;
-		if(parent != null) {
-			this.parent = parent;
-			this.parent.children.add(this);
-		}
+		this.parent = parent;
 	}
 	
 	/**
@@ -159,7 +174,7 @@ public class Keyword {
 	public void removeAction(KeywordAction action) {
 		this.actions.remove(action);
 	}
-	
+
 	/**
 	 * Returns the parent keyword to this Keyword, or null if it has none.
 	 * @return {@link #parent}
@@ -176,39 +191,8 @@ public class Keyword {
 		return Collections.unmodifiableCollection(this.actions);
 	}
 	
-	/**
-	 * Gets all keywords directly below this one.  E.g. if the following keywords exist:
-	 *   MASABI
-	 *   MASABI JOIN
-	 *   MASABI LEAVE
-	 * then calling this method on the object representing MASABI should return an object
-	 * representing MASABI JOIN and an object representing MASABI LEAVE.
-	 * @return {@link #children}
-	 */
-	public Collection<Keyword> getDirectSubWords() {
-		return this.children;
-	}
+//> GENERATED CODE
 	
-	/**
-	 * Returns an unordered list of all sub-keywords of this keyword.
-	 * @return
-	 */
-	public Collection<Keyword> getAllSubWords() {
-		HashSet<Keyword> subwords = new HashSet<Keyword>();
-		addAllSubWords(subwords);
-		return subwords;
-	}
-	
-	/**
-	 * Adds all subwords of this keyword to the supplied {@link Collection}
-	 * @param subwords
-	 */
-	private void addAllSubWords(Collection<Keyword> subwords) {
-		for(Keyword child : children) {
-			subwords.add(child);
-			child.addAllSubWords(subwords);
-		}
-	}
 
 //> GENERATED CODE
 	/** @see java.lang.Object#hashCode() */
@@ -218,7 +202,6 @@ public class Keyword {
 		int result = 1;
 		result = prime * result
 				+ ((description == null) ? 0 : description.hashCode());
-		result = prime * result + (int) (id ^ (id >>> 32));
 		result = prime * result + ((keyword == null) ? 0 : keyword.hashCode());
 		result = prime * result + ((parent == null) ? 0 : parent.hashCode());
 		return result;
@@ -239,8 +222,6 @@ public class Keyword {
 				return false;
 		} else if (!description.equals(other.description))
 			return false;
-		if (id != other.id)
-			return false;
 		if (keyword == null) {
 			if (other.keyword != null)
 				return false;
@@ -253,6 +234,4 @@ public class Keyword {
 			return false;
 		return true;
 	}
-
-	
 }

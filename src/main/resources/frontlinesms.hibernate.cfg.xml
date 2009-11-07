@@ -10,12 +10,7 @@
 		<mapping class="net.frontlinesms.data.domain.KeywordAction" />
 		<mapping class="net.frontlinesms.data.domain.Message" />
 		<mapping class="net.frontlinesms.data.domain.SmsInternetServiceSettings" />
+		<mapping class="net.frontlinesms.data.domain.SmsInternetServiceSettingValue" />
 		<mapping class="net.frontlinesms.data.domain.SmsModemSettings" />
-		
-		<!-- Domain objects for the Ushahidi plugin -->
-		<mapping class="com.ushahidi.plugins.mapping.data.domain.Category" />
-		<mapping class="com.ushahidi.plugins.mapping.data.domain.Location" />
-		<mapping class="com.ushahidi.plugins.mapping.data.domain.MappingSetup" /> 
-		<mapping class="com.ushahidi.plugins.mapping.data.domain.Incident" />
 	</session-factory>
 </hibernate-configuration>

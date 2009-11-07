@@ -22,8 +22,10 @@
 package org.smslib;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 
 import org.apache.log4j.Logger;
+import org.smslib.CService.MessageClass;
 import org.smslib.handler.*;
 
 abstract public class AbstractATHandler {
@@ -67,7 +69,26 @@ abstract public class AbstractATHandler {
 
 	abstract protected boolean isAlive() throws IOException;
 
-	abstract protected boolean waitingForPin() throws IOException;
+	/**
+	 * Issues the AT Command to check if the device is waiting for a PIN or PUK
+	 * @return The response from the AT Handler, verbatim
+	 * @throws IOException
+	 */
+	protected abstract String getPinResponse() throws IOException;
+
+	/**
+	 * Check the supplied response to the PIN AT command to see if a PIN is required.
+	 * @param commandResponse
+	 * @return <code>true</code> if a PIN is being waited for; <code>false</code> otherwise
+	 */
+	protected abstract boolean isWaitingForPin(String commandResponse);
+
+	/**
+	 * Check the supplied response to the PIN AT command to see if a PUK is required.
+	 * @param commandResponse
+	 * @return <code>true</code> if a PIN is being waited for; <code>false</code> otherwise
+	 */	
+	protected abstract boolean isWaitingForPuk(String commandResponse);
 
 	abstract protected boolean enterPin(String pin) throws IOException;
 
@@ -99,13 +120,18 @@ abstract public class AbstractATHandler {
 
 	abstract protected boolean setMemoryLocation(String mem) throws IOException;
 
+	/**
+	 * Switches the serial communication mode from data mode to command mode.  Command
+	 * mode allows the sending of AT commands.
+	 * @throws IOException if there was a problem with the serial connection
+	 */
 	abstract protected void switchToCmdMode() throws IOException;
 
 	abstract protected boolean keepGsmLinkOpen() throws IOException;
 
 	abstract protected int sendMessage(int size, String pdu, String phone, String text) throws IOException, NoResponseException, UnrecognizedHandlerProtocolException;
 
-	abstract protected String listMessages(int messageClass) throws IOException, UnrecognizedHandlerProtocolException;
+	abstract protected String listMessages(MessageClass messageClass) throws IOException, UnrecognizedHandlerProtocolException, SMSLibDeviceException;
 
 	abstract protected boolean deleteMessage(int memIndex, String memLocation) throws IOException;
 
@@ -135,44 +161,79 @@ abstract public class AbstractATHandler {
 	 */
 	public abstract boolean supportsUcs2SmsSending();
 	
+	/**
+	 * Attempt to load a particular AT Handler.
+	 * @param serialDriver
+	 * @param log
+	 * @param srv
+	 * @param handlerClassName
+	 * @return A new instance of the required handler.
+	 * @throws ClassNotFoundException
+	 * @throws SecurityException
+	 * @throws NoSuchMethodException
+	 * @throws IllegalArgumentException
+	 * @throws InstantiationException
+	 * @throws InvocationTargetException
+	 * @throws IllegalAccessException
+	 */
 	@SuppressWarnings("unchecked")
+	private static AbstractATHandler load(CSerialDriver serialDriver, Logger log, CService srv, String handlerClassName) throws ClassNotFoundException, SecurityException, NoSuchMethodException, IllegalArgumentException, InstantiationException, InvocationTargetException, IllegalAccessException {
+		log.info("Attempting to load handler: " + handlerClassName);
+		
+		Class<AbstractATHandler> handlerClass = (Class<AbstractATHandler>) Class.forName(handlerClassName);
+
+		java.lang.reflect.Constructor<AbstractATHandler> handlerConstructor = handlerClass.getConstructor(new Class[] { CSerialDriver.class, Logger.class, CService.class });
+		AbstractATHandler atHandlerInstance = handlerConstructor.newInstance(new Object[]{serialDriver, log, srv});
+		
+		log.info("Successfully loaded handler: " + atHandlerInstance.getClass().getName());
+		
+		return atHandlerInstance;
+	}
+	
+	/**
+	 * 
+	 * @param serialDriver
+	 * @param log
+	 * @param srv
+	 * @param gsmDeviceManufacturer
+	 * @param gsmDeviceModel
+	 * @param catHandlerAlias
+	 * @return
+	 */
 	static AbstractATHandler load(CSerialDriver serialDriver, Logger log, CService srv, String gsmDeviceManufacturer, String gsmDeviceModel, String catHandlerAlias) {
 		log.trace("ENTRY");
-		String BASE_HANDLER = org.smslib.handler.CATHandler.class.getName();
-		String[] handlerClassNames = { null, null, null, BASE_HANDLER };
+		final String BASE_HANDLER = org.smslib.handler.CATHandler.class.getName();
 
-		StringBuffer handlerClassName = new StringBuffer(BASE_HANDLER);
-		
-		if (gsmDeviceManufacturer != null && !gsmDeviceManufacturer.equals("")) {
-			if (catHandlerAlias != null && !catHandlerAlias.equals("")) {
-				handlerClassNames[0] = handlerClassName.toString() + "_" + catHandlerAlias;
-			}
-			handlerClassName.append("_").append(gsmDeviceManufacturer);
-			handlerClassNames[2] = handlerClassName.toString();
-			if (gsmDeviceModel != null && !gsmDeviceModel.equals("")) {
-				handlerClassName.append("_").append(gsmDeviceModel);
-				handlerClassNames[1] = handlerClassName.toString();
-			}
-		}
-
-		AbstractATHandler atHandler = null;
-		for (int i = 0; i < handlerClassNames.length; ++i) {
+		if (catHandlerAlias != null && !catHandlerAlias.equals("")) {
+			// suggested cat handler from method param
+			String requestedHandlerName = BASE_HANDLER + "_" + catHandlerAlias;
 			try {
-				if (handlerClassNames[i] != null) {
-					Class<AbstractATHandler> handlerClass = (Class<AbstractATHandler>)Class.forName(handlerClassNames[i]);
-
-					java.lang.reflect.Constructor<AbstractATHandler> handlerConstructor = handlerClass.getConstructor(new Class[]
-					                                                                                         { CSerialDriver.class, Logger.class, CService.class });
-					atHandler = handlerConstructor.newInstance(new Object[]{serialDriver, log, srv});
-					break;
-				}
-			} catch (Exception ex) {
-				if (i == handlerClassNames.length - 1) throw new RuntimeException("Class AbstractATHandler: Cannot initialize handler '" + handlerClassNames[i] + "'!");
+				return load(serialDriver, log, srv, requestedHandlerName);
+			} catch(Exception ex) {
+				log.info("Could not load requested handler '" + requestedHandlerName + "'; will try more generic version.", ex);
 			}
 		}
-		log.info("Loaded AT Handler: " + atHandler.getClass());
-		log.trace("EXIT");
-		return atHandler;
+
+		if (gsmDeviceManufacturer != null && !gsmDeviceManufacturer.equals("")) {
+			String manufacturerHandlerName = BASE_HANDLER + "_" + gsmDeviceManufacturer;
+			
+			if (gsmDeviceModel != null && !gsmDeviceModel.equals("")) {
+				String modelHandlerName = manufacturerHandlerName + "_" + gsmDeviceModel;
+				try {
+					return load(serialDriver, log, srv, modelHandlerName);
+				} catch(Exception ex) {
+					log.info("Could not load requested handler '" + modelHandlerName + "'; will try more generic version.", ex);
+				}
+			}
+
+			try {
+				return load(serialDriver, log, srv, manufacturerHandlerName);
+			} catch(Exception ex) {
+				log.info("Could not load requested handler '" + manufacturerHandlerName + "'; will try more generic version.", ex);
+			}
+		}
+		
+		return new CATHandler(serialDriver, log, srv);
 	}
 	
 	/** List of all AT handler classes */
@@ -189,15 +250,16 @@ abstract public class AbstractATHandler {
 		CATHandler_SonyEricsson_GT48.class,
 		CATHandler_SonyEricsson_W550i.class,
 		CATHandler_SonyEricsson.class,
+		CATHandler_Symbian_PiAccess.class,
 		CATHandler_Wavecom_M1306B.class,
 		CATHandler_Wavecom.class,
 	};
 
-	@SuppressWarnings("unchecked")
 	/**
 	 * Gets a list containing all available AT Handlers.
 	 */
-	public static <T extends AbstractATHandler> Class<T>[] getHandlers() throws IOException {
+	@SuppressWarnings("unchecked")
+	public static <T extends AbstractATHandler> Class<T>[] getHandlers() {
 		return HANDLERS;
 	}
 	

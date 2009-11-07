@@ -32,19 +32,25 @@ import javax.swing.JTextField;
 import net.frontlinesms.FrontlineSMSConstants;
 import net.frontlinesms.ui.i18n.InternationalisationUtils;
 
-
+/**
+ * FComponent for displaying and editing a form text field.
+ * @author Kadu
+ */
 @SuppressWarnings("serial")
 public class TextField extends FComponent {
+	/** @see FComponent#getDescription() */
 	@Override
 	public String getDescription() {
 		return InternationalisationUtils.getI18NString(FrontlineSMSConstants.COMMON_TEXT_FIELD);
 	}
 
+	/** @see FComponent#getIcon() */
 	@Override
 	public String getIcon() {
 		return "textfield.png";
 	}
 
+	/** @see FComponent#getDrawingComponent() */
 	@Override
 	public Container getDrawingComponent() {
 		JPanel pn = new JPanel();

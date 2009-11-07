@@ -1,32 +1,33 @@
 package IntelliSoftware.SMSGateway.SDK.IntelliSMSJavaSDK;
 
-import java.io.*;
-
-/// <summary>
-/// Represents error returned by the IntelliSoftware SMS Internet gateway
-/// </summary>
+/** Represents error returned by the IntelliSoftware SMS Internet gateway */
+@SuppressWarnings("serial")
 public class IntelliSMSException extends Exception
 {
-	/// <summary>
-	/// Error received from the IntelliSoftware SMS Internet gateway
-	/// </summary>
-	public ResultCodes ResultCode;
+	/** Error received from the IntelliSoftware SMS Internet gateway */
+	private final ResultCodes resultCode;
 
-	public Exception InnerException = null;
-
-	public IntelliSMSException ( ResultCodes resultCode, String message )
-	{
+	/**
+	 * @param resultCode The {@link ResultCodes} received from the IntelliSoftware SMS Internet gateway
+	 * @param message The detail message for the exception
+	 */
+	public IntelliSMSException(ResultCodes resultCode, String message) {
 		super(message);
-
-		ResultCode = resultCode;
+		this.resultCode = resultCode;
 	}
 
-	public IntelliSMSException ( ResultCodes resultCode, String message, Exception innerException )
-	{
-		super(message);
-
-		ResultCode = resultCode;
-		InnerException = innerException;
+	/**
+	 * @param resultCode The {@link ResultCodes} received from the IntelliSoftware SMS Internet gateway
+	 * @param message The detail message for the exception
+	 * @param cause The cause of the exception
+	 */
+	public IntelliSMSException(ResultCodes resultCode, String message, Exception cause) {
+		super(message, cause);
+		this.resultCode = resultCode;
 	}
 
+	/** @return {@link #resultCode} */
+	public ResultCodes getResultCode() {
+		return resultCode;
+	}
 }

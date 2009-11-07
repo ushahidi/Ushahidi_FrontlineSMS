@@ -33,19 +33,25 @@ import javax.swing.text.MaskFormatter;
 import net.frontlinesms.FrontlineSMSConstants;
 import net.frontlinesms.ui.i18n.InternationalisationUtils;
 
-
+/**
+ * FComponent for displaying and editing a form time field.
+ * @author Kadu
+ */
 @SuppressWarnings("serial")
 public class TimeField extends FComponent {
+	/** @see FComponent#getDescription() */
 	@Override
 	public String getDescription() {
 		return InternationalisationUtils.getI18NString(FrontlineSMSConstants.COMMON_TIME);
 	}
 
+	/** @see FComponent#getIcon() */
 	@Override
 	public String getIcon() {
 		return "timefield.png";
 	}
-	
+
+	/** @see FComponent#getDrawingComponent() */
 	@Override
 	public Container getDrawingComponent() {
 		MaskFormatter mask = null;

@@ -32,19 +32,25 @@ import javax.swing.JPanel;
 import net.frontlinesms.FrontlineSMSConstants;
 import net.frontlinesms.ui.i18n.InternationalisationUtils;
 
-
+/**
+ * FComponent for displaying and editing a line of text on a form.
+ * @author Kadu
+ */
 @SuppressWarnings("serial")
 public class TruncatedText extends FComponent {
+	/** @see FComponent#getDescription() */
 	@Override
 	public String getDescription() {
 		return InternationalisationUtils.getI18NString(FrontlineSMSConstants.COMMON_TRUNCATED_TEXT);
 	}
 
+	/** @see FComponent#getIcon() */
 	@Override
 	public String getIcon() {
 		return "singlelinetext.png";
 	}
 
+	/** @see FComponent#getDrawingComponent() */
 	@Override
 	public Container getDrawingComponent() {
 		JPanel pn = new JPanel();

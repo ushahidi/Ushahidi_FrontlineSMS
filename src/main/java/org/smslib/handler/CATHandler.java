@@ -24,6 +24,7 @@ package org.smslib.handler;
 import java.io.IOException;
 import java.util.*;
 import org.smslib.*;
+import org.smslib.CService.MessageClass;
 import org.apache.log4j.*;
 
 public class CATHandler extends AbstractATHandler {
@@ -86,10 +87,20 @@ public class CATHandler extends AbstractATHandler {
 		String response = serialSendReceive("AT");
 		return response.matches("\\s*[\\p{ASCII}]*\\s+OK\\s");
 	}
+	
+	@Override
+	protected String getPinResponse() throws IOException {
+		return serialSendReceive("AT+CPIN?");
+	}
+	
+	@Override
+	protected boolean isWaitingForPin(String commandResponse) {
+		return commandResponse.contains("SIM PIN");
+	}
 
-	protected boolean waitingForPin() throws IOException {
-		String response = serialSendReceive("AT+CPIN?");
-		return response.contains("SIM PIN");
+	@Override
+	protected boolean isWaitingForPuk(String commandResponse) {
+		return commandResponse.contains("SIM PUK");
 	}
 
 	protected boolean enterPin(String pin) throws IOException {
@@ -167,7 +178,7 @@ public class CATHandler extends AbstractATHandler {
 	}
 
 	protected void switchToCmdMode() throws IOException {
-		serialDriver.send("+++");
+		serialDriver.send("+++" + END_OF_LINE);
 		sleepWithoutInterruption(DELAY_CMD_MODE);
 	}
 
@@ -257,49 +268,19 @@ public class CATHandler extends AbstractATHandler {
 		return Integer.parseInt(bob.toString());		
 	}
 
-	protected String listMessages(int messageClass) throws IOException, UnrecognizedHandlerProtocolException
+	protected String listMessages(MessageClass messageClass) throws IOException, UnrecognizedHandlerProtocolException, SMSLibDeviceException
 	{
+		System.out.println("CATHandler.listMessages() : " + this.getClass().getSimpleName());
+		
 		int messageProtocol = srv.getProtocol();
-		switch (messageProtocol)
-		{
+		switch (messageProtocol) {
 			case CService.Protocol.PDU:
-				switch (messageClass)
-				{
-					case CService.MessageClass.All:
-						serialDriver.send("AT+CMGL=4\r");
-						break;
-					case CService.MessageClass.Unread:
-						serialDriver.send("AT+CMGL=0\r");
-						break;
-					case CService.MessageClass.Read:
-						serialDriver.send("AT+CMGL=1\r");
-						break;
-					default:
-						throw new RuntimeException("Unrecognized PDU message class: " + messageClass);
-				}
-				break;
+				return serialSendReceive("AT+CMGL=" + messageClass.getPduModeId());
 			case CService.Protocol.TEXT:
-				switch (messageClass)
-				{
-					case CService.MessageClass.All:
-						serialDriver.send("AT+CMGL=\"ALL\"\r");
-						break;
-					case CService.MessageClass.Unread:
-						serialDriver.send("AT+CMGL=\"REC UNREAD\"\r");
-						break;
-					case CService.MessageClass.Read:
-						serialDriver.send("AT+CMGL=\"REC READ\"\r");
-						break;
-					default:
-						throw new RuntimeException("Unrecognized TEXT message class: " + messageClass);
-//						throw new OopsException();
-				}
-				break;
+				return serialSendReceive("AT+CMGL=\"" + messageClass.getTextId() + "\"");
 			default:
 				throw new UnrecognizedHandlerProtocolException(messageProtocol);
-//				throw new OopsException();
 		}
-		return serialDriver.getResponse();
 	}
 
 	protected boolean deleteMessage(int memIndex, String memLocation) throws IOException
@@ -332,14 +313,18 @@ public class CATHandler extends AbstractATHandler {
 	}
 	
 	/**
-	 * Writes a command to the serial driver and retrieves the response.
-	 * @param command
+	 * Writes a string to the serial driver, appends a {@link #END_OF_LINE}, and retrieves the response.
+	 * @param command The string to send to the serial device
+	 * @return The response to the issued command, verbatim
+	 * @throws IOException if access to {@link AbstractATHandler#serialDriver} throws an {@link IOException}
 	 */
 	private String serialSendReceive(String command) throws IOException {
 		if(TRACE) log.info("ISSUING COMMAND: " + command);
+		if(TRACE) System.out.println("[" + Thread.currentThread().getName() + "] ISSUING COMMAND: " + command);
 		serialDriver.send(command + END_OF_LINE);
 		String response = serialDriver.getResponse();
 		if(TRACE) log.info("RECEIVED RESPONSE: " + response);
+		if(TRACE) System.out.println("[" + Thread.currentThread().getName() + "] RECEIVED RESPONSE: " + response);
 		return response;
 	}
 	
@@ -349,17 +334,18 @@ public class CATHandler extends AbstractATHandler {
 	 * presence of the command in the response will be removed.
 	 * @param command
 	 * @param removeCommand If set true, the command is removed from the response.
+	 * @return the response to the issued command
+	 * @throws IOException If there was an issue contacting the serial port
 	 */
 	private String executeATCommand(String command, boolean removeCommand) throws IOException {
-		// Issue the
-		if(TRACE) System.out.println("ISSUING COMMAND: " + command);
-		serialDriver.send("AT+" + command + '\r');
-		String response = serialDriver.getResponse();
-		if(TRACE) System.out.println("RECEIVED RESPONSE: " + response);
+		// Issue the command
+		String response = serialSendReceive("AT+"+command);
+		
 		// If requested, remove the command we issued from the response string
 		if(removeCommand) {
 			response = response.replaceAll("\\s*(AT)?\\+" + command + "\\s*", "");
 		}
+		
 		return response;
 	}
 

@@ -21,60 +21,89 @@
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 package org.smslib;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
+import java.io.EOFException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
-import net.frontlinesms.hex.HexUtils;
+import org.smslib.sms.PduInputStream;
+import org.smslib.sms.SmsMessageEncoding;
+import org.smslib.util.GsmAlphabet;
+import org.smslib.util.TpduUtils;
 
-
+/**
+ * Incoming SMS message read from an SMS device.
+ */
 public class CIncomingMessage extends CMessage {
-	/**
-	 * Value of {@link #mpRefNo} when it has not been explicitly set. 
-	 * This should be the value of {@link #mpRefNo} in <em>all</em> single part messages,
-	 * and <em>never</em> for concatenated message parts.
-	 */
-	public static final int CONCAT_REFERENCE_NUMBER_NOT_SET = -1;
 	
+//> INSTANCE PROPERTIES
+	/** Index into the memory location at which this message is stored on the device. */
 	private int memIndex;
+	/**
+	 * The memory location of the message in the device it was read from.
+	 * <p>
+	 * Memory location is a two-char identifier (i.e. SM, SR, etc) which denotes the memory storage of the SMS device.
+	 */
 	private String memLocation;
-	private int mpRefNo = CONCAT_REFERENCE_NUMBER_NOT_SET;
+	/** The reference number set in the concat header, or <code>null</code> if there was no concat header. */
+	private Integer mpRefNo;
+	/** The part count set in the concat header, or <code>0</code> if there was no concat header. */
 	private int mpMaxNo;
+	/** The part number set in the concat header, or <code>0</code> if there was no concat header. */
 	private int mpSeqNo;
 	/** List of memory indexes that a multipart message's parts are located at.  This is not used for single-part messages. */
 	private final List<Integer> mpMemIndex = new ArrayList<Integer>();
-	private String pduUserData;
 
-	public CIncomingMessage(Date date, String originator, String text) {
-		this(date, originator, text, 0, "");
+//> CONSTRUCTORS
+	public CIncomingMessage(String originator, String text) {
+		this(originator, text, 0, "");
+	}
+	
+	public CIncomingMessage(long date, String originator, String text) {
+		this(originator, text, 0, "");
+		setDate(date);
 	}
 
-	public CIncomingMessage(Date date, String originator, String text, int memIndex, String memLocation) {
-		super(MessageType.Incoming, date, originator, null, text);
+	public CIncomingMessage(String originator, String text, int memIndex, String memLocation) {
+		super(MessageType.Incoming, originator, null, text);
 
+		this.memIndex = memIndex;
+		this.memLocation = memLocation;
+	}
+
+	public CIncomingMessage(long date, String originator, String text, int memIndex, String memLocation) {
+		super(MessageType.Incoming, originator, null, text);
+		setDate(date);
 		this.memIndex = memIndex;
 		this.memLocation = memLocation;
 	}
 
 	protected CIncomingMessage(int messageType, int memIndex, String memLocation) {
-		super(messageType, null, null, null, "");
+		super(messageType, null, null, "");
 
 		this.memIndex = memIndex;
 		this.memLocation = memLocation;
 	}
 	
-	protected CIncomingMessage(String pdu, int memIndex, String memLocation) throws MessageDecodeException {
-		super(MessageType.Incoming, null, null, null, "");
+	/**
+	 * Create a new incoming message read from a device.
+	 * @param pdu The PDU of the message, as read from the device
+	 * @param memIndex value for {@link #memIndex}
+	 * @param memLocation value for {@link #memLocation}
+	 * @throws MessageDecodeException
+	 */
+	public CIncomingMessage(String pdu, int memIndex, String memLocation) throws MessageDecodeException {
+		super(MessageType.Incoming, null, null, "");
 
 		this.memIndex = memIndex;
 		this.memLocation = memLocation;
 		
+		System.out.println("PDU: " + pdu);
+		
 		try {
-			ByteArrayInputStream bais = new ByteArrayInputStream(HexUtils.decode(pdu));
-			DataInputStream in = new DataInputStream(bais);
+			PduInputStream in = new PduInputStream(pdu);
 			
+			/** The number of the SMS center.  Not a very interesting thing to know, but still necessary to remove it from the front of the PDU */
+			@SuppressWarnings("unused")
 			String smscNumber = TpduUtils.decodeMsisdnFromAddressField(in, true);
 			
 			// get the front byte, which identifies message content
@@ -95,7 +124,7 @@ public class CIncomingMessage extends CMessage {
 			
 			/** [TP-SCTS: TP-Service-Centre-Time-Stamp] Parameter identifying time when the SC received the message. */
 			long serviceCentreTimeStamp = TpduUtils.decodeServiceCentreTimeStamp(in);
-			this.date = new Date(serviceCentreTimeStamp);
+			setDate(serviceCentreTimeStamp);
 			
 			/** [TP-UDL: TP-User-Data-Length] Length of the UD, specific to the encoding. */
 			int userDataLength = in.read();
@@ -151,7 +180,7 @@ public class CIncomingMessage extends CMessage {
 			int msSeptetCount = 0; 
 			/** The length in octets of the data contained in the MS */
 			int payloadLength;
-			if(messageEncoding == MessageEncoding.Enc7Bit) {
+			if(messageEncoding == SmsMessageEncoding.GSM_7BIT) {
 				// For 7-bit GSM alphabet messages, the TP-UDL is the number of characters in the MS
 				// plus the number of octets in the UDH, including the UDH's length octet.
 				int totalOctets = (int)Math.ceil((userDataLength * 7) / 8.0);
@@ -165,24 +194,20 @@ public class CIncomingMessage extends CMessage {
 			byte[] udWithoutHeader = new byte[payloadLength];
 			in.readFully(udWithoutHeader);
 			
-			if(in.read() != -1) {
+			try {
+				in.read();
 				throw new MessageDecodeException("There were unexpected bytes at the end of this message.");
-			}
+			} catch(EOFException ex) { /* This exception was expected. */ }
 			
-			switch(messageEncoding) {
-			case MessageEncoding.Enc7Bit:
+			if(messageEncoding == SmsMessageEncoding.GSM_7BIT) {
 				// The position of the MS data actually depends on the length of the UDH, for some reason
 				String messageText = GsmAlphabet.bytesToString(GsmAlphabet.octetStream2septetStream(udWithoutHeader, skipBit, msSeptetCount));
 				this.messageText = messageText;
-				break;
-			default:
-				/* Custom message encoding - treat as binary */ 
-			case MessageEncoding.Enc8Bit:
-				this.messageBinary = udWithoutHeader;
-				break;
-			case MessageEncoding.EncUcs2:
+			} else if(messageEncoding == SmsMessageEncoding.UCS2) {
 				this.messageText = TpduUtils.decodeUcs2Text(udWithoutHeader);
-				break;
+			} else {
+				// Treat custom message encoding as binary
+				this.messageBinary = udWithoutHeader;
 			}
 		} catch(MessageDecodeException ex) {
 			// This exception is already handled
@@ -194,16 +219,25 @@ public class CIncomingMessage extends CMessage {
 		}
 	}
 
+//> ACCESSORS
+	/** @param mpSeqNo value for {@link #mpSeqNo} */
 	protected void setMpSeqNo(int mpSeqNo) {
 		this.mpSeqNo = mpSeqNo;
 	}
 
-	protected void setMemIndex(int memIndex) {
-		this.memIndex = memIndex;
+	/** @return {@link #mpRefNo} */
+	public int getMpRefNo() {
+		return mpRefNo;
 	}
 
-	protected void addMpMemIndex(int memIndex) {
-		this.mpMemIndex.add(memIndex);
+	/** @return {@link #mpMaxNo} */
+	protected int getMpMaxNo() {
+		return mpMaxNo;
+	}
+
+	/** @return {@link #mpSeqNo} */
+	protected int getMpSeqNo() {
+		return mpSeqNo;
 	}
 
 	/**
@@ -222,37 +256,33 @@ public class CIncomingMessage extends CMessage {
 		return memIndex;
 	}
 
-	/**
-	 * Returns the memory location of the message.
-	 * <p>
-	 * Memory location is a two-char identifier (i.e. SM, SR, etc) which denotes the memory storage of the phone.
-	 * @return The memory location.
-	 */
+	/** @param memIndex value for {@link #memIndex} */
+	protected void setMemIndex(int memIndex) {
+		this.memIndex = memIndex;
+	}
+
+	/** @return {@link #memLocation} */
 	public String getMemLocation() {
 		return memLocation;
 	}
 
-	/**
-	 * Return the raw PDU data (excluding the pdu user data header, if available)
-	 * @return The PDU user data.
-	 */
-	public String getPDUUserData() {
-		return pduUserData;
-	}
-
-	protected int getMpRefNo() {
-		return mpRefNo;
-	}
-
-	protected int getMpMaxNo() {
-		return mpMaxNo;
-	}
-
-	protected int getMpSeqNo() {
-		return mpSeqNo;
-	}
-
 	protected Integer[] getMpMemIndex() {
 		return mpMemIndex.toArray(new Integer[mpMemIndex.size()]);
+	}
+
+	protected void addMpMemIndex(int memIndex) {
+		this.mpMemIndex.add(memIndex);
+	}
+	
+	/**
+	 * Checks if this {@link CIncomingMessage} is part of a multipart message.
+	 * @return <code>true</code> if this is part of a multipart message; <code>false</code> if it is a single part message.
+	 */
+	protected boolean isMultipart() {
+		// In some cases, we've found that single part messages can come in with a concat header.
+		// This part number check will make sure that "multipart" messages with only one part are
+		// handled properly as lone SMS messages.
+		return this.mpRefNo != null
+				&& this.mpMaxNo > 1;
 	}
 }

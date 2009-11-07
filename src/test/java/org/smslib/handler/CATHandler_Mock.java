@@ -28,6 +28,7 @@ import org.smslib.CSerialDriver;
 import org.smslib.CService;
 import org.smslib.NoResponseException;
 import org.smslib.UnrecognizedHandlerProtocolException;
+import org.smslib.CService.MessageClass;
 
 public class CATHandler_Mock extends CATHandler {
 	private String listMessagesResponse;
@@ -46,7 +47,7 @@ public class CATHandler_Mock extends CATHandler {
 	}
 	
 	@Override
-	protected String listMessages(int messageClass) throws IOException, UnrecognizedHandlerProtocolException {
+	protected String listMessages(MessageClass messageClass) throws IOException, UnrecognizedHandlerProtocolException {
 		if(this.listMessagesResponse == null) {
 			throw new RuntimeException("listMessagesResponse not set, so I don't know how to respond to this!");
 		} else {

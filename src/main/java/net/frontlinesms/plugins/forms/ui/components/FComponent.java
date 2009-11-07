@@ -37,26 +37,24 @@ public abstract class FComponent implements Serializable, Cloneable {
 	/** Value to display for {@link #label} when it is <code>null</code> */
 	public static final String PROPERTY_DISPLAY_VALUE_NO_LABEL = "(no label)";
 	
-	protected int renderHeight = 30;
+	private int renderHeight = 30;
 	protected static final int renderWidth = 205;
 
 	private String label;
 	
+//> ABSTRACT ACCESSORS
+	/** @return the path of the icon to be displayed with this component. */
 	public abstract String getIcon();
 	public abstract String getDescription();
 	public abstract Container getDrawingComponent();
-
-	public FComponent clone() {
-		try {
-			FComponent clone = (FComponent) super.clone();
-			clone.setLabel(this.getLabel());
-			return clone;
-		} catch (CloneNotSupportedException e) {
-			e.printStackTrace();
-			return null;
-		}
+	
+//> ACCESSORS
+	/** @param renderHeight new value for {@link #renderHeight} */
+	public void setRenderHeight(int renderHeight) {
+		this.renderHeight = renderHeight;
 	}
 	
+	/** @return {@link #renderHeight} */
 	public int getHeight() {
 		return renderHeight;
 	}
@@ -83,7 +81,21 @@ public abstract class FComponent implements Serializable, Cloneable {
 	public void setLabel(String label) {
 		this.label = label;
 	}
+
+//> INSTANCE METHODS
+	/** @see Object#clone() */
+	public FComponent clone() {
+		try {
+			FComponent clone = (FComponent) super.clone();
+			clone.setLabel(this.getLabel());
+			return clone;
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
 	
+//> STATIC HELPER METHODS
 	public static FormFieldType getFieldType(Class<? extends FComponent> componentClass) {
 		if(componentClass == CheckBox.class) return FormFieldType.CHECK_BOX;
 		if(componentClass == CurrencyField.class) return FormFieldType.CURRENCY_FIELD;

@@ -6,10 +6,10 @@ import java.util.*;
 import net.frontlinesms.*;
 import net.frontlinesms.data.*;
 import net.frontlinesms.data.domain.*;
-import net.frontlinesms.properties.PropertySet;
+import net.frontlinesms.resources.PropertySet;
 import net.frontlinesms.resources.ResourceUtils;
 import net.frontlinesms.smsdevice.Provider;
-import net.frontlinesms.smsdevice.SmsInternetService;
+import net.frontlinesms.smsdevice.internet.SmsInternetService;
 import net.frontlinesms.smsdevice.properties.*;
 import net.frontlinesms.ui.i18n.InternationalisationUtils;
 
@@ -22,7 +22,7 @@ import thinlet.Thinlet;
  * 
  * @author Alex Anderson, Carlos Eduardo Genz
  */
-public class SmsInternetServiceSettingsHandler {
+public class SmsInternetServiceSettingsHandler implements ThinletUiEventHandler {
 //> CONSTANTS
 	/** Path to XML for UI layout for settings screen, {@link #settingsDialog} */
 	private static final String UI_SETTINGS = "/ui/smsdevice/internet/settings.xml";
@@ -48,7 +48,7 @@ public class SmsInternetServiceSettingsHandler {
 	private Object configurator;
 
 	/** Properties file containing mappings from proeprty names to the icons that should be displayed next to input fields for these properties. */
-	private PropertySet iconProperties;
+	private IconMap iconProperties;
 	/** All possible {@link SmsInternetService} classes available. */
 	private final Collection<Class<? extends SmsInternetService>> internetServiceProviders;
 
@@ -59,7 +59,7 @@ public class SmsInternetServiceSettingsHandler {
 	 */
 	public SmsInternetServiceSettingsHandler(UiGeneratorController controller) {
 		this.controller = controller;
-		iconProperties = PropertySet.load(FrontlineSMSConstants.PROPERTIES_SMS_INTERNET_ICONS);
+		iconProperties = new IconMap(FrontlineSMSConstants.PROPERTIES_SMS_INTERNET_ICONS);
 
 		this.internetServiceProviders = getInternetServiceProviders();
 	}
@@ -99,7 +99,10 @@ public class SmsInternetServiceSettingsHandler {
 		if(newServiceWizard != null) removeDialog(newServiceWizard);
 	}
 
-	/** Shows the general confirmation dialog (for removal). */
+	/**
+	 * Shows the general confirmation dialog (for removal). 
+	 * @param methodToBeCalled the method to be called if the confirmation is affirmative
+	 */
 	public void showConfirmationDialog(String methodToBeCalled){
 		controller.showConfirmationDialog(methodToBeCalled, this);
 	}
@@ -246,7 +249,7 @@ public class SmsInternetServiceSettingsHandler {
 	 * @param dbProperties
 	 */
 	@SuppressWarnings("unchecked")
-	private void loadPropertiesFromDbIntoStructure(Map<String, Object> properties, Map<String, String> dbProperties) {
+	private void loadPropertiesFromDbIntoStructure(Map<String, Object> properties, Map<String, SmsInternetServiceSettingValue> dbProperties) {
 		Map<String, Object> toUpdate = new LinkedHashMap<String, Object>();
 		for (String key : properties.keySet()) {
 			Object value = properties.get(key);
@@ -254,7 +257,7 @@ public class SmsInternetServiceSettingsHandler {
 				OptionalSection section = (OptionalSection) value;
 				value = section.getValue();
 				if (dbProperties.containsKey(key)) {
-					value = SmsInternetServiceSettings.getValueFromString(section, dbProperties.get(key));
+					value = SmsInternetServiceSettings.fromValue(section, dbProperties.get(key));
 				}
 				section.setValue((Boolean) value);
 				loadPropertiesFromDbIntoStructure(section.getDependencies(), dbProperties);
@@ -263,7 +266,7 @@ public class SmsInternetServiceSettingsHandler {
 				OptionalRadioSection section = (OptionalRadioSection) value;
 				value = section.getValue();
 				if (dbProperties.containsKey(key)) {
-					OptionalRadioSection tmp = (OptionalRadioSection) SmsInternetServiceSettings.getValueFromString(section, dbProperties.get(key));
+					OptionalRadioSection tmp = (OptionalRadioSection) SmsInternetServiceSettings.fromValue(section, dbProperties.get(key));
 					section.setValue(tmp.getValue());
 					value = section.getValue();
 				}
@@ -281,7 +284,7 @@ public class SmsInternetServiceSettingsHandler {
 				toUpdate.put(key, section);
 			} else {
 				if (dbProperties.containsKey(key)) {
-					value = SmsInternetServiceSettings.getValueFromString(value, dbProperties.get(key));
+					value = SmsInternetServiceSettings.fromValue(value, dbProperties.get(key));
 					toUpdate.put(key, value);
 				}
 			}
@@ -307,7 +310,7 @@ public class SmsInternetServiceSettingsHandler {
 			SmsInternetService service = (SmsInternetService) controller.getAttachedObject(object);
 			service.stopThisThing();
 			controller.getSmsInternetServices().remove(service);
-			controller.getSmsInternetServiceSettingsFactory().deleteSmsInternetServiceSettings(service.getSettings());
+			controller.getSmsInternetServiceSettingsDao().deleteSmsInternetServiceSettings(service.getSettings());
 			controller.remove(object);
 		}
 		controller.refreshPhonesViews();
@@ -330,7 +333,7 @@ public class SmsInternetServiceSettingsHandler {
 		} catch(MissingResourceException ex) {
 			label = key;
 		}
-		String valueString = SmsInternetServiceSettings.getValueAsString(valueObj);
+		String valueString = SmsInternetServiceSettings.toValue(valueObj).getValue();
 
 		if(valueObj instanceof String || valueObj instanceof Integer || valueObj instanceof PasswordString) {
 			// FIXME can we clean up this use of valueString here?  Surely password string should have
@@ -338,8 +341,8 @@ public class SmsInternetServiceSettingsHandler {
 			// If we have a db value, use that cos it's the right one
 			components = new Object[2];
 			components[0] = controller.createLabel(label);
-			if (iconProperties.getProperty(key) != null) {
-				controller.setIcon(components[0], controller.getIcon(iconProperties.getProperty(key)));
+			if (iconProperties.hasIcon(key)) {
+				controller.setIcon(components[0], controller.getIcon(iconProperties.getIcon(key)));
 			}
 			Object tf;
 			if (valueObj instanceof PasswordString) {
@@ -347,24 +350,24 @@ public class SmsInternetServiceSettingsHandler {
 			} else {
 				tf = controller.createTextfield(key, valueString);
 			}
-			controller.setInteger(tf, Thinlet.ATTRIBUTE_COLUMNS, 25);
+			controller.setColumns(tf, 25);
 			controller.setInteger(tf, "weightx", 1);
 			components[1] = tf;
 		} else if(valueObj instanceof Boolean) {
 			//If we have a db value, use that cos it's the right one
 			Object checkbox = controller.createCheckbox(key, label, Boolean.parseBoolean(valueString));
-			if (iconProperties.getProperty(key) != null) {
-				controller.setIcon(checkbox, controller.getIcon(iconProperties.getProperty(key)));
+			if (iconProperties.hasIcon(key)) {
+				controller.setIcon(checkbox, controller.getIcon(iconProperties.getIcon(key)));
 			}
-			controller.setInteger(checkbox, Thinlet.ATTRIBUTE_COLSPAN, 2);
+			controller.setColspan(checkbox, 2);
 			components = new Object[] {checkbox};
 		} else if (valueObj instanceof PhoneSection) {
 			Object panel = controller.createPanel("pn" + key.replace(".", "_"));
 			controller.setInteger(panel, "gap", 5);
 			controller.setInteger(panel, "weightx", 1);
 			Object lb = controller.createLabel(label);
-			if (iconProperties.getProperty(key) != null) {
-				controller.setIcon(lb, controller.getIcon(iconProperties.getProperty(key)));
+			if (iconProperties.hasIcon(key)) {
+				controller.setIcon(lb, controller.getIcon(iconProperties.getIcon(key)));
 			}
 			//If we have a db value, use that cos it's the right one
 			Object tf = controller.createTextfield(key, valueString);
@@ -375,25 +378,25 @@ public class SmsInternetServiceSettingsHandler {
 			controller.setAttachedObject(bt, tf);
 			controller.add(panel, tf);
 			controller.add(panel, bt);
-			controller.setMethod(bt, Thinlet.ATTRIBUTE_ACTION, "showContacts(this)", panel, this);
+			controller.setAction(bt, "showContacts(this)", panel, this);
 			components = new Object[] {lb, panel};
 		} else if (valueObj instanceof OptionalSection) {
 			OptionalSection section = (OptionalSection) valueObj;
 			boolean toSet = Boolean.parseBoolean(valueString);
 			Object checkbox = controller.createCheckbox(key, label, toSet);
-			if (iconProperties.getProperty(key) != null) {
-				controller.setIcon(checkbox, controller.getIcon(iconProperties.getProperty(key)));
+			if (iconProperties.hasIcon(key)) {
+				controller.setIcon(checkbox, controller.getIcon(iconProperties.getIcon(key)));
 			}
-			controller.setInteger(checkbox, Thinlet.ATTRIBUTE_COLSPAN, 2);
+			controller.setColspan(checkbox, 2);
 			Object panel = controller.createPanel("pn" + key.replace(".", "_"));
-			controller.setInteger(panel, Thinlet.ATTRIBUTE_COLSPAN, 2);
-			controller.setInteger(panel, "columns", 2);
-			controller.setInteger(panel, "gap", 8);
-			controller.setInteger(panel, "top", 10);
+			controller.setColspan(panel, 2);
+			controller.setColumns(panel, 2);
+			controller.setGap(panel, 8);
+			controller.setInteger(panel, "top", 10); // TODO these should call methods in ExtendedThinlet
 			controller.setInteger(panel, "right", 10);
 			controller.setInteger(panel, "left", 10);
 			controller.setInteger(panel, "bottom", 10);
-			controller.setBoolean(panel, Thinlet.BORDER, true);
+			controller.setBorder(panel, true);
 			List<Object> objects = new LinkedList<Object>();
 			objects.add(checkbox);
 			for (String child : section.getDependencies().keySet()) {
@@ -403,23 +406,23 @@ public class SmsInternetServiceSettingsHandler {
 			}
 			objects.add(panel);
 			components = objects.toArray();
-			controller.setMethod(checkbox, Thinlet.ATTRIBUTE_ACTION, "enableFields(this.selected, " + controller.getName(panel) + ")", panel, this);
+			controller.setAction(checkbox, "enableFields(this.selected, " + controller.getName(panel) + ")", panel, this);
 			enableFields(controller.isSelected(checkbox), panel);
 		} else if (valueObj instanceof OptionalRadioSection) {
 			OptionalRadioSection section = (OptionalRadioSection) valueObj;
 			Object panel = controller.createPanel(key);
-			controller.setInteger(panel, Thinlet.ATTRIBUTE_COLSPAN, 2);
-			controller.setInteger(panel, "columns", 1);
-			controller.setInteger(panel, "gap", 8);
-			controller.setInteger(panel, "top", 10);
+			controller.setColspan(panel, 2);
+			controller.setColumns(panel, 1);
+			controller.setGap(panel, 8);
+			controller.setInteger(panel, "top", 10); // TODO these should call methods in ExtendedThinlet
 			controller.setInteger(panel, "right", 10);
 			controller.setInteger(panel, "left", 10);
 			controller.setInteger(panel, "bottom", 10);
 			controller.setInteger(panel, "weightx", 1);
-			controller.setBoolean(panel, Thinlet.BORDER, true);
+			controller.setBorder(panel, true);
 			controller.setText(panel, label);
-			if (iconProperties.getProperty(key) != null) {
-				controller.setIcon(panel, controller.getIcon(iconProperties.getProperty(key)));
+			if (iconProperties.hasIcon(key)) {
+				controller.setIcon(panel, controller.getIcon(iconProperties.getIcon(key)));
 			}
 
 			valueString = valueString.substring(valueString.lastIndexOf(".") + 1);
@@ -431,9 +434,9 @@ public class SmsInternetServiceSettingsHandler {
 					controller.add(panel, rb);
 					Map<String, Object> child = section.getDependencies(val);
 					Object panelChild = controller.createPanel(key + val.ordinal());
-					controller.setInteger(panelChild, Thinlet.ATTRIBUTE_COLSPAN, 2);
-					controller.setInteger(panelChild, "columns", 2);
-					controller.setInteger(panelChild, "gap", 8);
+					controller.setColspan(panelChild, 2);
+					controller.setColumns(panelChild, 2);
+					controller.setGap(panelChild, 8);
 					controller.setInteger(panelChild, "top", 10);
 					controller.setInteger(panelChild, "right", 10);
 					controller.setInteger(panelChild, "left", 10);
@@ -446,7 +449,7 @@ public class SmsInternetServiceSettingsHandler {
 					}
 					controller.add(panel, panelChild);
 					controller.setAttachedObject(rb, panelChild);
-					controller.setMethod(rb, Thinlet.ATTRIBUTE_ACTION, "enableFields(" + controller.getName(panel) + ")", panel, this);
+					controller.setAction(rb, "enableFields(" + controller.getName(panel) + ")", panel, this);
 				}
 				enableFields(panel);
 			} catch (Throwable t) {
@@ -458,17 +461,17 @@ public class SmsInternetServiceSettingsHandler {
 		} else if (valueObj instanceof Enum<?>) {
 			components = new Object[1];
 			Object panel = controller.createPanel(key);
-			controller.setInteger(panel, Thinlet.ATTRIBUTE_COLSPAN, 2);
-			controller.setInteger(panel, "columns", 1);
+			controller.setColspan(panel, 2);
+			controller.setColumns(panel, 1);
 			controller.setInteger(panel, "gap", 8);
 			controller.setInteger(panel, "top", 10);
 			controller.setInteger(panel, "right", 10);
 			controller.setInteger(panel, "left", 10);
 			controller.setInteger(panel, "bottom", 10);
-			controller.setBoolean(panel, Thinlet.BORDER, true);
+			controller.setBorder(panel, true);
 			controller.setText(panel, label);
-			if (iconProperties.getProperty(key) != null) {
-				controller.setIcon(panel, controller.getIcon(iconProperties.getProperty(key)));
+			if (iconProperties.hasIcon(key)) {
+				controller.setIcon(panel, controller.getIcon(iconProperties.getIcon(key)));
 			}
 			try {
 				Method getValues = valueObj.getClass().getMethod("values");
@@ -570,11 +573,12 @@ public class SmsInternetServiceSettingsHandler {
 		SmsInternetServiceSettings serviceSettings = service.getSettings(); 
 		if (serviceSettings == null) {
 			serviceSettings = new SmsInternetServiceSettings(service);
-			controller.getSmsInternetServiceSettingsFactory().saveSmsInternetServiceSettings(serviceSettings);
+			controller.getSmsInternetServiceSettingsDao().saveSmsInternetServiceSettings(serviceSettings);
 		}
-		LinkedHashMap<String, Object> properties = service.getPropertiesStructure();
+		Map<String, Object> properties = service.getPropertiesStructure();
 		saveSettings(pnSmsInternetServiceConfigure, serviceSettings, properties);
-		service.init(serviceSettings);
+		service.setSettings(serviceSettings);
+		controller.getSmsInternetServiceSettingsDao().updateSmsInternetServiceSettings(service.getSettings());
 		// Add this service to the frontline controller.  TODO surely there is a nicer way of doing this?
 		controller.addSmsInternetService(service);
 
@@ -649,4 +653,44 @@ public class SmsInternetServiceSettingsHandler {
 		}
 		return ret;
 	}
+}
+
+final class IconMap extends PropertySet {
+//> STATIC CONSTANTS
+
+//> INSTANCE PROPERTIES
+	
+//> CONSTRUCTORS
+	/**
+	 * Set up a new {@link IconMap}.
+	 * @param name the name of the icon map
+	 */
+	IconMap(String name) {
+		super(name);
+	}
+
+//> ACCESSORS
+	/**
+	 * Check if there is an icon available. 
+	 * @param key The key for the icon.
+	 * @return <code>true</code> if there is an icon specified for this key; <code>false</code> otherwise.
+	 */
+	public boolean hasIcon(String key) {
+		return this.getIcon(key) != null;
+	}
+	
+	/**
+	 * Get the icon path for the specified key.
+	 * @param key
+	 * @return
+	 */
+	public String getIcon(String key) {
+		return super.getProperty(key);
+	}
+
+//> INSTANCE HELPER METHODS
+
+//> STATIC FACTORIES
+
+//> STATIC HELPER METHODS
 }

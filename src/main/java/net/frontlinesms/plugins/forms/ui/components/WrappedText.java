@@ -30,20 +30,28 @@ import javax.swing.JPanel;
 import net.frontlinesms.FrontlineSMSConstants;
 import net.frontlinesms.ui.i18n.InternationalisationUtils;
 
+/**
+ * FComponent for displaying and editing a wrapped block of text on a form.
+ * @author Kadu
+ */
 @SuppressWarnings("serial")
 public class WrappedText extends FComponent {
+	/** Max width, in pixels, of a line of text */
 	private static final int MAX_TEXT_WIDTH_PER_LINE = 194;
 
+	/** @see FComponent#getDescription() */
 	@Override
 	public String getDescription() {
 		return InternationalisationUtils.getI18NString(FrontlineSMSConstants.COMMON_WRAPPED_TEXT);
 	}
 
+	/** @see FComponent#getIcon() */
 	@Override
 	public String getIcon() {
 		return "multilinetext.png";
 	}
 
+	/** @see FComponent#getDrawingComponent() */
 	@Override
 	public Container getDrawingComponent() {
 		JPanel pn = new JPanel();
@@ -58,10 +66,16 @@ public class WrappedText extends FComponent {
 				pn.add(new JLabel(s));
 			}
 		}
-		renderHeight = count == 0 ? 30 : (count * 15) + 30;
+		setRenderHeight(30 + (count * 15));
 		return pn;
 	}
 	
+	/**
+	 * Splits a string of text ready to be displayed in a {@link JPanel}
+	 * @param text the text to split
+	 * @param pn the panel the text will be displayed in
+	 * @return an array containing each line of text to show in the panel
+	 */
 	private String[] wrapText(String text, JPanel pn) {
 		FontMetrics m = pn.getFontMetrics(pn.getFont());
 		int width = m.stringWidth(text);
@@ -73,6 +87,13 @@ public class WrappedText extends FComponent {
 		return ret;
 	}
 
+	/**
+	 * Gets the portion of the string, starting at the beginning, which will fit on one line
+	 * of the visible component. 
+	 * @param text the text to split
+	 * @param m font metrics for the panel which the string will be displayed on
+	 * @return the next line of text to display
+	 */
 	private String getString(String text, FontMetrics m) {
 		int end = 0;
 		String ret = text.substring(0, end);

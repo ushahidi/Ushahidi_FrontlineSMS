@@ -23,11 +23,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Enumeration;
 
-//#ifdef COMM_JAVAX
-import javax.comm.*;
-//#else
-//# import gnu.io.*;
-//#endif
+import serial.*;
 
 import net.frontlinesms.resources.ResourceUtils;
 
@@ -36,9 +32,13 @@ import org.apache.log4j.Logger;
 
 /**
  * Utilities class for managing bugs in javax.comm classes.
+ * 
+ * 
+ * FIXME the {@link #getPortIdentifiers()} method should be grafted into {@link CommPortIdentifier} where it is needed
+ * 
  * @author Alex
  */
-public class CommUtils {
+public final class CommUtils {
 	/** Logging object */
 	private static Logger LOG = Utils.getLogger(CommUtils.class);
 	/**
@@ -46,21 +46,24 @@ public class CommUtils {
 	 * that leads to ports being cached.  For more info on the bug, see http://forum.java.sun.com/thread.jspa?threadID=575580&messageID=2986928
 	 * @return an enumeration of {@link CommPortIdentifier}s, as supplied by {@link CommPortIdentifier#getPortIdentifiers()}
 	 */
-	@SuppressWarnings("unchecked")
-	public static Enumeration<CommPortIdentifier> getPortIdentifiers() {
-		//#if COMM_JAVAX
-		try {
-			Field masterIdList = CommPortIdentifier.class.getDeclaredField("masterIdList");
-			masterIdList.setAccessible(true);
-			masterIdList.set(null, null);
-
-			Method loadDriver = CommPortIdentifier.class.getDeclaredMethod("loadDriver", new Class[] {String.class});			
-			loadDriver.setAccessible(true);
-			loadDriver.invoke(null, new Object[] {ResourceUtils.getConfigDirectoryPath() + "properties/javax.comm.properties"});
-		} catch(Exception ex) {
-			LOG.warn("There was an error trying to reset javax.comm ports cache.", ex);
+	@SuppressWarnings("restriction")
+	public static synchronized Enumeration<CommPortIdentifier> getPortIdentifiers() {
+		/* This method is synchronized to prevent strange things happening when reloading the config etc. */
+		if(SerialClassFactory.PACKAGE_JAVAXCOMM.equals(SerialClassFactory.getInstance().getSerialPackageName())) {
+			try {
+				Class<?> commPortIdentifierClass = javax.comm.CommPortIdentifier.class;
+				
+				Field masterIdList = commPortIdentifierClass.getDeclaredField("masterIdList");
+				masterIdList.setAccessible(true);
+				masterIdList.set(null, null);
+	
+				Method loadDriver = commPortIdentifierClass.getDeclaredMethod("loadDriver", String.class);			
+				loadDriver.setAccessible(true);
+				loadDriver.invoke(null, ResourceUtils.getConfigDirectoryPath() + "properties/javax.comm.properties");
+			} catch(Exception ex) {
+				LOG.warn("There was an error trying to reset javax.comm ports cache.", ex);
+			}
 		}
-		//#endif
 		return CommPortIdentifier.getPortIdentifiers();
 	}
 

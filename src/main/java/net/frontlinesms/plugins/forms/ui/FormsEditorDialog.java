@@ -65,7 +65,7 @@ public class FormsEditorDialog extends JDialog {
 	private JTextField tfFormName;
 	
 	public FormsEditorDialog(Frame owner) {
-		super(owner, "FrontlineSMS - " + InternationalisationUtils.getI18NString(FormsThinletTabController.COMMON_FORMS_EDITOR), true);
+		super(owner, "FrontlineSMS - " + InternationalisationUtils.getI18NString(FormsThinletTabController.I18N_KEY_FORMS_EDITOR), true);
 		propertiesTable = new PropertiesTable();
 		getContentPane().setLayout(new SimpleLayout());
 		pnDrawing = new DrawingPanel();
@@ -80,7 +80,7 @@ public class FormsEditorDialog extends JDialog {
 				save();
 			}
 		});
-		JLabel formName = new JLabel(InternationalisationUtils.getI18NString(FormsThinletTabController.COMMON_FORM_NAME) + ": ");
+		JLabel formName = new JLabel(InternationalisationUtils.getI18NString(FormsThinletTabController.I18N_KEY_FORM_NAME) + ": ");
 		formName.setIcon(new ImageIcon(Utils.getImage("/icons/form.png", getClass())));
 		FontMetrics m = formName.getFontMetrics(formName.getFont());
 		int width = m.stringWidth(formName.getText()) + formName.getIcon().getIconWidth();
@@ -138,7 +138,7 @@ public class FormsEditorDialog extends JDialog {
 		current = pnDrawing.getCurrent();
 		String name = tfFormName.getText();
 		if (name.equals("")) {
-			JOptionPane.showMessageDialog(this, InternationalisationUtils.getI18NString(FormsThinletTabController.MESSAGE_FORM_NAME_BLANK));
+			JOptionPane.showMessageDialog(this, InternationalisationUtils.getI18NString(FormsThinletTabController.I18N_KEY_MESSAGE_FORM_NAME_BLANK));
 			return;
 		}
 		current.setName(name);

@@ -1,5 +1,0 @@
-<panel gap="5">
-    <label text="i18n.sentence.you.can.include"/>
-    <button icon="/icons/user_sender.png" name="btSenderName" text="i18n.common.sender.name"/>
-    <button icon="/icons/phone_number.png" name="btSenderNumber" text="i18n.common.message.sender.number"/>
-</panel>

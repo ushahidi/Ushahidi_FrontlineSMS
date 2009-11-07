@@ -32,24 +32,30 @@ import javax.swing.border.TitledBorder;
 import net.frontlinesms.FrontlineSMSConstants;
 import net.frontlinesms.ui.i18n.InternationalisationUtils;
 
-
+/**
+ * FComponent for displaying and editing a form email field.
+ * @author Kadu
+ */
 @SuppressWarnings("serial")
 public class EmailField extends FComponent {
+	/** Create a new instance of this class and initialise its render height */
 	public EmailField() {
-		super();
-		renderHeight = 60;
+		setRenderHeight(60);
 	}
-	
+
+	/** @see FComponent#getDescription() */
 	@Override
 	public String getDescription() {
 		return InternationalisationUtils.getI18NString(FrontlineSMSConstants.COMMON_E_MAIL_ADDRESS);
 	}
 
+	/** @see FComponent#getIcon() */
 	@Override
 	public String getIcon() {
 		return "emailfield.png";
 	}
 
+	/** @see FComponent#getDrawingComponent() */
 	@Override
 	public Container getDrawingComponent() {
 		JPanel pn = new JPanel();

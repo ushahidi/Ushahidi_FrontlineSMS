@@ -23,6 +23,8 @@ import javax.persistence.*;
 
 import net.frontlinesms.FrontlineSMSConstants;
 import net.frontlinesms.Utils;
+import net.frontlinesms.csv.CsvExporter;
+import net.frontlinesms.csv.CsvUtils;
 import net.frontlinesms.data.EntityField;
 import net.frontlinesms.data.domain.Contact.Field;
 
@@ -45,6 +47,10 @@ public class KeywordAction {
 		/** @see EntityField#getFieldName() */
 		public String getFieldName() { return this.fieldName; }
 	}
+	
+//> CONSTRUCTORS
+	/** Default constructor, to be used by hibernate. */
+	KeywordAction() {}
 	
 //> CONSTANTS
 	/** Action: forward the received message to a group */
@@ -376,14 +382,15 @@ public class KeywordAction {
 	}
 	
 //> PRIVATE ACCESSORS
+	/** @param type value for {@link #type} */
 	private void setType(int type) {
 		this.type = type;
 	}
-
+	/** @param keyword value for {@link #keyword} */
 	private void setKeyword(Keyword keyword) {
 		this.keyword = keyword;
 	}
-
+	/** @param counter value for {@link #counter} */
 	private void setCounter(int counter) {
 		this.counter = counter;
 	}
@@ -466,7 +473,7 @@ public class KeywordAction {
 		 * @param incomingMessageText The text of the received message.
 		 * @return
 		 */
-		public static final String getForwardText(KeywordAction action, Contact sender, String senderMsisdn, String incomingMessageText) throws IllegalStateException{
+		public static final String getForwardText(KeywordAction action, Contact sender, String senderMsisdn, String incomingMessageText) throws IllegalStateException {
 			String senderDisplayName;
 			if(sender != null) senderDisplayName = sender.getDisplayName();
 			else senderDisplayName = senderMsisdn;
@@ -479,7 +486,7 @@ public class KeywordAction {
 		protected static final String getFormattedCommandReply(KeywordAction action, String response) {
 			String command = action.getUnformattedCommandText();
 			 
-			command = command.replace(FrontlineSMSConstants.MARKER_COMMAND_RESPONSE, response);
+			command = command.replace(CsvUtils.MARKER_COMMAND_RESPONSE, response);
 			
 			return command;
 		}
@@ -546,12 +553,12 @@ public class KeywordAction {
 			
 			// TODO perhaps all variables should be subbed?
 			return Utils.replace(unformattedText,
-					FrontlineSMSConstants.MARKER_SENDER_NUMBER,		/*->*/ senderMsisdn,
-					FrontlineSMSConstants.MARKER_KEYWORD_KEY,		/*->*/ keywordInMessage,
-					FrontlineSMSConstants.MARKER_SENDER_NAME,		/*->*/ senderDisplayName,
-					FrontlineSMSConstants.MARKER_SMS_ID,			/*->*/ smsReferenceNumber,
+					CsvUtils.MARKER_SENDER_NUMBER,		/*->*/ senderMsisdn,
+					CsvUtils.MARKER_KEYWORD_KEY,		/*->*/ keywordInMessage,
+					CsvUtils.MARKER_SENDER_NAME,		/*->*/ senderDisplayName,
+					CsvUtils.MARKER_SMS_ID,			/*->*/ smsReferenceNumber,
 					// N.B. message content should always be substituted last to prevent injection attacks
-					FrontlineSMSConstants.MARKER_MESSAGE_CONTENT,	/*->*/ messageWithoutKeyword 
+					CsvUtils.MARKER_MESSAGE_CONTENT,	/*->*/ messageWithoutKeyword 
 					);
 		}
 	}

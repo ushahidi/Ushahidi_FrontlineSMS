@@ -1,3 +1,0 @@
-Generator: Kadu
-Notes: For Eclipse testing purposes only.  Does not appear in production builds.
-Version: 1.6.1

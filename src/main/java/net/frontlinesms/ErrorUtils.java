@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Properties;
 
@@ -68,7 +69,10 @@ import javax.swing.filechooser.FileFilter;
 
 import org.apache.log4j.LogManager;
 
+import serial.SerialClassFactory;
+
 import net.frontlinesms.resources.ResourceUtils;
+import net.frontlinesms.smsdevice.CommProperties;
 import net.frontlinesms.ui.SimpleConstraints;
 import net.frontlinesms.ui.SimpleLayout;
 
@@ -402,7 +406,10 @@ public class ErrorUtils {
 	    Multipart multipart = new MimeMultipart();
 	
 	    StringBuilder sb = new StringBuilder();
-	    getSystemProperties(sb);
+	    appendSystemProperties(sb);
+	    appendCommProperties(sb);
+	    appendPluginProperties(sb);
+	    
 	    // Create a message part to represent the body text
 	    BodyPart messageBodyPart = new MimeBodyPart();
 	    messageBodyPart.setText(sb.toString());
@@ -428,12 +435,55 @@ public class ErrorUtils {
 	    msg.setContent(multipart); 
 	    Transport.send(msg);
 	}
+	
+	/**
+	 * Appends the {@link CommProperties} to the error report body.
+	 * @param bob {@link StringBuilder} used for compiling the body of the error report.
+	 */
+	private static void appendCommProperties(StringBuilder bob) {
+		beginSection(bob, "Comm Properties");
+		
+		bob.append("Serial package name: '" + SerialClassFactory.getInstance().getSerialPackageName() + "'\n");
+		
+		CommProperties properties = CommProperties.getInstance();
+		
+		String[] ignoredPortList = properties.getIgnoreList();
+		bob.append("Ignored ports: " + ignoredPortList.length + "\n");
+		int lastPortIndex = 0;
+		for(String ignoredPort : ignoredPortList) {
+			++lastPortIndex;
+			bob.append("Ignored Port " + lastPortIndex + ": '" + ignoredPort + "'\n");
+		}
+		
+		endSection(bob, "Comm Properties");
+	}
+	
+	/**
+	 * Appends the {@link PluginProperties} to the error report body.
+	 * @param bob {@link StringBuilder} used for compiling the body of the error report.
+	 */
+	private static void appendPluginProperties(StringBuilder bob) {
+		beginSection(bob, "Plugin Properties");
+		
+		PluginProperties pluginProperties = PluginProperties.getInstance();
+
+		Collection<String> pluginClassNameList = pluginProperties.getPluginClassNames();
+		bob.append("Plugins listed: " + pluginClassNameList.size() + "\n");
+		int lastPluginIndex = 0;
+		for(String pluginClassName : pluginClassNameList) {
+			++lastPluginIndex;
+			bob.append("Plugin class " + lastPluginIndex + ": '" + pluginClassName + "'\n");
+		}
+		
+		endSection(bob, "Plugin Properties");
+	}
 
 	/**
 	 * Appends pertinent system properties to a {@link StringBuilder}.
 	 * @param bob
 	 */
-	private static void getSystemProperties(StringBuilder bob) {
+	private static void appendSystemProperties(StringBuilder bob) {
+		beginSection(bob, "System Properties");
 		appendSystemProperty(bob, "OS", "os.name");
 		appendSystemProperty(bob, "OS Architecture", "os.arch");
 		appendSystemProperty(bob, "OS Version", "os.version");
@@ -445,7 +495,7 @@ public class ErrorUtils {
 		
 		
 		appendSystemProperty(bob, "User Country", "user.country");
-		appendSystemProperty(bob, "User home", "user.home");
+		appendSystemProperty(bob, "User home", ResourceUtils.SYSPROPERTY_USER_HOME);
 		appendSystemProperty(bob, "User name", "user.name");
 		appendSystemProperty(bob, "User language", "user.language");
 		
@@ -457,12 +507,34 @@ public class ErrorUtils {
 		appendSystemProperty(bob, "Java VM Version", "java.vm.version");
 		
 		// Including flsms version, so we don't need to open logs to find that out.
-		appendProperty(bob, "FrontlineSMS Version", FrontlineSMSConstants.VERSION);
+		appendProperty(bob, "FrontlineSMS Version", BuildProperties.getInstance().getVersion());
+		
+		endSection(bob, "System Properties");
+	}
+	
+	/**
+	 * Starts a section of the error report body.
+	 * Sections started with this method should be ended with {@link #endSection(StringBuilder, String)}
+	 * @param bob The {@link StringBuilder} used for building the error report body.
+	 * @param sectionName The name of the section of the report that is being started.
+	 */
+	private static void beginSection(StringBuilder bob, String sectionName) {
+		bob.append("\n### Begin Section '" + sectionName + "' ###\n");
+	}
+	
+	/**
+	 * Ends a section of the error report body.
+	 * Sections ended with this should have been started with {@link #beginSection(StringBuilder, String)}
+	 * @param bob The {@link StringBuilder} used for building the error report body.
+	 * @param sectionName The name of the section of the report that is being started.
+	 */
+	private static void endSection(StringBuilder bob, String sectionName) {
+		bob.append("### End Section '" + sectionName + "' ###\n");
 	}
 
 	/**
 	 * Appends a property to the supplied {@link StringBuilder}.  This method should only be called
-	 * by {@link #getSystemProperties(StringBuilder)} and {@link #appendSystemProperty(StringBuilder, String, String)}.
+	 * by {@link #appendSystemProperties(StringBuilder)} and {@link #appendSystemProperty(StringBuilder, String, String)}.
 	 * @param bob
 	 * @param label
 	 * @param value
@@ -476,7 +548,7 @@ public class ErrorUtils {
 	
 	/**
 	 * Appends a system property to the supplied {@link StringBuilder}.  This method should only be called
-	 * by {@link #getSystemProperties(StringBuilder)}.
+	 * by {@link #appendSystemProperties(StringBuilder)}.
 	 * @param bob
 	 * @param label
 	 * @param propertyKey

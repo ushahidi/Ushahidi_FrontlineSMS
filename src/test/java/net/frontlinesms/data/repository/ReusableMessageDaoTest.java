@@ -16,20 +16,29 @@ import junit.framework.TestCase;
  * @author Alex
  */
 public abstract class ReusableMessageDaoTest extends ReusableTestCase<Message> {
+	
+//> STATIC CONSTANTS
+	private static final String ARTHUR = "+44123456789";
+	private static final String BERNADETTE = "+447890123456";
+	
+//> INSTANCE PROPERTIES
 	/** Instance of this DAO implementation we are testing. */
 	private MessageDao dao;
 	/** Logging object */
 	private final Log log = LogFactory.getLog(getClass());
 
+//> ACCESSORS
 	public void setDao(MessageDao dao) {
 		this.dao = dao;
 	}
 	
+//> TEST SETUP METHODS
 	@Override
 	protected void tearDown() throws Exception {
 		this.dao = null;
 	}
 	
+//> JUNIT TESTS
 	/**
 	 * Test everything all at once!
 	 */
@@ -37,8 +46,6 @@ public abstract class ReusableMessageDaoTest extends ReusableTestCase<Message> {
 		checkSanity();
 		
 		long startTime = System.currentTimeMillis();
-		String ARTHUR = "+44123456789";
-		String BERNADETTE = "+447890123456";
 		Message m = Message.createIncomingMessage(startTime + 1000, ARTHUR, BERNADETTE, "Hello mate.");
 		dao.saveMessage(m);
 	
@@ -56,6 +63,7 @@ public abstract class ReusableMessageDaoTest extends ReusableTestCase<Message> {
 		assertEquals(0, dao.getSMSCount(startTime, Long.MAX_VALUE));
 	}
 
+//> INSTANCE HELPER METHODS
 	/**
 	 * Check that various methods agree with each other.
 	 */

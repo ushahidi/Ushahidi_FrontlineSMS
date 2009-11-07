@@ -1,7 +1,0 @@
-### PROPERTIES ENCODING ###
-# This file contains details of language files that need to be read using a special encoding.
-# Unless a different encoding is listed here, it will be assumed to be UTF-8.
-
-# Entries should take the following form:
-#filename.properties=ENCODING
-#frontlineSMS_fi.properties=UTF-8

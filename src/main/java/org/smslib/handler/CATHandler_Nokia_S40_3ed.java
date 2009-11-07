@@ -24,6 +24,7 @@ package org.smslib.handler;
 import java.io.IOException;
 
 import org.smslib.*;
+import org.smslib.CService.MessageClass;
 import org.apache.log4j.*;
 
 /**
@@ -36,35 +37,45 @@ import org.apache.log4j.*;
  *
  */
 public class CATHandler_Nokia_S40_3ed extends CATHandler {
+//> STATIC CONSTANTS
+	/** Logging object */
 	private static final Logger LOG = Logger.getLogger(CATHandler_Nokia_S40_3ed.class);
 	
+//> CONSTRUCTOR
+	/** @see CATHandler#CATHandler(CSerialDriver, Logger, CService) */
 	public CATHandler_Nokia_S40_3ed(CSerialDriver serialDriver, Logger log, CService srv) {
 		super(serialDriver, log, srv);
 		LOG.warn("Receiving SMS not currently supported");
 	}
-	
+
+//> ACCESSORS
+	/** @see CATHandler#getStorageLocations() */	
 	@Override
 	protected void getStorageLocations() throws IOException {
 		LOG.warn("Receiving SMS not currently supported");
 	}
-	
+
+	/** @see CATHandler#listMessages(int) */
 	@Override
-	protected String listMessages(int messageClass) throws IOException, UnrecognizedHandlerProtocolException {
+	protected String listMessages(MessageClass messageClass) throws IOException, UnrecognizedHandlerProtocolException {
 		LOG.warn("Receiving SMS not currently supported");
 		return "";
 	}
 	
+	/** @see CATHandler#deleteMessage(int, String) */
 	@Override
 	protected boolean deleteMessage(int memIndex, String memLocation) throws IOException {
 		LOG.warn("Receiving SMS not currently supported");
 		return false;
 	}
-	
-	@Override
+
 	/**
 	 * For some reason, support for standard use of the SMS inbox using
 	 * AT commands has been disabled in this class of phone.
+	 * @return <code>false</code>, as this class of phone does not support access to the SMS inbox
+	 * @see CATHandler#supportsReceive()
 	 */
+	@Override
 	protected boolean supportsReceive() {
 		return false;
 	}

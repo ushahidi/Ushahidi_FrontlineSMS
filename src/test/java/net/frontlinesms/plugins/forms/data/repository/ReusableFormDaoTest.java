@@ -35,7 +35,7 @@ public abstract class ReusableFormDaoTest extends ReusableTestCase<Form> {
 		assertEquals(0, dao.getAllForms().size());
 		
 		Form myFirstForm = new Form("My First Form");
-		myFirstForm.addField(new FormField(myFirstForm, FormFieldType.WRAPPED_TEXT, "Here is the introductory text to my first form."));
+		myFirstForm.addField(new FormField(FormFieldType.WRAPPED_TEXT, "Here is the introductory text to my first form."));
 		this.dao.saveForm(myFirstForm);
 		
 		assertEquals(1, dao.getAllForms().size());

@@ -3,13 +3,29 @@
  */
 package net.frontlinesms.email.pop;
 
-import java.util.Date;
+import javax.mail.Message;
 
 /**
  * Class that processes messages received from a pop email account.
- * 
  * @author Alex
  */
 public interface PopMessageProcessor {
-	public void processPopMessage(String sender, Date messageSentDate, String subject, String messageText);
+//> STATIC CONSTANTS
+
+//> INSTANCE PROPERTIES
+
+//> CONSTRUCTORS
+
+//> ACCESSORS
+
+//> INSTANCE METHODS
+	/**
+	 * Process an incoming email message 
+	 * @param message the message to process
+	 */
+	public void processPopMessage(Message message);
+
+//> STATIC FACTORIES
+
+//> STATIC HELPER METHODS
 }

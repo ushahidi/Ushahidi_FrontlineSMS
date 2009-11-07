@@ -13,8 +13,8 @@ import java.util.Arrays;
 import junit.framework.TestCase;
 
 /**
+ * Test class for {@link CsvImporter}.
  * @author Alex
- *
  */
 public class CsvImportTests extends TestCase {
 	/** Path to the test resources folder.  TODO should probably get these relative to the current {@link ClassLoader}'s path. */
@@ -36,6 +36,8 @@ public class CsvImportTests extends TestCase {
 	/**
 	 * Get all import test files from /test/net/frontlinesms/csv/import/, and read
 	 * them in.  Compare them to test results, which are hard coded here.
+	 * @throws IOException 
+	 * @throws CsvParseException 
 	 */
 	public void testImports_good() throws IOException, CsvParseException {
 		File importTestsDir = new File(RESOURCE_PATH);
@@ -62,6 +64,12 @@ public class CsvImportTests extends TestCase {
 		}
 	}
 
+	/**
+	 * @param importTestFile
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 * @throws CsvParseException
+	 */
 	private void testCsvFile(File importTestFile) throws FileNotFoundException,
 			IOException, CsvParseException {
 		FileReader reader = new FileReader(importTestFile);
@@ -92,6 +100,10 @@ public class CsvImportTests extends TestCase {
 		}
 	}
 	
+	/**
+	 * @param strings
+	 * @return The list of Strings contained in a pair of braces and separated by commas
+	 */
 	private static final String toString(String[] strings) {
 		String ret = "{";
 		for(String s : strings) {

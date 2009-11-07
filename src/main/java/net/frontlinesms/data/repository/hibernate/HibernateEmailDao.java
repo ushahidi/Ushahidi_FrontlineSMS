@@ -61,4 +61,9 @@ public class HibernateEmailDao extends BaseHibernateDao<Email> implements EmailD
 		super.saveWithoutDuplicateHandling(email);
 	}
 
+	/** @see EmailDao#updateEmail(Email) */
+	public void updateEmail(Email email) {
+		super.updateWithoutDuplicateHandling(email);
+	}
+
 }

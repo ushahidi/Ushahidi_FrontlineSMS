@@ -32,19 +32,25 @@ import javax.swing.JPasswordField;
 import net.frontlinesms.FrontlineSMSConstants;
 import net.frontlinesms.ui.i18n.InternationalisationUtils;
 
-
+/**
+ * FComponent for displaying and editing a form password field.
+ * @author Kadu
+ */
 @SuppressWarnings("serial")
 public class PasswordField extends FComponent {
+	/** @see FComponent#getDescription() */
 	@Override
 	public String getDescription() {
 		return InternationalisationUtils.getI18NString(FrontlineSMSConstants.COMMON_PASSWORD);
 	}
 
+	/** @see FComponent#getIcon() */
 	@Override
 	public String getIcon() {
 		return "passwordfield.png";
 	}
 
+	/** @see FComponent#getDrawingComponent() */
 	@Override
 	public Container getDrawingComponent() {
 		JPanel pn = new JPanel();

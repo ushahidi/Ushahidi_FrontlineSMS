@@ -18,36 +18,21 @@
  * along with FrontlineSMS. If not, see <http://www.gnu.org/licenses/>.
  */
 package net.frontlinesms.smsdevice;
-// TODO refactor to net.frontlinesms.smsdevice
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.TooManyListenersException;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-//#ifdef COMM_JAVAX
-import javax.comm.*;
-//#else
-//# import gnu.io.*;
-//#endif
+import serial.*;
 
-import net.frontlinesms.*;
-import net.frontlinesms.FrontlineSMSConstants.Dependants;
+import net.frontlinesms.Utils;
 import net.frontlinesms.data.domain.*;
 import net.frontlinesms.listener.SmsListener;
 import net.frontlinesms.resources.ResourceUtils;
-import net.frontlinesms.ui.i18n.InternationalisationUtils;
 
 import org.apache.log4j.Logger;
-import org.smslib.CIncomingMessage;
-import org.smslib.COutgoingMessage;
-import org.smslib.CService;
-import org.smslib.GsmNetworkRegistrationException;
-import org.smslib.NotConnectedException;
-import org.smslib.ReceiveNotSupportedException;
-import org.smslib.UnrecognizedHandlerProtocolException;
+import org.smslib.*;
+import org.smslib.CService.MessageClass;
 
 /**
  * Class for handling the serial connection to an individual SMS device.
@@ -57,20 +42,13 @@ import org.smslib.UnrecognizedHandlerProtocolException;
  * @author Carlos Eduardo Genz kadu(at)masabi(dot)com
  */
 public class SmsModem extends Thread implements SmsDevice {
+	
+//> CONSTANTS
 	private static final boolean SEND_BULK = true;
 	private static final int SMS_BULK_LIMIT = 10;
 
-	private static HashMap<String, String> cathandlerAliases = initAliasesFromFile(ResourceUtils.getConfigDirectoryPath() + "conf/CATHandlerAliases.txt");
-	private static HashMap<String, String> manufacturerAliases = initAliasesFromFile(ResourceUtils.getConfigDirectoryPath() + "conf/manufacturerAliases.txt");
-	private static HashMap<String, String> modelAliases = initAliasesFromFile(ResourceUtils.getConfigDirectoryPath() + "conf/modelAliases.txt");
-
 	/** The time, in millis, that this phone handler must have been unresponsive for before it is deemed TIMED OUT */
 	private static final int TIMEOUT = 80 * 1000; // = 80 seconds;
-
-	/**
-	 * Watchdog to monitor when a phone handler has lost communication with the phone
-	 */
-	private long timeOfLastResponseFromPhone;
 
 	/** The different baud rates that a PhoneHandler may connect at. */
 	private static final int[] COMM_SPEEDS = new int[] {
@@ -83,6 +61,19 @@ public class SmsModem extends Thread implements SmsDevice {
 		460800,
 		921600
 	};
+
+	/** Logging object */
+	private static Logger LOG = Utils.getLogger(SmsModem.class);
+		
+//> PROPERTIES
+	private static HashMap<String, String> cathandlerAliases = initAliasesFromFile(ResourceUtils.getConfigDirectoryPath() + "conf/CATHandlerAliases.txt");
+	private static HashMap<String, String> manufacturerAliases = initAliasesFromFile(ResourceUtils.getConfigDirectoryPath() + "conf/manufacturerAliases.txt");
+	private static HashMap<String, String> modelAliases = initAliasesFromFile(ResourceUtils.getConfigDirectoryPath() + "conf/modelAliases.txt");
+
+	/**
+	 * Watchdog to monitor when a phone handler has lost communication with the phone
+	 */
+	private long timeOfLastResponseFromPhone;
 
 	private final LinkedList<CIncomingMessage> inbox = new LinkedList<CIncomingMessage>();
 	private final ConcurrentLinkedQueue<Message> outbox = new ConcurrentLinkedQueue<Message>();
@@ -131,10 +122,18 @@ public class SmsModem extends Thread implements SmsDevice {
 	private int batteryPercent;
 	private int signalPercent;
 	private String msisdn;
-	private String statusString = Dependants.STATUS_CODE_MESSAGES[STATUS_DORMANT]; // FIXME this should set status as a number, not as a String!!!
+	
+	/** The status of this device */
+	private SmsModemStatus status = SmsModemStatus.DORMANT;
+	/** Extra info relating to the current status. */
+	private String statusDetail;
 
-	private static Logger LOG = Utils.getLogger(SmsModem.class);
-
+//> CONSTRUCTORS
+	/**
+	 * Create a new instance {@link SmsModem}
+	 * @param portName the name of the port which this modem is found on.  Value for {@link #portName}
+	 * @param smsListener the value for {@link #smsListener} 
+	 */
 	public SmsModem(String portName, SmsListener smsListener) {
 		super("SmsModem :: " + portName);
 
@@ -147,13 +146,41 @@ public class SmsModem extends Thread implements SmsDevice {
 		try {
 			String currentOwner = CommPortIdentifier.getPortIdentifier(this.portName).getCurrentOwner();
 			if(currentOwner == null) currentOwner = "";
-			statusString = InternationalisationUtils.getI18NString(FrontlineSMSConstants.MESSAGE_OWNER_IS).replace(FrontlineSMSConstants.ARG_VALUE, currentOwner);
-			if (smsListener != null) smsListener.smsDeviceEvent(this, STATUS_DORMANT);
+			
+			this.setStatus(SmsModemStatus.OWNED_BY_SOMEONE_ELSE, currentOwner);
 		} catch (NoSuchPortException e) {
 			LOG.debug("Error getting owner from port", e);
 			//doesn't matter if it doesn't get this message
 			// TODO surely this NoSuchPortException should be thrown
 		}
+	}
+	
+//> ACCESSOR METHODS
+	/** @return {@link #status} */
+	public SmsDeviceStatus getStatus() {
+		return this.status;
+	}
+	
+	/**
+	 * Set the status of this {@link SmsModem}, and fires an event to {@link #smsListener}
+	 * @param status the status
+	 * @param detail detail relating to the status
+	 */
+	private void setStatus(SmsModemStatus status, String detail) {
+		this.status = status;
+		this.statusDetail = detail;
+		LOG.debug("Status [" + status.name()
+				+ (detail == null?"":": "+detail)
+				+ "]");
+		
+		if (smsListener != null) {
+			smsListener.smsDeviceEvent(this, this.status);
+		}
+	}
+	
+	/** @return {@link #statusDetail} */
+	public String getStatusDetail() {
+		return this.statusDetail;
 	}
 
 	/**
@@ -194,10 +221,6 @@ public class SmsModem extends Thread implements SmsDevice {
 		return timedOut;
 	}
 
-	public String getStatusString() {
-		return statusString;
-	}
-
 	public int getBaudRate() {
 		return baudRate;
 	}
@@ -220,69 +243,6 @@ public class SmsModem extends Thread implements SmsDevice {
 	 */
 	public boolean isConnected() {
 		return smsLibConnected;
-	}
-
-	protected void disconnecting() {
-		disconnecting = true;
-		if(this.supportsReceive())
-			this.setUseForReceiving(false);
-		setUseForSending(false);
-		statusString = Dependants.STATUS_CODE_MESSAGES[STATUS_DISCONNECTING] + "...";
-		LOG.debug("Status [" + statusString + "]");
-		if (smsListener != null) smsListener.smsDeviceEvent(this, STATUS_DISCONNECTING);
-		disconnect(true);
-		disconnecting = false;
-	}
-
-	/**
-	 * Forces the phone to disconnect from the COM port and close all listeners.
-	 */
-	public synchronized void disconnect() {
-		if (isConnected()) {
-			// Actually disconnecting the phone!
-			new Thread("Disconnecting [" + this.getName() + "]") {
-				public void run() {
-					disconnecting();
-				}
-			}.start();
-		} else {
-			disconnect(true);
-		}
-	}
-
-	/**
-	 * Forces the phone to disconnect from the COM port and close all listeners.
-	 * @param setStatusString set TRUE if status string should be updated.  This will likely only be set false when doing phone detection. 
-	 */
-	private void disconnect(boolean setStatusString) {
-		LOG.trace("ENTER");
-		try {
-			cService.disconnect();
-		} catch(Throwable t) {
-			// If anything goes wrong in the disconnect, we want to make
-			// sure we still kill the serialDriver.  Any throwables can
-			// be ignored.
-			LOG.debug("Error disconnecting", t);
-			try { 
-				cService.serialDriver.close(); 
-			} catch(Throwable th) {
-				LOG.debug("Error disconnecting", th);
-			}
-		}
-		timeOfLastResponseFromPhone = 0;
-		disconnected = true;
-		smsLibConnected = false;
-		if(setStatusString && !isDuplicate()) {
-			statusString = Dependants.STATUS_CODE_MESSAGES[STATUS_DISCONNECTED] + ".";
-			LOG.debug("Status [" + statusString + "]");
-			if (smsListener != null) smsListener.smsDeviceEvent(this, STATUS_DISCONNECTED);
-		}
-		
-		for (Message m : outbox) {
-			m.setStatus(Message.STATUS_FAILED);
-			if (smsListener != null) smsListener.outgoingMessageEvent(this, m);
-		}
-		LOG.trace("EXIT");
 	}
 
 	/* (non-Javadoc)
@@ -317,13 +277,19 @@ public class SmsModem extends Thread implements SmsDevice {
 	public boolean isDuplicate() {
 		return duplicate;
 	}
+	
+	/**
+	 * Sets the status of this modem.  If the status is {@link SmsModemStatus#DUPLICATE}, an
+	 * event will be triggered with {@link #smsListener}.
+	 * @param newDuplicate new value for {@link #duplicate}
+	 */
 	public void setDuplicate(boolean newDuplicate) {
 		duplicate = newDuplicate;
 		if (duplicate) {
-			statusString = Dependants.STATUS_CODE_MESSAGES[STATUS_DUPLICATE];
-			if (smsListener != null) smsListener.smsDeviceEvent(this, STATUS_DUPLICATE);
+			this.setStatus(SmsModemStatus.DUPLICATE, null);
 		}
 	}
+	
 	/**
 	 * Checks if this instance of PhoneHandler has a phone present.
 	 * @return true if this has a phone present, false otherwise.
@@ -332,14 +298,17 @@ public class SmsModem extends Thread implements SmsDevice {
 		return phonePresent;
 	}
 
+	/** @return {@link #manufacturer} */
 	public String getManufacturer() {
 		return manufacturer;
 	}
 
+	/** @return {@link #model} */
 	public String getModel() {
 		return model;
 	}
 
+	/** @return {@link #serialNumber} */
 	public String getSerial() {
 		return serialNumber;
 	}
@@ -368,9 +337,8 @@ public class SmsModem extends Thread implements SmsDevice {
 				+ "\n - Model [" + modelName + "]"
 				+ "\n - CAT Handler Alias [" + preferredCATHandler + "]");
 
-		statusString = Dependants.STATUS_CODE_MESSAGES[STATUS_TRY_TO_CONNECT] + "...";
-		LOG.debug("Status [" + statusString + "]");
-		if (smsListener != null) smsListener.smsDeviceEvent(this, STATUS_TRY_TO_CONNECT);
+		this.setStatus(SmsModemStatus.TRY_TO_CONNECT, Integer.toString(maxSpeedRequested));
+		
 		resetWatchdog();
 		cService = new CService(this.portName, maxSpeedRequested, manufacturerName, modelName, preferredCATHandler);
 		LOG.debug("Created service [" + cService + "]");
@@ -421,9 +389,8 @@ public class SmsModem extends Thread implements SmsDevice {
 					+ "\n - Signal Level [" + cService.getDeviceInfo().getSignalLevel() + "%]"
 					+ "\n - Baud Rate [" + baudRate + "]");
 
-			statusString = Dependants.STATUS_CODE_MESSAGES[STATUS_CONNECTING] + "...";
-			LOG.debug("Status [" + statusString + "]");
-			if (smsListener != null) smsListener.smsDeviceEvent(this, STATUS_CONNECTING);
+			this.setStatus(SmsModemStatus.CONNECTING, null);
+			
 			if (isDuplicate()) {
 				disconnect(false);
 				return false;
@@ -431,23 +398,19 @@ public class SmsModem extends Thread implements SmsDevice {
 			phonePresent = true;
 			autoReconnect = true;
 			smsLibConnected = true;
-			statusString = Dependants.STATUS_CODE_MESSAGES[STATUS_CONNECTED] + Dependants.TEXT_AT_SPEED.replaceAll(FrontlineSMSConstants.ARG_VALUE, String.valueOf(maxSpeedRequested)) + " bps.";
-			LOG.debug("Status [" + statusString + "]");
-			if (smsListener != null) smsListener.smsDeviceEvent(this, STATUS_CONNECTED);
+			
+			this.setStatus(SmsModemStatus.CONNECTED, Integer.toString(maxSpeedRequested));
+			
 			resetWatchdog();
 			LOG.debug("Connection successful!");
 			LOG.trace("EXIT");
 			return true;
 		} catch (GsmNetworkRegistrationException e) {
-			LOG.debug("GSM Registration failed", e);
-			statusString = Dependants.STATUS_CODE_MESSAGES[STATUS_SIM_REFUSED]+ ": " + InternationalisationUtils.getI18NString(FrontlineSMSConstants.MESSAGE_GSM_REGISTRATION_FAILED);
-			LOG.debug("Status [" + statusString + "]");
-			if (smsListener != null) smsListener.smsDeviceEvent(this, STATUS_SIM_REFUSED);
-		} catch (Exception e) {
-			LOG.debug("Failed to connect", e);
-			statusString = Dependants.STATUS_CODE_MESSAGES[STATUS_DISCONNECTED]+ ": " + InternationalisationUtils.getI18NString(FrontlineSMSConstants.MESSAGE_FAILED_TO_CONNECT);
-			LOG.debug("Status [" + statusString + "]");
-			if (smsListener != null) smsListener.smsDeviceEvent(this, STATUS_DISCONNECTED);
+			this.setStatus(SmsModemStatus.GSM_REG_FAILED, null);
+		} catch (SMSLibDeviceException ex) {
+			this.setStatus(SmsModemStatus.FAILED_TO_CONNECT, ex.getClass().getCanonicalName() + " : " + ex.getMessage());
+		} catch (Exception ex) {
+			this.setStatus(SmsModemStatus.DISCONNECTED, ex.getClass().getCanonicalName() + " : " + ex.getMessage());
 		}
 		LOG.debug("Connection failed!");
 		LOG.trace("EXIT");
@@ -530,7 +493,12 @@ public class SmsModem extends Thread implements SmsDevice {
 					}
 				} catch(UnrecognizedHandlerProtocolException ex) {
 					LOG.debug("Invalid protocol", ex);
-				} catch(NotConnectedException ex) {
+				} catch(UnableToReconnectException ex) {
+					LOG.debug("Fatal exception in device communication.", ex);
+					this.setAutoReconnect(false);
+					setStatus(SmsModemStatus.DISCONNECT_FORCED, ex.getMessage());
+					disconnect(false);
+				} catch(SMSLibDeviceException ex) {
 					LOG.debug("Phone not connected", ex);
 					disconnect(true);
 				} catch(IOException ex) {
@@ -545,7 +513,6 @@ public class SmsModem extends Thread implements SmsDevice {
 				tryToConnect = true;
 			} else {
 				running = false;
-				if(smsListener != null) smsListener.smsDeviceEvent(this, STATUS_DISCONNECTED);
 			}
 			// If this thread is still running, we should have a little snooze as
 			// checking the phone continuously for messages will:
@@ -602,9 +569,9 @@ public class SmsModem extends Thread implements SmsDevice {
 		detecting = true;
 		int maxBaudRate = 0;
 		boolean phoneFound = false;
-		statusString = Dependants.STATUS_CODE_MESSAGES[STATUS_SEARCHING] + "...";
-		LOG.debug("Status [" + statusString + "]");
-		if (smsListener != null) smsListener.smsDeviceEvent(this, STATUS_SEARCHING);
+		
+		this.setStatus(SmsModemStatus.SEARCHING, null);
+		
 		for (int currentBaudRate : COMM_SPEEDS) {
 			if (!isDetecting()) {
 				disconnect(true);
@@ -612,10 +579,7 @@ public class SmsModem extends Thread implements SmsDevice {
 			}
 			LOG.debug("Testing baud rate [" + currentBaudRate + "]");
 			if (maxBaudRate == 0) {
-				statusString = Dependants.STATUS_CODE_MESSAGES[STATUS_SEARCHING] + Dependants.TEXT_AT_SPEED.replace(FrontlineSMSConstants.ARG_VALUE, String.valueOf(currentBaudRate)) + " bps...";
-				LOG.debug("Status [" + statusString + "]");
-				if (smsListener!=null) 
-					smsListener.smsDeviceEvent(this, STATUS_SEARCHING);
+				this.setStatus(SmsModemStatus.SEARCHING, Integer.toString(currentBaudRate));
 			}
 
 			resetWatchdog();
@@ -633,9 +597,7 @@ public class SmsModem extends Thread implements SmsDevice {
 				if (response.contains("OK")) {
 					phoneFound = true;
 					maxBaudRate = currentBaudRate;
-					statusString = Dependants.STATUS_CODE_MESSAGES[STATUS_DETECTED] + Dependants.TEXT_AT_SPEED.replace(FrontlineSMSConstants.ARG_VALUE, String.valueOf(maxBaudRate)) + "bps." + InternationalisationUtils.getI18NString(FrontlineSMSConstants.MESSAGE_CONTINUING_TO_SEARCH_FOR_HIGHER_SPEED);
-					LOG.debug("Status [" + statusString + "]");
-					if (smsListener != null) smsListener.smsDeviceEvent(this, STATUS_DETECTED);
+					setStatus(SmsModemStatus.DETECTED, Integer.toString(currentBaudRate));
 				} 
 			} catch(IOException ex) {
 				// TODO Here, we've caught an IOException.  This could be something
@@ -659,10 +621,7 @@ public class SmsModem extends Thread implements SmsDevice {
 
 		if (!phoneFound) {
 			disconnect(false);
-			statusString = Dependants.STATUS_CODE_MESSAGES[STATUS_NO_PHONE_DETECTED];
-			LOG.debug("Status [" + statusString + "]");
-			if (smsListener != null) 
-				smsListener.smsDeviceEvent(this, STATUS_NO_PHONE_DETECTED);
+			setStatus(SmsModemStatus.NO_PHONE_DETECTED, null);
 		} else {
 			try {
 				baudRate = maxBaudRate;
@@ -701,11 +660,7 @@ public class SmsModem extends Thread implements SmsDevice {
 					LOG.debug("Invalid Battery value [" + this.batteryPercent + "]", ex);
 				}
 
-				statusString = Dependants.STATUS_CODE_MESSAGES[STATUS_DETECTED] + ", " + InternationalisationUtils.getI18NString(FrontlineSMSConstants.MESSAGE_READY_TO_CONNECT);
-				LOG.debug("Status [" + statusString + "]");
-				if (smsListener != null) {
-					smsListener.smsDeviceEvent(this, STATUS_MAX_SPEED_FOUND);
-				}
+				this.setStatus(SmsModemStatus.MAX_SPEED_FOUND, Integer.toString(maxBaudRate));
 				if(!duplicate) {
 					tryToConnect = true;
 				}
@@ -738,16 +693,15 @@ public class SmsModem extends Thread implements SmsDevice {
 	 * Checks if there is new messages ready to be read from the attached device.
 	 * 
 	 * @throws IOException
-	 * @throws NotConnectedException
-	 * @throws UnrecognizedHandlerProtocolException
 	 * @return The number of new messages retrieved
+	 * @throws SMSLibDeviceException 
 	 */
 	@SuppressWarnings("unchecked")
-	public int checkForMessages() throws IOException, NotConnectedException, UnrecognizedHandlerProtocolException {	
+	public int checkForMessages() throws IOException, SMSLibDeviceException {	
 		LOG.trace("ENTER");
 		LinkedList messageList = new LinkedList();
 		resetWatchdog();
-		cService.readMessages(messageList, CService.MessageClass.All); 
+		cService.readMessages(messageList, MessageClass.UNREAD); 
 		resetWatchdog();
 
 		int messagesRead = messageList.size();
@@ -759,7 +713,6 @@ public class SmsModem extends Thread implements SmsDevice {
 			try {
 				LOG.debug("- From [" + msg.getOriginator() + "]"
 						+ "\n -Message [" + msg.getText() + "]"
-						+ "\n -PDU [" + msg.getPDUUserData() + "]"
 						+ "\n -ID [" + msg.getId() + "]"
 						+ "\n -Mem Index [" + msg.getMemIndex() + "]"
 						+ "\n -Mem Location [" + msg.getMemLocation() + "]"
@@ -839,7 +792,7 @@ public class SmsModem extends Thread implements SmsDevice {
 		try {
 			cService.sendMessage(cMessage);
 			if (cMessage.getRefNo() != -1) {
-				message.setDispatchDate(cMessage.getDispatchDate().getTime());
+				message.setDispatchDate(cMessage.getDispatchDate());
 				message.setSmscReference(cMessage.getRefNo());
 				message.setStatus(Message.STATUS_SENT);
 				LOG.debug("Message [" + message + "] was sent!");
@@ -861,141 +814,7 @@ public class SmsModem extends Thread implements SmsDevice {
 		}
 	}
 
-	/**
-	 * Sends directly the informed message list.
-	 * 
-	 * @param smsMessages
-	 * @return true if there was no problem sending messages, false otherwise.
-	 * @throws IOException 
-	 */
-	private void sendSmsListDirect(List<Message> smsMessages) throws IOException {
-		LOG.trace("ENTER");
-
-		try {
-			cService.keepGsmLinkOpen();
-			for (Message message : smsMessages) {
-				LOG.debug("Sending [" + message.getTextContent() + "] to [" + message.getRecipientMsisdn() + "]");
-				COutgoingMessage cMessage;
-
-				// If it's a binary message, we set the encoding to send it.
-				if (message.isBinaryMessage()) {
-					cMessage = new COutgoingMessage(message.getRecipientMsisdn(), message.getBinaryContent());
-					cMessage.setDestinationPort(message.getRecipientSmsPort());
-				} else {
-					cMessage = new COutgoingMessage(message.getRecipientMsisdn(), message.getTextContent());
-				}
-
-				// Do we require a Delivery Status Report?
-				cMessage.setStatusReport(this.useDeliveryReports);
-
-				// Ok, finished with the message parameters, now send it!
-				try {
-					cService.sendMessage(cMessage);
-					if (cMessage.getRefNo() != -1) {
-						message.setDispatchDate(cMessage.getDispatchDate().getTime());
-						message.setSmscReference(cMessage.getRefNo());
-						message.setStatus(Message.STATUS_SENT);
-						LOG.debug("Message [" + message + "] was sent!");
-					} else {
-						//message not sent
-						//failed to send
-						message.setStatus(Message.STATUS_FAILED);
-						LOG.debug("Message [" + message + "] was not sent!");
-					}
-				} catch(Exception ex) {
-					message.setStatus(Message.STATUS_FAILED);
-					LOG.debug("Failed to send message [" + message + "]", ex);
-					LOG.info("Failed to send message");
-				} finally {
-					if (smsListener != null) {
-						smsListener.outgoingMessageEvent(this, message);
-					}
-				}
-			}
-		} finally {
-			for (Message m : smsMessages) {
-				if (m.getStatus() == Message.STATUS_PENDING) {
-					outbox.add(m);
-				}
-			}
-		}
-		LOG.trace("EXIT");
-	}
-
-	public static SmsModem createEmulator(String number) {
-		SmsModem emulator = new SmsModem(null, null);
-		emulator.setMsisdn(number);
-		return emulator;
-	}
-
-	/**
-	 * Loads a translation map from a file of the following format: 
-	 *	Split the line.  It should be of the following format:
-	 *	<officialName><whiteSpace><alternateName1>,<alternateName2>,...,<alternateNameN>
-	 * @param fileName
-	 * @return
-	 */
-	private static final HashMap<String, String> initAliasesFromFile(String filename) {
-		String[] fileContents = ResourceUtils.getUsefulLines(filename);
-		
-		// map from alternate names to offical names.
-		HashMap<String, String> map = new HashMap<String, String>();
-		for(String line : fileContents) {
-			// Split the line.  It should be of the following format:
-			// 	<officialName>		<alternateName1>,<alternateName2>,...,<alternateNameN>
-			String[] words = line.split("\\s", 2);
-			String officialName = words[0];
-			map.put(officialName.toLowerCase(), officialName);
-			if (words.length > 1) {
-				words = words[1].split(",");
-				for (String word : words) {
-					map.put(word.trim().toLowerCase(), officialName);
-				}
-			}
-		}
-		
-		return map;
-	}
-
-	/**
-	 * Translates the manufacture to a user-friendly string.
-	 * 
-	 * @param manufacturer
-	 * @return
-	 */
-	private static final String translateManufacturer(String manufacturer) {
-		manufacturer = manufacturer.trim();
-		String alias = manufacturerAliases.get(manufacturer.toLowerCase());
-		if(alias == null) return manufacturer;
-		else return alias;
-	}
-
-	/**
-	 * Translates the model to a user-friendly string.
-	 * 
-	 * @param model
-	 * @return
-	 */
-	private static final String translateModel(String manufacturer, String model) {
-		model = model.trim();
-		model = model.replace("\\s", "");
-		model = model.replace(manufacturer, "");
-		String alias = modelAliases.get(model.toLowerCase());
-		if (alias == null) return model;
-		else return alias;
-	}
-
-	/**
-	 * Attempts to get a mapping from a particular make and model to a CATHandler
-	 * 
-	 * @param model
-	 * @param model 
-	 * @return
-	 */
-	private static final String translateCATHandlerModel(String manufacturer, String model) {
-		return cathandlerAliases.get(manufacturer.toLowerCase() + "_" + model.toLowerCase());
-	}
-
+	/** @param msisdn new value for {@link #msisdn} */
 	public void setMsisdn(String msisdn) {
 		this.msisdn = msisdn;
 	}
@@ -1035,25 +854,235 @@ public class SmsModem extends Thread implements SmsDevice {
 
 	/**
 	 * Set the baud rate that this phone should connect at.
-	 * @param baudRate
+	 * @param baudRate new value for {@link #baudRate}
 	 */
 	public void setBaudRate(int baudRate) {
 		this.baudRate = baudRate;
 	}
 
-	public boolean isDisconnecting() {
-		return disconnecting;
-	}
-	
+	/** @see SmsDevice#setSmsListener(SmsListener) */
 	public void setSmsListener(SmsListener smsListener) {
 		this.smsListener = smsListener;
 	}
 
+	/** @see SmsDevice#isBinarySendingSupported() */
 	public boolean isBinarySendingSupported() {
 		return cService.supportsBinarySmsSending();
 	}
 	
+	/** @see SmsDevice#isUcs2SendingSupported() */
 	public boolean isUcs2SendingSupported() {
 		return cService.supportsUcs2SmsSending();
+	}
+	
+	public boolean isDisconnecting() {
+		return disconnecting;
+	}
+	
+//> OTHER METHODS
+	
+	protected void disconnecting() {
+		disconnecting = true;
+		if(this.supportsReceive())
+			this.setUseForReceiving(false);
+		setUseForSending(false);
+		
+		this.setStatus(SmsModemStatus.DISCONNECTING, null);
+		
+		disconnect(true);
+		disconnecting = false;
+	}
+
+	/**
+	 * Forces the phone to disconnect from the COM port and close all listeners.
+	 */
+	public synchronized void disconnect() {
+		if (isConnected()) {
+			// Actually disconnecting the phone!
+			new Thread("Disconnecting [" + this.getName() + "]") {
+				public void run() {
+					disconnecting();
+				}
+			}.start();
+		} else {
+			disconnect(true);
+		}
+	}
+
+	/**
+	 * Forces the phone to disconnect from the COM port and close all listeners.
+	 * @param setStatus set <code>true</code> if status should be updated.  This will likely only be set <code>false</code> when doing phone detection. 
+	 */
+	private void disconnect(boolean setStatus) {
+		LOG.trace("ENTER");
+		try {
+			cService.disconnect();
+		} catch(Throwable t) {
+			// If anything goes wrong in the disconnect, we want to make
+			// sure we still kill the serialDriver.  Any throwables can
+			// be ignored.
+			LOG.debug("Error disconnecting", t);
+			try { 
+				cService.serialDriver.close(); 
+			} catch(Throwable th) {
+				LOG.debug("Error disconnecting", th);
+			}
+		}
+		timeOfLastResponseFromPhone = 0;
+		disconnected = true;
+		smsLibConnected = false;
+		if(setStatus && !isDuplicate()) {
+			this.setStatus(SmsModemStatus.DISCONNECTED, null);
+		}
+		
+		for (Message m : outbox) {
+			m.setStatus(Message.STATUS_FAILED);
+			if (smsListener != null) smsListener.outgoingMessageEvent(this, m);
+		}
+		LOG.trace("EXIT");
+	}
+
+	/**
+	 * Sends directly the informed message list.
+	 * 
+	 * @param smsMessages
+	 * @return true if there was no problem sending messages, false otherwise.
+	 * @throws IOException 
+	 */
+	private void sendSmsListDirect(List<Message> smsMessages) throws IOException {
+		LOG.trace("ENTER");
+
+		try {
+			cService.keepGsmLinkOpen();
+			for (Message message : smsMessages) {
+				LOG.debug("Sending [" + message.getTextContent() + "] to [" + message.getRecipientMsisdn() + "]");
+				COutgoingMessage cMessage;
+
+				// If it's a binary message, we set the encoding to send it.
+				if (message.isBinaryMessage()) {
+					cMessage = new COutgoingMessage(message.getRecipientMsisdn(), message.getBinaryContent());
+					cMessage.setDestinationPort(message.getRecipientSmsPort());
+				} else {
+					cMessage = new COutgoingMessage(message.getRecipientMsisdn(), message.getTextContent());
+				}
+
+				// Do we require a Delivery Status Report?
+				cMessage.setStatusReport(this.useDeliveryReports);
+
+				// Ok, finished with the message parameters, now send it!
+				try {
+					cService.sendMessage(cMessage);
+					if (cMessage.getRefNo() != -1) {
+						message.setDispatchDate(cMessage.getDispatchDate());
+						message.setSmscReference(cMessage.getRefNo());
+						message.setStatus(Message.STATUS_SENT);
+						LOG.debug("Message [" + message + "] was sent!");
+					} else {
+						//message not sent
+						//failed to send
+						message.setStatus(Message.STATUS_FAILED);
+						LOG.debug("Message [" + message + "] was not sent!");
+					}
+				} catch(Exception ex) {
+					message.setStatus(Message.STATUS_FAILED);
+					LOG.debug("Failed to send message [" + message + "]", ex);
+					LOG.info("Failed to send message");
+				} finally {
+					if (smsListener != null) {
+						smsListener.outgoingMessageEvent(this, message);
+					}
+				}
+			}
+		} finally {
+			for (Message m : smsMessages) {
+				if (m.getStatus() == Message.STATUS_PENDING) {
+					outbox.add(m);
+				}
+			}
+		}
+		LOG.trace("EXIT");
+	}
+	
+//> STATIC HELPER METHODS
+	/**
+	 * Loads a translation map from a file of the following format: 
+	 *	Split the line.  It should be of the following format:
+	 *	<officialName><whiteSpace><alternateName1>,<alternateName2>,...,<alternateNameN>
+	 * TODO this kind of thing should probably be done by the manager, or even at the UI layer.
+	 * @param fileName name of the file to load the aliases from
+	 * @return
+	 */
+	private static final HashMap<String, String> initAliasesFromFile(String filename) {
+		String[] fileContents = ResourceUtils.getUsefulLines(filename);
+		
+		// map from alternate names to offical names.
+		HashMap<String, String> map = new HashMap<String, String>();
+		for(String line : fileContents) {
+			// Split the line.  It should be of the following format:
+			// 	<officialName>		<alternateName1>,<alternateName2>,...,<alternateNameN>
+			String[] words = line.split("\\s", 2);
+			String officialName = words[0];
+			map.put(officialName.toLowerCase(), officialName);
+			if (words.length > 1) {
+				words = words[1].split(",");
+				for (String word : words) {
+					map.put(word.trim().toLowerCase(), officialName);
+				}
+			}
+		}
+		
+		return map;
+	}
+
+	/**
+	 * Attempts to get a mapping from a particular make and model to a CATHandler
+	 * 
+	 * @param manufacturer
+	 * @param model 
+	 * @return
+	 */
+	private static final String translateCATHandlerModel(String manufacturer, String model) {
+		String lookupString = manufacturer.toLowerCase() + "_" + model.toLowerCase();
+		String catHandler = cathandlerAliases.get(lookupString);
+		return catHandler;
+	}
+
+	/**
+	 * Translates the manufacture to a user-friendly string.
+	 * 
+	 * @param manufacturer
+	 * @return
+	 */
+	private static final String translateManufacturer(String manufacturer) {
+		manufacturer = manufacturer.trim();
+		String alias = manufacturerAliases.get(manufacturer.toLowerCase());
+		if(alias == null) return manufacturer;
+		else return alias;
+	}
+
+	/**
+	 * Translates the model to a user-friendly string.
+	 * 
+	 * @param model
+	 * @return
+	 */
+	private static final String translateModel(String manufacturer, String model) {
+		model = model.trim();
+		model = model.replace("\\s", "");
+		model = model.replace(manufacturer, "");
+		String alias = modelAliases.get(model.toLowerCase());
+		if (alias == null) return model;
+		else return alias;
+	}
+	
+	/**
+	 * TODO an emulator should surely be a different type of device???
+	 * @param number the phone number of the emulator
+	 * @return a new "emulator"
+	 */
+	public static SmsModem createEmulator(String number) {
+		SmsModem emulator = new SmsModem(null, null);
+		emulator.setMsisdn(number);
+		return emulator;
 	}
 }

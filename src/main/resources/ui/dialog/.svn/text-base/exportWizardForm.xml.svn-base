@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
-<dialog closable="true" close="removeDialog(this)" bottom="5" columns="3" font="bold" gap="5" icon="/icons/export.png" left="5" modal="true" name="exportWizardDialog" right="5" text="i18n.common.export" top="5">
-    
-</dialog>

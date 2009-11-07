@@ -45,6 +45,11 @@ public class InMemoryFormDao implements FormDao {
 	public void saveForm(Form form) {
 		this.allForms.add(form);
 	}
+	
+	/** @see FormDao#updateForm(Form) */
+	public void updateForm(Form form) {
+		// Do nothing for in-memory DAO
+	}
 
 	/** @see FormDao#deleteForm(Form) */
 	public void deleteForm(Form form) {

@@ -9,7 +9,6 @@ import net.frontlinesms.data.DuplicateKeyException;
 import net.frontlinesms.data.repository.EmailAccountDao;
 import net.frontlinesms.data.repository.EmailDao;
 import net.frontlinesms.data.repository.ReusableEmailDaoTest;
-import net.frontlinesms.data.repository.hibernate.*;
 
 import org.springframework.beans.factory.annotation.Required;
 

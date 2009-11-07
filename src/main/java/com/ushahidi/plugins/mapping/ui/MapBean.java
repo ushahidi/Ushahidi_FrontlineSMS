@@ -38,24 +38,27 @@ public class MapBean extends CustomComponent implements ImageObserver {
 	}
 
 	private Image img = null;
-	private List<MapListener> mapListeners;
+	private MapListener mapListener;
 	private Dimension dimensions;
 	private int initialX;
 	private int initialY;
 	private Queue<Point> scrollQ = new ArrayBlockingQueue<Point>(256);
-	
+		
 	/** location bounds for the region covered by the map */
 	private Location location;
+	/** Incidents to be plotted on the map */
 	private List<Incident> incidents;
-	private int offsetY = 0;
-	private int offsetX = 0;
 	private MappingUIController mappingUIController;
+	/** Name of the file containing the offline maps*/
 	private String offlineMapFile;
+	
+	private static final int DEFAULT_ZOOM_LEVEL = 7;
+	private static final int DEFAULT_POINT_SIZE = 25;
+	private int pointSize = DEFAULT_POINT_SIZE;
 	
 	public static final Logger LOG = Utils.getLogger(MapBean.class);
 
 	public MapBean() {
-		mapListeners = new ArrayList<MapListener>();
 
 		//Trap for mouse motion on the map
 		addMouseMotionListener(new MouseMotionAdapter(){ 
@@ -71,7 +74,13 @@ public class MapBean extends CustomComponent implements ImageObserver {
 				initialX = me.getX();
 				initialY = me.getY();
 				
+				if(mapListener != null){
+					Location loc = map.pointLocation(new Point(initialX, initialY));
+					mapListener.pointSelected(loc.lat, loc.lon);					
+				}
+				
 				// Zoom & center on double click
+				/**
 				if(me.getClickCount() == 2) {					
 					LOG.debug("Double Clicked");
 					map.zoomBy(1);
@@ -79,7 +88,7 @@ public class MapBean extends CustomComponent implements ImageObserver {
 					map.draw();
 					
 					repaint();
-				}
+				}*/
 			}
 
 			public void mouseReleased(MouseEvent me) { 
@@ -99,7 +108,7 @@ public class MapBean extends CustomComponent implements ImageObserver {
 		addMouseMotionListener(new MouseMotionAdapter() {
 			public void mouseDragged(MouseEvent me) {
 				LOG.debug("Mouse Dragged");
-				scrollQ.add(new Point(initialX - me.getX(), initialY - me.getY()));
+				scrollQ.add(new Point(me.getX() - initialX, me.getY()-initialY));
 				initialX = me.getX();
 				initialY = me.getY();
 				repaint();
@@ -148,7 +157,7 @@ public class MapBean extends CustomComponent implements ImageObserver {
 			map.setObserver(this);
 			img = map.draw();
 		}
-		//Have we been resized?offsetX)offsetX)offsetX)
+		//Have we been resized?
 		if(isResized()) {
 			LOG.debug("Resized");
 			dimensions = getSize();
@@ -162,13 +171,9 @@ public class MapBean extends CustomComponent implements ImageObserver {
 			map.panBy(offset.x, offset.y);
 			map.draw();
 			g.drawImage(img, 0, 0, null);
-			offsetX += (int)offset.x;
-			offsetY += (int)offset.y;
 		}
 		g.drawImage(img, 0, 0, null);		
 		plotIncidents(g);
-		//Point point = map.locationPoint(new Location(-1.6791667,29.2227778));
-		//System.out.println("Point A: " + point.x + ", " + point.y);
 	}
 
 	public void plotIncidents(Graphics g){
@@ -176,21 +181,23 @@ public class MapBean extends CustomComponent implements ImageObserver {
 			//Make the points translucent				
 			//g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.45f));
 			g.setColor(Color.RED);
-			for(Incident incident: incidents){
+			for(Incident incident: incidents){				
 				double lat = incident.getLocation().getLatitude();
 				double lon = incident.getLocation().getLongitude();
-				Point incidentPoint = map.locationPoint(new Location(lat, lon));								
-				g.fillOval((int)incidentPoint.x + offsetX, (int)incidentPoint.y + offsetY, 25, 25);
+				Point incidentPoint = map.locationPoint(new Location(lat, lon));				
+				//g.drawImage(new IncidentMarker(this, incident).getMarker(), (int)incidentPoint.x, 
+				//		(int)incidentPoint.y, this);
+				g.fillOval((int)incidentPoint.x, (int)incidentPoint.y, pointSize, pointSize);
 			}
 		}		
 	}
 	
 	public synchronized void addMapListener(MapListener listener) {
-		mapListeners.add(listener);
+		mapListener = listener;
 	}
 
-	public synchronized void removeMapListener(MapListener listener) {
-		mapListeners.remove(listener);
+	public synchronized void removeMapListener() {
+		mapListener = null;
 	}
 
 	private synchronized void firePointSelected(Point p) {
@@ -246,5 +253,13 @@ public class MapBean extends CustomComponent implements ImageObserver {
 	
 	public void setOfflineMapFile(String fileName){
 		this.offlineMapFile = fileName;
+	}
+	
+	public void setZoomValue(double zoomVal){
+		pointSize = (zoomVal < map.getZoomLevel())? pointSize-4 : 
+			((zoomVal >= DEFAULT_ZOOM_LEVEL)? DEFAULT_POINT_SIZE : pointSize+4);
+		map.zoomBy(zoomVal-map.getZoomLevel());
+		map.draw();
+		repaint();
 	}
 }

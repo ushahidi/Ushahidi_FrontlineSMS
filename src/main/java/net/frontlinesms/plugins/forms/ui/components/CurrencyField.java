@@ -29,23 +29,28 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import net.frontlinesms.FrontlineSMSConstants;
 import net.frontlinesms.plugins.forms.ui.FormsThinletTabController;
 import net.frontlinesms.ui.i18n.InternationalisationUtils;
 
-
+/**
+ * FComponent for displaying and editing a form currency field.
+ * @author Kadu
+ */
 @SuppressWarnings("serial")
 public class CurrencyField extends FComponent {
+	/** @see FComponent#getDescription() */
 	@Override
 	public String getDescription() {
-		return InternationalisationUtils.getI18NString(FormsThinletTabController.FORMS_FIELD_CURRENCY);
+		return InternationalisationUtils.getI18NString(FormsThinletTabController.I18N_KEY_FIELD_CURRENCY);
 	}
 
+	/** @see FComponent#getIcon() */
 	@Override
 	public String getIcon() {
 		return "currencyfield.png";
 	}
 
+	/** @see FComponent#getDrawingComponent() */
 	@Override
 	public Container getDrawingComponent() {
 		JPanel pn = new JPanel();

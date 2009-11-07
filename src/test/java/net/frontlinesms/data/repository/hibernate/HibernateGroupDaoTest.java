@@ -8,7 +8,6 @@ import net.frontlinesms.junit.HibernateTestCase;
 import net.frontlinesms.data.DuplicateKeyException;
 import net.frontlinesms.data.repository.GroupDao;
 import net.frontlinesms.data.repository.ReusableGroupDaoTest;
-import net.frontlinesms.data.repository.hibernate.*;
 
 import org.springframework.beans.factory.annotation.Required;
 

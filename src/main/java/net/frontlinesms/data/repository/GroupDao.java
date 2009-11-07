@@ -19,6 +19,7 @@
  */
 package net.frontlinesms.data.repository;
 
+import java.util.Collection;
 import java.util.List;
 
 import net.frontlinesms.data.DuplicateKeyException;
@@ -39,6 +40,13 @@ public interface GroupDao {
 	 * @return all groups with the supplied range.
 	 */
 	public List<Group> getAllGroups(int startIndex, int limit);
+	
+	/**
+	 * Gets all groups with the specified parent.
+	 * @param parent
+	 * @return a list of groups with the specified parent
+	 */
+	public Collection<Group> getChildGroups(Group parent);
 	
 	/**
 	 * Retrieve the page number that the specified group would appear on for

@@ -29,6 +29,7 @@ package net.frontlinesms.csv;
  */
 @SuppressWarnings("serial")
 public class CsvParseException extends Exception {
+	/** @see Exception#Exception(String) */
 	public CsvParseException(String message) {
 		super(message);
 	}

@@ -69,4 +69,9 @@ public class InMemoryIncidentDao implements IncidentDao {
 		return null;
 	}
 
+	public void updateIncident(Incident incident) throws DuplicateKeyException {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

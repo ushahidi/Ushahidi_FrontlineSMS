@@ -24,7 +24,6 @@ import java.io.InputStream;
 
 import javax.swing.UIManager;
 
-import net.frontlinesms.properties.PropertySet;
 import net.frontlinesms.resources.ResourceUtils;
 import net.frontlinesms.ui.FirstTimeWizard;
 import net.frontlinesms.ui.UiGeneratorController;
@@ -34,8 +33,6 @@ import net.frontlinesms.ui.i18n.LanguageBundle;
 import org.apache.log4j.Logger;
 
 import thinlet.Thinlet;
-
-import static net.frontlinesms.FrontlineSMSConstants.*;
 
 /**
  * This class is the Launcher for FrontlineSMS as a desktop application.  It will
@@ -61,10 +58,11 @@ public class DesktopLauncher {
 	public static void main(String[] args) {
 		FrontlineSMS frontline = null;
 		try {
+			AppProperties appProperties = AppProperties.getInstance();
+			final String VERSION = BuildProperties.getInstance().getVersion();
 			LOG.info("FrontlineSMS version [" + VERSION + "]");
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-			PropertySet app = PropertySet.load(PROPERTIES_APP);
-			String lastVersion = app.getProperty("version");
+			String lastVersion = appProperties.getLastRunVersion();
 			InputStream defaultResourceArchive = ResourceUtils.class.getResourceAsStream("/resources.zip");
 			if(defaultResourceArchive == null) {
 				LOG.fatal("Default resources archive could not be found!");
@@ -78,29 +76,9 @@ public class DesktopLauncher {
 			LanguageBundle englishBundle = InternationalisationUtils.getLanguageBundleFromClasspath("/resources/languages/frontlineSMS.properties");
 			Thinlet.DEFAULT_ENGLISH_BUNDLE = englishBundle.getProperties();
 
-//			// Attempt to initialise the database connection.  If this fails, we show
-//			// a database-specific error dialog, and give the user the opportunity to
-//			// view and change his database settings.
-//			try {
-//				DbController.init(false);
-//			} catch (DbConnectionException e) {
-//				// Show the db settings dialog
-//				ErrorUtils.showErrorDialog(InternationalisationUtils.getI18NString(COMMON_ATTENTION),
-//						InternationalisationUtils.getI18NString(COMMON_DATABASE_CONNECTION_FAILED),
-//						e,
-//						new ActionListener() {
-//							public void actionPerformed(ActionEvent e) {
-//								new DatabaseSettingsHandler().showDatabaseConfigDialog();
-//							}
-//						});
-//				return;
-//			}
-			
-			app = PropertySet.load(PROPERTIES_APP);
-			String value = app.getProperty(PROPERTIES_SHOW_WIZARD);
-			boolean showWizard = (value == null || value.trim().length() == 0) ? true : Boolean.valueOf(value);
-			app.setProperty("version", VERSION);
-			app.saveToDisk();
+			boolean showWizard = appProperties.isShowWizard();
+			appProperties.setLastRunVersion(VERSION);
+			appProperties.saveToDisk();
 
 			frontline = new FrontlineSMS();
 			if (showWizard) {

@@ -39,7 +39,7 @@ import org.apache.log4j.Logger;
 import org.jdom.JDOMException;
 import org.smslib.CIncomingMessage;
 import org.smslib.CStatusReportMessage;
-import org.smslib.CMessage.MessageEncoding;
+import org.smslib.sms.SmsMessageEncoding;
 
 /**
  * Processor of incoming messages for {@link FrontlineSMS}.
@@ -69,8 +69,6 @@ public class IncomingMessageProcessor extends Thread {
 	private Set<IncomingMessageListener> incomingMessageListeners = new HashSet<IncomingMessageListener>();
 	
 	private final EmailServerHandler emailServerManager;
-	private final String incomingMsisdnAutoAdd;
-	private final String incomingMsisdnAutoRemove;
 
 	/**
 	 * @param frontlineSms
@@ -82,15 +80,12 @@ public class IncomingMessageProcessor extends Thread {
 	 * @param formsMessageHandler
 	 * @param emailFactory
 	 * @param emailServerManager
-	 * @param incomingMsisdnAutoAdd
-	 * @param incomingMsisdnAutoRemove
 	 */
 	public IncomingMessageProcessor(FrontlineSMS frontlineSms,
 			ContactDao contactFactory, KeywordDao keywordFactory,
 			GroupDao groupFactory,
 			MessageDao messageFactory, EmailDao emailFactory,
-			EmailServerHandler emailServerManager,
-			String incomingMsisdnAutoAdd, String incomingMsisdnAutoRemove) {
+			EmailServerHandler emailServerManager) {
 		super("Incoming message processor");
 		this.frontlineSms = frontlineSms;
 		this.contactDao = contactFactory;
@@ -99,8 +94,6 @@ public class IncomingMessageProcessor extends Thread {
 		this.messageFactory = messageFactory;
 		this.emailDao = emailFactory;
 		this.emailServerManager = emailServerManager;
-		this.incomingMsisdnAutoAdd = incomingMsisdnAutoAdd;
-		this.incomingMsisdnAutoRemove = incomingMsisdnAutoRemove;
 	}
 	
 	public void setUiListener(UIListener uiListener) {
@@ -143,19 +136,6 @@ public class IncomingMessageProcessor extends Thread {
 					// that should be hidden before creating the message object...
 					String incomingSenderMsisdn = incomingMessage.getOriginator();
 					LOG.debug("Sender [" + incomingSenderMsisdn + "]");
-					if (incomingMsisdnAutoRemove != null) {
-						LOG.debug("Removing [" + incomingMsisdnAutoRemove + "] from number");
-						if (incomingSenderMsisdn.startsWith(incomingMsisdnAutoRemove)) {
-							incomingSenderMsisdn = incomingSenderMsisdn.substring(incomingMsisdnAutoRemove.length());
-						}
-					}
-					if (incomingMsisdnAutoAdd != null) {
-						if (!incomingSenderMsisdn.startsWith(incomingMsisdnAutoAdd)) {
-							LOG.debug("Adding [" + incomingMsisdnAutoAdd + "] to number");
-							incomingSenderMsisdn = incomingMsisdnAutoAdd + incomingSenderMsisdn;
-						}
-					}
-					LOG.debug("Sender after conversion [" + incomingSenderMsisdn + "]");
 					int type = incomingMessage.getType();
 					if (type == CIncomingMessage.MessageType.StatusReport) {
 						// Match the status report with a previously sent message, and update that message's
@@ -181,29 +161,36 @@ public class IncomingMessageProcessor extends Thread {
 							}
 						}
 					} else {
-						Message incoming = null;
-						if (incomingMessage.getMessageEncoding() == MessageEncoding.Enc7Bit || incomingMessage.getMessageEncoding() == MessageEncoding.EncUcs2) {
+						// This is an incoming message, so process accordingly
+						Message incoming;
+						if (incomingMessage.getMessageEncoding() == SmsMessageEncoding.GSM_7BIT || incomingMessage.getMessageEncoding() == SmsMessageEncoding.UCS2) {
 							// Only do the keyword stuff if this isn't a delivery report
 							String incomingMessageText = incomingMessage.getText();
 							LOG.debug("It's a incoming message [" + incomingMessageText + "]");
-							incoming = Message.createIncomingMessage(incomingMessage.getDate().getTime(), incomingSenderMsisdn, receiver.getMsisdn(), incomingMessageText.trim());
+							incoming = Message.createIncomingMessage(incomingMessage.getDate(), incomingSenderMsisdn, receiver.getMsisdn(), incomingMessageText.trim());
 							messageFactory.saveMessage(incoming);
-							if (incoming != null) {
-								handleTextMessage(incoming, incomingMessage.getRefNo());
-							}
+							handleTextMessage(incoming, incomingMessage.getRefNo());
 						} else {
-							incoming = handleBinaryMessage(receiver, incomingMessage, incomingSenderMsisdn, incomingMessage.getBinary());
+							Contact sender = contactDao.getFromMsisdn(incomingSenderMsisdn);
+							if(sender == null) {
+								try {
+									sender = new Contact(null, incomingSenderMsisdn, null, null, null, true);
+									contactDao.saveContact(sender);
+								} catch (DuplicateKeyException ex) {
+									LOG.error(ex);
+								}
+							}
+							
+							// Save the binary message
+							incoming = Message.createBinaryIncomingMessage(incomingMessage.getDate(), incomingSenderMsisdn, receiver.getMsisdn(), -1, incomingMessage.getBinary());
+							messageFactory.saveMessage(incoming);
 						}
-						//Only refresh when we get a new message.
-						if (incoming != null) {
-							for(IncomingMessageListener listener : this.incomingMessageListeners) {
-								listener.incomingMessageEvent(incoming);
-							}
-							if (uiListener != null) {
-								uiListener.incomingMessageEvent(incoming);
-							}
-						} else {
-							LOG.debug("The message is a duplicated, discarding...");
+
+						for(IncomingMessageListener listener : this.incomingMessageListeners) {
+							listener.incomingMessageEvent(incoming);
+						}
+						if (uiListener != null) {
+							uiListener.incomingMessageEvent(incoming);
 						}
 					}
 				} catch(Throwable t) {
@@ -217,44 +204,11 @@ public class IncomingMessageProcessor extends Thread {
 		}
 		LOG.trace("EXIT");
 	}
-	
-	/**
-	 * @param receiver
-	 * @param incomingMessage
-	 * @param incomingSenderMsisdn
-	 * @param incoming
-	 * @param content
-	 * @return
-	 * @throws FormHandlingException 
-	 * @throws Exception 
-	 */
-	private Message handleBinaryMessage(SmsDevice receiver, CIncomingMessage incomingMessage, String incomingSenderMsisdn, byte[] content) {
-		// Currently, all incoming binary messages are assumed to be forms messages
-		LOG.trace("ENTRY");
-			
-		Contact sender = contactDao.getFromMsisdn(incomingSenderMsisdn);
-		if(sender == null) {
-			try {
-				sender = new Contact("Unknown Form Submitter", incomingSenderMsisdn, "", "", "", true);
-				contactDao.saveContact(sender);
-			} catch (DuplicateKeyException ex) {
-				LOG.error(ex);
-			}
-		}
-		
-		// Save the binary message
-		Message incoming = Message.createBinaryIncomingMessage(incomingMessage.getDate().getTime(), incomingSenderMsisdn, receiver.getMsisdn(), -1, content);
-		messageFactory.saveMessage(incoming);
-		
-		LOG.trace("EXIT");
-		return incoming;
-	}
 
 	/**
 	 * Processes keyword actions for a text message.
-	 * @param incomingSenderMsisdn
 	 * @param incoming
-	 * @param incomingMessageText
+	 * @param refNo 
 	 */
 	private void handleTextMessage(final Message incoming, final int refNo) {
 		Keyword keyword = keywordDao.getFromMessageText(incoming.getTextContent());
@@ -271,11 +225,12 @@ public class IncomingMessageProcessor extends Thread {
 				//If we could not find this contact, we execute the action.
 				//If we found a contact, he/she needs to be allowed to execute the action.
 				if (contact == null || contact.isActive()) {
+					// TODO why are we creating new threads here?  Looks like a bad idea; why is it necessary?
 					new Thread() {
 						public void run() {
 							for (KeywordAction action : actions) {
 								if (action.isAlive()) {
-									handleIncomingMessageAction_post(action, incoming.getTextContent(), incoming, refNo);
+									handleIncomingMessageAction_post(action, incoming, refNo);
 								}
 							}
 						}
@@ -291,10 +246,12 @@ public class IncomingMessageProcessor extends Thread {
 	 * 
 	 * @param action The action to executed.
 	 * @param incoming The incoming message that triggered this action.
+	 * @param refNo message reference number of the incoming text
 	 */
-	private void handleIncomingMessageAction_post(KeywordAction action, String incomingMessageText, Message incoming, int refNo) {
+	private void handleIncomingMessageAction_post(KeywordAction action, Message incoming, int refNo) {
 		LOG.trace("ENTER");
 		String incomingSenderMsisdn = incoming.getSenderMsisdn();
+		String incomingMessageText = incoming.getTextContent();
 		switch (action.getType()) {
 		case KeywordAction.TYPE_FORWARD:
 			// Generate a message, and then forward it to the group attached to this action.
@@ -310,10 +267,13 @@ public class IncomingMessageProcessor extends Thread {
 			break;
 		case KeywordAction.TYPE_JOIN: {
 			LOG.debug("It is a group join action!");
+			
+			// If the contact does not exist, we need to persist him so that we can add him to a group.
+			// Otherwise, get the contact from the database.
 			Contact contact = contactDao.getFromMsisdn(incomingSenderMsisdn);
 			try {
 				if (contact == null) {
-					contact = new Contact(InternationalisationUtils.getI18NString(FrontlineSMSConstants.UNKNOWN_NAME), incomingSenderMsisdn, "", "", InternationalisationUtils.getI18NString(FrontlineSMSConstants.UNKNOWN_NOTES), true);
+					contact = new Contact(null, incomingSenderMsisdn, null, null, null, true);
 					contactDao.saveContact(contact);
 				}
 				Group group = action.getGroup();
@@ -321,9 +281,9 @@ public class IncomingMessageProcessor extends Thread {
 				boolean contactAdded = group.addContact(contact);
 				if(contactAdded) {
 					groupDao.updateGroup(group);
-				}
-				if (contactAdded && uiListener != null) {
-					uiListener.contactAddedToGroup(contact, group);
+					if(uiListener != null) {
+						uiListener.contactAddedToGroup(contact, group);
+					}
 				}
 			} catch(DuplicateKeyException ex) {
 				// Due to previous check, this should never be thrown...

@@ -73,4 +73,10 @@ public interface EmailDao {
 	 * @param email the email to save
 	 */
 	public void saveEmail(Email email);
+
+	/**
+	 * Update this email to the data source.
+	 * @param email the email to update
+	 */
+	public void updateEmail(Email email);
 }

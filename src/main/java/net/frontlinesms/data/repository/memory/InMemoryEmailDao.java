@@ -27,6 +27,11 @@ public class InMemoryEmailDao implements EmailDao {
 	public void saveEmail(Email email) {
 		this.emails.add(email);
 	}
+
+	/** @see EmailDao#updateEmail(Email) */
+	public void updateEmail(Email email) {
+		// No need to do anything for in-memory DAO
+	}
 	
 	/** @see EmailDao#deleteEmail(Email) */
 	public void deleteEmail(Email email) {

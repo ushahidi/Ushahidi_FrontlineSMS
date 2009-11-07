@@ -1,4 +1,0 @@
-# This file contains a list of the available SmsInternetServices.
-# Each service should appear on a separate line of this file.
-net.frontlinesms.smsdevice.ClickatellInternetService
-net.frontlinesms.smsdevice.IntelliSmsInternetService

@@ -212,17 +212,14 @@ public class Map implements TileRequestor {
 		image = null;
 	}
 
+	/**
+	 * Shifts the map's offset by the amount of displacement
+	 * @param x Displacement on the x axis
+	 * @param y Displacement on the y axis
+	 */
 	public void panBy(double x, double y) {
-		Point centerPoint = locationPoint(provider
-				.coordinateLocation(coordinate));
-		Point newCenterPoint = new Point(centerPoint.x + x, centerPoint.y + y);
-
-		Coordinate newCenterCoord = provider.locationCoordinate(
-				pointLocation(newCenterPoint)).zoomTo(coordinate.zoom);
-		Point mapOffset = MapFactory.calculateMapCenter(provider,
-				newCenterCoord);
-		this.coordinate = newCenterCoord;
-		this.offset = mapOffset;
+		//Adjust the offset by the amount of displacement
+		this.offset = new Point(offset.x + x, offset.y + y);
 	}
 	
 	public void panTo(double x, double y) {
@@ -318,6 +315,10 @@ public class Map implements TileRequestor {
 			LOG.debug(e);
 		}
 
+	}
+	
+	public double getZoomLevel(){
+		return coordinate.zoom;
 	}
 
 }

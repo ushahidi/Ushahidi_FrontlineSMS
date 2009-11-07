@@ -19,13 +19,23 @@
  */
 package net.frontlinesms.data;
 
+import org.hibernate.criterion.Criterion;
+
+/**
+ * 
+ * @author Alex
+ *
+ */
 public enum Order {
-	ASCENDING(),
-	DESCENDING();
+	/** Order from least to greatest. */
+	ASCENDING,
+	/** Order from greatest to least. */
+	DESCENDING;
 	
 	/**
-	 * TODO just replace our implementation with the hibernate one.
-	 * @return
+	 * Creates a criteria to sort a particular property by.
+	 * @param propertyName The name of the property we would like to sort by.
+	 * @return Hibernate {@link Criterion} for sorting the supplied property 
 	 */
 	public org.hibernate.criterion.Order getHibernateOrder(String propertyName) {
 		if(this==ASCENDING) return org.hibernate.criterion.Order.asc(propertyName);

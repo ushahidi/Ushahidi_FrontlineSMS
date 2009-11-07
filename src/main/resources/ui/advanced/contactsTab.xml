@@ -41,7 +41,7 @@
 	                    <separator name="sp1"/>
 	                    <menuitem action="show_composeMessageForm(contactManager_contactList)" icon="/icons/sms_send.png" name="miSendSMS" text="i18n.action.send.sms"/>
 	                    <menuitem action="showMessageHistory(contactManager_contactList)" icon="/icons/history.png" name="msg_history" text="i18n.action.message.history"/>
-	                    <menuitem action="showExportWizard(contactManager_contactList, 0)" icon="/icons/export.png" name="miExportSelected" text="i18n.action.export.selected"/>
+	                    <menuitem action="showExportWizard(contactManager_contactList, 'contacts')" icon="/icons/export.png" name="miExportSelected" text="i18n.action.export.selected"/>
 	                    <separator name="sp2"/>
 	                    <menuitem action="showContactDetails(contactManager_contactList)" icon="/icons/user_edit.png" name="viewContact" text="i18n.action.view.edit.contact" tooltip="i18n.tooltip.view.contact.details"/>
 	                    <menuitem action="showConfirmationDialog('deleteSelectedContacts')" icon="/icons/user_delete.png" name="miDelete" text="i18n.action.delete.selected.contacts"/>

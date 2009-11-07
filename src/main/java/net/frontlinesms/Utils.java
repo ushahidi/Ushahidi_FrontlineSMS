@@ -31,22 +31,18 @@ import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.Date;
 
 import net.frontlinesms.data.domain.*;
+import net.frontlinesms.encoding.Base64Utils;
 import net.frontlinesms.resources.ResourceUtils;
 
-import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
 import org.apache.log4j.PropertyConfigurator;
-
-import sun.misc.BASE64Decoder;
-import sun.misc.BASE64Encoder;
 
 import static net.frontlinesms.FrontlineSMSConstants.*;
 
@@ -71,7 +67,7 @@ public class Utils {
 	 * Reloads the log configuration.
 	 */
 	static void loadLogConfiguration() {
-		File f = new File(ResourceUtils.getConfigDirectoryPath() + ResourceUtils.DIRECTORY_PROPERTIES + File.separatorChar + "log4j.properties");
+		File f = new File(ResourceUtils.getConfigDirectoryPath() + ResourceUtils.PROPERTIES_DIRECTORY_NAME + File.separatorChar + "log4j.properties");
 		if (f.exists()) {
 			PropertyConfigurator.configure(f.getAbsolutePath());
 		} else {
@@ -82,21 +78,13 @@ public class Utils {
 
 	/**
 	 * Gets the logging object for a {@link Class}, making sure the expected configuration is used.
+	 * Using this method rather than {@link Logger#getLogger(Class)} directly ensures that {@link #loadLogConfiguration()} has been run.
+	 * TODO This probably isn't the best way of ensuring the log config is loaded.  It seems to work okay though.
 	 * @param clazz
 	 * @return logging object for the supplied class
 	 */
 	public static Logger getLogger(Class<? extends Object> clazz) {
-		Logger log = null;
-		try {
-			log = Logger.getLogger(clazz);
-		} catch (Throwable t) {
-			log = Logger.getRootLogger();
-			log.removeAllAppenders();
-			log = Logger.getLogger(clazz);
-			ConsoleAppender app = new ConsoleAppender(new PatternLayout("[%t] %-5p [%d{dd/MM/yy HH:mm:ss}] %l - %m%n"));
-			log.addAppender(app);
-		}
-		return log;
+		return Logger.getLogger(clazz);
 	}
 
 	/**
@@ -126,7 +114,7 @@ public class Utils {
 	 * Returns a string with all contact groups.
 	 * @param contact
 	 * @param groups_delimiter
-	 * @return
+	 * @return the groups this contact is a member of represented as a string with vales separated by the requested delimiter
 	 */
 	public static String contactGroupsAsString(Contact contact, String groups_delimiter) {
 		String groups = "";
@@ -150,51 +138,10 @@ public class Utils {
 	}
 
 	/**
-	 * Reads the version of FrontlineSMS from MANIFEST file
-	 * @return FrontlineSMS version, in whatever form it is specified in the manifest.
-	 */
-	public static String getVersion() {
-		String ret = "";
-		BufferedReader reader = null;
-		try {
-			reader = new BufferedReader(new InputStreamReader(ResourceUtils.class.getResourceAsStream("/MANIFEST.MF")));
-			String line;
-			while ( (line = reader.readLine()) != null) {
-				if (line.toLowerCase().startsWith("version")) {
-					String[] parts = line.split(":", 2);
-					if (parts.length == 2) {
-						ret = parts[1].trim();
-					}
-				}
-			}
-		} catch (Exception e) {
-			LOG.debug("Problem reading manifest", e);
-		} finally {
-			if (reader != null)
-				try {
-					reader.close();
-				} catch (IOException e) {
-					LOG.debug("Closing manifest", e);
-				}
-		}
-		return ret;
-	}
-
-	/**
-	 * Parse the supplied string into a date.
-	 * @param date
-	 * @return
-	 * @throws ParseException
-	 */
-	public static Date parseDateForKeyword(String date) throws ParseException {
-		return Dependants.DEFAULT_KEYWORD_ACTION_DATE_FORMAT.parse(date);
-	}
-
-	/**
 	 * This method makes a http request and returns the response according to the supplied parameter.
 	 * @param url URL to connect.
-	 * @param waitForResponse
-	 * @return
+	 * @param waitForResponse <code>true</code> if this method should block and return the http response body; <code>false</code> otherwise
+	 * @return the body of the http response, or empty string if the response is not requested
 	 * @throws IOException
 	 */
 	public static String makeHttpRequest(String url, boolean waitForResponse) throws IOException {
@@ -255,8 +202,8 @@ public class Utils {
 	/**
 	 * This method executes a external command and returns the response according to the supplied parameter.
 	 * @param cmd Command to be executed.
-	 * @param waitForResponse
-	 * @return
+	 * @param waitForResponse <code>true</code> if the command's response should be returned.  If <code>true</code>, this method blocks.
+	 * @return empty string if waitForResponse is <code>false</code> or the response was an error, or the standard output text of the command if waitForResponse was <code>true</code>
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
@@ -283,12 +230,15 @@ public class Utils {
 
 	/**
 	 * Encodes the supplied string into Base64.
-	 * FIXME should re-implement this so we are not relying on com.sun package
 	 * @param password the string to encode
 	 * @return base64-encoded string
 	 */
 	public static String encodeBase64(String password) {
-		return new BASE64Encoder().encode(password.getBytes());
+		try {
+			return Base64Utils.encode(password.getBytes("UTF-8"));
+		} catch (UnsupportedEncodingException ex) {
+			return Base64Utils.encode(password.getBytes());
+		}
 	}
 
 	/**
@@ -298,12 +248,12 @@ public class Utils {
 	 * @return decoded value of the supplied base64 string
 	 */
 	public static String decodeBase64(String passwordEncrypted) {
-		BASE64Decoder decoder = new BASE64Decoder();
-		String decoded = null;
+		byte[] data = Base64Utils.decode(passwordEncrypted);
+		String decoded;
 		try {
-			decoded = new String(decoder.decodeBuffer(passwordEncrypted));
-		} catch (IOException e) {
-			LOG.debug("Error decoding", e);
+			decoded = new String(data, "UTF-8");
+		} catch(UnsupportedEncodingException ex) {
+			return new String(data);
 		}
 		return decoded;
 	}
@@ -330,6 +280,9 @@ public class Utils {
 	 * @author Carlos Eduardo Genz
 	 */
 	public static class FileComparator implements Comparator<File> {
+		/**
+		 * compares files and directories, giving higher priority to directories.
+		 */
 		public int compare(File arg0, File arg1) {
 			if (arg0.isDirectory() && arg1.isDirectory()) {
 				return 0;
@@ -481,6 +434,22 @@ public class Utils {
 		if(string == null) return null;
 		try {
 			string = URLEncoder.encode(string, "UTF-8");
+		} catch (UnsupportedEncodingException e) { /* This will never happen - UTF-8 should always be supported by every JVM. */ }
+		return string;
+	}
+
+	/**
+	 * Calls {@link URLDecoder#decode(String, String)} using UTF-8 as the encoding.  If somehow
+	 * an {@link UnsupportedEncodingException} is thrown, this method will just return the original
+	 * {@link String} supplied.  This method will also ignore <code>null</code> inputs, rather than
+	 * throwing a {@link NullPointerException}.
+	 * @param string
+	 * @return url-decoded string
+	 */	
+	public static String urlDecode(String string) {
+		if(string == null) return null;
+		try {
+			string = URLDecoder.decode(string, "UTF-8");
 		} catch (UnsupportedEncodingException e) { /* This will never happen - UTF-8 should always be supported by every JVM. */ }
 		return string;
 	}

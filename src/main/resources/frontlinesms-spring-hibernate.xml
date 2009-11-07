@@ -6,8 +6,7 @@
         xmlns:tx="http://www.springframework.org/schema/tx"
 		xsi:schemaLocation="http://www.springframework.org/schema/beans		http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
 							http://www.springframework.org/schema/context   http://www.springframework.org/schema/context/spring-context-2.5.xsd
-							http://www.springframework.org/schema/tx		http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
-							">
+							http://www.springframework.org/schema/tx		http://www.springframework.org/schema/tx/spring-tx-2.5.xsd">
 
 	<!-- turn on annotation support -->
 	<context:annotation-config/>
@@ -44,18 +43,22 @@
 	<bean id="smsModemSettingsDao" class="net.frontlinesms.data.repository.hibernate.HibernateSmsModemSettingsDao">
 		<property name="sessionFactory" ref="sessionFactory" />
 	</bean>
-
-	<!-- Bean wiring for the Ushahidi mapping plugin -->
-	<bean id="locationDao" class="com.ushahidi.plugins.mapping.data.repository.hibernate.HibernateLocationDao">
-		<property name="sessionFactory" ref="sessionFactory"/>
-	</bean>
-	<bean name="categoryDao" class="com.ushahidi.plugins.mapping.data.repository.hibernate.HibernateCategoryDao">
-		<property name="sessionFactory" ref="sessionFactory"/>
-	</bean>
-	<bean name="mappingSetupDao" class="com.ushahidi.plugins.mapping.data.repository.hibernate.HibernateMappingSetupDao">
-		<property name="sessionFactory" ref="sessionFactory"/>
-	</bean>
-	<bean name="incidentDao" class="com.ushahidi.plugins.mapping.data.repository.hibernate.HibernateIncidentDao">
-		<property name="sessionFactory" ref="sessionFactory" />
+	
+	<!-- set up hibernate session factory -->
+	<bean id="sessionFactory" class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
+		<property name="dataSource" ref="dataSource">
+			<!-- Data source is defined in the external spring config file
+				TODO we could define it here, and then load the properties themselves from a .properties file, e.g. dataSource.properties -->
+		</property>
+		<property name="configLocations" ref="hibernateConfigLocations">
+			<!-- hibernateConfigLocations is defined in code.  This is because it can include extra config locations for plugins. -->
+		</property>
+		<property name="configurationClass">
+			<value>org.hibernate.cfg.AnnotationConfiguration</value>
+		</property>
+		<property name="hibernateProperties" ref="hibernateProperties">
+			<!-- hibernateProperties are currently defined in the external Spring config XML
+				TODO we could define this in a .properties file, e.g. hibernate.properties -->
+		</property>
 	</bean>
 </beans>

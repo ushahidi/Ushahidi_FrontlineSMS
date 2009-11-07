@@ -12,8 +12,10 @@ import net.frontlinesms.data.Order;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.NonUniqueObjectException;
+import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Projections;
+import org.hibernate.criterion.Restrictions;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
@@ -197,6 +199,21 @@ public abstract class BaseHibernateDao<E> extends HibernateDaoSupport {
 	 */
 	protected DetachedCriteria getCriterion() {
 		return DetachedCriteria.forClass(this.clazz);
+	}
+	
+	/**
+	 * Gets an equals {@link Criterion} for the supplied field and value.  If the value is <code>null</code>,
+	 * a isNull {@link Criterion} is created instead.
+	 * @param field
+	 * @param value
+	 * @return an isNull {@link Criterion} if the value to equal is <code>null</code>, or a an equals {@link Criterion} if the value is not <code>null</code>
+	 */
+	protected Criterion getEqualsOrNull(EntityField<E> field, Object value) {
+		if(value == null) {
+			return Restrictions.isNull(field.getFieldName());
+		} else {
+			return Restrictions.eq(field.getFieldName(), value);
+		}
 	}
 	
 	/**

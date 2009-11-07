@@ -16,11 +16,11 @@
 		        			<menuitem action="sendSelected(formsList)" icon="/icons/form_send.png" name="miSend" text="i18n.common.send" />
 		        		</popupmenu>
 		        	</tree>
-		        	<panel name="toolbar" gap="9" weightx="1">
+		        	<panel name="toolbar" gap="9" weightx="1" columns="3">
 		        		<button name="btNew" action="showFormsEditor" icon="/icons/big_form_add.png" text="i18n.action.new" weightx="1" />
+		        		<button name="btCopy" action="duplicateSelected(formsList)" icon="/icons/big_form_copy.png" text="i18n.action.copy" weightx="1" enabled="false"/>
 		        		<button name="btEdit" action="editSelected(formsList)" icon="/icons/big_form_edit.png" text="i18n.action.edit" weightx="1" enabled="false" />
 		        		<button name="btDelete" action="showConfirmationDialog('deleteSelected')" icon="/icons/big_form_delete.png" text="i18n.action.delete" weightx="1" enabled="false" />
-		        		<button name="btCopy" action="duplicateSelected(formsList)" icon="/icons/big_form_copy.png" text="i18n.action.copy" weightx="1" enabled="false"/>
 		        		<button name="btSend" action="sendSelected(formsList)" icon="/icons/big_form_send.png" text="i18n.common.send" weightx="1" enabled="false"/>
 		        	</panel>
 		        </panel>

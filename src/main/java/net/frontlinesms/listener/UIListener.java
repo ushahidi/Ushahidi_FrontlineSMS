@@ -20,6 +20,7 @@
 package net.frontlinesms.listener;
 import net.frontlinesms.data.domain.*;
 import net.frontlinesms.smsdevice.SmsDevice;
+import net.frontlinesms.smsdevice.SmsDeviceStatus;
 
 public interface UIListener extends IncomingMessageListener {
 	
@@ -30,6 +31,4 @@ public interface UIListener extends IncomingMessageListener {
 	public void contactAddedToGroup(Contact contact, Group group);
 	
 	public void outgoingMessageEvent(Message message);
-	
-	public void smsDeviceEvent(SmsDevice phone, int smsDeviceEventCode);
 }

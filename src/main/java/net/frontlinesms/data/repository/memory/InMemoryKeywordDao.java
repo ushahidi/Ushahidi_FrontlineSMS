@@ -21,53 +21,9 @@ public class InMemoryKeywordDao implements KeywordDao {
 	/** All the keywords that we have saved. */
 	private HashSet<Keyword> allKeywords = new HashSet<Keyword>();
 	
-	/** @see KeywordDao#createKeywordsHierarchically(String[], String, boolean) */
-	public Keyword createKeywordsHierarchically(String[] keywordHierarchy, String description, boolean classicMode) throws DuplicateKeyException {
-		/** Bottom keyword already created */
-		Keyword root = null;
-		/** number of words in the hierarchy to skip */
-		int skip = 0;
-		for(Keyword k : getRootKeywords()) {
-			if(k.getKeyword().equals(keywordHierarchy[0].toUpperCase())) {
-				root = k;
-				skip = 1;
-			}
-		}
-		
-		if(root != null) {
-			for(; skip < keywordHierarchy.length; skip++) {
-				check:for(Keyword k : root.getAllSubWords()) {
-					if(k.getKeyword().equals(keywordHierarchy[skip+1].toUpperCase())) {
-						root = k;
-						break check;
-					}
-				}
-			}
-		
-			if(skip == keywordHierarchy.length - 1) {
-				for(Keyword k : root.getAllSubWords()) {
-					if(k.getKeyword().equals(keywordHierarchy[skip].toUpperCase())) {
-						return k;
-					}
-				}
-			}
-		}
-		
-		String[] subHierarchy = new String[keywordHierarchy.length - skip];
-		for (int i = skip; i < keywordHierarchy.length; i++) {
-			subHierarchy[i-skip] = keywordHierarchy[i];
-		}
-		for(String s : subHierarchy) {
-			root = new Keyword(root, s, description);
-			this.saveKeyword(root);
-		}
-		
-		return root;
-	}
-
 	/** @see KeywordDao#deleteKeyword(Keyword) */
 	public void deleteKeyword(Keyword keyword) {
-		for(Keyword child : keyword.getAllSubWords()) {
+		for(Keyword child : getAllSubWords(keyword)) {
 			this.deleteKeyword(child);
 		}
 		this.allKeywords.remove(keyword);
@@ -101,7 +57,7 @@ public class InMemoryKeywordDao implements KeywordDao {
 				return last;
 			} else {
 				last = current;
-				currentChildren = current.getDirectSubWords();
+				currentChildren = getDirectSubWords(current);
 			}
 		}
 	}
@@ -150,5 +106,44 @@ public class InMemoryKeywordDao implements KeywordDao {
 			throw new DuplicateKeyException();
 		}
 	}
+	
+	/**
+	 * Gets all direct children of a keyword.
+	 * @param keyword
+	 * @return all direct children of the supplied keyword
+	 */
+	private Collection<Keyword> getDirectSubWords(Keyword keyword) {
+		HashSet<Keyword> subwords = new HashSet<Keyword>();
+		for(Keyword k : this.getAllKeywords()) {
+			if(keyword.equals(k.getParent())) {
+				subwords.add(k);
+			}
+		}
+		return subwords;
+	}
 
+	/**
+	 * Gets all subwords of the supplied keyword.
+	 * @param keyword
+	 * @return all subwords of the supplied keyword.
+	 */
+	private Collection<Keyword> getAllSubWords(Keyword keyword) {
+		HashSet<Keyword> subwords = new HashSet<Keyword>();
+		getAllSubwords(subwords, keyword);
+		return subwords;
+	}
+
+	/**
+	 * Gets all subwords of the supplied keyword, and inserts them into the supplied set.
+	 * @param subwords
+	 * @param keyword
+	 */
+	private void getAllSubwords(HashSet<Keyword> subwords, Keyword keyword) {
+		for(Keyword k : this.getAllKeywords()) {
+			if(k.getParent().equals(keyword)) {
+				subwords.add(k);
+				getAllSubwords(subwords, k);
+			}
+		}
+	}
 }

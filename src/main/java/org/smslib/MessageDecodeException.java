@@ -10,11 +10,13 @@ package org.smslib;
 @SuppressWarnings("serial")
 public class MessageDecodeException extends Exception {
 
-	MessageDecodeException(String message) {
+	/** @see Exception#Exception(String) */
+	public MessageDecodeException(String message) {
 		super(message);
 	}
 
-	MessageDecodeException(String message, Throwable cause) {
+	/** @see Exception#Exception(String, Throwable) */
+	public MessageDecodeException(String message, Throwable cause) {
 		super(message, cause);
 	}
 

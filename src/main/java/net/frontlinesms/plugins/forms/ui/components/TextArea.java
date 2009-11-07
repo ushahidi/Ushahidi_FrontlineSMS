@@ -29,24 +29,30 @@ import javax.swing.border.TitledBorder;
 import net.frontlinesms.FrontlineSMSConstants;
 import net.frontlinesms.ui.i18n.InternationalisationUtils;
 
-
+/**
+ * FComponent for displaying and editing a form text area (multiline text field).
+ * @author Kadu
+ */
 @SuppressWarnings("serial")
 public class TextArea extends FComponent {
+	/** Create a new instance of this class and initialise its render height */
 	public TextArea() {
-		super();
-		renderHeight = 100;
+		setRenderHeight(100);
 	}
 
+	/** @see FComponent#getDescription() */
 	@Override
 	public String getDescription() {
 		return InternationalisationUtils.getI18NString(FrontlineSMSConstants.COMMON_TEXT_AREA);
 	}
 
+	/** @see FComponent#getIcon() */
 	@Override
 	public String getIcon() {
 		return "textarea.png";
 	}
 
+	/** @see FComponent#getDrawingComponent() */
 	@Override
 	public Container getDrawingComponent() {
 		JTextArea tf = new JTextArea();

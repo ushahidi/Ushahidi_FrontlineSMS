@@ -20,19 +20,20 @@ import net.frontlinesms.data.repository.ContactDao;
 import net.frontlinesms.plugins.forms.FormsPluginController;
 import net.frontlinesms.plugins.forms.data.domain.*;
 import net.frontlinesms.plugins.forms.data.repository.*;
-import net.frontlinesms.plugins.forms.data.repository.memory.*;
 import net.frontlinesms.plugins.forms.ui.components.*;
 import net.frontlinesms.plugins.PluginController;
 import net.frontlinesms.ui.FrontlineUI;
 import net.frontlinesms.ui.Icon;
+import net.frontlinesms.ui.ThinletUiEventHandler;
 import net.frontlinesms.ui.UiGeneratorController;
+import net.frontlinesms.ui.UiGeneratorControllerConstants;
 import net.frontlinesms.ui.i18n.InternationalisationUtils;
 
 /**
  * Thinlet controller class for the FrontlineSMS Forms plugin.
  * @author Alex
  */
-public class FormsThinletTabController {
+public class FormsThinletTabController implements ThinletUiEventHandler {
 //> CONSTANTS
 	/** XML file containing forms pane for viewing results of a form */
 	protected static final String UI_FILE_RESULTS_VIEW = "/ui/plugins/forms/formsTab_resultsView.xml";
@@ -43,12 +44,16 @@ public class FormsThinletTabController {
 	
 	/** The name of the Forms tab */
 	private static final String TAB_FORMS = ":forms";
-	public static final String COMMON_FORM_NAME = "form.name";
-	public static final String COMMON_FORMS_EDITOR = "form.editor";
-	public static final String MESSAGE_FORM_NAME_BLANK = "form.contact.unknown";
-	public static final String FORMS_FIELD_CURRENCY = "form.field.currency";
 	/** Component name of the forms list */
 	private static final String FORMS_LIST_COMPONENT_NAME = "formsList";
+	/** i18n key: "Form Name" */
+	static final String I18N_KEY_FORM_NAME = "form.name";
+	/** i18n key: "Form Editor" */
+	static final String I18N_KEY_FORMS_EDITOR = "form.editor";
+	/** i18n key: "You have not entered a name for this form" */
+	static final String I18N_KEY_MESSAGE_FORM_NAME_BLANK = "form.contact.unknown";
+	/** i18n key: "Currency field" */
+	public static final String I18N_KEY_FIELD_CURRENCY = "form.field.currency";
 	
 //> INSTANCE PROPERTIES
 	/** Logging object */
@@ -57,14 +62,18 @@ public class FormsThinletTabController {
 	private final FormsPluginController pluginController;
 	/** The {@link UiGeneratorController} that shows the tab. */
 	private final UiGeneratorController uiController;
+	
+	/** The thinlet component containing the tab. */
+	private Object tabComponent;
+	
 	// FIXME work out what this is here for
 	private Object formResultsComponent;
-	// FIXME rename this, and work out where it should be coming from!
-	private ContactDao contactFactory;
-	// FIXME rename this, and work out where it should be coming from!
-	private final FormDao formsDao = new InMemoryFormDao();
-	// FIXME rename this, and work out where it should be coming from!
-	private final FormResponseDao formResponseDao = new InMemoryFormResponseDao();
+	/** DAO for {@link Contact}s */
+	private ContactDao contactDao;
+	/** DAO for {@link Form}s */
+	private FormDao formsDao;
+	/** DAO for {@link FormResponse}s */
+	private FormResponseDao formResponseDao;
 	
 //> CONSTRUCTORS
 	/**
@@ -75,7 +84,13 @@ public class FormsThinletTabController {
 	public FormsThinletTabController(FormsPluginController pluginController, UiGeneratorController uiController) {
 		this.pluginController = pluginController;
 		this.uiController = uiController;
-		this.contactFactory = pluginController.getFrontlineController().getContactDao();
+	}
+	
+	/**
+	 * Refresh the tab's display.
+	 */
+	public void refresh() {
+		refreshFormsList();
 	}
 	
 //> PASS-THROUGH METHODS TO UI CONTROLLER
@@ -119,8 +134,7 @@ public class FormsThinletTabController {
 	 * @param formsList
 	 */
 	public void formsTab_selectionChanged(Object formsList) {
-		Object sel = uiController.getAttachedObject(uiController.getSelectedItem(formsList));
-		Form selectedForm = getForm(sel);
+		Form selectedForm = getForm(uiController.getSelectedItem(formsList));
 		
 		if (selectedForm != null) {
 			if (selectedForm.isFinalised()) {
@@ -142,7 +156,7 @@ public class FormsThinletTabController {
 	public void editSelected(Object list) {
 		Object selectedComponent = uiController.getSelectedItem(list);
 		if (selectedComponent != null) {
-			Form f = getForm(uiController.getAttachedObject(selectedComponent));
+			Form f = getForm(selectedComponent);
 			VisualForm visualForm = VisualForm.getVisualForm(f);
 			List<PreviewComponent> old = new ArrayList<PreviewComponent>();
 			old.addAll(visualForm.getComponents());
@@ -163,7 +177,7 @@ public class FormsThinletTabController {
 	 * @param formsList
 	 */
 	public void showGroupSelecter(Object formsList) {
-		Form selectedForm = getForm(uiController.getAttachedObject(uiController.getSelectedItem(formsList)));
+		Form selectedForm = getForm(uiController.getSelectedItem(formsList));
 		System.out.println("FormsThinletTabController.showGroupSelecter() : " + selectedForm);
 		if(selectedForm != null) {
 			// FIXME i18n
@@ -177,12 +191,15 @@ public class FormsThinletTabController {
 	 */
 	public void setSelectedGroup(Object groupSelecter, Object groupList) {
 		System.out.println("FormsThinletTabController.setSelectedGroup()");
-		Form form = getForm(uiController.getAttachedObject(groupSelecter));
+		Form form = getForm(groupSelecter);
 		System.out.println("Form: " + form);
 		Group group = uiController.getGroup(uiController.getSelectedItem(groupList));
 		System.out.println("Group: " + group);
 		if(group != null) {
+			// Set the permitted group for this form, then save it
 			form.setPermittedGroup(group);
+			this.formsDao.updateForm(form);
+			
 			removeDialog(groupSelecter);
 			refreshFormsList();
 		}
@@ -193,7 +210,7 @@ public class FormsThinletTabController {
 	 * @param formsList the forms list component
 	 */
 	public void sendSelected(Object formsList) {
-		Form selectedForm = getForm(uiController.getAttachedObject(uiController.getSelectedItem(formsList)));
+		Form selectedForm = getForm(uiController.getSelectedItem(formsList));
 		if(selectedForm != null) {
 			// check the form has a group set
 			if(selectedForm.getPermittedGroup() == null) {
@@ -217,12 +234,14 @@ public class FormsThinletTabController {
 	public void showSendSelectionDialog() {
 		uiController.removeConfirmationDialog();
 		
-		Object selectionAttachment = getSelectionAttachment();
-		Form form = getForm(selectionAttachment);
+		Form form = getForm(formsList_getSelection());
 		if(form != null) {
 			// if form is not finalised, finalise it now
 			if(!form.isFinalised()) {
 				formsDao.finaliseForm(form);
+
+				// Update forms list so the newly-finalised form has the correct icon.
+				refreshFormsList();
 			}
 			
 			// show selection dialog for Contacts in the form's group
@@ -242,7 +261,7 @@ public class FormsThinletTabController {
 	public void sendForm(Object pnFormChooseContacts, Object lsContacts) {
 		// Work out which contacts we should be sending the form to
 		Object[] selectedItems = uiController.getSelectedItems(lsContacts);
-		Form form = getForm(uiController.getAttachedObject(pnFormChooseContacts));
+		Form form = getForm(pnFormChooseContacts);
 		if(selectedItems.length > 0) {
 			HashSet<Contact> selectedContacts = new HashSet<Contact>();
 			for(Object o : selectedItems) {
@@ -269,7 +288,7 @@ public class FormsThinletTabController {
 	public void deleteSelected() {
 		Object formsList = uiController.find(FORMS_LIST_COMPONENT_NAME);
 		Object selectedComponent = uiController.getSelectedItem(formsList);
-		Form selectedForm = getForm(uiController.getAttachedObject(selectedComponent));
+		Form selectedForm = getForm(selectedComponent);
 		if(selectedForm != null) {
 			this.formsDao.deleteForm(selectedForm);
 			uiController.remove(selectedComponent);
@@ -283,11 +302,10 @@ public class FormsThinletTabController {
 	 * @param formsList
 	 */
 	public void duplicateSelected(Object formsList) {
-		Object selectedItem = uiController.getAttachedObject(uiController.getSelectedItem(formsList));
-		Form selected = getForm(selectedItem);
+		Form selected = getForm(uiController.getSelectedItem(formsList));
 		Form clone = new Form(selected.getName() + '*');
 		for (FormField oldField : selected.getFields()) {
-			FormField newField = new FormField(clone, oldField.getType(), oldField.getLabel());
+			FormField newField = new FormField(oldField.getType(), oldField.getLabel());
 			clone.addField(newField, oldField.getPosition());
 		}
 		addToFormsList(clone);
@@ -300,26 +318,26 @@ public class FormsThinletTabController {
 	 * @param toolbar The button bar at the bottom of the forms list
 	 */
 	public void formsTab_enabledFields(Object popUp, Object list, Object toolbar) {
-		Object attachedObject = uiController.getAttachedObject(uiController.getSelectedItem(list));
+		Object selectedComponent = uiController.getSelectedItem(list);
 
-		enableMenuOptions(toolbar, attachedObject);
-		enableMenuOptions(popUp, attachedObject);
+		enableMenuOptions(toolbar, selectedComponent);
+		enableMenuOptions(popUp, selectedComponent);
 	}
 	
 	/**
 	 * Enable menu options for the supplied menu component.
 	 * @param menuComponent Menu component, a button bar or popup menu
-	 * @param selectedAttachment The object attached to the selected object of the control that this menu applied to
+	 * @param selectedComponent The selected object of the control that this menu applied to
 	 */
-	private void enableMenuOptions(Object menuComponent, Object selectedAttachment) {
-		Form selectedForm = getForm(selectedAttachment);
+	private void enableMenuOptions(Object menuComponent, Object selectedComponent) {
+		Form selectedForm = getForm(selectedComponent);
 		for (Object o : uiController.getItems(menuComponent)) {
 			String name = uiController.getName(o);
 			if(name != null) { 
 				if (name.contains("Delete")) {
 					// Tricky to remove the component for a form when the field is selected.  If someone wants to
 					// solve that, they're welcome to enable delete here for FormFields
-					uiController.setEnabled(o, selectedAttachment instanceof Form);
+					uiController.setEnabled(o, uiController.getAttachedObject(selectedComponent) instanceof Form);
 				} else if (name.contains("Edit")) {
 					uiController.setEnabled(o, selectedForm != null && !selectedForm.isFinalised());
 				} else if (name.contains("New")) {
@@ -337,8 +355,7 @@ public class FormsThinletTabController {
 	 * FIXME confirm this is called from XML as otherwise we can make it private
 	 */
 	private void formsTab_updateResults() {
-		Object selectionAttachment = getSelectionAttachment();
-		Form selected = getForm(selectionAttachment);
+		Form selected = getForm(formsList_getSelection());
 		int limit = uiController.getListLimit(formResultsComponent);
 		int pageNumber = uiController.getListCurrentPage(formResultsComponent);
 		uiController.removeAll(formResultsComponent);
@@ -353,6 +370,11 @@ public class FormsThinletTabController {
 		uiController.updatePageNumber(formResultsComponent, uiController.find(TAB_FORMS));
 	}
 	
+	/**
+	 * Shows a confirmation dialog before calling a method.  The method to be called
+	 * is passed in as a string, and then called using reflection.
+	 * @param methodToBeCalled
+	 */
 	public void showFormConfirmationDialog(String methodToBeCalled){
 		uiController.showConfirmationDialog(methodToBeCalled, this);
 	}
@@ -361,7 +383,7 @@ public class FormsThinletTabController {
 
 	/** @return the forms list component */
 	private Object getFormsList() {
-		return uiController.find(FormsThinletTabController.FORMS_LIST_COMPONENT_NAME);
+		return uiController.find(this.tabComponent, FormsThinletTabController.FORMS_LIST_COMPONENT_NAME);
 	}
 	
 	/** Reload and refresh the list of forms */
@@ -374,8 +396,8 @@ public class FormsThinletTabController {
 	}
 	
 	/** @return the form or form field attached to the selection of the forms list */
-	private Object getSelectionAttachment() {
-		return uiController.getAttachedObject(uiController.getSelectedItem(uiController.find(FORMS_LIST_COMPONENT_NAME)));
+	private Object formsList_getSelection() {
+		return uiController.getSelectedItem(uiController.find(FORMS_LIST_COMPONENT_NAME));
 	}
 	
 	/** Given a {@link VisualForm}, the form edit window, this saves its details. */
@@ -383,13 +405,17 @@ public class FormsThinletTabController {
 		Form form = new Form(visualForm.getName());
 		for (PreviewComponent comp : visualForm.getComponents()) {
 			FormFieldType fieldType = FComponent.getFieldType(comp.getComponent().getClass());
-			FormField newField = new FormField(form, fieldType, comp.getComponent().getLabel());
+			FormField newField = new FormField(fieldType, comp.getComponent().getLabel());
 			form.addField(newField);
 		}
-		formsDao.saveForm(form);
+		this.formsDao.saveForm(form);
 		addToFormsList(form);
 	}
 
+	/**
+	 * Adds or refreshes a form's ui component on the forms list.
+	 * @param form The form to update or add.
+	 */
 	private void addToFormsList(Form form) {
 		Object list = uiController.find(FORMS_LIST_COMPONENT_NAME);
 		int index = -1;
@@ -407,12 +433,12 @@ public class FormsThinletTabController {
 		uiController.setSelectedIndex(list, indexToSelect);
 	}
 	
-	private void updateForm(List<PreviewComponent> old, List<PreviewComponent> newComp, Form f) {
+	private void updateForm(List<PreviewComponent> old, List<PreviewComponent> newComp, Form form) {
 		//Let's remove from database the ones the user removed
 		List<PreviewComponent> toRemove = new ArrayList<PreviewComponent>();
 		for (PreviewComponent c : old) {
 			if (!newComp.contains(c)) {
-				f.removeField(c.getFormField());
+				form.removeField(c.getFormField());
 				toRemove.add(c);
 			}
 		}
@@ -426,10 +452,12 @@ public class FormsThinletTabController {
 				ff.setLabel(c.getComponent().getLabel());
 			} else {
 				FormFieldType fieldType = FComponent.getFieldType(c.getComponent().getClass());
-				FormField newField = new FormField(f, fieldType, c.getComponent().getLabel());
-				f.addField(newField, newComp.indexOf(c));
+				FormField newField = new FormField(fieldType, c.getComponent().getLabel());
+				form.addField(newField, newComp.indexOf(c));
 			}
 		}
+		
+		this.formsDao.updateForm(form);
 	}
 	
 	/** Adds the result panel to the forms tab. */
@@ -438,7 +466,7 @@ public class FormsThinletTabController {
 		Object pnRight = uiController.find(formsTab, "pnRight");
 		uiController.removeAll(pnRight);
 		Object resultsView = uiController.loadComponentFromFile(UI_FILE_RESULTS_VIEW, this);
-		Object pagePanel = uiController.loadComponentFromFile(FrontlineUI.UI_FILE_PAGE_PANEL, this);
+		Object pagePanel = uiController.loadComponentFromFile(UiGeneratorControllerConstants.UI_FILE_PAGE_PANEL, this);
 		Object placeholder = uiController.find(resultsView, "pageControlsPanel");
 		int index = uiController.getIndex(uiController.getParent(placeholder), placeholder);
 		uiController.add(uiController.getParent(placeholder), pagePanel, index);
@@ -452,12 +480,13 @@ public class FormsThinletTabController {
 	}
 
 	/**
-	 * @param selected
+	 * Adds the form results panel to the GUI, and refreshes it for the selected form.
+	 * @param selected The form whose results should be displayed.
 	 */
 	private void showResultsPanel(Form selected) {
 		addFormResultsPanel();
 		Object pagePanel = uiController.find(uiController.getCurrentTab(), "pagePanel");
-		uiController.setBoolean(pagePanel, Thinlet.VISIBLE, true);
+		uiController.setVisible(pagePanel, true);
 		Object pnResults = uiController.find("pnFormResults");
 		uiController.setInteger(pnResults, "columns", 2);
 		
@@ -472,26 +501,34 @@ public class FormsThinletTabController {
 	}
 
 	/**
-	 * @param selectedAttachment Screen component's selectedItem's attached item
-	 * @return a {@link Form} if a form or formfield was selected; <code>null</code> otherwise.
+	 * @param selectedComponent Screen component's selectedItem
+	 * @return a {@link Form} if a form or formfield was selected, or <code>null</code> if none could be found
 	 */
-	private Form getForm(Object selectedAttachment) {
-		Form selected = null; 
-		if (selectedAttachment != null) {
-			if (selectedAttachment instanceof Form) {
-				selected = (Form) selectedAttachment;
-			} else if(selectedAttachment instanceof FormField) {
-				selected = ((FormField) selectedAttachment).getForm();
-			} else {
-				throw new IllegalStateException("Unrecognized attachment type: " + selectedAttachment.getClass());
-			}
+	private Form getForm(Object selectedComponent) {
+		Object selectedAttachment = uiController.getAttachedObject(selectedComponent);
+		if (selectedAttachment == null
+				|| !(selectedAttachment instanceof Form)) {
+			// The selected item was not a form item, so probably was a child of that.  Get it's parent, and check if that was a form instead
+			selectedAttachment = this.uiController.getAttachedObject(this.uiController.getParent(selectedComponent));
 		}
-		return selected;
+		
+		if (selectedAttachment == null
+				|| !(selectedAttachment instanceof Form)) {
+			// No form was found; return null
+			return null;
+		} else {
+			return (Form) selectedAttachment;
+		}
 	}
 	
+	/**
+	 * Gets {@link Thinlet} table row component for the supplied {@link FormResponse}
+	 * @param response the {@link FormResponse} to represent as a table row
+	 * @return row component to insert in a thinlet table
+	 */
 	private Object getRow(FormResponse response) {
 		Object row = uiController.createTableRow(response);
-		Contact sender = contactFactory.getFromMsisdn(response.getSubmitter());
+		Contact sender = contactDao.getFromMsisdn(response.getSubmitter());
 		String senderDisplayName = sender != null ? sender.getDisplayName() : response.getSubmitter();
 		uiController.add(row, uiController.createTableCell(senderDisplayName));
 		for (ResponseValue result : response.getResults()) {
@@ -501,10 +538,9 @@ public class FormsThinletTabController {
 	}
 	
 	/**
-	 * Creates a node for the supplied group, creating nodes for its sub-groups and contacts as well.
-	 * 
-	 * @param group The group to be put into a node.
-	 * @return
+	 * Creates a {@link Thinlet} tree node for the supplied form.
+	 * @param form The form to represent as a node.
+	 * @return node to insert in thinlet tree
 	 */
 	private Object getNode(Form form) {
 		LOG.trace("ENTER");
@@ -556,7 +592,7 @@ public class FormsThinletTabController {
 		if (selected != null) {
 			// FIXME check if this constant can be removed from frontlinesmsconstants class
 			Object column = uiController.createColumn(InternationalisationUtils.getI18NString(FrontlineSMSConstants.COMMON_SUBMITTER), null);
-			uiController.setInteger(column, "width", 100);
+			uiController.setWidth(column, 100);
 			uiController.setIcon(column, Icon.PHONE_CONNECTED);
 			uiController.add(header, column);
 			// For some reason we have a number column
@@ -571,6 +607,39 @@ public class FormsThinletTabController {
 			}
 		}
 	}
+
+//> ACCESSORS
+	/**
+	 * Set {@link FormDao}
+	 * @param formsDao new value for {@link #formsDao}
+	 */
+	public void setFormsDao(FormDao formsDao) {
+		this.formsDao = formsDao;
+	}
+	
+	/**
+	 * Set {@link FormResponseDao}
+	 * @param formResponseDao new value for {@link FormResponseDao}
+	 */
+	public void setFormResponseDao(FormResponseDao formResponseDao) {
+		this.formResponseDao = formResponseDao;
+	}
+	
+	/**
+	 * Set {@link #contactDao}
+	 * @param contactDao new value for {@link #contactDao}
+	 */
+	public void setContactDao(ContactDao contactDao) {
+		this.contactDao = contactDao;
+	}
+	
+	/**
+	 * Set {@link #tabComponent}
+	 * @param tabComponent new value for {@link #tabComponent}
+	 */
+	public void setTabComponent(Object tabComponent) {
+		this.tabComponent = tabComponent;
+	}
 	
 //> TEMPORARY METHODS THAT NEED SORTING OUT
 	/**
@@ -584,10 +653,14 @@ public class FormsThinletTabController {
 	
 	private void sendForm(Form formToSend, String msisdn, int formsSmsPort) {
 		// TODO Auto-generated method stub
+		// FIXME please implement this method if it is actually used
+		throw new IllegalStateException("This method is not yet implemented");
 	}
 
 	private void sendSMS(String targetNumber, String messageContent) {
 		this.pluginController.getFrontlineController().sendTextMessage(targetNumber, messageContent);
+		// FIXME please remove exception if this method is actually used
+		throw new IllegalStateException("This method appears not to be called.");
 	}
 	
 	/**

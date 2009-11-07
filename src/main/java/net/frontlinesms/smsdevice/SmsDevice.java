@@ -23,23 +23,6 @@ import net.frontlinesms.data.domain.Message;
 import net.frontlinesms.listener.SmsListener;
 
 public interface SmsDevice {
-	public static final int STATUS_DORMANT = 0;
-	public static final int STATUS_SEARCHING = 1;
-	public static final int STATUS_DETECTED = 2;
-	public static final int STATUS_CONNECTED = 3;
-	public static final int STATUS_DISCONNECTED = 4;
-	public static final int STATUS_SIM_REFUSED = 5;
-	public static final int STATUS_DUPLICATE = 6;
-	public static final int STATUS_MAX_SPEED_FOUND = 7;
-	public static final int STATUS_TRY_TO_CONNECT = 8;
-	public static final int STATUS_NO_PHONE_DETECTED = 9;
-	public static final int STATUS_CONNECTING = 10;
-	public static final int STATUS_FAILED_TO_CONNECT = 11;
-	public static final int STATUS_LOW_CREDIT = 12;
-	public static final int STATUS_DISCONNECTING = 13;
-	public static final int STATUS_RECEIVING_FAILED = 14;
-	public static final int STATUS_TRYING_TO_RECONNECT = 15;
-	
 	/** Checks if this device is being used to send SMS messages. */
 	public boolean isUseForSending();
 
@@ -58,9 +41,6 @@ public interface SmsDevice {
 	/** Adds the supplied message to the outbox. */
 	public void sendSMS(Message outgoingMessage);
 	
-	/** Gets a String describing the status of this device.  TODO shouldn't this be i18n'd somehow? */
-	public String getStatusString();
-
 	/** Sets the {@link SmsListener} attached to this {@link SmsDevice}. */
 	public void setSmsListener(SmsListener smsListener);
 	
@@ -78,4 +58,10 @@ public interface SmsDevice {
 	 * FIXME this method is unnecessary as all handsets support UCS-2 so far!
 	 */
 	public boolean isUcs2SendingSupported();
+	
+	/** @return the status of this device */
+	public SmsDeviceStatus getStatus();
+	
+	/** @return details relating to {@link #getStatus()}, or <code>null</code> if none are relevant. */
+	public String getStatusDetail();
 }

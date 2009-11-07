@@ -35,4 +35,8 @@ public class InMemorySmsInternetServiceSettingsDao implements SmsInternetService
 		this.allSettings.add(settings);
 	}
 
+	/** @see SmsInternetServiceSettingsDao#updateSmsInternetServiceSettings(SmsInternetServiceSettings) */
+	public void updateSmsInternetServiceSettings(SmsInternetServiceSettings settings) {
+		/* Nothing to do to update */
+	}
 }

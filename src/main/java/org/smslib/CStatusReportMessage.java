@@ -21,12 +21,10 @@
 
 package org.smslib;
 
-import java.util.*;
-import java.text.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 
 public class CStatusReportMessage extends CIncomingMessage {
-	private static final long serialVersionUID = 1L;
-
 	/**
 	 * Holds values representing the delivery status of a previously sent message.
 	 */
@@ -40,6 +38,8 @@ public class CStatusReportMessage extends CIncomingMessage {
 		/** Message was not delivered and the SMSC will abort it. */
 		public static final int Aborted = 3;
 	}
+	
+//> INSTANCE PROPERTIES
 	/** (Presumably) the date the original message this refers to was sent */
 	private long dateOriginal;
 	/** The date this status report was received/or when it was generated? */
@@ -47,6 +47,21 @@ public class CStatusReportMessage extends CIncomingMessage {
 	/** Status that this report represents */
 	private int status;
 
+//> CONSTRUCTORS
+	protected CStatusReportMessage(int refNo, int memIndex, String memLocation, long dateOriginal, long dateReceived)
+	{
+		super(MessageType.StatusReport, memIndex, memLocation);
+
+		this.refNo = refNo;
+		this.dateOriginal = dateOriginal;
+		this.dateReceived = dateReceived;
+		messageText = "";
+		status = DeliveryStatus.Unknown;
+
+		// TODO why is this helpful?
+		setDate(null);
+	}
+	
 	/**
 	 * Decodes the supplied SMS PDU to create a status report.
 	 * @param pdu
@@ -145,23 +160,14 @@ public class CStatusReportMessage extends CIncomingMessage {
 //			status = DeliveryStatus.Aborted;
 //		}
 
-		date = null;
+		// TODO why is this helpful?
+		setDate(null);
 	}
-
-	protected CStatusReportMessage(int refNo, int memIndex, String memLocation, Date dateOriginal, Date dateReceived)
-	{
-		super(MessageType.StatusReport, memIndex, memLocation);
-
-		this.refNo = refNo;
-		this.dateOriginal = dateOriginal.getTime();
-		this.dateReceived = dateReceived.getTime();
-		messageText = "";
-		status = DeliveryStatus.Unknown;
-		date = null;
-	}
-
+	
+//> ACCESSORS
 	/**
-	 * Gets the MSISDN this report refers to
+	 * FIXME why does {@link #getOriginator()} return {@link CMessage#recipient}???
+	 * @return the MSISDN this report refers to
 	 */
 	public String getOriginator() {
 		return recipient;
@@ -181,8 +187,8 @@ public class CStatusReportMessage extends CIncomingMessage {
 	 * 
 	 * @return The date of the original SMS message.
 	 */
-	public Date getDateOriginal() {
-		return new Date(dateOriginal);
+	public long getDateOriginal() {
+		return this.dateOriginal;
 	}
 
 	/**
@@ -190,7 +196,7 @@ public class CStatusReportMessage extends CIncomingMessage {
 	 * 
 	 * @return The date when the message was received.
 	 */
-	public Date getDateReceived() {
-		return new Date(dateReceived);
+	public long getDateReceived() {
+		return this.dateReceived;
 	}
 }

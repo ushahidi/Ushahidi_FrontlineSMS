@@ -22,13 +22,20 @@ package net.frontlinesms.plugins.forms.ui.components;
 import net.frontlinesms.FrontlineSMSConstants;
 import net.frontlinesms.ui.i18n.InternationalisationUtils;
 
+/**
+ * FComponent for displaying and editing a form number field.
+ * @author Kadu
+ */
 @SuppressWarnings("serial")
 public class NumericTextField extends TextField {
+
+	/** @see FComponent#getDescription() */
 	@Override
 	public String getDescription() {
 		return InternationalisationUtils.getI18NString(FrontlineSMSConstants.COMMON_NUMBER);
 	}
 
+	/** @see FComponent#getIcon() */
 	@Override
 	public String getIcon() {
 		return "numericfield.png";

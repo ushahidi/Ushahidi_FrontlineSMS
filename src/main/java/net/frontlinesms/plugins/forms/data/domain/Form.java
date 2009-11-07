@@ -1,5 +1,6 @@
 package net.frontlinesms.plugins.forms.data.domain;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -13,8 +14,9 @@ import net.frontlinesms.data.domain.Group;
  * A form for filling in with data.
  * @author Alex
  */
+@SuppressWarnings("serial")
 @Entity
-public class Form {
+public class Form implements Serializable {
 //> FIELD NAMES
 	/** Column name for {@link #mobileId} */
 	public static final String FIELD_MOBILE_ID = "mobileId";
@@ -26,6 +28,7 @@ public class Form {
 	
 //> INSTANCE PROPERTIES
 	/** Unique id for this entity.  This is for hibernate usage. */
+	@SuppressWarnings("unused")
 	@Id @GeneratedValue(strategy=GenerationType.IDENTITY)
 	@Column(unique=true,nullable=false,updatable=false)
 	private long id;
@@ -33,7 +36,7 @@ public class Form {
 	/** The name of this form */
 	private String name;
 	/** Fields attached to this form */
-	@OneToMany
+	@OneToMany(fetch=FetchType.EAGER, targetEntity=FormField.class, cascade=CascadeType.ALL)
 	private List<FormField> fields = new ArrayList<FormField>();
 	
 	/** The ID of this form when handled on a mobile device. */
@@ -45,6 +48,9 @@ public class Form {
 	private Group permittedGroup;
 	
 //> CONSTRUCTORS
+	/** Empty constructor for hibernate */
+	Form() {}
+	
 	/**
 	 * Creates a new form with the supplied name.
 	 * @param name name of the form

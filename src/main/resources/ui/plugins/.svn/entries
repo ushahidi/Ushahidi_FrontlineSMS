@@ -1,34 +1,0 @@
-10
-
-dir
-83
-http://192.168.170.45/frontlinesms/trunk/src/main/resources/ui/plugins
-http://192.168.170.45/frontlinesms
-
-
-
-2009-08-27T11:16:04.527013Z
-81
-ekala
-
-
-svn:special svn:externals svn:needs-lock
-
-
-
-
-
-
-
-
-
-
-
-b2039536-754e-4714-9a36-ebe2063c1ec8
-
-forms
-dir
-
-mapping
-dir
-

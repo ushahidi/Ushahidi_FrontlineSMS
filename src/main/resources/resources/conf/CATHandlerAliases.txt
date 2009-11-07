@@ -9,3 +9,7 @@ Nokia_S40_3ed			Nokia_6125, Nokia_6126, Nokia_6131, Nokia_6133, Nokia_6136, Noki
 # These phones are Nokia Series40 3rd Edition (FP2).
 # Details of these phones can be got from http://www.forum.nokia.com/devices/matrix_s40_3ed_fp2_1.html
 Nokia_S40_3ed			Nokia_3500classic, Nokia_3109classic, Nokia_3110classic, Nokia_6086, Nokia_6300, Nokia_5200, Nokia_5300, Nokia_6085, Nokia_7390, Nokia_7373
+
+# These phones run the Symbian Pi-Access to allow access to a fully-functional AT command handler
+#Symbian_PiAccess		Nokia_3230, Nokia_6630
+# PiAccess support is disabled as these phones are rarely detected correctly, and without PiAccess they will still happily send SMS, if not receive it.

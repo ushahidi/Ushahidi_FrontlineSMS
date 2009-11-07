@@ -18,6 +18,13 @@ import junit.framework.TestCase;
  * @author Alex
  */
 public abstract class ReusableGroupDaoTest extends ReusableTestCase<Group> {
+	
+//> STATIC PROPERTIES 
+	private static final String MY_GROUP_NAME = "My Group";
+	
+	private static final String CHILD_GROUP_NAME = "Child Group";
+	
+//> INSTANCE PROPERTIES
 	/** Instance of this DAO implementation we are testing. */
 	private GroupDao dao;
 	/** Logging object */
@@ -32,13 +39,19 @@ public abstract class ReusableGroupDaoTest extends ReusableTestCase<Group> {
 		this.dao = null;
 	}
 	
+//> JUNIT TEST METHODS
+	public void test() throws DuplicateKeyException {
+		testSimple();
+		testChildDelete();
+		testCascadingDelete();
+	}
+	
 	/**
 	 * Test everything all at once!
 	 * @throws DuplicateKeyException 
 	 */
-	public void test() throws DuplicateKeyException {
+	public void testSimple() throws DuplicateKeyException {
 		confirmSanity();
-		final String MY_GROUP_NAME = "My Group";
 		Group group = new Group(null, MY_GROUP_NAME);
 		confirmSanity();
 		dao.saveGroup(group);
@@ -64,7 +77,6 @@ public abstract class ReusableGroupDaoTest extends ReusableTestCase<Group> {
 		
 		assertEquals(1, dao.getGroupCount());
 		
-		final String CHILD_GROUP_NAME = "Child Group";
 		Group childGroup = new Group(group, CHILD_GROUP_NAME);
 		dao.saveGroup(childGroup);
 		
@@ -74,10 +86,61 @@ public abstract class ReusableGroupDaoTest extends ReusableTestCase<Group> {
 
 		assertEquals(group, dao.getGroupByName(MY_GROUP_NAME));
 		assertEquals(childGroup, dao.getGroupByName(CHILD_GROUP_NAME));
+
+		dao.deleteGroup(childGroup, false);
+		dao.deleteGroup(group, false);
+		
+		assertEquals(0, dao.getGroupCount());
+		
+		confirmSanity();
+	}
+	
+	public void testChildDelete() throws DuplicateKeyException {
+		Group group = new Group(null, MY_GROUP_NAME);
+		confirmSanity();
+		dao.saveGroup(group);
+		confirmSanity();
+
+		Group childGroup = new Group(group, CHILD_GROUP_NAME);
+		dao.saveGroup(childGroup);
+
+		assertEquals(group, dao.getGroupByName(MY_GROUP_NAME));
+		assertEquals(childGroup, dao.getGroupByName(CHILD_GROUP_NAME));
+		
+		assertEquals(2, dao.getGroupCount());
+		
+		confirmSanity();
+		
+		dao.deleteGroup(childGroup, false);
+		assertEquals(1, dao.getGroupCount());
+		confirmSanity();
+		
+		dao.deleteGroup(group, false);
+		assertEquals(0, dao.getGroupCount());
+		confirmSanity();
+	}
+	
+	public void testCascadingDelete() throws DuplicateKeyException {
+		Group group = new Group(null, MY_GROUP_NAME);
+		confirmSanity();
+		dao.saveGroup(group);
+		confirmSanity();
+
+		Group childGroup = new Group(group, CHILD_GROUP_NAME);
+		dao.saveGroup(childGroup);
+
+		assertEquals(group, dao.getGroupByName(MY_GROUP_NAME));
+		assertEquals(childGroup, dao.getGroupByName(CHILD_GROUP_NAME));
+		
+		assertEquals(2, dao.getGroupCount());
+		
+		confirmSanity();
 		
 		dao.deleteGroup(group, false);
 		
 		assertEquals(0, dao.getGroupCount());
+		
+		confirmSanity();
 	}
 
 	/** Checks some basic facts about the state of the DAO */

@@ -6,24 +6,6 @@
 
 	<!-- Configuration for in-memory HSQL database. -->
 
-	<!-- set up hibernate on HSQL -->
-	<bean id="sessionFactory" class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
-		<property name="dataSource" ref="dataSource" />
-		<property name="configLocations">
-			<list>
-				<value>classpath:frontlinesms.hibernate.cfg.xml</value>
-				<value>classpath:net/frontlinesms/plugins/forms/frontlineforms.hibernate.cfg.xml</value>
-			</list>
-		</property>
-		<property name="configurationClass">
-			<value>org.hibernate.cfg.AnnotationConfiguration</value>
-		</property>
-		<property name="hibernateProperties" ref="hibernateProperties"/>
-	</bean>
-
-	<!-- import main definition from within FrontlineSMS package.  This should not be changed. -->
-	<import resource="classpath:frontlinesms-spring-hibernate.xml" />
-
 	<bean id="hibernateProperties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
 		<property name="properties">
 			<props>

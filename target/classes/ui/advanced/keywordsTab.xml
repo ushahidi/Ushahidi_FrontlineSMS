@@ -9,7 +9,7 @@
 	                    <separator name="sp1"/>
 	                    <menuitem action="keywordManager_edit(keywordList)" icon="/icons/keyword_edit.png" name="miEdit" text="i18n.action.edit"/>
 	                    <menuitem action="showConfirmationDialog('removeSelectedFromKeywordList')" icon="/icons/keyword_delete.png" name="miDelete" text="i18n.action.delete.selected"/>
-	                    <menuitem action="showExportWizard(keywordList, 2)" icon="/icons/export.png" name="miExport" text="i18n.action.export.selected"/>
+	                    <menuitem action="showExportWizard(keywordList, 'keywords')" icon="/icons/export.png" name="miExport" text="i18n.action.export.selected"/>
 	                    <separator name="sp2"/>
 	                    <menuitem action="show_createKeywordForm(keywordList)" icon="/icons/keyword_add.png" name="miCreate" text="i18n.action.new.keyword"/>
 	                </popupmenu>

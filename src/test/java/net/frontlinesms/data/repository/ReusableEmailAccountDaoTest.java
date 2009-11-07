@@ -23,11 +23,19 @@ public abstract class ReusableEmailAccountDaoTest extends ReusableTestCase<Email
 	private final Log log = LogFactory.getLog(getClass());
 
 	public void setDao(EmailAccountDao dao) {
+		assertNull(this.dao);
 		this.dao = dao;
+		assertEquals("There are already email accounts in the data source!  It should be fresh and empty.", 0, this.dao.getAllEmailAccounts().size());
 	}
 	
 	@Override
 	protected void tearDown() throws Exception {
+		// Delete all email accounts still in the DAO
+		for(EmailAccount account : this.dao.getAllEmailAccounts()) {
+			this.dao.deleteEmailAccount(account);
+		}
+		
+		// Discard the DAO
 		this.dao = null;
 	}
 	
@@ -36,7 +44,7 @@ public abstract class ReusableEmailAccountDaoTest extends ReusableTestCase<Email
 	 * @throws DuplicateKeyException 
 	 */
 	public void test() throws DuplicateKeyException {
-		assertEquals(0, dao.getAllEmailAccounts().size());
+		assertEquals("Checking there are no unexpected entries in the email DAO.", 0, dao.getAllEmailAccounts().size());
 		
 		String accountName = "test@frontlinesms.com";
 		String accountServer = "FrontlineSMS Test";

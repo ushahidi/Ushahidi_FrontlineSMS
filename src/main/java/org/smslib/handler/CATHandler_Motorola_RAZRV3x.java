@@ -26,17 +26,23 @@ import java.io.IOException;
 import java.io.StringReader;
 
 import org.smslib.*;
+import org.smslib.CService.MessageClass;
 import org.apache.log4j.*;
 
+/**
+ * {@link CATHandler} for the Motorola Razr V3x
+ * @author Alex
+ */
 public class CATHandler_Motorola_RAZRV3x extends CATHandler
 {
-	public CATHandler_Motorola_RAZRV3x(CSerialDriver serialDriver, Logger log, CService srv)
-	{
+	/** @see CATHandler#CATHandler(CSerialDriver, Logger, CService) */
+	public CATHandler_Motorola_RAZRV3x(CSerialDriver serialDriver, Logger log, CService srv) {
 		super(serialDriver, log, srv);
 	}
 
+	/** @see CATHandler#listMessages(MessageClass) */
 	@Override
-	protected String listMessages(int messageClass) throws IOException, UnrecognizedHandlerProtocolException {
+	protected String listMessages(MessageClass messageClass) throws IOException, SMSLibDeviceException  {
 		String response = super.listMessages(messageClass);
 		BufferedReader reader = new BufferedReader(new StringReader(response));
 		String line;

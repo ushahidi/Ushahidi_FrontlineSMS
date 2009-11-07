@@ -22,10 +22,10 @@ package net.frontlinesms.ui;
 import java.awt.Image;
 import java.io.File;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedList;
 
 import net.frontlinesms.*;
+import net.frontlinesms.resources.ResourceUtils;
 import net.frontlinesms.ui.i18n.InternationalisationUtils;
 import net.frontlinesms.ui.i18n.LanguageBundle;
 
@@ -33,84 +33,40 @@ import org.apache.log4j.Logger;
 
 import thinlet.*;
 
-public abstract class FrontlineUI extends Thinlet {
+/**
+ * Base UI used for FrontlineSMS.
+ */
+@SuppressWarnings("serial")
+public abstract class FrontlineUI extends ExtendedThinlet implements ThinletUiEventHandler {
+	
+//> CONSTANTS
+	/** Logging object */
 	private static Logger LOG = Utils.getLogger(FrontlineUI.class);
-	private static final long serialVersionUID = -7786460043284936698L;
-	public static LanguageBundle currentResourceBundle;
+	
+//> UI DEFINITION FILES
+	/** Thinlet UI layout File: alert popup box */
+	protected static final String UI_FILE_ALERT = "/ui/dialog/alert.xml";
+	/** Thinlet UI layout File: file choosing dialog */
+	protected static final String UI_FILE_FILE_CHOOSER_FORM = "/ui/dialog/fileChooserForm.xml";
 
+//> UI COMPONENTS
+	private static final String COMPONENT_FILE_CHOOSER_LIST = "fileChooser_list";
+	private static final String COMPONENT_LABEL_DIRECTORY = "lbDirectory";
+	/** Component of {@link #UI_FILE_ALERT} which contains the message to display */
+	private static final String COMPONENT_ALERT_MESSAGE = "alertMessage";
+	
+//> INSTANCE PROPERTIES
+	/** The language bundle currently in use */
+	public static LanguageBundle currentResourceBundle;
 	/** Frame launcher that this UI instance is displayed within.  We need to keep a handle on it so that we can dispose of it when we quit or change UI modes. */
 	protected FrameLauncher frameLauncher;
+	/** The {@link FrontlineSMS} instance that this UI is attached to. */
 	protected FrontlineSMS frontlineController;
-	
-	protected static final String UI_FILE_HOME = "/ui/frontline.xml";
-	protected static final String UI_FILE_NEW_GROUP_FORM = "/ui/dialog/newGroupForm.xml";
-	protected static final String UI_FILE_DATE_PANEL = "/ui/dialog/datePanel.xml";
-	protected static final String UI_FILE_PENDING_MESSAGES_FORM = "/ui/dialog/pendingMessagesDialog.xml";
-	protected static final String UI_FILE_EXPORT_WIZARD_FORM = "/ui/dialog/exportWizardForm.xml";
-	protected static final String UI_FILE_IMPORT_CONTACTS_FORM = "/ui/dialog/importContactsForm.xml";
-	protected static final String UI_FILE_EXPORT_WIZARD_CONTACT = "/ui/dialog/panelExportContact.xml";
-	protected static final String UI_FILE_EXPORT_WIZARD_MESSAGE = "/ui/dialog/panelExportMessage.xml";
-	protected static final String UI_FILE_EXPORT_WIZARD_KEYWORD = "/ui/dialog/panelExportKeyword.xml";
-	protected static final String UI_FILE_COMPOSE_MESSAGE_FORM = "/ui/dialog/composeMessageForm.xml";
-	protected static final String UI_FILE_GROUP_SELECTER = "/ui/dialog/groupSelecter.xml";
-	protected static final String UI_FILE_CONTACT_SELECTER = "/ui/dialog/contactSelecter.xml";
-	protected static final String UI_FILE_NEW_KEYWORD_FORM = "/ui/dialog/newKeywordForm.xml";
-	protected static final String UI_FILE_NEW_KACTION_REPLY_FORM = "/ui/dialog/newKActionReplyForm.xml";
-	protected static final String UI_FILE_NEW_KACTION_FORWARD_FORM = "/ui/dialog/newKActionForwardForm.xml";
-	protected static final String UI_FILE_NEW_KACTION_EXTERNAL_COMMAND_FORM = "/ui/dialog/externalCommandDialog.xml";
-	protected static final String UI_FILE_NEW_KACTION_EMAIL_FORM = "/ui/dialog/emailDialog.xml";
-	protected static final String UI_FILE_NEW_KACTION_SURVEY_FORM = "/ui/dialog/surveyDialog.xml";
-	protected static final String UI_FILE_EDIT_KEYWORD_LIST_FORM = "/ui/dialog/editKeywordListDialog.xml";
-	protected static final String UI_FILE_EMAIL_ACCOUNTS_SETTINGS_FORM = "/ui/dialog/emailServerConfigDialog.xml";
-	protected static final String UI_FILE_SMS_SERVICES_ACCOUNTS_SETTINGS_FORM = "/ui/dialog/smsHttpServerConfigDialog.xml";
-	protected static final String UI_FILE_SMS_SERVICES_ACCOUNTS_INTELLISMS_SETTINGS_FORM = "/ui/dialog/smsHttpServerIntelliSmsConfigDialog.xml";
-	protected static final String UI_FILE_NEW_TASK_FORM = "/ui/dialog/scheduleTaskDialog.xml";
-	protected static final String UI_FILE_ALERT = "/ui/dialog/alert.xml";
-	protected static final String UI_FILE_EXPORT_DIALOG_FORM = "/ui/dialog/exportDialogForm.xml";
-	protected static final String UI_FILE_FILE_CHOOSER_FORM = "/ui/dialog/fileChooserForm.xml";
-	protected static final String UI_FILE_PHONE_SETTINGS_FORM = "/ui/dialog/phoneSettingsForm.xml";
-	protected static final String UI_FILE_SMS_HTTP_SERVICE_SETTINGS_FORM = "/ui/dialog/smsHttpServiceSettings.xml";
-	protected static final String UI_FILE_EMAIL_ACCOUNT_FORM = "/ui/dialog/emailAccountSettings.xml";
-	protected static final String UI_FILE_DELETE_OPTION_DIALOG_FORM = "/ui/dialog/deleteOptionDialogForm.xml";
-	protected static final String UI_FILE_CONNECTION_WARNING_FORM = "/ui/dialog/connectionWarningForm.xml";
-	protected static final String UI_FILE_CONFIRMATION_DIALOG_FORM = "/ui/dialog/confirmationDialog.xml";
-	protected static final String UI_FILE_CREATE_CONTACT_FORM = "/ui/dialog/createContactDialog.xml";
-	protected static final String UI_FILE_HISTORY_FORM = "/ui/dialog/historyForm.xml";
-	protected static final String UI_FILE_MESSAGE_PANEL = "/ui/dialog/messagePanel.xml";
-	// FIXME this should probably be abstracted via a getter in UIGC or similar
-	public static final String UI_FILE_PAGE_PANEL = "/ui/dialog/pagePanel.xml";
-	protected static final String UI_FILE_ABOUT_PANEL = "/ui/dialog/about.xml";
-	protected static final String UI_FILE_SENDER_NAME_PANEL = "/ui/dialog/senderNamePanel.xml";
-	protected static final String UI_FILE_MSG_DETAILS_FORM = "/ui/dialog/messageDetailsDialog.xml";
-	protected static final String UI_FILE_INCOMING_NUMBER_SETTINGS_FORM = "/ui/dialog/incomingNumberSettingsDialog.xml";
-	protected static final String UI_FILE_USER_DETAILS_DIALOG = "/ui/dialog/userDetailsDialog.xml";
-	
-	//Advanced view
-	protected static final String UI_FILE_HOME_TAB = "/ui/advanced/homeTab.xml";
-	protected static final String UI_FILE_CONTACTS_TAB = "/ui/advanced/contactsTab.xml";
-	//keyword panel
-	protected static final String UI_FILE_KEYWORDS_TAB = "/ui/advanced/keywordsTab.xml";
-	protected static final String UI_FILE_KEYWORDS_SIMPLE_VIEW = "/ui/advanced/keywordSimpleView.xml";
-	protected static final String UI_FILE_KEYWORDS_ADVANCED_VIEW = "/ui/advanced/keywordAdvancedView.xml";
-	
-	protected static final String UI_FILE_MESSAGES_TAB = "/ui/advanced/messagesTab.xml";
-	protected static final String UI_FILE_EMAILS_TAB = "/ui/advanced/emailsTab.xml";
-	protected static final String UI_FILE_PHONES_TAB = "/ui/advanced/phonesTab.xml";
-	
-	//Classic view
-	protected static final String UI_FILE_CONTACT_MANAGER_TAB = "/ui/classic/contactManagerTab.xml";
-	protected static final String UI_FILE_SURVEY_MANAGER_TAB = "/ui/classic/surveyManagerTab.xml";
-	protected static final String UI_FILE_SURVEY_ANALYST_TAB = "/ui/classic/surveyAnalystTab.xml";
-	protected static final String UI_FILE_SEND_CONSOLE_TAB = "/ui/classic/sendConsoleTab.xml";
-	protected static final String UI_FILE_MESSAGE_TRACKER_TAB = "/ui/classic/messageTrackerTab.xml";
-	protected static final String UI_FILE_RECEIVE_CONSOLE_TAB = "/ui/classic/receiveConsoleTab.xml";
-	protected static final String UI_FILE_REPLY_MANAGER_TAB = "/ui/classic/replyManagerTab.xml";
-	protected static final String UI_FILE_PHONE_MANAGER_TAB = "/ui/classic/phoneManagerTab.xml";
 
 	/**
 	 * Gets the icon for a specific language bundle
 	 * @param languageBundle
-	 * @return
+	 * @return the flag image for the language bundle, or <code>null</code> if none could be found.
 	 */
 	protected Image getFlagIcon(LanguageBundle languageBundle) {
 		String country = languageBundle.getCountry();
@@ -124,8 +80,8 @@ public abstract class FrontlineUI extends Thinlet {
 	 * allow the program to continue running.
 	 * 
 	 * {@link #loadComponentFromFile(String, Object)} should always be used by external handlers in preference to this.
-	 * @param fileName
-	 * @return
+	 * @param filename path of the UI XML file to load from
+	 * @return thinlet component loaded from the file
 	 */
 	protected Object loadComponentFromFile(String filename) {
 		return loadComponentFromFile(filename, this);
@@ -135,11 +91,11 @@ public abstract class FrontlineUI extends Thinlet {
 	 * Loads a Thinlet UI descriptor from an XML file and sets the provided event handler.
 	 * If there are any problems loading the file, this will log Throwables thrown and 
 	 * allow the program to continue running.
-	 * @param filename
-	 * @param thinletEventHandler
-	 * @return
+	 * @param filename path of the UI XML file to load from
+	 * @param thinletEventHandler event handler for the UI component
+	 * @return thinlet component loaded from the file
 	 */
-	public Object loadComponentFromFile(String filename, Object thinletEventHandler) {
+	public Object loadComponentFromFile(String filename, ThinletUiEventHandler thinletEventHandler) {
 		LOG.trace("ENTER");
 		try {
 			LOG.debug("Filename [" + filename + "]");
@@ -152,39 +108,43 @@ public abstract class FrontlineUI extends Thinlet {
 		}
 	}
 	
-	private static final String COMPONENT_FILE_CHOOSER_LIST = "fileChooser_list";
-	
 	/**
 	 * Event fired when the browse button is pressed, during an export action. 
 	 * This method opens a fileChooser, showing only directories.
 	 * The user will select a directory and write the file name he/she wants.
+	 * @param textFieldToBeSet The text field whose value should be sert to the chosen file
 	 */
 	public void showSaveModeFileChooser(Object textFieldToBeSet) {
-		Object fileChooserDialog = loadComponentFromFile(UI_FILE_FILE_CHOOSER_FORM);
-		setAttachedObject(fileChooserDialog, textFieldToBeSet);
-		putProperty(fileChooserDialog, FrontlineSMSConstants.PROPERTY_TYPE, FrontlineSMSConstants.SAVE_MODE);
-		addFilesToList(new File(System.getProperty(FrontlineSMSConstants.PROPERTY_USER_HOME)), find(fileChooserDialog, COMPONENT_FILE_CHOOSER_LIST), fileChooserDialog);
-		add(fileChooserDialog);
+		showFileChooser(textFieldToBeSet, FrontlineSMSConstants.SAVE_MODE);
 	}
 	
 	/**
 	 * Event fired when the browse button is pressed, during an import action. 
 	 * This method opens a fileChooser, showing directories and files.
 	 * The user will select a directory and write the file name he/she wants.
+	 * @param textFieldToBeSet The text field whose value should be sert to the chosen file
 	 */
 	public void showOpenModeFileChooser(Object textFieldToBeSet) {
+		showFileChooser(textFieldToBeSet, FrontlineSMSConstants.OPEN_MODE);
+	}
+	/**
+	 * This method opens a fileChooser, showing directories and files.
+	 * @param textFieldToBeSet The text field whose value should be sert to the chosen file
+	 * @param fileMode either {@link FrontlineSMSConstants#OPEN_MODE} or {@link FrontlineSMSConstants#SAVE_MODE}
+	 */
+	private void showFileChooser(Object textFieldToBeSet, String fileMode) {
 		Object fileChooserDialog = loadComponentFromFile(UI_FILE_FILE_CHOOSER_FORM);
 		setAttachedObject(fileChooserDialog, textFieldToBeSet);
-		putProperty(fileChooserDialog, FrontlineSMSConstants.PROPERTY_TYPE, FrontlineSMSConstants.OPEN_MODE);
-		addFilesToList(new File(System.getProperty(FrontlineSMSConstants.PROPERTY_USER_HOME)), find(fileChooserDialog, COMPONENT_FILE_CHOOSER_LIST), fileChooserDialog);
+		putProperty(fileChooserDialog, FrontlineSMSConstants.PROPERTY_TYPE, fileMode);
+		addFilesToList(new File(ResourceUtils.getUserHome()), find(fileChooserDialog, COMPONENT_FILE_CHOOSER_LIST), fileChooserDialog);
 		add(fileChooserDialog);
 	}
 	
-	private static final String COMPONENT_LABEL_DIRECTORY = "lbDirectory";
-	
 	/**
-	 * Adds the files under the desired directory to the file list in the
-	 * file chooser dialog.
+	 * Adds the files under the desired directory to the file list in the file chooser dialog.
+	 * @param parent 
+	 * @param list 
+	 * @param dialog 
 	 */
 	public void addFilesToList(File parent, Object list, Object dialog) {
 		LOG.trace("ENTER");
@@ -216,6 +176,8 @@ public abstract class FrontlineUI extends Thinlet {
 	
 	/**
 	 * Go up a directory, if possible, and show its files in the list.
+	 * @param list 
+	 * @param dialog 
 	 */
 	public void goUp(Object list, Object dialog) {
 		Object file = getAttachedObject(list);
@@ -226,8 +188,6 @@ public abstract class FrontlineUI extends Thinlet {
 			addFilesToList(fileInDisk.getParentFile(), list, dialog);
 		}
 	}
-
-	private static final String COMPONENT_ALERT_MESSAGE = "alertMessage";
 
 	/**
 	 * Popup an alert to the user with the supplied message.
@@ -252,6 +212,8 @@ public abstract class FrontlineUI extends Thinlet {
 	 * Handles the double-click action in the file chooser list. Double-clicking
 	 * in a directory means to get into it. However, double-clicking a file during an
 	 * import action, means to select it as the desired file.
+	 * @param fileList 
+	 * @param dialog 
 	 */
 	public void fileList_doubleClicked(Object fileList, Object dialog) {
 		LOG.trace("ENTER");
@@ -276,6 +238,9 @@ public abstract class FrontlineUI extends Thinlet {
 
 	/**
 	 * Enters the selected directory and show its files in the list.
+	 * @param tfFilename 
+	 * @param list 
+	 * @param dialog 
 	 */
 	public void goToDir(Object tfFilename, Object list, Object dialog) {
 		File file = new File(getString(tfFilename, Thinlet.TEXT));
@@ -288,8 +253,10 @@ public abstract class FrontlineUI extends Thinlet {
 	}
 	
 	/**
-	 * Method called when the user finishes to browse files and select one to be
-	 * the export file.
+	 * Method called when the user finishes to browse files and select one to be the export file.
+	 * @param list 
+	 * @param dialog 
+	 * @param filename 
 	 */
 	public void doSelection(Object list, Object dialog, String filename) {
 		LOG.trace("ENTER");
@@ -320,22 +287,38 @@ public abstract class FrontlineUI extends Thinlet {
 		LOG.trace("EXIT");
 	}
 	
+	/**
+	 * Opens a link in the system browser
+	 * @param url the url to open
+	 * @see Utils#openExternalBrowser(String)
+	 */
 	public void openBrowser(String url) {
 		Utils.openExternalBrowser(url);
 	}
-	
+
+	/**
+	 * Opens a page of the help manual
+	 * @param page The name of the help manual page, including file extension.
+	 */
 	public void showHelpPage(String page) {
 		String url = "help" + File.separatorChar
 			+ page;
 		Utils.openExternalBrowser(url);
 	}
 	
+	/**
+	 * Shows an error dialog informing the user that an unhandled error has occurred.
+	 */
 	@Override
 	protected void handleException(Throwable throwable) {
 		LOG.error("Unhandled exception from thinlet.", throwable);
 		ErrorUtils.showErrorDialog("Unexpected error", "There was an unexpected error.", throwable, false);
 	}
 	
+	/**
+	 * Reloads the ui.
+	 * @param useNewFrontlineController <code>true</code> if a new {@link FrontlineSMS} should be isntantiated; <code>false</code> if the current one should be reused
+	 */
 	final void reloadUI(boolean useNewFrontlineController) {
 		this.frameLauncher.dispose();
 		this.frameLauncher.setContent(null);

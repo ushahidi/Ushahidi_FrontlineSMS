@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <dialog text="i18n.common.setup.title" name="mappingSetup_Dialog" closable="true" close="removeDialog(this)" 
 	modal="true" columns="1" resizable="true" gap="15" top="9" left="9" bottom="9" right="9" width="610" height="470">
-	<table weightx="1" weighty="1" name="locationSources_Table">
+	<table weightx="1" weighty="1" name="locationSources_Table" action="edit_MappingSource(mappingSetup_Dialog, locationSources_Table)">
 		<header>
 			<column text="i18n.common.setup.sourcename" width="100" />
 			<column text="i18n.common.setup.source" width="240" />
@@ -23,8 +23,8 @@
 		</panel>
 		<checkbox name="chkSourceStatus" text="Default" />
 		<panel colspan="2" weightx="1" halign="right" gap="5" top="5" right="5" bottom="5" left="5">
-			<button icon="/icons/tick.png" halign="right" text="i18n.common.setup.addsource" action="addSource(mappingSetup_Dialog)"/>
-			<button icon="/icons/clear.png" name="btnClearSource" text="i18n.common.setup.clearsource" action="clearSourceFields(mappingSetup_Dialog)"/>
+			<button icon="/icons/tick.png" halign="right" text="i18n.action.save" action="addSource(mappingSetup_Dialog)"/>
+			<button icon="/icons/clear.png" name="btnClearSource" text="i18n.action.cancel" action="clearSourceFields(mappingSetup_Dialog)"/>
 		</panel>
 	</panel>
 	<panel gap="5" halign="center">

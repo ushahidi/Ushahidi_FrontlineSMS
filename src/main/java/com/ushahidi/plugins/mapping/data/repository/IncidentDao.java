@@ -31,5 +31,6 @@ public interface IncidentDao {
 	
 	public List<Incident> getIncidentsByLocation(Location location);
 	
+	public void updateIncident(Incident incident) throws DuplicateKeyException;
 	
 }

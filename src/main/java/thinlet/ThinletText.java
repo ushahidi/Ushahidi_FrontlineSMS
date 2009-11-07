@@ -109,4 +109,14 @@ public interface ThinletText {
 	public static final String ATTRIBUTE_COLUMNS = "columns";
 	public static final String ATTRIBUTE_COLSPAN = "colspan";
 	public static final String ATTRIBUTE_ROWSPAN = "rowspan";
+	/** Component attribute key: vertical weighting */
+	public static final String ATTRIBUTE_WEIGHT_Y = "weighty";
+	/** Component attribute key: horizontal weighting */
+	public static final String ATTRIBUTE_WEIGHT_X = "weightx";
+	/** Component attribute key: width */
+	public static final String ATTRIBUTE_WIDTH = "width";
+
+	static final String ATTRIBUTE_I18N = "i18n";
+	/** Prefix applied to a text label to denote an internationalised string */
+	public static final String TEXT_I18N_PREFIX = "i18n.";
 }

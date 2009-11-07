@@ -19,6 +19,12 @@ public interface SmsInternetServiceSettingsDao {
 	 * @throws DuplicateKeyException
 	 */
 	public void saveSmsInternetServiceSettings(SmsInternetServiceSettings settings) throws DuplicateKeyException;
+	
+	/**
+	 * Updates {@link SmsInternetServiceSettings} to the data source 
+	 * @param settings settings to update
+	 */
+	public void updateSmsInternetServiceSettings(SmsInternetServiceSettings settings);
 
 	/** @return all {@link SmsInternetServiceSettings} */
 	public Collection<SmsInternetServiceSettings> getSmsInternetServiceAccounts();

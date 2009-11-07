@@ -4,12 +4,13 @@
 package net.frontlinesms.data.domain;
 
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.persistence.*;
 
 import net.frontlinesms.Utils;
-import net.frontlinesms.smsdevice.SmsInternetService;
+import net.frontlinesms.smsdevice.internet.SmsInternetService;
 import net.frontlinesms.smsdevice.properties.*;
 
 /**
@@ -20,10 +21,13 @@ import net.frontlinesms.smsdevice.properties.*;
 public class SmsInternetServiceSettings {
 //> INSTANCE PROPERTIES
 	/** Unique id for this entity.  This is for hibernate usage. */
-	@Id @GeneratedValue(strategy=GenerationType.IDENTITY) @Column(unique=true,nullable=false,updatable=false) @SuppressWarnings("unused")
+	@Id @GeneratedValue(strategy=GenerationType.IDENTITY) @Column(unique=true,nullable=false,updatable=false)
 	private long id;
+	/** The name of the class of the {@link SmsInternetService} these settings apply to. */
 	private String serviceClassName;
-	private transient Map<String, Object> properties;
+	/** The properties for a {@link SmsInternetService} */
+	@OneToMany(targetEntity=SmsInternetServiceSettingValue.class, fetch=FetchType.EAGER, cascade=CascadeType.ALL)
+	private final Map<String, SmsInternetServiceSettingValue> properties = new HashMap<String, SmsInternetServiceSettingValue>();
 	
 //> CONSTRUCTORS
 	/** Empty constructor for hibernate */
@@ -41,15 +45,22 @@ public class SmsInternetServiceSettings {
 	/**
 	 * Sets the value of a setting.
 	 * FIXME value should not just be an OBJECT - some interface at least i would expect!
+	 * @param key The key of the property to save
+	 * @param value The value of the property to save
 	 */
 	public void set(String key, Object value) {
-		this.properties.put(key, value);
+		this.properties.put(key, toValue(value));
 	}
 	
 	/**
-	 * Gets the class name of {@link SmsInternetService} implementation that these settings apply to.
-	 * @return
+	 * @param key the key of the property to fetch
+	 * @return the value stored for the supplied key, or <code>null</code> if no value is stored.
 	 */
+	public SmsInternetServiceSettingValue get(String key) {
+		return this.properties.get(key);
+	}
+	
+	/** @return the class name of {@link SmsInternetService} implementation that these settings apply to */
 	public String getServiceClassName() {
 		return this.serviceClassName;
 	}
@@ -58,9 +69,8 @@ public class SmsInternetServiceSettings {
 	 * Get an ordered list of the properties set on this object.
 	 * @return
 	 */
-	public Map<String, String> getProperties() {
-		// FIXME implement this properly
-		return null;
+	public Map<String, SmsInternetServiceSettingValue> getProperties() {
+		return this.properties;
 	}
 	
 
@@ -69,48 +79,54 @@ public class SmsInternetServiceSettings {
 	 * Converts the supplied property value to the string representation of it. 
 	 * @param value
 	 * @return
+	 * TODO move to {@link SmsInternetServiceSettingValue}
 	 */
-	public static String getValueAsString(Object value) {
-		if (value instanceof String) return (String)value;
-		if (value instanceof Boolean) return Boolean.toString((Boolean)value);
-		if (value instanceof Integer) return Integer.toString((Integer)value);
-		if (value instanceof PasswordString) return Utils.encodeBase64(((PasswordString)value).getValue());
-		if (value instanceof OptionalSection) return Boolean.toString(((OptionalSection)value).getValue());
-		if (value instanceof Enum<?>) return ((Enum<?>)value).name();
-		if (value instanceof PhoneSection) return ((PhoneSection)value).getValue();
-		if (value instanceof OptionalRadioSection) {
+	public static SmsInternetServiceSettingValue toValue(Object value) {
+		String stringValue;
+		if (value instanceof String) stringValue = (String)value;
+		else if (value instanceof Boolean) stringValue = Boolean.toString((Boolean)value);
+		else if (value instanceof Integer) stringValue = Integer.toString((Integer)value);
+		else if (value instanceof PasswordString) stringValue = Utils.encodeBase64(((PasswordString)value).getValue());
+		else if (value instanceof OptionalSection) stringValue = Boolean.toString(((OptionalSection)value).getValue());
+		else if (value instanceof Enum<?>) stringValue = ((Enum<?>)value).name();
+		else if (value instanceof PhoneSection) stringValue = ((PhoneSection)value).getValue();
+		else if (value instanceof OptionalRadioSection) {
 			OptionalRadioSection<?> ors = (OptionalRadioSection<?>) value;
-			return ors.getValue().name();
+			stringValue = ors.getValue().name();
 		}
-		throw new RuntimeException("Unsupported property type: " + value.getClass());
+		else throw new RuntimeException("Unsupported property type: " + value.getClass());
+		
+		return new SmsInternetServiceSettingValue(stringValue);
 	}
 
 	/**
 	 * Gets a property value from a string, and the canonical name of that class.
-	 * @param clazzName
-	 * @param stringValue
+	 * @param property 
+	 * @param value 
 	 * @return
+	 * TODO move to {@link SmsInternetServiceSettingValue}
 	 */
 	@SuppressWarnings("unchecked")
-	public static Object getValueFromString(Object property, String value) {
+	public static Object fromValue(Object property, SmsInternetServiceSettingValue value) {
+		String stringValue = value.getValue();
 		if (property.getClass().equals(String.class))
-			return value;
+			return stringValue;
 		if (property.getClass().equals(Boolean.class))
-			return Boolean.parseBoolean(value);
+			return Boolean.parseBoolean(stringValue);
 		if (property.getClass().equals(Integer.class))
-			return Integer.parseInt(value);
+			return Integer.parseInt(stringValue);
 		if (property.getClass().equals(PasswordString.class))
-			return new PasswordString(Utils.decodeBase64(value));
+			return new PasswordString(Utils.decodeBase64(stringValue));
 		if (property.getClass().equals(OptionalSection.class)) {
-			return Boolean.parseBoolean(value);
+			return Boolean.parseBoolean(stringValue);
 		}
 		if (property.getClass().equals(PhoneSection.class))
-			return new PhoneSection(value);
+			return new PhoneSection(stringValue);
 		if (property.getClass().equals(OptionalRadioSection.class)) {
 			try {
 				OptionalRadioSection section = (OptionalRadioSection) property;
 				Method getValueOf = section.getValue().getClass().getMethod("valueOf", String.class);
-				Enum enumm = (Enum) getValueOf.invoke(null, value);
+				Enum enumm = (Enum) getValueOf.invoke(null, stringValue);
 				return new OptionalRadioSection(enumm);
 			} catch (Throwable t) {
 				throw new RuntimeException(t);
@@ -119,7 +135,7 @@ public class SmsInternetServiceSettings {
 		try {
 			if (property.getClass().isEnum()) {
 				Method getValueOf = property.getClass().getMethod("valueOf", String.class);
-				Enum enumm = (Enum) getValueOf.invoke(null, value);
+				Enum enumm = (Enum) getValueOf.invoke(null, stringValue);
 				return enumm;
 			}
 		} catch (Throwable t) {

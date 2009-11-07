@@ -19,17 +19,13 @@
  */
 package net.frontlinesms.csv;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.File;
 import java.io.IOException;
 
-import net.frontlinesms.FrontlineSMSConstants;
 import net.frontlinesms.Utils;
 import net.frontlinesms.data.domain.*;
 import net.frontlinesms.data.repository.*;
 import net.frontlinesms.data.DuplicateKeyException;
-import net.frontlinesms.ui.i18n.InternationalisationUtils;
 
 import org.apache.log4j.Logger;
 
@@ -37,7 +33,7 @@ import org.apache.log4j.Logger;
  * This file contains methods for importing data to the FrontlineSMS service
  * from CSV files.
  * 
- * FIXME display a meaningful message if this fails!
+ * FIXME display a meaningful message if import fails!
  * 
  * @author Carlos Eduardo Genz 
  * <li> kadu(at)masabi(dot)com
@@ -45,58 +41,71 @@ import org.apache.log4j.Logger;
  * <li> alex(at)masabi(dot)com
  */
 public class CsvImporter {
+	/** Logging object */
 	private static Logger LOG = Utils.getLogger(CsvImporter.class); 
 	
-	public static void importContacts(String filename, ContactDao contactFactory) {
+	/**
+	 * Import contacts from a CSV file.
+	 * @param importFile the file to import from
+	 * @param contactFactory
+	 * @param rowFormat 
+	 * @throws IOException If there was a problem accessing the file
+	 * @throws CsvParseException If there was a problem with the format of the file
+	 */
+	public static void importContacts(File importFile, ContactDao contactFactory, CsvRowFormat rowFormat) throws IOException, CsvParseException {
 		LOG.trace("ENTER");
-		LOG.debug("File [" + filename + "]");
-		BufferedReader reader = null;
+		if(LOG.isDebugEnabled()) LOG.debug("File [" + importFile.getAbsolutePath() + "]");
+		Utf8FileReader reader = null;
 		try {
-			reader = new BufferedReader(new FileReader(filename));
+			reader = new Utf8FileReader(importFile);
 			
 			String[] lineValues;
 			while((lineValues = CsvUtils.readLine(reader)) != null) {
-				String name = getString(lineValues, 0);
-				if (name.equalsIgnoreCase("")) name = InternationalisationUtils.getI18NString(FrontlineSMSConstants.UNKNOWN_NAME);
-				String number = getString(lineValues, 1);
-				String email = getString(lineValues, 2);
-				String notes = getString(lineValues, 3);
+				String name = getString(lineValues, rowFormat, CsvUtils.MARKER_CONTACT_NAME);
+				String number = getString(lineValues, rowFormat, CsvUtils.MARKER_CONTACT_PHONE);
+				String email = getString(lineValues, rowFormat, CsvUtils.MARKER_CONTACT_EMAIL);
+				String notes = getString(lineValues, rowFormat, CsvUtils.MARKER_CONTACT_NOTES);
+				String otherPhoneNumber = getString(lineValues, rowFormat, CsvUtils.MARKER_CONTACT_OTHER_PHONE);
+				boolean active = Boolean.valueOf(getString(lineValues, rowFormat, CsvUtils.MARKER_CONTACT_STATUS));
 				try {
-					Contact c = new Contact(name, number, "", email, notes, true);
+					Contact c = new Contact(name, number, otherPhoneNumber, email, notes, active);
 					contactFactory.saveContact(c);
 				} catch (DuplicateKeyException e) {
 					// FIXME should actually pass details of this back to the user.
 					LOG.debug("Contact already exist with this number [" + number + "]", e);
 				}		
 			}
-		} catch (FileNotFoundException e) {
-			LOG.debug("File not found [" + filename + "]", e);
-		} catch (IOException e) {
-			LOG.debug("Problem reading file [" + filename + "]", e);
-		} catch(CsvParseException ex) {
-			LOG.warn("There was an error reading the CSV file: " + filename, ex);
 		} finally {
-			if (reader != null) {
-				try {
-					reader.close();
-				} catch (IOException e) {
-					LOG.debug("Closing file [" + filename + "]", e);
-				}
-			}
+			if (reader != null) reader.close();
 		}
 		LOG.trace("EXIT");
 	}
 
+//> STATIC HELPER METHODS	
 	/**
 	 * Gets the string from a particular index of an array.  If the array is not long
 	 * enough to contain that index, returns an empty string.
 	 * @param values
 	 * @param index
-	 * @return
+	 * @return The value in the specified index of the array, or an empty string if the array index is out of bounds.
 	 */
 	private static String getString(String[] values, int index) {
+		assert(index >= 0) : "Supplied array index must be greater than or equal to zero.";
 		if(values.length > index) {
 			return values[index];
 		} else return "";
+	}
+	
+	/**
+	 * Gets an optional String from the supplied String array, returning "" if the string is not available.
+	 * @param values The values of the row of CSV
+	 * @param rowFormat The format of the row we are importing
+	 * @param marker The marker we are looking for in the row format
+	 * @return The value in the specified index of the array, or an empty string if the array index is out of bounds.
+	 */
+	private static String getString(String[] values, CsvRowFormat rowFormat, String marker) {
+		Integer index = rowFormat.getIndex(marker);
+		if(index == null) return "";
+		else return getString(values, index);
 	}
 }

@@ -36,7 +36,7 @@ public abstract class ReusableKeywordDaoTest extends ReusableTestCase<Keyword> {
 	 * @throws DuplicateKeyException 
 	 */
 	public void test() throws DuplicateKeyException {
-		Keyword blankKeyword = dao.createKeywordsHierarchically(new String[]{""}, "Blank keyword, used to be triggerd by every received message.", false);
+		Keyword blankKeyword = new Keyword(null, "", "Blank keyword, used to be triggerd by every received message.");
 		assertNotNull("Failed to create blank keyword.", blankKeyword);
 		assertEquals(0, dao.getAllKeywords().size());
 		dao.saveKeyword(blankKeyword);

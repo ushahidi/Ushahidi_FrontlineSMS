@@ -24,7 +24,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.smslib.GsmAlphabet;
+import org.smslib.util.GsmAlphabet;
 
 /**
  * Class representing an outbound sms message.

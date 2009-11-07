@@ -19,8 +19,8 @@
  */
 package net.frontlinesms.ui;
 
+import java.awt.Font;
 import java.awt.Frame;
-import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -40,43 +39,41 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
-//#ifdef COMM_JAVAX
-import javax.comm.*;
-//#else
-//# import gnu.io.*;
-//#endif
 import javax.mail.MessagingException;
 
-import net.frontlinesms.CommUtils;
+import net.frontlinesms.AppProperties;
+import net.frontlinesms.BuildProperties;
 import net.frontlinesms.EmailSender;
 import net.frontlinesms.EmailServerHandler;
 import net.frontlinesms.ErrorUtils;
 import net.frontlinesms.FrontlineSMS;
+import net.frontlinesms.FrontlineSMSConstants;
 import net.frontlinesms.Utils;
-import net.frontlinesms.csv.CsvExporter;
-import net.frontlinesms.csv.CsvImporter;
+import net.frontlinesms.csv.CsvUtils;
 import net.frontlinesms.data.*;
 import net.frontlinesms.data.domain.*;
 import net.frontlinesms.data.repository.*;
 import net.frontlinesms.listener.EmailListener;
 import net.frontlinesms.listener.UIListener;
 import net.frontlinesms.plugins.PluginController;
-import net.frontlinesms.properties.PropertySet;
 import net.frontlinesms.resources.ResourceUtils;
 import net.frontlinesms.smsdevice.*;
+import net.frontlinesms.smsdevice.internet.SmsInternetService;
 import net.frontlinesms.ui.i18n.InternationalisationUtils;
 import net.frontlinesms.ui.i18n.LanguageBundle;
 
 import org.apache.log4j.Logger;
-import org.smslib.AbstractATHandler;
-import org.smslib.GsmAlphabet;
-import org.smslib.handler.CATHandler;
+
+import org.springframework.transaction.annotation.Transactional;
 
 import thinlet.FrameLauncher;
 import thinlet.Thinlet;
 import thinlet.ThinletText;
 
+// FIXME should not be using static imports
 import static net.frontlinesms.FrontlineSMSConstants.*;
+import static net.frontlinesms.ui.UiGeneratorControllerConstants.*;
+
 /**
  * Class containing control methods for the Thinlet-driven GUI.
  * 
@@ -88,6 +85,9 @@ import static net.frontlinesms.FrontlineSMSConstants.*;
  * of this class.  Currently searching for components as and when they are needed is
  * favoured, and so this should be done where possible.
  * 
+ * We're now in the process of separating this class into smaller classes which control separate,
+ * modular parts of the UI, e.g. the {@link HomeTabController}.
+ * 
  * @author Alex Anderson 
  * <li> alex(at)masabi(dot)com
  * @author Carlos Eduardo Genz
@@ -95,311 +95,109 @@ import static net.frontlinesms.FrontlineSMSConstants.*;
  */
 @SuppressWarnings("serial")
 public class UiGeneratorController extends FrontlineUI implements EmailListener, UIListener {
-	private static enum ContactsSelection {
-		CONTACTS_ONLY,
-		GROUPS_ONLY,
-		NONE
-	}
-	/** Limit of the number of events to be displayed on the home screen */
-	private static final int EVENTS_LIMIT = 30;
-	/** 
-	 * Component naming conventions:
-	 *  <li> <code>tf</code> means TextField
-	 *  <li> <code>pn</code> means Panel
-	 *  <li> <code>cb</code> means CheckBox or ComboBox
-	 *  <li> <code>rb</code> means RadioButton
-	 *  <li> <code>bt</code> means Button
-	 *  <li> <code>lb</code> means Label
-	 *  <li> <code>mi</code> means MenuItem
-	 */
-	private static final String COMPONENT_MI_EMAIL = "miEmail";
-	private static final String COMPONENT_MI_KEYWORD = "miKeyword";
-	private static final String COMPONENT_MI_HOME = "miHome";
-	private static final String COMPONENT_MI_NEW_CONTACT = "miNewContact";
-	private static final String COMPONENT_RB_PHONE_DETAILS_ENABLE = "rbPhoneDetailsEnable";
-	private static final String COMPONENT_PN_PHONE_SETTINGS = "pnPhoneSettings";
-	private static final String COMPONENT_EVENTS_LIST = "eventsList";
-	private static final String COMPONENT_SURVEY_MANAGER_NEW_BUTTON = "surveyManager_newButton";
-	private static final String COMPONENT_BT_CONTINUE = "btContinue";
-	private static final String COMPONENT_CONFIRM_DIALOG = "confirmDialog";
-	private static final String COMPONENT_BT_SENDER_NAME = "btSenderName";
-	private static final String COMPONENT_LB_COST = "lbCost";
-	private static final String COMPONENT_LB_MSGS_NUMBER = "lbMsgsNumber";
-	private static final String COMPONENT_CB_CONTACTS = "cbContacts";
-	private static final String COMPONENT_PN_KEYWORD_ACTIONS_ADVANCED = "pnKeywordActionsAdvanced";
-	private static final String COMPONENT_CONTACT_SELECTER = "contactSelecter";
-	private static final String COMPONENT_CONTACT_MANAGER_CONTACT_FILTER = "contactManager_contactFilter";
-	private static final String COMPONENT_LB_PAGE_NUMBER = "lbPageNumber";
-	private static final String COMPONENT_LB_NUMBER_OF_PAGES = "lbNumberOfPages";
-	private static final String COMPONENT_EMAILS_TOOLBAR = "emails_toolbar";
-	private static final String COMPONENT_BT_NEXT_PAGE = "btNextPage";
-	private static final String COMPONENT_BT_PREVIOUS_PAGE = "btPreviousPage";
-	private static final String COMPONENT_PN_MESSAGE_LIST = "pnMessageList";
-	private static final String COMPONENT_FILTER_LIST = "filterList";
-	private static final String COMPONENT_PN_FILTER = "pnFilter";
-	private static final String COMPONENT_MI_SEND_SMS = "miSendSMS";
-	private static final String COMPONENT_NEW_GROUP = "newGroup";
-	private static final String COMPONENT_PN_EMAIL = "pnEmail";
-	private static final String COMPONENT_PN_BOTTOM = "pnBottom";
-	private static final String COMPONENT_PN_CONTACTS = "pnContacts";
-	private static final String COMPONENT_TF_COST_PER_SMS = "tfCostPerSMS";
-	private static final String COMPONENT_LB_COST_PER_SMS_PREFIX = "lbCostPerSmsPrefix";
-	private static final String COMPONENT_LB_COST_PER_SMS_SUFFIX = "lbCostPerSmsSuffix";
-	private static final String COMPONENT_LB_ESTIMATED_MONEY = "lbEstimatedMoney";
-	private static final String COMPONENT_LB_THIRD = "lbThird";
-	private static final String COMPONENT_LB_SECOND = "lbSecond";
-	private static final String COMPONENT_LB_FIRST = "lbFirst";
-	private static final String COMPONENT_LB_MSG_NUMBER = "lbMsgNumber";
-	private static final String COMPONENT_LB_REMAINING_CHARS = "lbRemainingChars";
-	private static final String COMPONENT_PN_MESSAGE = "pnMessage";
-	private static final String COMPONENT_BT_SEND = "btSend";
-	private static final String COMPONENT_PN_SEND = "pnSend";
-	private static final String COMPONENT_KEY_ACT_PANEL = "keyActPanel";
-	private static final String COMPONENT_BT_CLEAR = "btClear";
-	private static final String COMPONENT_CB_LEAVE_GROUP = "cbLeaveGroup";
-	private static final String COMPONENT_CB_GROUPS_TO_LEAVE = "cbGroupsToLeave";
-	private static final String COMPONENT_CB_JOIN_GROUP = "cbJoinGroup";
-	private static final String COMPONENT_CB_GROUPS_TO_JOIN = "cbGroupsToJoin";
-	private static final String COMPONENT_TF_AUTO_REPLY = "tfAutoReply";
-	private static final String COMPONENT_TF_KEYWORD = "tfKeyword";
-	private static final String COMPONENT_PN_TIP = "pnTip";
-	private static final String COMPONENT_BT_SAVE = "btSave";
-	private static final String COMPONENT_ACTION_LIST = "actionList";
-	private static final String COMPONENT_KEYWORDS_DIVIDER = "keywordsDivider";
-	private static final String COMPONENT_CB_ACTION_TYPE = "cbActionType";
-	private static final String COMPONENT_ACCOUNTS_LIST = "accountsList";
-	private static final String COMPONENT_CB_FREQUENCY = "cbFrequency";
-	private static final String COMPONENT_TF_TEXT = "tfText";
-	private static final String COMPONENT_TF_END_TIME = "tfEndTime";
-	private static final String COMPONENT_TF_START_TIME = "tfStartTime";
-	private static final String COMPONENT_RB_HTTP = "rbHTTP";
-	private static final String COMPONENT_LB_TEXT = "lbText";
-	private static final String COMPONENT_BT_EDIT = "btEdit";
-	private static final String COMPONENT_LB_LIST = "lbList";
-	private static final String COMPONENT_GROUP_LIST = "groupList";
-	private static final String COMPONENT_CONTACT_LIST = "contactList";
-	private static final String COMPONENT_LIST = "list";
-	private static final String COMPONENT_PENDING_LIST = "pendingList";
-	private static final String COMPONENT_EMAIL_LIST = "emailList";
-	private static final String COMPONENT_BT_DELETE = "btDelete";
-	private static final String COMPONENT_MI_DELETE = "miDelete";
-	private static final String COMPONENT_MI_EDIT = "miEdit";
-	private static final String COMPONENT_KEY_PANEL = "keyPanel";
-	private static final String COMPONENT_CB_USE_SSL = "cbUseSSL";
-	private static final String COMPONENT_TF_ACCOUNT_PASS = "tfAccountPass";
-	private static final String COMPONENT_TF_ACCOUNT_SERVER_PORT = "tfPort";
-	private static final String COMPONENT_TF_ACCOUNT = "tfAccount";
-	private static final String COMPONENT_TF_MAIL_SERVER = "tfMailServer";
-	private static final String COMPONENT_TF_SUBJECT = "tfSubject";
-	private static final String COMPONENT_TF_RECIPIENT = "tfRecipient";
-	private static final String COMPONENT_MAIL_LIST = "accountsList";
-	private static final String COMPONENT_RB_NO_RESPONSE = "rbNoResponse";
-	private static final String COMPONENT_PN_RESPONSE = "pnResponse";
-	private static final String COMPONENT_RB_TYPE_COMMAND_LINE = "rbTypeCL";
-	private static final String COMPONENT_TF_MESSAGE = "tfMessage";
-	private static final String COMPONENT_CB_FORWARD = "cbForward";
-	private static final String COMPONENT_CB_AUTO_REPLY = "cbAutoReply";
-	private static final String COMPONENT_RB_FRONTLINE_COMMANDS = "rbFrontlineCommands";
-	private static final String COMPONENT_RB_PLAIN_TEXT = "rbPlainText";
-	private static final String COMPONENT_TF_COMMAND = "tfCommand";
-	private static final String COMPONENT_RB_TYPE_HTTP = "rbTypeHTTP";
-	private static final String COMPONENT_EXTERNAL_COMMAND_GROUP_LIST = COMPONENT_GROUP_LIST;
-	private static final String COMPONENT_TF_END_DATE = "tfEndDate";
-	private static final String COMPONENT_TF_START_DATE = "tfStartDate";
-	private static final String COMPONENT_CB_GROUPS = "cbGroups";
-	private static final String COMPONENT_CB_NOTES = "cbNotes";
-	private static final String COMPONENT_CB_EMAIL = "cbEmail";
-	private static final String COMPONENT_CB_OTHER_PHONE = "cbOtherPhone";
-	private static final String COMPONENT_CB_PHONE = "cbPhone";
-	private static final String COMPONENT_CB_NAME = "cbName";
-	private static final String COMPONENT_CB_STATUS = "cbStatus";
-	private static final String COMPONENT_CB_TYPE = "cbType";
-	private static final String COMPONENT_CB_CONTENT = "cbContent";
-	private static final String COMPONENT_CB_RECIPIENT = "cbRecipient";
-	private static final String COMPONENT_CB_SENDER = "cbSender";
-	private static final String COMPONENT_CB_DATE = "cbDate";
-	private static final String COMPONENT_CB_DESCRIPTION = "cbDescription";
-	private static final String COMPONENT_CB_KEYWORD = "cbKeyword";
-	private static final String COMPONENT_CB_CONTACT_NOTES = "cbContactNotes";
-	private static final String COMPONENT_CB_CONTACT_EMAIL = "cbContactEmail";
-	private static final String COMPONENT_CB_CONTACT_OTHER_NUMBER = "cbContactOtherNumber";
-	private static final String COMPONENT_CB_CONTACT_NAME = "cbContactName";
-	private static final String COMPONENT_CB_RECEIVED = "cbReceived";
-	private static final String COMPONENT_CB_SENT = "cbSent";
-	private static final String COMPONENT_TF_FILENAME = "tfFilename";
-	private static final String COMPONENT_EXPORT_WIZARD_DIALOG = "exportWizardDialog";
-	private static final String COMPONENT_SEND_CONSOLE_MESSAGE_LIST = "sendConsole_messageList";
-	private static final String COMPONENT_RECEIVE_CONSOLE_MESSAGE_LIST = "receiveConsole_messageList";
-	private static final String COMPONENT_MESSAGE_TRACKER_FAILED_MESSAGE_LIST = "messageTracker_failedMessageList";
-	private static final String COMPONENT_MESSAGE_TRACKER_PENDING_MESSAGE_LIST = "messageTracker_pendingMessageList";
-	private static final String COMPONENT_RADIO_BUTTON_ACTIVE = "rb_active";
-	private static final String COMPONENT_TABBED_PANE = "tabbedPane";
-	private static final String COMPONENT_NEW_KEYWORD_FORM_KEYWORD = "newKeywordForm_keyword";
-	private static final String COMPONENT_NEW_KEYWORD_FORM_DESCRIPTION = "newKeywordForm_description";
-	private static final String COMPONENT_NEW_KEYWORD_BUTTON_DONE = "btDone";
-	private static final String COMPONENT_NEW_KEYWORD_FORM_TITLE = "newKeywordForm_title";
-	private static final String COMPONENT_FORWARD_FORM_GROUP_LIST = "forwardForm_groupList";
-	private static final String COMPONENT_FORWARD_FORM_TITLE = "forwardForm_title";
-	private static final String COMPONENT_FORWARD_FORM_TEXTAREA = "forward";
-	private static final String COMPONENT_SEND_CONSOLE_GROUP_TREE = "sendConsole_groupTree";
-	private static final String COMPONENT_SEND_CONSOLE_LONE_RECIPIENT = "sendConsole_loneRecipient";
-	private static final String COMPONENT_CONTACT_SELECTER_OK_BUTTON = "contactSelecter_okButton";
-	private static final String COMPONENT_CONTACT_SELECTER_CONTACT_LIST = "contactSelecter_contactList";
-	private static final String COMPONENT_CONTACT_SELECTER_TITLE = "contactSelecter_title";
-	private static final String COMPONENT_GROUPS_MENU = "groupsMenu";
-	private static final String COMPONENT_BUTTON_YES = "btYes";
-	private static final String COMPONENT_DELETE_NEW_CONTACT = "deleteNewContact";
-	private static final String COMPONENT_LABEL_STATUS = "lbStatus";
-	private static final String COMPONENT_PHONE_MANAGER_MODEM_LIST_ERROR = "phoneManager_modemListError";
-	private static final String COMPONENT_SEND_CONSOLE_MODEM_LIST = "sendConsole_modemList";
-	private static final String COMPONENT_SURVEY_MANAGER_DELETE_BUTTON = "surveyManager_deleteButton";
-	private static final String COMPONENT_SURVEY_MANAGER_EDIT_BUTTON = "surveyManager_editButton";
-	private static final String COMPONENT_SURVEY_MANAGER_SURVEY_DESCRIPTION = "surveyManager_surveyDescription";
-	private static final String COMPONENT_SURVEY_MANAGER_SURVEY_KEYWORD = "surveyManager_surveyKeyword";
-	private static final String COMPONENT_GROUP_MANAGER_CONTACT_DETAILS = "groupManager_contactDetails";
-	private static final String COMPONENT_GROUP_MANAGER_DELETE_CONTACTS_BUTTON = "groupManager_deleteContactsButton";
-	private static final String COMPONENT_GROUP_MANAGER_SEND_SMS_BUTTON = "groupManager_sendSMSButton";
-	private static final String COMPONENT_GROUP_MANAGER_CREATE_NEW_CONTACT = "group_manager_createNewContact";
-	private static final String COMPONENT_GROUP_MANAGER_CONTACT_LIST = "groupManager_contactList";
-	private static final String COMPONENT_GROUP_MANAGER_GROUP_LIST = "groupManager_groupList";
-	private static final String COMPONENT_MENU_SWITCH_MODE = "menu_switchMode";
-	private static final String COMPONENT_ANALYST_MESSAGES_UNREGISTERED = "analystMessages_unregistered";
-	private static final String COMPONENT_ANALYST_MESSAGES = "analystMessages";
-	private static final String COMPONENT_MENU_ITEM_VIEW_CONTACT = "viewContact";
-	private static final String COMPONENT_HISTORY_MESSAGE_LIST = "history_messageList";
-	private static final String COMPONENT_HISTORY_RECEIVED_MESSAGES_TOGGLE = "historyReceivedMessagesToggle";
-	private static final String COMPONENT_HISTORY_SENT_MESSAGES_TOGGLE = "historySentMessagesToggle";
-	private static final String COMPONENT_MENU_ITEM_MSG_HISTORY = "msg_history";
-	private static final String COMPONENT_NEW_CONTACT_GROUP_LIST = "newContact_groupList";
-	private static final String COMPONENT_MENU_ITEM_CREATE = "miCreate";
-	private static final String COMPONENT_STATUS_BAR = "statusBar";
-	private static final String COMPONENT_PROGRESS_BAR = "progressBar";
-	private static final String COMPONENT_CONTACT_MANAGER_GROUP_TREE = "contactManager_groupList";
-	private static final String COMPONENT_CONTACT_MANAGER_CONTACT_LIST = "contactManager_contactList";
-	private static final String COMPONENT_MESSAGE_LIST = "messageList";
-	private static final String COMPONENT_COMPOSE_MESSAGE_RECIPIENT_LIST = "composeMessage_to";
-	private static final String COMPONENT_RECEIVED_MESSAGES_TOGGLE = "receivedMessagesToggle";
-	private static final String COMPONENT_SENT_MESSAGES_TOGGLE = "sentMessagesToggle";
-	private static final String COMPONENT_KEYWORD_LIST = "keywordList";
-	private static final String COMPONENT_SURVEY_LIST = "surveyManager_surveyList";
-	private static final String COMPONENT_SURVEY_DETAILS = "surveyManager_surveyDetails";
-	private static final String COMPONENT_ANALYST_KEYWORD_LIST = "analystKeywordList";
-	private static final String COMPONENT_SURVEY_ANALYST_EXPORT_BUTTON = "surveyAnalyst_exportButton";
-	private static final String COMPONENT_REPLY_MANAGER_LIST = "replyManager_keywordList";
-	private static final String COMPONENT_REPLY_MANAGER_DETAILS = "replyManager_keywordDetails";
-	private static final String COMPONENT_REPLY_MANAGER_REPLY_TEXT = "replyManager_replyText";
-	private static final String COMPONENT_REPLY_MANAGER_KEYWORD = "replyManager_keyword";
-	private static final String COMPONENT_REPLY_MANAGER_EDIT_BUTTON = "replyManager_editButton";
-	private static final String COMPONENT_REPLY_MANAGER_EXPORT_BUTTON = "replyManager_exportButton";
-	private static final String COMPONENT_REPLY_MANAGER_DELETE_BUTTON = "replyManager_deleteButton";
-	private static final String COMPONENT_REPLY_MANAGER_CREATE_BUTTON = "replyManager_createButton";
-	private static final String COMPONENT_PHONE_MANAGER_MODEM_LIST = "phoneManager_modemList";
-	private static final String COMPONENT_GROUP_SELECTER_GROUP_LIST = "groupSelecter_groupList";
-	private static final String COMPONENT_GROUP_SELECTER_OK_BUTTON = "groupSelecter_okButton";
-	private static final String COMPONENT_GROUP_SELECTER_TITLE = "groupSelecter_title";
-	private static final String COMPONENT_VIEW_CONTACT_BUTTON = "viewContactButton";
-	private static final String COMPONENT_SEND_SMS_BUTTON = "sendSMSButton";
-	private static final String COMPONENT_CONTACT_NAME = "contact_name";
-	private static final String COMPONENT_CONTACT_MOBILE_MSISDN = "contact_mobileMsisdn";
-	private static final String COMPONENT_CONTACT_OTHER_MSISDN = "contact_otherMsisdn";
-	private static final String COMPONENT_CONTACT_EMAIL_ADDRESS = "contact_emailAddress";
-	private static final String COMPONENT_CONTACT_NOTES = "contact_notes";
-	private static final String COMPONENT_CONTACT_DORMANT = "rb_dormant";
-	private static final String COMPONENT_CONTACT_GROUP = "newContact_groupList";
-	private static final String COMPONENT_PHONE_SENDING = "cbSending";
-	private static final String COMPONENT_PHONE_RECEIVING = "cbReceiving";
-	private static final String COMPONENT_PHONE_DELETE = "cbDeleteMsgs";
-	private static final String COMPONENT_PHONE_DELIVERY_REPORTS = "cbUseDeliveryReports";
-	
-	
-	/** The name of the Contact Manager tab */
-	private static final String TAB_CONTACT_MANAGER = ":contactManager";
-	/** The name of the Group Manager tab */
-	private static final String TAB_GROUP_MANAGER = ":groupManager";
-	/** The name of the Message Log tab */
-	private static final String TAB_MESSAGE_HISTORY = ":messageHistory";
-	/** The name of the Email Log tab */
-	private static final String TAB_EMAIL_LOG = ":emailLog";
-	/** The name of the Home tab */
-	private static final String TAB_HOME = ":home";
-	/** The name of the Keyword Manager tab */
-	private static final String TAB_KEYWORD_MANAGER = ":keywordManager";
-	/** The name of the Phone Manager tab */
-	private static final String TAB_CLASSIC_PHONE_MANAGER = ":classicPhoneManager";
-	private static final String TAB_ADVANCED_PHONE_MANAGER = ":advancedPhoneManager";
-	/** The name of the Survey Manager tab */
-	private static final String TAB_SURVEY_MANAGER = ":surveyManager";
-	/** The name of the Survey Analyst tab */
-	private static final String TAB_SURVEY_ANALYST = ":surveyAnalyst";
-	/** The name of the Send Console tab */
-	private static final String TAB_SEND_CONSOLE = ":sendConsole";
-	/** The name of the Receive Console tab */
-	private static final String TAB_RECEIVE_CONSOLE = ":receiveConsole";
-	/** The name of the Message Tracker tab */
-	private static final String TAB_MESSAGE_TRACKER = ":messageTracker";
-	/** The name of the Reply Manager tab */
-	private static final String TAB_REPLY_MANAGER = ":replyManager";
+
+//> CONSTANTS
+	/** Default height of the Thinlet frame launcher */
+	public static final int DEFAULT_HEIGHT = 768;
+	/** Default width of the Thinlet frame launcher */
+	public static final int DEFAULT_WIDTH = 1024;
+	/** Number of milliseconds in a day */
 	private static final long MILLIS_PER_DAY = 24 * 60 * 60 * 1000;
+
+//> INSTANCE PROPERTIES
+	/** Logging object */
+	public Logger LOG = Utils.getLogger(UiGeneratorController.class);
 	
 	/** The INTERNAL NAME of the tab (a thinlet UI component) currently active */
 	private String currentTab;
 	
 	/** Flag indicating whether this instance of UIGeneratorController is using the classic or advanced GUI */
 	private final boolean classicMode;
+	/** The manager of {@link SmsDevice}s */
 	private final SmsDeviceManager phoneManager;
+	/** Manager of {@link EmailAccount}s and {@link EmailSender}s */
 	private final EmailServerHandler emailManager;
+	/** Data Access Object for {@link Contact}s */
 	private final ContactDao contactFactory;
+	/** Data Access Object for {@link Group}s */
 	private final GroupDao groupDao;
+	/** Data Access Object for {@link Message}s */
 	private final MessageDao messageFactory;
+	/** Data Access Object for {@link Keyword}s */
 	private final KeywordDao keywordFactory;
+	/** Data Access Object for {@link KeywordAction}s */
 	private final KeywordActionDao keywordActionFactory;
+	/** Data Access Object for {@link SmsModemSettings}s */
 	private final SmsModemSettingsDao phoneDetailsManager;
+	/** Data Access Object for {@link EmailAccount}s */
 	private final EmailAccountDao emailAccountFactory;
+	/** Data Access Object for {@link Email}s */
 	private final EmailDao emailFactory;
 	
-	private final Group allContacts = new Group(null, "All Contacts");
+	/** Controller of the phones tab. */
+	private final PhoneTabController phoneTabController;
 	
-
-	// FIXME i18n the name of this group
+	/** Fake group: The root group, of which all other top-level groups are children.  The name of this group specified in the constructor will not be used due to overridden {@link Group#getName()}. */
 	private final Group rootGroup = new Group(null, "Root Group [i18n]") {
 		@Override
 		public Collection<Contact> getAllMembers() {
 			return contactFactory.getAllContacts();
 		}
 		@Override
+		/** This group can have no direct subgroups. */
 		public Collection<Group> getDirectSubGroups() {
-			return groupDao.getAllGroups();
+			return groupDao.getChildGroups(null);
+		}
+		@Override
+		/** Provide an internationalised version of this group's name */
+		public String getName() {
+			return InternationalisationUtils.getI18NString(FrontlineSMSConstants.CONTACTS_ALL);
 		}
 	};
-	// FIXME i18n the name of this group
+	/** Fake group: all contacts without a name set.  The name of this group specified in the constructor will not be used due to overridden {@link Group#getName()}. */
 	private final Group unnamedContacts = new Group(null, "Unnamed [i18n]") {
 		@Override
 		public Collection<Contact> getAllMembers() {
 			return contactFactory.getUnnamedContacts();
 		}
+		@Override
+		/** This group can have no direct subgroups. */
 		public Collection<Group> getDirectSubGroups() {
 			return Collections.emptySet();
 		}
+		@Override
+		/** Provide an internationalised version of this group's name */
+		public String getName() {
+			return InternationalisationUtils.getI18NString(FrontlineSMSConstants.CONTACTS_UNNAMED);
+		}
 	};
-	// FIXME i18n the name of this group
+	/** Fake group: all contacts not a member of a group.  The name of this group specified in the constructor will not be used due to overridden {@link Group#getName()}. */
 	private final Group ungroupedContacts = new Group(null, "Ungrouped [i18n]") {
 		@Override
 		public Collection<Contact> getAllMembers() {
 			return contactFactory.getUngroupedContacts();
 		}
+		@Override
+		/** This group can have no direct subgroups. */
 		public Collection<Group> getDirectSubGroups() {
 			return Collections.emptySet();
 		}
+		@Override
+		/** Provide an internationalised version of this group's name */
+		public String getName() {
+			return InternationalisationUtils.getI18NString(FrontlineSMSConstants.CONTACTS_UNGROUPED);
+		}
 	};
 
-	private static double costPerSMS = 0.4;
-	/** The number of people the current SMS will be sent to (FIXME confirm this comment is correct) */
-	private int numberToSend = 1;
+	/** The number of people the current SMS will be sent to
+	 * TODO this is a very strange variable to have.  This should be replaced with context-specific tracking of the number of messages to be sent. */
+	public int numberToSend = 1;
 	
+	/** Start date of the message history, or <code>null</code> if none has been set. */
 	private Long messageHistoryStart;
+	/** End date of the message history, or <code>null</code> if none has been set. */
 	private Long messageHistoryEnd;
 	
-	/** The search filter applied to the contact list. */
 	/**
 	 * The UI Component COMPONENT_GROUP_LIST.  This is cached here to save searching
 	 * for it later.  Whether this is a desirable feature is uncertain, and the
@@ -410,25 +208,21 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	private final Object messageListComponent;
 	private final Object showSentMessagesComponent;
 	private final Object showReceivedMessagesComponent;
+	/** Thinlet UI Component: status bar at the bottom of the window */
 	private final Object statusBarComponent;
-	private final Object modemListComponent;
 	private final Object contactListComponent;
 	private Object keywordListComponent;
 	private Object emailListComponent;
 	private final Object progressBarComponent;
 	private final Object filterListComponent;
-	private final Object eventListComponent;
-	
-	private final Object PHONES_LIST_SYNCH_OBJECT = new Object();
 
-	private Object objFocused;
-
-	public static Logger LOG = Utils.getLogger(UiGeneratorController.class);
+	/** Appears to be the in-focus item on the email tab. */
+	private Object emailTabFocusOwner;
 	
 	/**
 	 * Creates a new instance of the UI Controller.
-	 * @param classicMode Flag indicating whether CLASSIC or ADVANCED UI modes should be used.
 	 * @param frontlineController
+	 * @param detectPhones <code>true</code> if phone detection should be started automatically; <code>false</code> otherwise.
 	 * @throws Throwable
 	 */
 	public UiGeneratorController(FrontlineSMS frontlineController, boolean detectPhones) throws Throwable {
@@ -436,17 +230,18 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		this.frontlineController = frontlineController;
 		
 		// Load the requested language file.
-		PropertySet appProperties = PropertySet.load(PROPERTIES_APP);
-		String currentLanguage = appProperties.getProperty(PROPERTIES_LANGUAGE_FILENAME);
-		if (currentLanguage != null) {
-			String file = appProperties.getProperty("language.filename");
-			LanguageBundle languageBundle = InternationalisationUtils.getLanguageBundle(new File(InternationalisationUtils.getLanguageDirectoryPath() + file));
+		AppProperties appProperties = AppProperties.getInstance();
+		String currentLanguageFile = appProperties.getLanguageFilename();
+		if (currentLanguageFile != null) {
+			LanguageBundle languageBundle = InternationalisationUtils.getLanguageBundle(new File(InternationalisationUtils.getLanguageDirectoryPath() + currentLanguageFile));
 			FrontlineUI.currentResourceBundle = languageBundle;
 			setResourceBundle(languageBundle.getProperties(), languageBundle.isRightToLeft());
-			LOG.debug("Loaded language from file: " + ResourceUtils.getConfigDirectoryPath() + "languages/" + appProperties.getProperty("language.filename"));
+			Font requestedFont = languageBundle.getFont();
+			if(requestedFont != null) {
+				setFont(new Font(requestedFont.getName(), getFont().getStyle(), getFont().getSize()));
+			}
+			LOG.debug("Loaded language from file: " + ResourceUtils.getConfigDirectoryPath() + "languages/" + currentLanguageFile);
 		}
-		
-		Dependants.init();
 		
 		this.phoneManager = frontlineController.getSmsDeviceManager();
 		this.contactFactory = frontlineController.getContactDao();
@@ -460,9 +255,8 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		this.emailManager = frontlineController.getEmailServerManager();
 		
 		// Load the data mode from the ui.properties file
-		PropertySet uiProperties = PropertySet.load(PROPERTIES_UI);
-		String viewMode = uiProperties.getProperty(PROPERTIES_VIEW_MODE);
-		this.classicMode = viewMode != null && viewMode.equalsIgnoreCase(CLASSIC_MODE);
+		UiProperties uiProperties = UiProperties.getInstance();
+		this.classicMode = uiProperties.isViewModeClassic();
 		LOG.debug("Classic Mode [" + this.classicMode + "]");
 		LOG.debug("Detect Phones [" + detectPhones + "]");
 		
@@ -472,7 +266,7 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 			// Find the languages submenu, and add all present language packs to it
 			addLanguageMenu(find("menu_language"));
 			
-			setText(find(COMPONENT_TF_COST_PER_SMS), InternationalisationUtils.formatCurrency(costPerSMS, false));
+			setText(find(COMPONENT_TF_COST_PER_SMS), InternationalisationUtils.formatCurrency(this.getCostPerSms(), false));
 			setText(find(COMPONENT_LB_COST_PER_SMS_PREFIX),
 					InternationalisationUtils.isCurrencySymbolPrefix() 
 							? InternationalisationUtils.getCurrencySymbol()
@@ -484,6 +278,7 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 			
 			Object tabbedPane = find(COMPONENT_TABBED_PANE);
 			setBoolean(find("menu_tabs"), VISIBLE, !this.classicMode);
+			this.phoneTabController = new PhoneTabController(this);
 			if (this.classicMode) {
 				add(tabbedPane, loadComponentFromFile(UI_FILE_CONTACT_MANAGER_TAB));
 				add(tabbedPane, loadComponentFromFile(UI_FILE_SURVEY_MANAGER_TAB));
@@ -492,29 +287,31 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 				add(tabbedPane, loadComponentFromFile(UI_FILE_MESSAGE_TRACKER_TAB));
 				add(tabbedPane, loadComponentFromFile(UI_FILE_RECEIVE_CONSOLE_TAB));
 				add(tabbedPane, loadComponentFromFile(UI_FILE_REPLY_MANAGER_TAB));
-				add(tabbedPane, loadComponentFromFile(UI_FILE_PHONE_MANAGER_TAB));
+				add(tabbedPane, phoneTabController.getTab());
 				setText(find(COMPONENT_MENU_SWITCH_MODE), InternationalisationUtils.getI18NString(MENUITEM_SWITCH_TO_ADVANCED_VIEW));
 				currentTab = TAB_GROUP_MANAGER;
 			} else {
-				if (uiProperties.getPropertyAsBoolean("hometab.visible") == null || uiProperties.getPropertyAsBoolean("hometab.visible")) {
-					addHomeTab(tabbedPane);
+				if (uiProperties.isTabVisible("hometab")) {
+					add(tabbedPane, new HomeTabController(this).getTab());
+//					addHomeTab(tabbedPane, uiProperties);
 					setSelected(find(COMPONENT_MI_HOME), true);
 				}
 				addContactsTab(tabbedPane);
-				if (uiProperties.getPropertyAsBoolean("keywordstab.visible") == null || uiProperties.getPropertyAsBoolean("keywordstab.visible")) {
+				if (uiProperties.isTabVisible("keywordstab")) {
 					addKeywordsTab(tabbedPane);
 					setSelected(find(COMPONENT_MI_KEYWORD), true);
 				}
 				addMessagesTab(tabbedPane);
-				if (uiProperties.getPropertyAsBoolean("emailstab.visible") == null || uiProperties.getPropertyAsBoolean("emailstab.visible")) {
+				if (uiProperties.isTabVisible("emailstab")) {
 					addEmailsTab(tabbedPane);
 					setSelected(find(COMPONENT_MI_EMAIL), true);
 				}
-				add(tabbedPane, loadComponentFromFile(UI_FILE_PHONES_TAB));
+				add(tabbedPane, phoneTabController.getTab());
 				
 				// Add plugins tabs
 				for(PluginController controller : frontlineController.getPluginControllers()) {
-					add(tabbedPane, controller.getTab(this));
+					add(tabbedPane, controller.getTab(this));					
+					//Initialize the data items for the plugin; load them from the DB
 					controller.initializePluginData();
 				}
 				
@@ -531,8 +328,6 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 			contactListComponent = find(COMPONENT_CONTACT_MANAGER_CONTACT_LIST);
 			filterListComponent = find(COMPONENT_FILTER_LIST);
 			
-			eventListComponent = find(COMPONENT_EVENTS_LIST);
-			
 			// Set the types for the message list columns...
 			Object header = get(messageListComponent, ThinletText.HEADER);
 			initMessageTableForSorting(header);
@@ -543,7 +338,6 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 			
 			showReceivedMessagesComponent = find(COMPONENT_RECEIVED_MESSAGES_TOGGLE);
 			showSentMessagesComponent = find(COMPONENT_SENT_MESSAGES_TOGGLE);
-			modemListComponent = find(COMPONENT_PHONE_MANAGER_MODEM_LIST);
 			
 			if (this.classicMode) {
 				deactivate(find(COMPONENT_SURVEY_DETAILS));
@@ -568,41 +362,28 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 			// Initialise the phone manager, and start auto-detection of connected phones.
 			setStatus(InternationalisationUtils.getI18NString(MESSAGE_INITIALISING_PHONE_MANAGER));
 
-			String windowState = uiProperties.getProperty(PROPERTIES_WINDOW_STATE);
+			//Window size				
+			Integer width = uiProperties.getWindowWidth();
+			if(width == null) width = DEFAULT_WIDTH;
 			
-			if (windowState != null && windowState.equals(WINDOW_STATE_MAXIMISED)) {
+			Integer height = uiProperties.getWindowHeight();
+			if(height == null) height = DEFAULT_HEIGHT;
+			
+			final String WINDOW_TITLE = "FrontlineSMS " + BuildProperties.getInstance().getVersion();
+			frameLauncher = new FrameLauncher(WINDOW_TITLE, this, width, height, getIcon(Icon.FRONTLINE_ICON));
+			if (uiProperties.isWindowStateMaximized()) {
 				//Is maximised
-				frameLauncher = new FrameLauncher(TITLE, this, DEFAULT_WIDTH, DEFAULT_HEIGHT, getIcon(Icon.FRONTLINE_ICON));
 				frameLauncher.setExtendedState(Frame.MAXIMIZED_BOTH);
-			} else {
-				//Window size
-				String widthAsString = uiProperties.getProperty(PROPERTIES_WINDOW_WIDTH);
-				String heightAsString = uiProperties.getProperty(PROPERTIES_WINDOW_HEIGHT);
-				
-				int width = DEFAULT_WIDTH;
-				int height = DEFAULT_HEIGHT;
-				
-				if (widthAsString != null) {
-					try {
-						width = Integer.parseInt(widthAsString);
-					} catch (NumberFormatException e) {}
-				}
-				
-				if (heightAsString != null) {
-					try {
-						height = Integer.parseInt(heightAsString);
-					} catch (NumberFormatException e) {}
-				}
-				frameLauncher = new FrameLauncher(TITLE, this, width, height, getIcon(Icon.FRONTLINE_ICON));
 			}
 			
 			frontlineController.setEmailListener(this);
 			frontlineController.setUiListener(this);
+			frontlineController.setSmsDeviceEventListener(this.phoneTabController);
 			
 			setStatus(InternationalisationUtils.getI18NString(MESSAGE_PHONE_MANAGER_INITIALISED));
 			
 			if (detectPhones) {
-				phoneManager_detectModems();
+				phoneTabController.phoneManager_detectModems();
 			}
 		} catch(Throwable t) {
 			LOG.error("Problem starting User Interface module.", t);
@@ -611,6 +392,10 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		}
 	}
 
+	/**
+	 * Adds the keywords tab.
+	 * @param tabbedPane the pane to add the keywords into
+	 */
 	private void addKeywordsTab(Object tabbedPane) {
 		int index = 2;
 		if (find(TAB_HOME) == null) index--;
@@ -766,11 +551,11 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		setMethod(messageListComponent, "updateMessageList");
 	}
 
-	public void setMethod(Object list, String methodName) {
+	public void setMethod(Object component, String methodName) {
 		LOG.trace("ENTER");
 		LOG.debug("Method [" + methodName + "]");
 		try {
-			putProperty(list, PROPERTY_ACTION, getClass().getDeclaredMethod(methodName, new Class[]{}));
+			putProperty(component, PROPERTY_ACTION, getClass().getDeclaredMethod(methodName, new Class[]{}));
 		} catch (SecurityException e) {
 			LOG.debug("", e);
 		} catch (NoSuchMethodException e) {
@@ -857,6 +642,10 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		add(tabbedPane, messagesTab);
 	}
 
+	/**
+	 * Loads the contacts tab into the tabbed pane.
+	 * @param tabbedPane the pane to add the tab to
+	 */
 	private void addContactsTab(Object tabbedPane) {
 		Object contactsTab = loadComponentFromFile(UI_FILE_CONTACTS_TAB);
 		Object pnContacts = find(contactsTab, COMPONENT_PN_CONTACTS);
@@ -872,7 +661,6 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	 * page-turn methods etc.
 	 * @param tableContainer The parent container of the table component to be paginated.
 	 * @param listMethod The method to call when the list's page is turned.
-	 * @param displayControlsAbove Choose whether controls are displayed above or below the table.
 	 * @param rightAlign Choose whether the controls are right or left aligned WRT the table
 	 */
 	private final void addPaginationToTable(Object tableContainer, String listMethod, boolean rightAlign) {
@@ -908,56 +696,12 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	private void addSendTab(Object tabbedPane) {
 		Object sendTab = loadComponentFromFile(UI_FILE_SEND_CONSOLE_TAB);
 		Object pnSend = find(sendTab, COMPONENT_PN_SEND);
-		Object pnMessage = loadComponentFromFile(UI_FILE_MESSAGE_PANEL);
-		Object sendButton = find(pnMessage, COMPONENT_BT_SEND);
+		MessagePanelController messagePanelController = new MessagePanelController(this);
+		Object pnMessage = messagePanelController.getPanel();
 		add(pnSend, pnMessage, 0);
-		setMethod(sendButton, ATTRIBUTE_ACTION, "sendConsole_sendSms(tfMessage, sendConsole_loneRecipient, sendConsole_groupTree, sendConsole_modemList)", sendTab, this);
-		clearMessageComponent(pnMessage);
+		messagePanelController.setSendButtonMethod(this, sendTab, "sendConsole_sendSms(tfMessage, sendConsole_loneRecipient, sendConsole_groupTree, sendConsole_modemList)");
 		add(tabbedPane, sendTab);
 	}
-
-	private void addHomeTab(Object tabbedPane) {
-		Object homeTab = loadComponentFromFile(UI_FILE_HOME_TAB);
-		Object pnSend = find(homeTab, COMPONENT_PN_SEND);
-		Object pnMessage = loadComponentFromFile(UI_FILE_MESSAGE_PANEL);
-		Object sendButton = find(pnMessage, COMPONENT_BT_SEND);
-		add(pnSend, pnMessage);
-		setMethod(sendButton, ATTRIBUTE_ACTION, "homeScreen_sendSMS(tfRecipient.text, tfMessage.text, pnSend)", pnSend, this);
-		clearMessageComponent(pnMessage);
-		
-		Object fastLanguageSwitch = find(homeTab, "fastLanguageSwitch");
-		int shown = 0;
-		for (LanguageBundle languageBundle : InternationalisationUtils.getLanguageBundles()) {
-			if(++shown > 10) break;
-			Object button = createButton("", "changeLanguage(this)", homeTab);
-			setIcon(button, getFlagIcon(languageBundle));
-			setString(button, "tooltip", languageBundle.getLanguage());
-			setInteger(button, "weightx", 1);
-			setChoice(button, "type", "link");
-			setAttachedObject(button, languageBundle.getFilename());
-			add(fastLanguageSwitch, button);
-		}
-		
-		add(tabbedPane, homeTab, 0);
-	}
-
-//	/**
-//	 * Show the SQL debugging browser UI.
-//	 */
-//	public void showSqlBrowser() {
-//		try {
-//			new FrameLauncher("SQL Browser", new SqlThinlet(currentResourceBundle), 800, 600, getIcon(Icon.FRONTLINE_ICON_PNG));
-//		} catch(Exception ex) {
-//			LOG.debug("Problem loading SQL Browser", ex);
-//			
-//			// temporary fix - the SQL browser ALWAYS fails to launch first time, so let's do it
-//			// a second time too TODO the actual cause of the problem should be fixed, not just
-//			// the symptom!
-//			try {
-//				new FrameLauncher("SQL Browser", new SqlThinlet(currentResourceBundle), 800, 600, getIcon(Icon.FRONTLINE_ICON_PNG));
-//			} catch(Exception why) {}			
-//		}
-//	}
 
 	/**
 	 * Show the message details dialog.
@@ -969,8 +713,8 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 			Object details = loadComponentFromFile(UI_FILE_MSG_DETAILS_FORM);
 			String senderDisplayName = getSenderDisplayValue(message);
 			String recipientDisplayName = getRecipientDisplayValue(message);
-			String status = getMessageStatusAsString(message.getStatus());
-			String date = Dependants.DEFAULT_MESSAGE_DATE_FORMAT.format(message.getDate());
+			String status = getMessageStatusAsString(message);
+			String date = InternationalisationUtils.getDatetimeFormat().format(message.getDate());
 			String content = message.getTextContent();
 			
 			setText(find(details, "tfStatus"), status);
@@ -984,8 +728,9 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	}
 
 	/**
+	 * Gets the string to display for the recipient of a message.
 	 * @param message
-	 * @return
+	 * @return This will be the name of the contact who received the message, or the recipient's phone number if they are not a contact.
 	 */
 	private String getRecipientDisplayValue(Message message) {
 		Contact recipient = contactFactory.getFromMsisdn(message.getRecipientMsisdn());
@@ -994,8 +739,9 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	}
 
 	/**
+	 * Gets the string to display for the sender of a message.
 	 * @param message
-	 * @return
+	 * @return This will be the name of the contact who sent the message, or the sender's phone number if they are not a contact.
 	 */
 	private String getSenderDisplayValue(Message message) {
 		Contact sender = contactFactory.getFromMsisdn(message.getSenderMsisdn());
@@ -1119,74 +865,8 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 				
 			}
 		}
-		clearMessageComponent(find(find(currentTab), COMPONENT_PN_MESSAGE));
 		sendConsole_refreshMessageList();
 		LOG.trace("EXIT");
-	}
-
-	public void messageChanged(Object panel, String text) {
-		int textLength = text.length();
-		if (textLength == 0) {
-			clearMessageComponent(panel);
-			return;
-		}
-		Object sendButton = find(panel, COMPONENT_BT_SEND);
-		if (sendButton != null) setEnabled(sendButton, true);
-		
-		boolean areAllCharactersValidGSM = GsmAlphabet.areAllCharactersValidGSM(text);
-
-		int total;
-		if(areAllCharactersValidGSM) total = Message.SMS_MULTIPART_LENGTH_LIMIT * Message.SMS_LIMIT;
-		else total = Message.SMS_MULTIPART_LENGTH_LIMIT_UCS2 * Message.SMS_LIMIT;
-		
-		if (textLength > total) {
-			setText(find(panel, COMPONENT_LB_REMAINING_CHARS), "0");
-			Object tfMessage = find(panel, COMPONENT_TF_MESSAGE);
-			setText(tfMessage, text.substring(0, textLength - 1));
-		} else {
-			int singleMessageCharacterLimit;
-			int multipartMessageCharacterLimit;
-			if(areAllCharactersValidGSM) {
-				singleMessageCharacterLimit = Message.SMS_LENGTH_LIMIT;
-				multipartMessageCharacterLimit = Message.SMS_MULTIPART_LENGTH_LIMIT;
-			} else {
-				// It appears there are some unicode-only characters here.  We should therefore
-				// treat this message as if it will be sent as unicode.
-				singleMessageCharacterLimit = Message.SMS_LENGTH_LIMIT_UCS2;
-				multipartMessageCharacterLimit = Message.SMS_MULTIPART_LENGTH_LIMIT_UCS2;
-			}
-			
-			int numberOfMsgs;
-			int remaining;
-			if (textLength <= singleMessageCharacterLimit) {
-				//First message
-				remaining = (textLength % singleMessageCharacterLimit) == 0 ? 0
-						: singleMessageCharacterLimit - (textLength % singleMessageCharacterLimit);
-				numberOfMsgs = textLength == 0 ? 0 : 1;
-			} else if (textLength <= (2*multipartMessageCharacterLimit)) {
-				numberOfMsgs = 2;
-				int charCount = textLength - multipartMessageCharacterLimit;
-				remaining = (charCount % multipartMessageCharacterLimit) == 0 ? 0
-						: multipartMessageCharacterLimit - (charCount % multipartMessageCharacterLimit);
-			} else {
-				numberOfMsgs = 3;
-				int charCount = textLength - (2*multipartMessageCharacterLimit);
-				remaining = (charCount % multipartMessageCharacterLimit) == 0 ? 0
-						: multipartMessageCharacterLimit - (charCount % multipartMessageCharacterLimit);
-			}
-
-			setText(find(panel, COMPONENT_LB_REMAINING_CHARS), String.valueOf(remaining));
-			setText(find(panel, COMPONENT_LB_MSG_NUMBER), String.valueOf(numberOfMsgs));
-			setIcon(find(panel, COMPONENT_LB_FIRST), Icon.SMS_DISABLED);
-			setIcon(find(panel, COMPONENT_LB_SECOND), Icon.SMS_DISABLED);
-			setIcon(find(panel, COMPONENT_LB_THIRD), Icon.SMS_DISABLED);
-			if (numberOfMsgs >= 1) setIcon(find(panel, COMPONENT_LB_FIRST), Icon.SMS);
-			if (numberOfMsgs >= 2) setIcon(find(panel, COMPONENT_LB_SECOND), Icon.SMS);
-			if (numberOfMsgs >= 3) setIcon(find(panel, COMPONENT_LB_THIRD), Icon.SMS);
-			
-			double value = numberOfMsgs * costPerSMS * numberToSend;
-			setText(find(panel, COMPONENT_LB_ESTIMATED_MONEY), InternationalisationUtils.formatCurrency(value));
-		}
 	}
 	
 	public void sendConsole_selectionChanged(Object tree) {
@@ -1201,18 +881,6 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		}
 		numberToSend = toSend.size();
 		updateCost();
-	}
-
-	private void clearMessageComponent(Object panel) {
-		setText(find(panel, COMPONENT_TF_MESSAGE), "");
-		setText(find(panel, COMPONENT_LB_REMAINING_CHARS), String.valueOf(Message.SMS_LENGTH_LIMIT));
-		setText(find(panel, COMPONENT_LB_MSG_NUMBER), "0");
-		setIcon(find(panel, COMPONENT_LB_FIRST), Icon.SMS_DISABLED);
-		setIcon(find(panel, COMPONENT_LB_SECOND), Icon.SMS_DISABLED);
-		setIcon(find(panel, COMPONENT_LB_THIRD), Icon.SMS_DISABLED);
-		setText(find(panel, COMPONENT_LB_ESTIMATED_MONEY), InternationalisationUtils.formatCurrency(0));
-		Object sendButton = find(panel, COMPONENT_BT_SEND);
-		if (sendButton != null) setEnabled(sendButton, false);
 	}
 
 	/**
@@ -1300,7 +968,7 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	 * Checks if the supplied group is a real group, or just one of the default groups
 	 * used for visualization.
 	 * @param group
-	 * @return
+	 * @return <code>true</code> if the supplied {@link Group} is one of the synthetic groups; <code>false</code> otherwise. 
 	 */
 	private boolean isDefaultGroup(Group group) {
 		return group == this.rootGroup || group == this.ungroupedContacts || group == this.unnamedContacts;
@@ -1527,10 +1195,10 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	}
 
 	private Object createListItem(KeywordAction survey) {
-		String start = Dependants.DEFAULT_KEYWORD_ACTION_DATE_FORMAT.format(new Date(survey.getStartDate()));
+		String start = InternationalisationUtils.getDateFormat().format(new Date(survey.getStartDate()));
 		String end = InternationalisationUtils.getI18NString(COMMON_UNDEFINED);
 		if (survey.getEndDate() != DEFAULT_END_DATE) {
-			end = Dependants.DEFAULT_KEYWORD_ACTION_DATE_FORMAT.format(new Date(survey.getEndDate()));
+			end = InternationalisationUtils.getDateFormat().format(new Date(survey.getEndDate()));
 		} 
 		String key = survey.getKeyword().getKeywordString().length() == 0 ? "<" + InternationalisationUtils.getI18NString(COMMON_BLANK) + ">" : survey.getKeyword().getKeywordString();
 		Object item = createListItem(
@@ -1599,7 +1267,7 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		setText(find(surveyDetails, COMPONENT_SURVEY_MANAGER_SURVEY_KEYWORD), keyword == null ? "" : keyword.getKeywordString());
 		setText(find(surveyDetails, COMPONENT_SURVEY_MANAGER_SURVEY_DESCRIPTION), keyword == null ? "" : keyword.getDescription());
 		
-		setText(find(surveyDetails, COMPONENT_TF_START_DATE), keyword == null ? "" : Dependants.DEFAULT_KEYWORD_ACTION_DATE_FORMAT.format(act.getStartDate()));
+		setText(find(surveyDetails, COMPONENT_TF_START_DATE), keyword == null ? "" : InternationalisationUtils.getDateFormat().format(act.getStartDate()));
 		
 		Object endDate = find(surveyDetails, COMPONENT_TF_END_DATE);
 		String toSet = "";
@@ -1607,7 +1275,7 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 			if (act.getEndDate() == DEFAULT_END_DATE) {
 				toSet = InternationalisationUtils.getI18NString(COMMON_UNDEFINED);
 			} else {
-				toSet = Dependants.DEFAULT_KEYWORD_ACTION_DATE_FORMAT.format(act.getEndDate());
+				toSet = InternationalisationUtils.getDateFormat().format(act.getEndDate());
 			}
 		}
 		setText(endDate, toSet);
@@ -1642,15 +1310,15 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		LOG.debug("Start Date [" + startDate + "]");
 		LOG.debug("End Date [" + endDate + "]");
 		if (startDate.equals("")) {
-			LOG.debug("No start date set, so we set to [" + Dependants.DEFAULT_START_DATE + "]");
-			startDate = Dependants.DEFAULT_START_DATE;
+			LOG.debug("No start date set, so we set to [" + InternationalisationUtils.getDefaultStartDate() + "]");
+			startDate = InternationalisationUtils.getDefaultStartDate();
 		}
 		long start;
 		long end;
 		try {
-			Date ds = Utils.parseDateForKeyword(startDate); 
+			Date ds = InternationalisationUtils.parseDate(startDate); 
 			if (!endDate.equals("") && !endDate.equals(InternationalisationUtils.getI18NString(COMMON_UNDEFINED))) {
-				Date de = Utils.parseDateForKeyword(endDate);
+				Date de = InternationalisationUtils.parseDate(endDate);
 				if (!Utils.validateDates(ds, de)) {
 					LOG.debug("Start date is not before the end date");
 					alert(InternationalisationUtils.getI18NString(MESSAGE_START_DATE_AFTER_END));
@@ -1672,7 +1340,7 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 			String newWordString = getText(find(surveyDetails, COMPONENT_SURVEY_MANAGER_SURVEY_KEYWORD));
 			Keyword keyword;
 			try {
-				keyword = keywordFactory.createKeywordsHierarchically(newWordString.trim().split(" "), description, classicMode);
+				keyword = createKeywordsHierarchically(newWordString, description);
 			} catch (DuplicateKeyException e) {
 				alert(InternationalisationUtils.getI18NString(MESSAGE_KEYWORD_EXISTS));
 				LOG.trace("EXIT");
@@ -1699,7 +1367,7 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	 * Updates the group list in all different tabs.
 	 * This method can be called either for classic or advanced mode.
 	 */
-	private void updateGroupList() {
+	void updateGroupList() {
 		Object groupListComponent = getGroupTreeComponent();
 		
 		Object selected = getSelectedItem(groupListComponent);
@@ -1712,14 +1380,16 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		if (!classicMode) updateContactList();
 	}
 
+	/**
+	 * Gets the Thinlet TREE component displaying the tree of {@link Group}s.
+	 * @return
+	 */
 	private Object getGroupTreeComponent() {
-		Object groupListComponent;
 		if (this.classicMode) {
-			groupListComponent = find(COMPONENT_GROUP_MANAGER_GROUP_LIST);
+			return find(COMPONENT_GROUP_MANAGER_GROUP_LIST);
 		} else {
-			groupListComponent = this.groupListComponent;
+			return this.groupListComponent;
 		}
-		return groupListComponent;
 	}
 	
 	/**
@@ -1794,7 +1464,9 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 			//ALL messages
 			int selectedIndex = getSelectedIndex(filterList);
 			if (selectedIndex == 0) {
-				for (Message m : messageFactory.getAllMessages(messageType, field, order, messageHistoryStart, messageHistoryEnd, (pageNumber - 1) * limit, limit)) {
+
+				List<Message> allMessages = messageFactory.getAllMessages(messageType, field, order, messageHistoryStart, messageHistoryEnd, (pageNumber - 1) * limit, limit);
+				for (Message m : allMessages) {
 					add(messageListComponent, getRow(m));
 				}
 				count = messageFactory.getMessageCount(messageType, messageHistoryStart, messageHistoryEnd);
@@ -1834,7 +1506,9 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		setEnabled(messageListComponent, selectedItem != null && getItems(messageListComponent).length > 0);
 	}
 
-	@SuppressWarnings("unchecked")
+	/**
+	 * Update the message history filter.
+	 */
 	private void updateMessageHistoryFilter() {
 		// Filter List specific stuff can be moved into contacts section.
 		removeAll(filterListComponent);
@@ -1844,7 +1518,7 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		add(filterListComponent, allMessages);
 
 		Object groupListComponent = find("messageHistory_groupList");
-		Class filterClass = getMessageHistoryFilterType(find(currentTab));
+		Class<?> filterClass = getMessageHistoryFilterType(find(currentTab));
 		if (filterClass == Contact.class) {
 			//Contacts
 			int limit = getListLimit(filterListComponent);
@@ -1875,10 +1549,9 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	
 	/**
 	 * Gets the selected filter type for the message history, i.e. Contact, Group or Keyword.
-	 * @return
+	 * @return {@link Contact}, {@link Group} or {@link Keyword}, depending which is set for the message filter.
 	 */
-	@SuppressWarnings("unchecked")
-	private Class getMessageHistoryFilterType(Object messageHistoryTab) {
+	private Class<?> getMessageHistoryFilterType(Object messageHistoryTab) {
 		if(isSelected(find(messageHistoryTab, COMPONENT_CB_CONTACTS))) return Contact.class;
 		else if(isSelected(find(messageHistoryTab, COMPONENT_CB_GROUPS))) return Group.class;
 		else return Keyword.class;
@@ -1946,7 +1619,7 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	/**
 	 * Repopulates the contact list according to the current filter.
 	 */
-	private void updateContactList() {
+	void updateContactList() {
 		// To repopulate the contact list, we must first locate it and remove the current
 		// contents.  Once we've done that, work out what should now be displayed in it,
 		// and add them all.
@@ -1986,55 +1659,6 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 			getGroupsRecursivelyDown(groups, subGroup);
 		}
 	}
-
-	/** 
-	 * Refreshes the list of PhoneHandlers displayed on the PhoneManager tab.
-	 */
-	private void phoneManager_refreshModemList() {
-		Object modemListError = find(COMPONENT_PHONE_MANAGER_MODEM_LIST_ERROR);
-		// cache the selected item so we can reselect it when we've finished!
-		int index = getSelectedIndex(modemListError);
-		
-		int indexTop = getSelectedIndex(modemListComponent);
-		
-		removeAll(modemListComponent);
-		removeAll(modemListError);
-		
-		for (SmsDevice dev : phoneManager.getAllPhones()) {
-			if (dev.isConnected()) {
-				add(modemListComponent, phoneManager_getRow(dev, true));
-			} else {
-				add(modemListError, phoneManager_getRow(dev, false));
-			}
-		}
-		
-		setSelectedIndex(modemListComponent, indexTop);
-		setSelectedIndex(modemListError, index);
-	}
-
-	public void phoneManager_disconnect(Object list) {
-		SmsDevice dev = getDeviceHandler(getSelectedItem(list));
-		phoneManager.disconnect(dev);
-		refreshPhonesViews();
-	}
-	
-	// FIXME should encapsulate these reflection exceptions in a more useful and descriptive one
-	public void connectToSelectedPhoneHandler() throws InstantiationException, IllegalAccessException, ClassNotFoundException {
-		Object modemListError = find(COMPONENT_PHONE_MANAGER_MODEM_LIST_ERROR);
-		SmsDevice selectedPhoneHandler = getDeviceHandler(getSelectedItem(modemListError));
-		if(selectedPhoneHandler != null) {
-			if (isSmsModem(selectedPhoneHandler)) {
-				SmsModem modem = (SmsModem) selectedPhoneHandler;
-				try {
-					phoneManager.requestConnect(modem.getPort());
-				} catch (NoSuchPortException ex) {
-					LOG.info("", ex);
-				}
-			} else {
-				phoneManager.addSmsInternetService((SmsInternetService) selectedPhoneHandler);
-			}
-		}
-	}
 	
 	/**
 	 * Disables editing of the contact details pane. 
@@ -2052,13 +1676,13 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	/**
 	 * Updates or create a contact with the details added by the user. <br>
 	 * This method is used by advanced mode, and also Contact Merge
+	 * TODO this method should be transactional
 	 * @param contactDetailsDialog
 	 */
 	public void saveContactDetailsAdvancedView(Object contactDetailsDialog) {
 		LOG.trace("ENTER");
 		Object attachment = getAttachedObject(contactDetailsDialog);
 		Contact contact = null;
-		LinkedList<Group> groups = new LinkedList<Group>();
 		if (attachment != null) {
 			contact = (Contact)attachment;
 			LOG.debug("Attachment is a contact [" + contact.getName() + "]");
@@ -2070,44 +1694,12 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		String notes = contactDetails_getNotes(contactDetailsDialog);
 		boolean isActive = contactDetails_getActive(contactDetailsDialog);
 		
-		Object list = find(contactDetailsDialog, COMPONENT_CONTACT_GROUP);
-		for (Object o : getSelectedItems(list)) {
-			if (isAttachment(o, Group.class)) {
-				groups.add(getGroup(o));
-			}
-		}
-		
-		List<Group> selectedGroupsFromTree = new ArrayList<Group>();
-		for (Object o : getSelectedItems(groupListComponent)) {
-			Group g = getGroup(o);
-			selectedGroupsFromTree.add(g);
-		}
-		
 		try {
 			if (name.equals("")) name = InternationalisationUtils.getI18NString(UNKNOWN_NAME);
 			if (contact == null) {
 				LOG.debug("Creating a new contact [" + name + ", " + msisdn + "]");
 				contact = new Contact(name, msisdn, otherMsisdn, emailAddress, notes, isActive);
 				contactFactory.saveContact(contact);
-				boolean add = selectedGroupsFromTree.contains(this.rootGroup);
-				for (Group g : groups) {
-					if (selectedGroupsFromTree.contains(g)) add = true;
-					LOG.debug("Adding contact to group [" + g.getName() + "]");
-					if(g.addContact(contact)) {
-						this.groupDao.updateGroup(g);
-					}
-					updateGroup(g, getNodeForGroup(groupListComponent, g));
-				}
-				
-				if (add) {
-					int limit = getListLimit(contactListComponent);
-					//Adding
-					if (getItems(contactListComponent).length < limit) {
-						add(contactListComponent, getRow(contact));
-					}
-					setListElementCount(getListElementCount(contactListComponent) + 1, contactListComponent);
-					updatePageNumber(contactListComponent, find(TAB_CONTACT_MANAGER));
-				}
 			} else {
 				// If this is not a new contact, we still need to update all details
 				// that would otherwise be set by the constructor called in the block
@@ -2120,25 +1712,34 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 				contact.setNotes(notes);
 				contact.setActive(isActive);
 				this.contactFactory.updateContact(contact);
-				
-				List<Group> toUpdate = updateGroupsForContact(contact, groups, true);
-				for (Group g : toUpdate) {
-					updateGroup(g, getNodeForGroup(groupListComponent, g));
-				}
-				
-				int index = -1;
-				for (Object o : getItems(contactListComponent)) {
-					Contact c = getContact(o);
-					if (c.equals(contact)) {
-						index = getIndex(contactListComponent, o);
-						remove(o);
-					}
-				}
-				add(contactListComponent, getRow(contact), index);
 			}
-			updateGroup(this.rootGroup, getNodeForGroup(groupListComponent, this.rootGroup));
-			updateGroup(this.ungroupedContacts, getNodeForGroup(groupListComponent, this.ungroupedContacts));
-			updateGroup(this.unnamedContacts, getNodeForGroup(groupListComponent, this.unnamedContacts));
+
+			Object groupsList = find(contactDetailsDialog, COMPONENT_CONTACT_GROUP);
+			HashSet<Group> selectedGroups = new HashSet<Group>();
+			for (Object o : getSelectedItems(groupsList)) {
+				if (isAttachment(o, Group.class)) {
+					selectedGroups.add(getGroup(o));
+				}
+			}
+			
+			// Remove the contact from any groups he has left
+			for (Group g : contact.getGroups()) {
+				if(!selectedGroups.contains(g)) {
+					g.removeContact(contact);
+					this.groupDao.updateGroup(g);
+				}
+			}
+			
+			// Add this contact from any groups they were added to
+			for (Group g : selectedGroups) {
+				LOG.debug("Adding contact to group [" + g.getName() + "]");
+				if(g.addContact(contact)) {
+					this.groupDao.updateGroup(g);
+				}
+			}
+
+			// Refresh the Contacts tab, and make sure that the group and contact who were previously selected are still selected
+			updateGroupList();
 		} catch(DuplicateKeyException ex) {
 			LOG.debug("There is already a contact with this mobile number - cannot save!", ex);
 			showMergeContactDialog(contact, contactDetailsDialog);
@@ -2515,62 +2116,6 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 			add(mergeForm);
 		}
 	}
-
-	private static final String defaultHandlerName = CATHandler.class.getName();
-	
-	public void showPhoneConfigDialog(Object list) {
-		Object configDialog = loadComponentFromFile("/ui/dialog/phoneConfig.xml");
-		
-		Object portList = find(configDialog, "lbPortName");
-		Enumeration<CommPortIdentifier> commPortEnumeration = CommUtils.getPortIdentifiers();
-		while (commPortEnumeration.hasMoreElements()) {
-			CommPortIdentifier commPortIdentifier = commPortEnumeration.nextElement();
-			add(portList, createComboboxChoice(commPortIdentifier.getName(), null));
-		}
-		
-		Object handlerList = find(configDialog, "lbCATHandlers");
-		int trimLength = defaultHandlerName.length() + 1;
-		try {
-			for (Class<? extends AbstractATHandler> handler : AbstractATHandler.getHandlers()) {
-				String handlerName = handler.getName();
-				if(handlerName.equals(defaultHandlerName)) handlerName = "<default>";
-				else handlerName = handlerName.substring(trimLength);
-				add(handlerList, createComboboxChoice(handlerName, handler));
-			}
-		} catch (IOException e) {
-			LOG.debug("", e);
-		}
-		
-		Object selected = getSelectedItem(list);
-		SmsDevice selectedPhone = getDeviceHandler(selected);
-		if (isSmsModem(selectedPhone)) {
-			SmsModem modem = (SmsModem) selectedPhone;
-			setText(find(configDialog,"lbPortName"), modem.getPort());
-			setText(find(configDialog,"lbBaudRate"), String.valueOf(modem.getBaudRate()));
-		}
-		
-		add(configDialog);
-	}
-	
-	public void connectToPhone(Object phoneConfigDialog) {
-		String baudRateAsString = getText(find(phoneConfigDialog,"lbBaudRate"));
-		String requestedPortName = getText(find(phoneConfigDialog,"lbPortName"));
-		if (!phoneManager.hasPhoneConnected(requestedPortName)) {
-			try {
-				phoneManager.requestConnect(
-						requestedPortName,
-						Integer.parseInt(baudRateAsString),
-						getText(find(phoneConfigDialog,"lbCATHandlers")));
-				remove(phoneConfigDialog);
-			} catch (NumberFormatException e) {
-				alert(InternationalisationUtils.getI18NString(MESSAGE_INVALID_BAUD_RATE, baudRateAsString));
-			} catch (NoSuchPortException e) {
-				alert(InternationalisationUtils.getI18NString(MESSAGE_PORT_NOT_FOUND, requestedPortName));
-			}
-		} else {
-			alert(InternationalisationUtils.getI18NString(MESSAGE_PORT_ALREADY_CONNECTED, requestedPortName));
-		}
-	}
 	
 	private void mergeDialog_setValues(Object createContactForm, Object mergeForm, String componentName, String oldText) {
 		Object oldContactComponent = find(createContactForm, componentName);
@@ -2581,7 +2126,7 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		oldText = oldText.trim();
 		if("".equals(newText) || "".equals(oldText) || oldText.equals(newText)) {
 			remove(newOldContactComponent);
-			setInteger(newContactComponent, "colspan", 3);
+			setColspan(newContactComponent, 3);
 			if("".equals(newText)) newText = oldText;
 		} else {
 			setText(newOldContactComponent, oldText);
@@ -2931,6 +2476,9 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	 * and toolbar.  These enablements are based on whether any items in
 	 * the list are selected, and if they are, on the nature of these
 	 * items.
+	 * @param list 
+	 * @param popup 
+	 * @param toolbar 
 	 */
 	public void enableOptions(Object list, Object popup, Object toolbar) {
 		Object[] selectedItems = getSelectedItems(list);
@@ -2953,7 +2501,6 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 					}
 				}
 				
-				Message m = (Message) att;
 				for (Object popupMenuItem : getItems(popup)) {
 					String popupMenuItemName = getName(popupMenuItem);
 					boolean visible = hasSelection;
@@ -3131,10 +2678,16 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		}
 		LOG.debug("Group Name [" + newGroupName + "]");
 		try {
-			System.out.println("Creating group with name: " + newGroupName + " and parent: " + selectedParentGroup);
+			if(LOG.isDebugEnabled()) LOG.debug("Creating group with name: " + newGroupName + " and parent: " + selectedParentGroup);
+			
 			Group g = new Group(selectedParentGroup, newGroupName);
 			groupDao.saveGroup(g);
-			addGroupToTree(g, selectedParentGroup);
+			
+			// Now we've saved the group, add it to the groups tree displayed in the contacts manager
+			Object groupListComponent = getGroupTreeComponent();
+			Object parentNode = getNodeForGroup(groupListComponent, selectedParentGroup);
+			add(parentNode, getNode(g, true));
+			
 			if (dialog != null) remove(dialog);
 			LOG.debug("Group created successfully!");
 		} catch (DuplicateKeyException e) {
@@ -3142,12 +2695,6 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 			alert(InternationalisationUtils.getI18NString(MESSAGE_GROUP_ALREADY_EXISTS));
 		}
 		LOG.trace("EXIT");
-	}
-
-	private void addGroupToTree(Group g, Group selectedParentGroup) {
-		Object groupListComponent = getGroupTreeComponent();
-		Object node = getNodeForGroup(groupListComponent, selectedParentGroup);
-		add(node, getNode(g, true));
 	}
 
 	/**
@@ -3173,34 +2720,6 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		}
 		return ret;
 	}
-
-	/**
-	 * Method called when the export type list changes its selection.
-	 * 
-	 * @param list
-	 * @param dialog
-	 */
-	public void exportDialog_selectionChanged(Object list, Object dialog) {
-		Object toRemove = getItem(dialog, 2);
-		remove(toRemove);
-		Object toAdd;
-		if (getSelectedIndex(list) == 0) {
-			toAdd = loadComponentFromFile(UI_FILE_EXPORT_WIZARD_CONTACT);
-		} else if (getSelectedIndex(list) == 1) {
-			toAdd = loadComponentFromFile(UI_FILE_EXPORT_WIZARD_MESSAGE);
-		} else {
-			toAdd = loadComponentFromFile(UI_FILE_EXPORT_WIZARD_KEYWORD);
-		}
-		add(dialog, toAdd);
-	}
-	
-	/**
-	 * Shows the import contacts dialog.
-	 */
-	public void showImportContacts(){
-		Object importWizard = loadComponentFromFile(UI_FILE_IMPORT_CONTACTS_FORM);
-		add(importWizard);
-	}
 	
 	/** Shows a general dialog asking the user to confirm his action. */
 	public void showConfirmationDialog(String methodToBeCalled){
@@ -3224,55 +2743,36 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	
 	/**
 	 * Shows the export wizard dialog, according to the supplied type.
-	 * 
 	 * @param list The list to get selected items from.
-	 * @param type The desired type (0 for Contacts, 1 for Messages and 2 for Keywords)
+	 * @param type The desired type (0 for Contacts, 1 for Messages and 2 for Keywords) // FIXME these types should be more clearly defined
 	 */
-	public void showExportWizard(Object list, int type){
-		Object[] selected = getSelectedItems(list);
-		if (selected.length == 0) {
-			return;
-		}
-		Object exportWizard = loadComponentFromFile(UI_FILE_EXPORT_WIZARD_FORM);
-		removeAll(exportWizard);
-		setAttachedObject(exportWizard, selected);
-		Object toAdd; 
-		if (type == 0) {
-			toAdd = loadComponentFromFile(UI_FILE_EXPORT_WIZARD_CONTACT);
-			setText(exportWizard, InternationalisationUtils.getI18NString(MESSAGE_EXPORTING_SELECTED_CONTACTS));
-		} else if (type == 1) {
-			toAdd = loadComponentFromFile(UI_FILE_EXPORT_WIZARD_MESSAGE);
-			setText(exportWizard, InternationalisationUtils.getI18NString(MESSAGE_EXPORTING_SELECTED_MESSAGES));
-		} else {
-			toAdd = loadComponentFromFile(UI_FILE_EXPORT_WIZARD_KEYWORD);
-			setText(exportWizard, InternationalisationUtils.getI18NString(MESSAGE_EXPORTING_SELECTED_KEYWORDS));
-		}
-		add(exportWizard, toAdd);
-		add(exportWizard);
+	public void showExportWizard(Object list, String type){
+		new ImportExportUiController(this, this.contactFactory, this.messageFactory, this.keywordFactory).showWizard(true, list, type);
 	}
 	
 	/**
 	 * Shows the export wizard dialog, according to the supplied type.
-	 * 
-	 * @param type The desired type (0 for Contacts, 1 for Messages and 2 for Keywords)
+	 * @param type The desired type (0 for Contacts, 1 for Messages and 2 for Keywords) // FIXME these types should be more clearly defined
 	 */
-	public void showExportWizard(int type){
-		Object exportWizard = loadComponentFromFile(UI_FILE_EXPORT_WIZARD_FORM);
-		removeAll(exportWizard);
-		setAttachedObject(exportWizard, new Integer(type));
-		Object toAdd; 
-		if (type == 0) {
-			toAdd = loadComponentFromFile(UI_FILE_EXPORT_WIZARD_CONTACT);
-			setText(exportWizard, InternationalisationUtils.getI18NString(MESSAGE_EXPORTING_ALL_CONTACTS));
-		} else if (type == 1) {
-			toAdd = loadComponentFromFile(UI_FILE_EXPORT_WIZARD_MESSAGE);
-			setText(exportWizard, InternationalisationUtils.getI18NString(MESSAGE_EXPORTING_ALL_MESSAGES));
-		} else {
-			toAdd = loadComponentFromFile(UI_FILE_EXPORT_WIZARD_KEYWORD);
-			setText(exportWizard, InternationalisationUtils.getI18NString(MESSAGE_EXPORTING_ALL_KEYWORDS));
-		}
-		add(exportWizard, toAdd);
-		add(exportWizard);
+	public void showExportWizard(String type){
+		new ImportExportUiController(this, this.contactFactory, this.messageFactory, this.keywordFactory).showWizard(true, type);
+	}
+	
+	/**
+	 * Shows the import wizard dialog, according to the supplied type.
+	 * @param list The list to get selected items from.
+	 * @param type The desired type (0 for Contacts, 1 for Messages and 2 for Keywords) // FIXME these types should be more clearly defined
+	 */
+	public void showImportWizard(Object list, String type){
+		new ImportExportUiController(this, this.contactFactory, this.messageFactory, this.keywordFactory).showWizard(false, list, type);
+	}
+	
+	/**
+	 * Shows the import wizard dialog, according to the supplied type.
+	 * @param type The desired type (0 for Contacts, 1 for Messages and 2 for Keywords) // FIXME these types should be more clearly defined
+	 */
+	public void showImportWizard(String type){
+		new ImportExportUiController(this, this.contactFactory, this.messageFactory, this.keywordFactory).showWizard(false, type);
 	}
 	
 	/**
@@ -3311,7 +2811,6 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 			numberToSend--;
 			remove(selected);
 		}
-		messageChanged(dialog, getText(find(dialog, COMPONENT_TF_MESSAGE)));
 	}
 
 	/**
@@ -3324,18 +2823,6 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		removeAll(fromUnregistered);
 	}
 
-	private UiGeneratorController.ContactsSelection getSelectionTypes(Object[] selected) {
-		UiGeneratorController.ContactsSelection ret = UiGeneratorController.ContactsSelection.NONE;
-		for (Object o : selected) {
-			if (getAttachedObject(o) instanceof Contact) {
-				return UiGeneratorController.ContactsSelection.CONTACTS_ONLY;
-			} else if (getAttachedObject(o) instanceof Group){
-				return UiGeneratorController.ContactsSelection.GROUPS_ONLY;
-			}
-		}
-		return ret;
-	}
-	
 	/**
 	 * Populates the pop up menu with all groups create by users.
 	 * 
@@ -3344,9 +2831,8 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	 */
 	public void populateGroups(Object popUp, Object list) {
 		Object[] selectedItems = getSelectedItems(list);
-		UiGeneratorController.ContactsSelection selectableTypes = getSelectionTypes(selectedItems);
 		setBoolean(popUp, VISIBLE, getSelectedItems(list).length > 0);
-		if (getSelectedItems(list).length == 0) {
+		if (selectedItems.length == 0) {
 			//Nothing selected
 			boolean none = true;
 			for (Object o : getItems(popUp)) {
@@ -3360,7 +2846,7 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 			}
 			
 			setBoolean(popUp, VISIBLE, !none);
-		} else if (selectableTypes == UiGeneratorController.ContactsSelection.CONTACTS_ONLY) {
+		} else if (getAttachedObject(selectedItems[0]) instanceof Contact) {
 			for (Object o : getItems(popUp)) {
 				String name = getString(o, NAME);
 				if (name.equals(COMPONENT_MENU_ITEM_MSG_HISTORY) 
@@ -3429,8 +2915,12 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		}
 	}
 
-	public void removeFromGroup(Object selected) {
-		Group g = getGroup(selected);
+	/**
+	 * Removes the contacts selected in the contacts list from the group which is selected in the groups tree.
+	 * @param selectedGroup A set of thinlet components with group members attached to them.
+	 */
+	public void removeFromGroup(Object selectedGroup) {
+		Group g = getGroup(selectedGroup);
 		int total = getItems(contactListComponent).length;
 		Contact c = getContact(getSelectedItem(contactListComponent));
 		if(g.removeContact(c)) {
@@ -3441,16 +2931,19 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		updateGroupsTree(g);
 	}
 
+	/**
+	 * Updates the groups tree on the contacts tab.  This method should be called when the membership
+	 * of a group has changed.  The method will attempt to only update {@link Group}s whose memebership
+	 * may have changed.
+	 * @param g The group whose membership has changed.
+	 */
 	private void updateGroupsTree(Group g) {
-		HashMap<Integer, Group> toUpdate = new HashMap<Integer, Group>();
-		toUpdate.put(this.rootGroup.hashCode(), this.rootGroup);
-		toUpdate.put(this.ungroupedContacts.hashCode(), this.ungroupedContacts);
-		toUpdate.put(this.unnamedContacts.hashCode(), this.unnamedContacts);
-		toUpdate.put(g.hashCode(), g);
-		for (Integer key : toUpdate.keySet()) {
-			Group gg = toUpdate.get(key);
-			updateGroup(gg, getNodeForGroup(getGroupTreeComponent(), gg));
-		}
+		Object groupTreeComponent = getGroupTreeComponent();
+
+		updateGroup(this.rootGroup, getNodeForGroup(groupTreeComponent, this.rootGroup));
+		updateGroup(this.ungroupedContacts, getNodeForGroup(groupTreeComponent, this.ungroupedContacts));
+		updateGroup(this.unnamedContacts, getNodeForGroup(groupTreeComponent, this.unnamedContacts));
+		updateGroup(g, getNodeForGroup(groupTreeComponent, g));
 	}
 
 	/**
@@ -3610,12 +3103,12 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 			}
 		}
 		
-		Object pnMessage = loadComponentFromFile(UI_FILE_MESSAGE_PANEL);
-		Object sendButton = find(pnMessage, COMPONENT_BT_SEND);
-		add(dialog, pnMessage);
-		setMethod(sendButton, ATTRIBUTE_ACTION, "sendMessage(composeMessageDialog, composeMessage_to, tfMessage)", dialog, this);
-		clearMessageComponent(pnMessage);
+		MessagePanelController messagePanelController = new MessagePanelController(this);
+		// We need to add the message panel to the dialog before setting the send button method
+		add(dialog, messagePanelController.getPanel());
+		messagePanelController.setSendButtonMethod(this, dialog, "sendMessage(composeMessageDialog, composeMessage_to, tfMessage)");
 		add(dialog);
+		
 		LOG.trace("EXIT");
 	}
 
@@ -3715,75 +3208,12 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	}
 
 	/**
-	 * Starts the phone auto-detector.
-	 */
-	public void phoneManager_detectModems() {
-		phoneManager.refreshPhoneList(true);
-	}
-
-	/**
-	 * called when one of the SMS devices (phones or http senders) has a change in status,
-	 * such as detection, connection, disconnecting, running out of batteries, etc.
-	 * see PhoneHandler.STATUS_CODE_MESSAGES[smsDeviceEventCode] to get the relevant messages
-	 *  
-	 * @param activeDevice
-	 * @param smsDeviceEventCode
-	 */
-	public void smsDeviceEvent(SmsDevice device, int smsDeviceEventCode) {
-		LOG.trace("ENTER");
-		if (isSmsModem(device)) {
-			SmsModem activeDevice = (SmsModem) device;
-			setStatus(InternationalisationUtils.getI18NString(MESSAGE_PHONE) + ": " + activeDevice.getPort() + ' ' + activeDevice.getStatusString());
-			if (smsDeviceEventCode == SmsModem.STATUS_CONNECTED) {
-				LOG.debug("Phone is connected. Try to read details from database!");
-				String serial = activeDevice.getSerial();
-				SmsModemSettings settings = this.phoneDetailsManager.getSmsModemSettings(serial);
-				
-				// If this is the first time we've attached this phone, or no settings were
-				// saved last time, we should show the settings dialog automatically
-				if(settings == null) {
-					LOG.debug("User need to make setting related this phone.");
-					showPhoneSettingsDialog(activeDevice, true);
-				} else {
-					activeDevice.setUseForSending(settings.useForSending());
-					activeDevice.setUseDeliveryReports(settings.useDeliveryReports());
-
-					if(activeDevice.supportsReceive()) {
-						activeDevice.setUseForReceiving(settings.useForReceiving());
-						activeDevice.setDeleteMessagesAfterReceiving(settings.deleteMessagesAfterReceiving());
-					}
-				}
-
-				newEvent(new Event(Event.TYPE_PHONE_CONNECTED, InternationalisationUtils.getI18NString(COMMON_PHONE_CONNECTED) + ": " + activeDevice.getModel()));
-			}
-		} else {
-			SmsInternetService service = (SmsInternetService) device;
-			// TODO document why newEvent is called here, and why it is only called for certain statuses.
-			if (smsDeviceEventCode == SmsDevice.STATUS_CONNECTED) {
-				newEvent(new Event(
-						Event.TYPE_SMS_INTERNET_SERVICE_CONNECTED,
-						InternationalisationUtils.getI18NString(COMMON_SMS_INTERNET_SERVICE_CONNECTED) 
-						+ ": " + SmsInternetServiceSettingsHandler.getProviderName(service.getClass()) + " - " + service.getIdentifier()));
-			} else if (smsDeviceEventCode == SmsDevice.STATUS_RECEIVING_FAILED) {
-				newEvent(new Event(
-						Event.TYPE_SMS_INTERNET_SERVICE_RECEIVING_FAILED,
-						SmsInternetServiceSettingsHandler.getProviderName(service.getClass()) + " - " + service.getIdentifier()
-						+ ": " + InternationalisationUtils.getI18NString(COMMON_SMS_INTERNET_SERVICE_RECEIVING_FAILED)));
-			}
-		}
-		synchronized (PHONES_LIST_SYNCH_OBJECT) {
-			refreshPhonesViews();
-		}
-		LOG.trace("EXIT");
-	}
-
-	/**
 	 * 
 	 */
 	void refreshPhonesViews() {
-		if (currentTab.equals(TAB_CLASSIC_PHONE_MANAGER) || currentTab.equals(TAB_ADVANCED_PHONE_MANAGER)) {
+		if (currentTab.equals(TAB_ADVANCED_PHONE_MANAGER)) {
 			LOG.debug("Refreshing phones tab");
-			phoneManager_refreshModemList();
+			this.phoneTabController.refreshPhonesViews();
 		} else if(currentTab.equals(TAB_SEND_CONSOLE)) {
 			LOG.debug("Refreshing send tab (phone list)");
 			sendConsole_refreshModemList();
@@ -3878,14 +3308,14 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		Long newEnd = messageHistoryEnd;
 		
 		try {
-			Date s = Utils.parseDateForKeyword(startDate);
+			Date s = InternationalisationUtils.parseDate(startDate);
 			newStart = s.getTime();
 		} catch (ParseException e1) {
 			newStart = null;
 		}
 		
 		try {
-			Date e = Utils.parseDateForKeyword(endDate);
+			Date e = InternationalisationUtils.parseDate(endDate);
 			newEnd = e.getTime() + MILLIS_PER_DAY;
 		} catch (ParseException e) {
 			newEnd = null;
@@ -3902,7 +3332,7 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	private void updateMessageHistoryCost() {
 		Object messageTab = find(currentTab);
 		setText(find(messageTab, COMPONENT_LB_MSGS_NUMBER), String.valueOf(numberToSend));		
-		setText(find(messageTab, COMPONENT_LB_COST), InternationalisationUtils.formatCurrency(costPerSMS * numberToSend));
+		setText(find(messageTab, COMPONENT_LB_COST), InternationalisationUtils.formatCurrency(this.getCostPerSms() * numberToSend));
 	}
 
 	/**
@@ -4043,14 +3473,14 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 			activate(replyManagerDetails);
 			deactivate(keywordTextfield);
 		}
-		setText(find(replyManagerDetails, COMPONENT_TF_START_DATE), action == null ? "" : Dependants.DEFAULT_KEYWORD_ACTION_DATE_FORMAT.format(action.getStartDate()));
+		setText(find(replyManagerDetails, COMPONENT_TF_START_DATE), action == null ? "" : InternationalisationUtils.getDateFormat().format(action.getStartDate()));
 		Object endDate = find(replyManagerDetails, COMPONENT_TF_END_DATE);
 		String toSet = "";
 		if (action != null) {
 			if (action.getEndDate() == DEFAULT_END_DATE) {
 				toSet = InternationalisationUtils.getI18NString(COMMON_UNDEFINED);
 			} else {
-				toSet = Dependants.DEFAULT_KEYWORD_ACTION_DATE_FORMAT.format(action.getEndDate());
+				toSet = InternationalisationUtils.getDateFormat().format(action.getEndDate());
 			}
 		}
 		setText(endDate, toSet);
@@ -4081,15 +3511,15 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		LOG.debug("Start Date [" + startDate + "]");
 		LOG.debug("End Date [" + endDate + "]");
 		if (startDate.equals("")) {
-			LOG.debug("No start date set, so we set to [" + Dependants.DEFAULT_START_DATE + "]");
-			startDate = Dependants.DEFAULT_START_DATE;
+			LOG.debug("No start date set, so we set to [" + InternationalisationUtils.getDefaultStartDate() + "]");
+			startDate = InternationalisationUtils.getDefaultStartDate();
 		}
 		long start;
 		long end;
 		try {
-			Date ds = Utils.parseDateForKeyword(startDate); 
+			Date ds = InternationalisationUtils.parseDate(startDate); 
 			if (!endDate.equals("") && !endDate.equals(InternationalisationUtils.getI18NString(COMMON_UNDEFINED))) {
-				Date de = Utils.parseDateForKeyword(endDate);
+				Date de = InternationalisationUtils.parseDate(endDate);
 				if (!Utils.validateDates(ds, de)) {
 					LOG.debug("Start date is not before the end date");
 					alert(InternationalisationUtils.getI18NString(MESSAGE_START_DATE_AFTER_END));
@@ -4114,10 +3544,9 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 			action.setEndDate(end);
 		} else {
 			String newWordString = getText(find(replyManagerDetails, COMPONENT_REPLY_MANAGER_KEYWORD));
-			String[] keywordHierarchy = newWordString.split("\\s");
 			LOG.debug("Creating new auto_reply");
 			try {
-				action = KeywordAction.createReplyAction(keywordFactory.createKeywordsHierarchically(keywordHierarchy, "", classicMode), replyText, start, end);
+				action = KeywordAction.createReplyAction(createKeywordsHierarchically(newWordString, ""), replyText, start, end);
 				keywordActionFactory.saveKeywordAction(action);
 			} catch (DuplicateKeyException e) {
 				alert(InternationalisationUtils.getI18NString(MESSAGE_KEYWORD_EXISTS));
@@ -4135,7 +3564,7 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	 * 
 	 * @param status
 	 */
-	private synchronized void setStatus(String status) {
+	synchronized void setStatus(String status) {
 		LOG.debug("Status Text [" + status + "]");
 		setString(statusBarComponent, TEXT, status);
 	}
@@ -4151,7 +3580,7 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	 * @param title
 	 * @param callbackMethodName
 	 */
-	public void showGroupSelecter(Object actionObject, boolean addDatePanel, String title, String callbackMethodName, Object eventHandler) {
+	public void showGroupSelecter(Object actionObject, boolean addDatePanel, String title, String callbackMethodName, ThinletUiEventHandler eventHandler) {
 		System.out.println("UiGeneratorController.showGroupSelecter()");
 		System.out.println("actionObject: " + actionObject);
 		System.out.println("title: " + title);
@@ -4182,14 +3611,14 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		if (addDatePanel && actionObject instanceof KeywordAction) {
 			System.out.println("UiGeneratorController.showGroupSelecter() : ADDING THE DATES COMPONENT.");
 			KeywordAction action = (KeywordAction) actionObject;
-			setText(find(selecter, COMPONENT_TF_START_DATE), action == null ? "" : Dependants.DEFAULT_KEYWORD_ACTION_DATE_FORMAT.format(action.getStartDate()));
+			setText(find(selecter, COMPONENT_TF_START_DATE), action == null ? "" : InternationalisationUtils.getDateFormat().format(action.getStartDate()));
 			Object endDate = find(selecter, COMPONENT_TF_END_DATE);
 			String toSet = "";
 			if (action != null) {
 				if (action.getEndDate() == DEFAULT_END_DATE) {
 					toSet = InternationalisationUtils.getI18NString(COMMON_UNDEFINED);
 				} else {
-					toSet = Dependants.DEFAULT_KEYWORD_ACTION_DATE_FORMAT.format(action.getEndDate());
+					toSet = InternationalisationUtils.getDateFormat().format(action.getEndDate());
 				}
 			}
 			setText(endDate, toSet);
@@ -4216,8 +3645,8 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	 * @param attachment
 	 * @param handler
 	 */
-	public void showContactSelecter(String title, String callbackMethodName, Object attachment, Object handler) {
-		Object selecter = loadComponentFromFile(UI_FILE_CONTACT_SELECTER);
+	public void showContactSelecter(String title, String callbackMethodName, Object attachment, ThinletUiEventHandler handler) {
+		Object selecter = loadComponentFromFile(UI_FILE_CONTACT_SELECTER, handler);
 		setText(find(selecter, COMPONENT_CONTACT_SELECTER_TITLE), title);
 		Object contactList = find(selecter, COMPONENT_CONTACT_SELECTER_CONTACT_LIST);
 		setMethod(contactList, Thinlet.PERFORM, callbackMethodName, selecter, handler);
@@ -4252,13 +3681,6 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	 */
 	public void selectMessageRecipient() {
 		showContactSelecter(InternationalisationUtils.getI18NString(SENTENCE_SELECT_MESSAGE_RECIPIENT_TITLE), "sendConsole_setLoneRecipientTextfield(contactSelecter_contactList, contactSelecter)", null);
-	}
-
-	/**
-	 * Method invoked when the user decides to send a message specifically to one contact on the <b>Send</b> tab.
-	 */
-	public void selectMessageRecipientHome() {
-		showContactSelecter(InternationalisationUtils.getI18NString(SENTENCE_SELECT_MESSAGE_RECIPIENT_TITLE), "homeScreen_setRecipientTextfield(contactSelecter_contactList, contactSelecter)", null);
 	}
 	
 	public void selectSenderNumber() {
@@ -4303,36 +3725,6 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		setText(recipientTextfield, currentText);
 		remove(dialog);
 		LOG.trace("EXIT");
-	}
-	
-	public void homeScreen_sendSMS(String recipient, String text, Object panel) {
-		if (recipient.equals("")) {
-			alert(InternationalisationUtils.getI18NString(MESSAGE_BLANK_PHONE_NUMBER));
-			return;
-		} 
-		frontlineController.sendTextMessage(recipient, text);
-		clearMessageComponent(panel);
-	}
-	
-	/**
-	 * Sets the phone number of the selected contact.
-	 * 
-	 * @param contactSelecter_contactList
-	 * @param dialog
-	 */
-	public void homeScreen_setRecipientTextfield(Object contactSelecter_contactList, Object dialog) {
-		Object homeTab = find(currentTab);
-		Object tfRecipient = find(homeTab, COMPONENT_TF_RECIPIENT);
-		Object selectedItem = getSelectedItem(contactSelecter_contactList);
-		if (selectedItem == null) {
-			alert(InternationalisationUtils.getI18NString(MESSAGE_NO_CONTACT_SELECTED));
-			return;
-		}
-		Contact selectedContact = getContact(selectedItem);
-		setText(tfRecipient, selectedContact.getMsisdn());
-		remove(dialog);
-		numberToSend = 1;
-		updateCost();
 	}
 	
 	/**
@@ -4405,8 +3797,8 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		// reply to.
 		Object autoReplyForm = loadComponentFromFile(UI_FILE_NEW_KACTION_REPLY_FORM);
 		
-		Object pnMessage = loadComponentFromFile(UI_FILE_MESSAGE_PANEL);
-		// FIX 0000542
+		Object pnMessage = new MessagePanelController(this).getPanel();
+		// FIX 0000542 FIXME this comment is not useful - what is the fix?  or more importantly, what is the function of this code?
 		Object pnBottom = find(pnMessage, COMPONENT_PN_BOTTOM);
 		remove(getItem(pnBottom, 0));
 		Object senderPanel = loadComponentFromFile(UI_FILE_SENDER_NAME_PANEL);
@@ -4414,9 +3806,9 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		add(autoReplyForm, pnMessage, getItems(autoReplyForm).length - 3);
 		setMethod(find(senderPanel, COMPONENT_BT_SENDER_NAME), ATTRIBUTE_ACTION, "addConstantToCommand(tfMessage.text, tfMessage, 0)", autoReplyForm, this);
 		setMethod(find(senderPanel, "btSenderNumber"), ATTRIBUTE_ACTION, "addConstantToCommand(tfMessage.text, tfMessage, 1)", autoReplyForm, this);
-		// FIX 0000542
+		// FIX 0000542 FIXME this comment is not useful - what is the fix?  or more importantly, what is the function of this code?
 		setMethod(find(autoReplyForm, COMPONENT_BT_SAVE), ATTRIBUTE_ACTION, "do_newKActionReply(autoReplyForm, tfMessage.text)", autoReplyForm, this);
-		clearMessageComponent(pnMessage);
+
 		//Adds the date panel to it
 		addDatePanel(autoReplyForm);
 		Keyword keyword = getKeyword(getSelectedItem(keywordList));
@@ -4437,7 +3829,8 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		// reply to.
 		Object autoReplyForm = loadComponentFromFile(UI_FILE_NEW_KACTION_REPLY_FORM);
 		
-		Object pnMessage = loadComponentFromFile(UI_FILE_MESSAGE_PANEL);
+		MessagePanelController messagePanelController = new MessagePanelController(this);
+		Object pnMessage = messagePanelController.getPanel();
 		// FIX 0000542
 		Object pnBottom = find(pnMessage, COMPONENT_PN_BOTTOM);
 		remove(getItem(pnBottom, 0));
@@ -4456,16 +3849,16 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		setAttachedObject(autoReplyForm, action);
 		
 		setText(find(autoReplyForm, COMPONENT_TF_MESSAGE), action.getUnformattedReplyText());
-		messageChanged(pnMessage, action.getUnformattedReplyText());
+		messagePanelController.messageChanged(action.getUnformattedReplyText());
 		
-		setText(find(autoReplyForm, COMPONENT_TF_START_DATE), action == null ? "" : Dependants.DEFAULT_KEYWORD_ACTION_DATE_FORMAT.format(action.getStartDate()));
+		setText(find(autoReplyForm, COMPONENT_TF_START_DATE), action == null ? "" : InternationalisationUtils.getDateFormat().format(action.getStartDate()));
 		Object endDate = find(autoReplyForm, COMPONENT_TF_END_DATE);
 		String toSet = "";
 		if (action != null) {
 			if (action.getEndDate() == DEFAULT_END_DATE) {
 				toSet = InternationalisationUtils.getI18NString(COMMON_UNDEFINED);
 			} else {
-				toSet = Dependants.DEFAULT_KEYWORD_ACTION_DATE_FORMAT.format(action.getEndDate());
+				toSet = InternationalisationUtils.getDateFormat().format(action.getEndDate());
 			}
 		}
 		setText(endDate, toSet);
@@ -4665,14 +4058,14 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		addDatePanel(surveyForm);
 		setAttachedObject(surveyForm, action);
 		
-		setText(find(surveyForm, COMPONENT_TF_START_DATE), action == null ? "" : Dependants.DEFAULT_KEYWORD_ACTION_DATE_FORMAT.format(action.getStartDate()));
+		setText(find(surveyForm, COMPONENT_TF_START_DATE), action == null ? "" : InternationalisationUtils.getDateFormat().format(action.getStartDate()));
 		Object endDate = find(surveyForm, COMPONENT_TF_END_DATE);
 		String toSet = "";
 		if (action != null) {
 			if (action.getEndDate() == DEFAULT_END_DATE) {
 				toSet = InternationalisationUtils.getI18NString(COMMON_UNDEFINED);
 			} else {
-				toSet = Dependants.DEFAULT_KEYWORD_ACTION_DATE_FORMAT.format(action.getEndDate());
+				toSet = InternationalisationUtils.getDateFormat().format(action.getEndDate());
 			}
 		}
 		setText(endDate, toSet);
@@ -4704,14 +4097,14 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		setText(find(emailForm, COMPONENT_TF_MESSAGE), action.getUnformattedReplyText());
 		setText(find(emailForm, COMPONENT_TF_RECIPIENT), action.getEmailRecipients());
 		
-		setText(find(emailForm, COMPONENT_TF_START_DATE), action == null ? "" : Dependants.DEFAULT_KEYWORD_ACTION_DATE_FORMAT.format(action.getStartDate()));
+		setText(find(emailForm, COMPONENT_TF_START_DATE), action == null ? "" : InternationalisationUtils.getDateFormat().format(action.getStartDate()));
 		Object endDate = find(emailForm, COMPONENT_TF_END_DATE);
 		String toSet = "";
 		if (action != null) {
 			if (action.getEndDate() == DEFAULT_END_DATE) {
 				toSet = InternationalisationUtils.getI18NString(COMMON_UNDEFINED);
 			} else {
-				toSet = Dependants.DEFAULT_KEYWORD_ACTION_DATE_FORMAT.format(action.getEndDate());
+				toSet = InternationalisationUtils.getDateFormat().format(action.getEndDate());
 			}
 		}
 		setText(endDate, toSet);
@@ -4782,27 +4175,6 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 			add(table, getRow(acc));
 		}*/
 		add(smsServicesForm);
-	}
-	
-	
-	public void showIncomingNumberSettings() {
-		Object incomingNumberSettings = loadComponentFromFile(UI_FILE_INCOMING_NUMBER_SETTINGS_FORM);
-		PropertySet appProperties = PropertySet.load(PROPERTIES_APP);
-		String toRemove = appProperties.getProperty("incoming.msisdn.auto.remove");
-		String toAdd = appProperties.getProperty("incoming.msisdn.auto.add");
-		setText(find(incomingNumberSettings, "tfRemove"), toRemove);
-		setText(find(incomingNumberSettings, "tfAdd"), toAdd);
-		add(incomingNumberSettings);
-	}
-	
-	public void saveIncomingNumberSettings(Object dialog) {
-		PropertySet appProperties = PropertySet.load(PROPERTIES_APP);
-		String toRemove = getText(find(dialog, "tfRemove"));
-		String toAdd = getText(find(dialog, "tfAdd"));
-		appProperties.setProperty("incoming.msisdn.auto.remove", toRemove);
-		appProperties.setProperty("incoming.msisdn.auto.add", toAdd);
-		appProperties.saveToDisk();
-		remove(dialog);
 	}
 	
 	/**
@@ -5048,13 +4420,13 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		}
 		
 		//START and END dates
-		setString(find(externalCmdForm, COMPONENT_TF_START_DATE), TEXT, Dependants.DEFAULT_KEYWORD_ACTION_DATE_FORMAT.format(action.getStartDate()));
+		setString(find(externalCmdForm, COMPONENT_TF_START_DATE), TEXT, InternationalisationUtils.getDateFormat().format(action.getStartDate()));
 		Object endDate = find(externalCmdForm, COMPONENT_TF_END_DATE);
 		String toSet = "";
 		if (action.getEndDate() == DEFAULT_END_DATE) {
 			toSet = InternationalisationUtils.getI18NString(COMMON_UNDEFINED);
 		} else {
-			toSet = Dependants.DEFAULT_KEYWORD_ACTION_DATE_FORMAT.format(action.getEndDate());
+			toSet = InternationalisationUtils.getDateFormat().format(action.getEndDate());
 		}
 		setText(endDate, toSet);
 		add(externalCmdForm);
@@ -5121,47 +4493,18 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		}
 		setText(find(forwardForm, COMPONENT_FORWARD_FORM_TEXTAREA), action.getUnformattedForwardText());
 		
-		setText(find(forwardForm, COMPONENT_TF_START_DATE), action == null ? "" : Dependants.DEFAULT_KEYWORD_ACTION_DATE_FORMAT.format(action.getStartDate()));
+		setText(find(forwardForm, COMPONENT_TF_START_DATE), action == null ? "" : InternationalisationUtils.getDateFormat().format(action.getStartDate()));
 		Object endDate = find(forwardForm, COMPONENT_TF_END_DATE);
 		String toSet = "";
 		if (action != null) {
 			if (action.getEndDate() == DEFAULT_END_DATE) {
 				toSet = InternationalisationUtils.getI18NString(COMMON_UNDEFINED);
 			} else {
-				toSet = Dependants.DEFAULT_KEYWORD_ACTION_DATE_FORMAT.format(action.getEndDate());
+				toSet = InternationalisationUtils.getDateFormat().format(action.getEndDate());
 			}
 		}
 		setText(endDate, toSet);
 		add(forwardForm);
-	}
-	
-	/**
-	 * Enables or disables the <b>Edit Phone Settings</b>. 
-	 * <br>If the supplied list is not empty, then the option is enabled. Otherwise, it is disabled.
-	 * 
-	 * @param list
-	 * @param menuItem
-	 */
-	public void editPhoneEnabled(Object list, Object menuItem) {
-		setBoolean(menuItem, VISIBLE, getSelectedItem(list) != null);
-	}
-	
-	/**
-	 * Event fired when the view phone details action is chosen.
-	 */
-	public void showPhoneSettingsDialog(Object list) {
-		Object selected = getSelectedItem(list);
-		if (selected != null) {
-			SmsDevice selectedPhone = getDeviceHandler(selected);
-			if (isSmsModem(selectedPhone)) {
-				if (!((SmsModem) selectedPhone).isDisconnecting())
-					showPhoneSettingsDialog((SmsModem) selectedPhone, false);
-			} else {
-				// Http service.
-				SmsInternetServiceSettingsHandler serviceHandler = new SmsInternetServiceSettingsHandler(this);
-				serviceHandler.showConfigureService((SmsInternetService) selectedPhone, null);
-			}
-		}
 	}
 	
 	public void showEmailAccountDialog(Object list) {
@@ -5194,592 +4537,6 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		setAttachedObject(settingsDialog, acc);
 		add(settingsDialog);
 	}
-	
-	public void phoneManagerDetailsUse(Object phoneSettingsDialog, Object radioButton) {
-		Object pnPhoneSettings = find(phoneSettingsDialog, COMPONENT_PN_PHONE_SETTINGS);
-		if(COMPONENT_RB_PHONE_DETAILS_ENABLE.equals(getName(radioButton))) {
-			activate(pnPhoneSettings);
-			// If this phone does not support SMS receiving, we need to pass this info onto
-			// the user.  We also want to gray out the options for receiving.
-			SmsModem modem = (SmsModem) getDeviceHandler(phoneSettingsDialog);
-			if(!modem.supportsReceive()) {
-				setEnabled(find(pnPhoneSettings, COMPONENT_PHONE_RECEIVING), false);
-				setEnabled(find(pnPhoneSettings, COMPONENT_PHONE_DELETE), false);
-			}
-		} else deactivate(pnPhoneSettings);
-	}
-	
-	public void phoneManagerDetailsCheckboxChanged(Object checkbox) {
-		setBoolean(getNextItem(getParent(checkbox), checkbox, false), ENABLED, isSelected(checkbox));
-	}
-	
-	/**
-	 * Event fired when the view phone details action is chosen.
-	 */
-	public void showPhoneSettingsDialog(SmsModem phone, boolean isNewPhone) {
-		Object phoneSettingsDialog = loadComponentFromFile(UI_FILE_PHONE_SETTINGS_FORM);
-		setText(phoneSettingsDialog, InternationalisationUtils.getI18NString(COMMON_SETTINGS_FOR_PHONE) + " '" + phone.getModel() + "'");
-		
-		if(!isNewPhone) {
-			boolean useForSending = phone.isUseForSending();
-			boolean useForReceiving = phone.isUseForReceiving();
-			
-			if(useForSending || useForReceiving) {
-				setSelected(find(phoneSettingsDialog, COMPONENT_PHONE_SENDING), useForSending);
-				Object cbDeliveryReports = find(phoneSettingsDialog, COMPONENT_PHONE_DELIVERY_REPORTS);
-				if(!useForSending) setBoolean(cbDeliveryReports, ENABLED, false);
-				setSelected(cbDeliveryReports, phone.isUseDeliveryReports());
-				setSelected(find(phoneSettingsDialog, COMPONENT_PHONE_RECEIVING), useForReceiving);
-				Object cbDeleteMessages = find(phoneSettingsDialog, COMPONENT_PHONE_DELETE);
-				if(!useForReceiving) setBoolean(cbDeleteMessages, ENABLED, false);
-				setSelected(cbDeleteMessages, phone.isDeleteMessagesAfterReceiving());
-			} else {
-				setSelected(find(phoneSettingsDialog, "rbPhoneDetailsDisable"), true);
-				setSelected(find(phoneSettingsDialog, COMPONENT_RB_PHONE_DETAILS_ENABLE), false);
-				deactivate(find(phoneSettingsDialog, COMPONENT_PN_PHONE_SETTINGS));
-			}
-		}
-		
-		if(!phone.supportsReceive()) {
-			// If this phone does not support SMS receiving, we need to pass this info onto
-			// the user.  We also want to gray out the options for receiving.
-			setEnabled(find(phoneSettingsDialog, COMPONENT_PHONE_RECEIVING), false);
-			setEnabled(find(phoneSettingsDialog, COMPONENT_PHONE_DELETE), false);
-		} else {
-			// No error, so remove the error message.
-			remove(find(phoneSettingsDialog, "lbReceiveNotSupported"));
-		}
-		
-		setAttachedObject(phoneSettingsDialog, phone);
-		add(phoneSettingsDialog);
-	}
-	
-	/**
-	 * Event fired when the view phone details action is chosen.  We save the details
-	 * of the phone to the database.
-	 */
-	public void updatePhoneDetails(Object dialog) {
-		SmsModem phone = (SmsModem) getDeviceHandler(dialog);
-		String serial = phone.getSerial();
-
-		boolean useForSending;
-		boolean useDeliveryReports;
-		boolean useForReceiving;
-		boolean deleteMessagesAfterReceiving;
-		if(isSelected(find(dialog, COMPONENT_RB_PHONE_DETAILS_ENABLE))) {
-			useForSending = isSelected(find(dialog, COMPONENT_PHONE_SENDING));
-			useDeliveryReports = isSelected(find(dialog, COMPONENT_PHONE_DELIVERY_REPORTS));
-			useForReceiving = isSelected(find(dialog, COMPONENT_PHONE_RECEIVING));
-			deleteMessagesAfterReceiving = isSelected(find(dialog, COMPONENT_PHONE_DELETE));
-		} else {
-			useForSending = false;
-			useDeliveryReports = false;
-			useForReceiving = false;
-			deleteMessagesAfterReceiving = false;
-		}
-		
-		phone.setUseForSending(useForSending);
-		phone.setUseDeliveryReports(useDeliveryReports);
-		if(phone.supportsReceive()) {
-			phone.setUseForReceiving(useForReceiving);
-			phone.setDeleteMessagesAfterReceiving(deleteMessagesAfterReceiving);
-		} else {
-			useForReceiving = false;
-			deleteMessagesAfterReceiving = false;
-		}
-		
-		SmsModemSettings settings = this.phoneDetailsManager.getSmsModemSettings(serial);
-		if(settings != null) {
-			settings.setDeleteMessagesAfterReceiving(deleteMessagesAfterReceiving);
-			settings.setUseDeliveryReports(useDeliveryReports);
-			settings.setUseForReceiving(useForReceiving);
-			settings.setUseForSending(useForSending);
-			this.phoneDetailsManager.updateSmsModemSettings(settings);
-		} else {
-			settings = new SmsModemSettings(serial, useForSending, useForReceiving, deleteMessagesAfterReceiving, useDeliveryReports);
-			this.phoneDetailsManager.saveSmsModemSettings(settings);
-		}
-		
-		// Phone settings may have changed.  As we're now displaying these on the table, we
-		// need to update the table.
-		refreshPhonesViews();
-		
-		removeDialog(dialog);
-	}
-	
-	/**
-	 * Removes the export wizard dialog.
-	 */
-	public void removeWizard() {
-		removeDialog(find(COMPONENT_EXPORT_WIZARD_DIALOG));
-	}
-	
-	/**
-	 * Import data from FrontlineSMS .csv data files.
-	 * @param dataPath
-	 */
-	public void doImport(Object dialog, String dataPath) {
-		CsvImporter.importContacts(dataPath, contactFactory);
-		removeDialog(dialog);
-		if (currentTab.equals(TAB_CONTACT_MANAGER)
-				|| currentTab.equals(TAB_GROUP_MANAGER)) {
-			updateGroupList();
-			if (classicMode) {
-				classicMode_refreshContactManager();
-			} else {
-				updateContactList();
-			}
-		}
-	}
-	
-	/**
-	 * Executes the export action.
-	 */
-	public void doExport() {
-		LOG.trace("ENTER");
-		Object exportDialog = find(COMPONENT_EXPORT_WIZARD_DIALOG);
-		Object attachment = getAttachedObject(exportDialog);
-		String filename = getText(find(exportDialog, COMPONENT_TF_FILENAME));
-		if (filename.equals("")) {
-			LOG.debug("Filename is blank.");
-			alert(InternationalisationUtils.getI18NString(MESSAGE_NO_FILENAME));
-			LOG.trace("EXIT");
-			return;
-		}
-		LOG.debug("Filename is [" + filename + "] before [" + CSV_EXTENSION + "] check.");
-		if (!filename.endsWith(CSV_EXTENSION)) {
-			filename += CSV_EXTENSION;
-		}
-		LOG.debug("Filename is [" + filename + "] after [" + CSV_EXTENSION + "] check.");
-		
-		if (attachment != null && !(attachment instanceof Integer)) {
-			LOG.debug("Exporting selected objects...");
-			doExportSelected(exportDialog, filename, (Object[])attachment);
-			LOG.trace("EXIT");
-			return;
-		}
-		
-		Integer exportType = (Integer) attachment;
-		
-		if (exportType == 0) {
-			//CONTACTS
-			LOG.debug("Exporting all contacts..");
-			String rowFormat = getRowFormatForContact(exportDialog);
-			if (!rowFormat.equals("")) {
-				rowFormat = rowFormat.substring(0, rowFormat.length() - 1);
-			} else {
-				alert(InternationalisationUtils.getI18NString(MESSAGE_NO_FIELD_SELECTED));
-				LOG.trace("EXIT");
-				return;
-			}
-			LOG.debug("Row Format [" + rowFormat + "]");
-			try {
-				CsvExporter.exportContacts(new File(filename), contactFactory.getAllContacts(), rowFormat);
-				setStatus(InternationalisationUtils.getI18NString(MESSAGE_EXPORT_TASK_SUCCESSFUL));
-			} catch (IOException e) {
-				LOG.debug(InternationalisationUtils.getI18NString(MESSAGE_EXPORT_TASK_FAILED), e);
-				alert(InternationalisationUtils.getI18NString(MESSAGE_EXPORT_TASK_FAILED));
-			} finally {
-				removeDialog(exportDialog);
-			}
-		} else if (exportType == 1) {
-			//MESSAGES
-			LOG.debug("Exporting all messages..");
-			String rowFormat = getRowFormatForMessage(exportDialog);
-			if (!rowFormat.equals("")) {
-				rowFormat = rowFormat.substring(0, rowFormat.length() - 1);
-			} else {
-				alert(InternationalisationUtils.getI18NString(MESSAGE_NO_FIELD_SELECTED));
-				LOG.trace("EXIT");
-				return;
-			}
-			LOG.debug("Row Format [" + rowFormat + "]");
-			try {
-				CsvExporter.exportMessages(new File(filename), messageFactory.getAllMessages(), rowFormat, contactFactory);
-				setStatus(InternationalisationUtils.getI18NString(MESSAGE_EXPORT_TASK_SUCCESSFUL));
-			} catch (IOException e) {
-				LOG.debug(InternationalisationUtils.getI18NString(MESSAGE_EXPORT_TASK_FAILED), e);
-				alert(InternationalisationUtils.getI18NString(MESSAGE_EXPORT_TASK_FAILED));
-			} finally {
-				removeDialog(exportDialog);
-			}
-		} else {
-			//KEYWORDS
-			LOG.debug("Exporting all keywords..");
-			boolean sent = isSelected(find(exportDialog, COMPONENT_CB_SENT));
-			boolean received = isSelected(find(exportDialog, COMPONENT_CB_RECEIVED));
-			
-			int type = -1;
-			if (sent && received) { 
-				type = Message.TYPE_ALL;
-			} else if (sent) {
-				type = Message.TYPE_OUTBOUND;
-			} else if (received) {
-				type = Message.TYPE_RECEIVED;
-			}
-			LOG.debug("Message Type [" + type + "]");
-			String rowFormat = getRowFormatForKeyword(exportDialog, type);
-			if (!rowFormat.equals("")) {
-				rowFormat = rowFormat.substring(0, rowFormat.length() - 1);
-			} else {
-				alert(InternationalisationUtils.getI18NString(MESSAGE_NO_FIELD_SELECTED));
-				LOG.trace("EXIT");
-				return;
-			}
-			LOG.debug("Row Format [" + rowFormat + "]");
-			try {
-				CsvExporter.exportKeywords(new File(filename), keywordFactory.getAllKeywords(), rowFormat, contactFactory, messageFactory, type);
-				setStatus(InternationalisationUtils.getI18NString(MESSAGE_EXPORT_TASK_SUCCESSFUL));
-			} catch (IOException e) {
-				LOG.debug(InternationalisationUtils.getI18NString(MESSAGE_EXPORT_TASK_FAILED), e);
-				alert(InternationalisationUtils.getI18NString(MESSAGE_EXPORT_TASK_FAILED));
-			} finally {
-				removeDialog(exportDialog);
-			}
-			LOG.trace("EXIT");
-		}
-	}
-
-	/**
-	 * Exports information about the previous selected objects.
-	 * 
-	 * @param exportDialog Holds the information regarding the export row format (Contact.Name, Contact.Sender, etc).
-	 * @param filename The file to be created with the export data.
-	 * @param selected The selected objects to be exported.
-	 */
-	private void doExportSelected(Object exportDialog, String filename, Object[] selected) {
-		LOG.trace("ENTER");
-		Object att = getAttachedObject(selected[0]);
-		if (att instanceof Contact) {
-			//CONTACTS
-			LOG.debug("Exporting selected contacts...");
-			String rowFormat = getRowFormatForContact(exportDialog);
-			if (!rowFormat.equals("")) {
-				rowFormat = rowFormat.substring(0, rowFormat.length() - 1);
-			} else {
-				alert(InternationalisationUtils.getI18NString(MESSAGE_NO_FIELD_SELECTED));
-				LOG.trace("EXIT");
-				return;
-			}
-			LOG.debug("Row Format [" + rowFormat + "]");
-			try {
-				List<Contact> contacts = new LinkedList<Contact>();
-				for (Object o : selected) {
-					contacts.add(getContact(o));
-				}
-				CsvExporter.exportContacts(new File(filename), contacts, rowFormat);
-				setStatus(InternationalisationUtils.getI18NString(MESSAGE_EXPORT_TASK_SUCCESSFUL));
-			} catch (IOException e) {
-				LOG.debug("Export task failed.", e);
-				alert(InternationalisationUtils.getI18NString(MESSAGE_EXPORT_TASK_FAILED));
-			} finally {
-				removeDialog(exportDialog);
-			}
-		} else if (att instanceof Message) {
-			//MESSAGES
-			LOG.debug("Exporting selected messages...");
-			String rowFormat = getRowFormatForMessage(exportDialog);
-			if (!rowFormat.equals("")) {
-				rowFormat = rowFormat.substring(0, rowFormat.length() - 1);
-			} else {
-				alert(InternationalisationUtils.getI18NString(MESSAGE_NO_FIELD_SELECTED));
-				LOG.trace("EXIT");
-				return;
-			}
-			LOG.debug("Row Format [" + rowFormat + "]");
-			try {
-				List<Message> messages = new LinkedList<Message>();
-				for (Object o : selected) {
-					Object atta = getAttachedObject(o);
-					messages.add((Message) atta);
-				}
-				CsvExporter.exportMessages(new File(filename), messages, rowFormat, contactFactory);
-				setStatus(InternationalisationUtils.getI18NString(MESSAGE_EXPORT_TASK_SUCCESSFUL));
-			} catch (IOException e) {
-				LOG.debug(InternationalisationUtils.getI18NString(MESSAGE_EXPORT_TASK_FAILED), e);
-				alert(InternationalisationUtils.getI18NString(MESSAGE_EXPORT_TASK_FAILED));
-			} finally {
-				removeDialog(exportDialog);
-			}
-		} else {
-			//KEYWORDS
-			LOG.debug("Exporting selected keywords...");
-			boolean sent = isSelected(find(exportDialog, COMPONENT_CB_SENT));
-			boolean received = isSelected(find(exportDialog, COMPONENT_CB_RECEIVED));
-			
-			int type = -1;
-			if (sent && received) { 
-				type = Message.TYPE_ALL;
-			} else if (sent) {
-				type = Message.TYPE_OUTBOUND;
-			} else if (received) {
-				type = Message.TYPE_RECEIVED;
-			}
-			LOG.debug("Message Type [" + type + "]");
-			String rowFormat = getRowFormatForKeyword(exportDialog, type);
-			if (!rowFormat.equals("")) {
-				rowFormat = rowFormat.substring(0, rowFormat.length() - 1);
-			} else {
-				alert(InternationalisationUtils.getI18NString(MESSAGE_NO_FIELD_SELECTED));
-				LOG.trace("EXIT");
-				return;
-			}
-			LOG.debug("Row Format [" + rowFormat + "]");
-
-			try {
-				List<Keyword> keywords = new LinkedList<Keyword>();
-				for (Object o : selected) {
-					Object atta = getAttachedObject(o);
-					keywords.add((Keyword) atta);
-				}
-				CsvExporter.exportKeywords(new File(filename), keywords, rowFormat, contactFactory, messageFactory, type);
-				setStatus(InternationalisationUtils.getI18NString(MESSAGE_EXPORT_TASK_SUCCESSFUL));
-			} catch (IOException e) {
-				LOG.debug(InternationalisationUtils.getI18NString(MESSAGE_EXPORT_TASK_FAILED), e);
-				alert(InternationalisationUtils.getI18NString(MESSAGE_EXPORT_TASK_FAILED));
-			} finally {
-				removeDialog(exportDialog);
-			}
-		}
-		LOG.trace("EXIT");
-	}
-
-	/**
-	 * Creates an export row format for keywords.
-	 * 
-	 * @param exportDialog
-	 * @return
-	 */
-	private String getRowFormatForKeyword(Object exportDialog, int type) {
-		boolean exportContactName = isSelected(find(exportDialog, COMPONENT_CB_CONTACT_NAME));
-		boolean exportContactOtherPhone = isSelected(find(exportDialog, COMPONENT_CB_CONTACT_OTHER_NUMBER));
-		boolean exportContactEmail = isSelected(find(exportDialog, COMPONENT_CB_CONTACT_EMAIL));
-		boolean exportContactNotes = isSelected(find(exportDialog, COMPONENT_CB_CONTACT_NOTES));
-		boolean exportKeyword = isSelected(find(exportDialog, COMPONENT_CB_KEYWORD));
-		boolean exportDescription = isSelected(find(exportDialog, COMPONENT_CB_DESCRIPTION));
-		boolean exportDate = isSelected(find(exportDialog, COMPONENT_CB_DATE));
-		boolean exportSender = isSelected(find(exportDialog, COMPONENT_CB_SENDER));
-		boolean exportRecipient = isSelected(find(exportDialog, COMPONENT_CB_RECIPIENT));
-		boolean exportContent = isSelected(find(exportDialog, COMPONENT_CB_CONTENT));
-		
-		StringBuilder rowFormat = new StringBuilder("");
-		if (exportKeyword) {
-			rowFormat.append(MARKER_KEYWORD_KEY + ",");
-		}
-		if (exportDescription) {
-			rowFormat.append(MARKER_KEYWORD_DESCRIPTION + ",");
-		}
-
-		if (type != -1) {
-			if (type == Message.TYPE_ALL) {
-				rowFormat.append(MARKER_MESSAGE_TYPE + ",");
-			}
-			if (exportDate) {
-				rowFormat.append(MARKER_MESSAGE_DATE + ",");
-			}
-			if (exportContent) {
-				rowFormat.append(MARKER_MESSAGE_CONTENT + ",");
-			}
-			if (exportSender) {
-				rowFormat.append(MARKER_SENDER_NUMBER + ",");
-			}
-			if (exportRecipient) {
-				rowFormat.append(MARKER_RECIPIENT_NUMBER + ",");
-			}
-			if (exportContactName) {
-				rowFormat.append(MARKER_CONTACT_NAME + ",");
-			}
-			if (exportContactOtherPhone) {
-				rowFormat.append(MARKER_CONTACT_OTHER_PHONE + ",");
-			}
-			if (exportContactEmail) {
-				rowFormat.append(MARKER_CONTACT_EMAIL + ",");
-			}
-			if (exportContactNotes) {
-				rowFormat.append(MARKER_CONTACT_NOTES + ",");
-			} 
-		}
-		return rowFormat.toString();
-	}
-	
-	/**
-	 * Creates an export row format for messages.
-	 * 
-	 * @param exportDialog
-	 * @return
-	 */
-	private String getRowFormatForMessage(Object exportDialog) {
-		boolean exportContactName = isSelected(find(exportDialog, COMPONENT_CB_CONTACT_NAME));
-		boolean exportContactOtherPhone = isSelected(find(exportDialog, COMPONENT_CB_CONTACT_OTHER_NUMBER));
-		boolean exportContactEmail = isSelected(find(exportDialog, COMPONENT_CB_CONTACT_EMAIL));
-		boolean exportContactNotes = isSelected(find(exportDialog, COMPONENT_CB_CONTACT_NOTES));
-		boolean exportType = isSelected(find(exportDialog, COMPONENT_CB_TYPE));
-		boolean exportStatus = isSelected(find(exportDialog, COMPONENT_CB_STATUS));
-		boolean exportDate = isSelected(find(exportDialog, COMPONENT_CB_DATE));
-		boolean exportSender = isSelected(find(exportDialog, COMPONENT_CB_SENDER));
-		boolean exportRecipient = isSelected(find(exportDialog, COMPONENT_CB_RECIPIENT));
-		boolean exportContent = isSelected(find(exportDialog, COMPONENT_CB_CONTENT));
-		
-		StringBuilder rowFormat = new StringBuilder("");
-		if (exportType) {
-			rowFormat.append(MARKER_MESSAGE_TYPE + ",");
-		}
-		if (exportStatus) {
-			rowFormat.append(MARKER_MESSAGE_STATUS + ",");
-		}
-		if (exportDate) {
-			rowFormat.append(MARKER_MESSAGE_DATE + ",");
-		}
-		if (exportContent) {
-			rowFormat.append(MARKER_MESSAGE_CONTENT + ",");
-		}
-		if (exportSender) {
-			rowFormat.append(MARKER_SENDER_NUMBER + ",");
-		}
-		if (exportRecipient) {
-			rowFormat.append(MARKER_RECIPIENT_NUMBER + ",");
-		}
-		if (exportContactName) {
-			rowFormat.append(MARKER_CONTACT_NAME + ",");
-		}
-		if (exportContactOtherPhone) {
-			rowFormat.append(MARKER_CONTACT_OTHER_PHONE + ",");
-		}
-		if (exportContactEmail) {
-			rowFormat.append(MARKER_CONTACT_EMAIL + ",");
-		}
-		if (exportContactNotes) {
-			rowFormat.append(MARKER_CONTACT_NOTES + ",");
-		}
-		return rowFormat.toString();
-	}
-	
-	/**
-	 * Creates an export row format for forms.
-	 * 
-	 * @param exportDialog
-	 * @return
-	 */
-	private String getRowFormatForForm(Object exportDialog) {
-		boolean exportContactName = isSelected(find(exportDialog, COMPONENT_CB_CONTACT_NAME));
-		boolean exportContactOtherPhone = isSelected(find(exportDialog, COMPONENT_CB_CONTACT_OTHER_NUMBER));
-		boolean exportContactEmail = isSelected(find(exportDialog, COMPONENT_CB_CONTACT_EMAIL));
-		boolean exportContactNotes = isSelected(find(exportDialog, COMPONENT_CB_CONTACT_NOTES));
-		
-		StringBuilder rowFormat = new StringBuilder("");
-		if (exportContactName) {
-			rowFormat.append(MARKER_CONTACT_NAME + ",");
-		}
-		if (exportContactOtherPhone) {
-			rowFormat.append(MARKER_CONTACT_OTHER_PHONE + ",");
-		}
-		if (exportContactEmail) {
-			rowFormat.append(MARKER_CONTACT_EMAIL + ",");
-		}
-		if (exportContactNotes) {
-			rowFormat.append(MARKER_CONTACT_NOTES + ",");
-		}
-		return rowFormat.toString();
-	}
-	
-	/**
-	 * Creates an export row format for contacts.
-	 * 
-	 * @param exportDialog
-	 * @return
-	 */
-	private String getRowFormatForContact(Object exportDialog) {
-		boolean exportName = isSelected(find(exportDialog, COMPONENT_CB_NAME));
-		boolean exportPhone = isSelected(find(exportDialog, COMPONENT_CB_PHONE));
-		boolean exportOtherPhone = isSelected(find(exportDialog, COMPONENT_CB_OTHER_PHONE));
-		boolean exportEmail = isSelected(find(exportDialog, COMPONENT_CB_EMAIL));
-		boolean exportStatus = isSelected(find(exportDialog, COMPONENT_CB_STATUS));
-		boolean exportNotes = isSelected(find(exportDialog, COMPONENT_CB_NOTES));
-		boolean exportGroups = isSelected(find(exportDialog, COMPONENT_CB_GROUPS));
-		
-		StringBuilder rowFormat = new StringBuilder("");
-		if (exportName) {
-			rowFormat.append(MARKER_CONTACT_NAME + ",");
-		}
-		if (exportPhone) {
-			rowFormat.append(MARKER_CONTACT_PHONE + ",");
-		}
-		if (exportOtherPhone) {
-			rowFormat.append(MARKER_CONTACT_OTHER_PHONE + ",");
-		}
-		if (exportEmail) {
-			rowFormat.append(MARKER_CONTACT_EMAIL + ",");
-		}
-		if (exportStatus) {
-			rowFormat.append(MARKER_CONTACT_STATUS + ",");
-		}
-		if (exportNotes) {
-			rowFormat.append(MARKER_CONTACT_NOTES + ",");
-		}
-		if (exportGroups) {
-			rowFormat.append(MARKER_CONTACT_GROUPS + ",");
-		}
-		return rowFormat.toString();
-	}
-	
-	/**
-	 * <b>Event fired when the user finishes the filename selection. </b>
-	 * <br>We've got two different kind of exports, one can be found in the survey analyst tab, 
-	 * while the other one come from the reply manager tab. The only difference between them,
-	 * is the type of messages that will be exported.
-	 * 
-	 * @param exportDialog Holds the type of this export.
-	 * @param filename The file to be created with the export information.
-	 */
-	public void do_export(Object exportDialog, String filename) {
-		LOG.trace("ENTER");
-		String type = (String) getAttachedObject(exportDialog);
-		LOG.debug("Type [" + type + "]");
-		LOG.debug("Filename is [" + filename + "] before [" + CSV_EXTENSION + "] check.");
-		if (!filename.endsWith(CSV_EXTENSION)) {
-			filename += CSV_EXTENSION;
-		}
-		List<Message> messages = null;
-		LOG.debug("Filename is [" + filename + "] after [" + CSV_EXTENSION + "] check.");
-		KeywordAction action = null;
-		if (type.equals(COMPONENT_SURVEY_ANALYST_EXPORT_BUTTON)) {
-			//Survey analyst export: We need to export the received messages
-			Object replyManagerList = find(COMPONENT_ANALYST_KEYWORD_LIST);
-			Object selected = getSelectedItem(replyManagerList);
-			if (selected == null) {
-				//No object selected, nothing to export.
-				remove(exportDialog);
-				LOG.debug("Nothing selected to export.");
-				LOG.trace("EXIT");
-				return;
-			}
-			action = getKeywordAction(selected);
-		} else if (type.equals(COMPONENT_REPLY_MANAGER_EXPORT_BUTTON)){
-			//Reply manager export: We need to export the outgoing messages
-			Object replyManager_keywordList = find(COMPONENT_REPLY_MANAGER_LIST);
-			Object selected = getSelectedItem(replyManager_keywordList);
-			if (selected == null) {
-				//No object selected, nothing to export.
-				remove(exportDialog);
-				LOG.debug("Nothing selected to export.");
-				LOG.trace("EXIT");
-				return;
-			}
-			action = getKeywordAction(selected);
-		}
-		messages = messageFactory.getMessagesForAction(action);
-		try {
-			CsvExporter.export(filename, messages, contactFactory);
-		} catch(IOException ex) {
-			LOG.info("Export to [" + filename + "] failed.");
-			LOG.debug("Export to [" + filename + "] failed.", ex);
-			alert(InternationalisationUtils.getI18NString(MESSAGE_EXPORT_TASK_FAILED));
-			return;
-		}
-		setStatus(InternationalisationUtils.getI18NString(MESSAGE_EXPORTED_MESSAGES_TO_FILE) + ": '" + filename + "'");
-		remove(exportDialog);
-		LOG.trace("EXIT");
-	}
 
 	/**
 	 * This method is used to show an export dialog, where the user can select the
@@ -5804,15 +4561,15 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 			LOG.debug("Start Date [" + startDate + "]");
 			LOG.debug("End Date [" + endDate + "]");
 			if (startDate.equals("")) {
-				LOG.debug("No start date set, so we set to [" + Dependants.DEFAULT_START_DATE + "]");
-				startDate = Dependants.DEFAULT_START_DATE;
+				LOG.debug("No start date set, so we set to [" + InternationalisationUtils.getDefaultStartDate() + "]");
+				startDate = InternationalisationUtils.getDefaultStartDate();
 			}
 			long start;
 			long end;
 			try {
-				Date ds = Utils.parseDateForKeyword(startDate); 
+				Date ds = InternationalisationUtils.parseDate(startDate); 
 				if (!endDate.equals("") && !endDate.equals(InternationalisationUtils.getI18NString(COMMON_UNDEFINED))) {
-					Date de = Utils.parseDateForKeyword(endDate);
+					Date de = InternationalisationUtils.parseDate(endDate);
 					if (!Utils.validateDates(ds, de)) {
 						LOG.debug("Start date is not before the end date");
 						alert(InternationalisationUtils.getI18NString(MESSAGE_START_DATE_AFTER_END));
@@ -5882,15 +4639,15 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		LOG.debug("Start Date [" + startDate + "]");
 		LOG.debug("End Date [" + endDate + "]");
 		if (startDate.equals("")) {
-			LOG.debug("No start date set, so we set to [" + Dependants.DEFAULT_START_DATE + "]");
-			startDate = Dependants.DEFAULT_START_DATE;
+			LOG.debug("No start date set, so we set to [" + InternationalisationUtils.getDefaultStartDate() + "]");
+			startDate = InternationalisationUtils.getDefaultStartDate();
 		}
 		long start;
 		long end;
 		try {
-			Date ds = Utils.parseDateForKeyword(startDate); 
+			Date ds = InternationalisationUtils.parseDate(startDate); 
 			if (!endDate.equals("") && !endDate.equals(InternationalisationUtils.getI18NString(COMMON_UNDEFINED))) {
-				Date de = Utils.parseDateForKeyword(endDate);
+				Date de = InternationalisationUtils.parseDate(endDate);
 				if (!Utils.validateDates(ds, de)) {
 					LOG.debug("Start date is not before the end date");
 					alert(InternationalisationUtils.getI18NString(MESSAGE_START_DATE_AFTER_END));
@@ -5958,15 +4715,15 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		LOG.debug("Start Date [" + startDate + "]");
 		LOG.debug("End Date [" + endDate + "]");
 		if (startDate.equals("")) {
-			LOG.debug("No start date set, so we set to [" + Dependants.DEFAULT_START_DATE + "]");
-			startDate = Dependants.DEFAULT_START_DATE;
+			LOG.debug("No start date set, so we set to [" + InternationalisationUtils.getDefaultStartDate() + "]");
+			startDate = InternationalisationUtils.getDefaultStartDate();
 		}
 		long start;
 		long end;
 		try {
-			Date ds = Utils.parseDateForKeyword(startDate); 
+			Date ds = InternationalisationUtils.parseDate(startDate); 
 			if (!endDate.equals("") && !endDate.equals(InternationalisationUtils.getI18NString(COMMON_UNDEFINED))) {
-				Date de = Utils.parseDateForKeyword(endDate);
+				Date de = InternationalisationUtils.parseDate(endDate);
 				if (!Utils.validateDates(ds, de)) {
 					LOG.debug("Start date is not before the end date");
 					alert(InternationalisationUtils.getI18NString(MESSAGE_START_DATE_AFTER_END));
@@ -6170,15 +4927,15 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		LOG.debug("Start Date [" + startDate + "]");
 		LOG.debug("End Date [" + endDate + "]");
 		if (startDate.equals("")) {
-			LOG.debug("No start date set, so we set to [" + Dependants.DEFAULT_START_DATE + "]");
-			startDate = Dependants.DEFAULT_START_DATE;
+			LOG.debug("No start date set, so we set to [" + InternationalisationUtils.getDefaultStartDate() + "]");
+			startDate = InternationalisationUtils.getDefaultStartDate();
 		}
 		long start;
 		long end;
 		try {
-			Date ds = Utils.parseDateForKeyword(startDate); 
+			Date ds = InternationalisationUtils.parseDate(startDate); 
 			if (!endDate.equals("") && !endDate.equals(InternationalisationUtils.getI18NString(COMMON_UNDEFINED))) {
-				Date de = Utils.parseDateForKeyword(endDate);
+				Date de = InternationalisationUtils.parseDate(endDate);
 				if (!Utils.validateDates(ds, de)) {
 					LOG.debug("Start date is not before the end date");
 					alert(InternationalisationUtils.getI18NString(MESSAGE_START_DATE_AFTER_END));
@@ -6226,15 +4983,15 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		LOG.debug("Start Date [" + startDate + "]");
 		LOG.debug("End Date [" + endDate + "]");
 		if (startDate.equals("")) {
-			LOG.debug("No start date set, so we set to [" + Dependants.DEFAULT_START_DATE + "]");
-			startDate = Dependants.DEFAULT_START_DATE;
+			LOG.debug("No start date set, so we set to [" + InternationalisationUtils.getDefaultStartDate() + "]");
+			startDate = InternationalisationUtils.getDefaultStartDate();
 		}
 		long start;
 		long end;
 		try {
-			Date ds = Utils.parseDateForKeyword(startDate); 
+			Date ds = InternationalisationUtils.parseDate(startDate); 
 			if (!endDate.equals("") && !endDate.equals(InternationalisationUtils.getI18NString(COMMON_UNDEFINED))) {
-				Date de = Utils.parseDateForKeyword(endDate);
+				Date de = InternationalisationUtils.parseDate(endDate);
 				if (!Utils.validateDates(ds, de)) {
 					LOG.debug("Start date is not before the end date");
 					alert(InternationalisationUtils.getI18NString(MESSAGE_START_DATE_AFTER_END));
@@ -6275,14 +5032,14 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	 * Adds the $sender to the text, allowing the user to forward the sender.
 	 */
 	public void addSenderToForwardMessage(String currentText, Object textArea) {
-		setText(textArea, currentText + ' ' + MARKER_SENDER_NAME);
+		setText(textArea, currentText + ' ' + CsvUtils.MARKER_SENDER_NAME);
 	}
 
 	/**
 	 * Adds the $content to the text, allowing the user to forward the message content.
 	 */
 	public void addMsgContentToForwardMessage(String currentText, Object textArea) {
-		setText(textArea, currentText + ' ' + MARKER_MESSAGE_CONTENT);
+		setText(textArea, currentText + ' ' + CsvUtils.MARKER_MESSAGE_CONTENT);
 	}
 	/**
 	 * Creates a new join group action.
@@ -6314,15 +5071,15 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		LOG.debug("Start Date [" + startDate + "]");
 		LOG.debug("End Date [" + endDate + "]");
 		if (startDate.equals("")) {
-			LOG.debug("No start date set, so we set to [" + Dependants.DEFAULT_START_DATE + "]");
-			startDate = Dependants.DEFAULT_START_DATE;
+			LOG.debug("No start date set, so we set to [" + InternationalisationUtils.getDefaultStartDate() + "]");
+			startDate = InternationalisationUtils.getDefaultStartDate();
 		}
 		long start;
 		long end;
 		try {
-			Date ds = Utils.parseDateForKeyword(startDate); 
+			Date ds = InternationalisationUtils.parseDate(startDate); 
 			if (!endDate.equals("") && !endDate.equals(InternationalisationUtils.getI18NString(COMMON_UNDEFINED))) {
-				Date de = Utils.parseDateForKeyword(endDate);
+				Date de = InternationalisationUtils.parseDate(endDate);
 				if (!Utils.validateDates(ds, de)) {
 					LOG.debug("Start date is not before the end date");
 					alert(InternationalisationUtils.getI18NString(MESSAGE_START_DATE_AFTER_END));
@@ -6365,25 +5122,22 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		LOG.trace("EXIT");
 	}
 	
-	private void updateCost() {
+	/*
+	 * Presumably this should be part of the messaging panel controller 
+	 */
+	public void updateCost() {
 		if (currentTab.equals(TAB_MESSAGE_HISTORY)) {
 			updateMessageHistoryCost();
-		} else {
-			Object current = find(currentTab);
-			Object field = find(current, COMPONENT_TF_MESSAGE);
-			if (field != null) {
-				messageChanged(current, getText(field));
-			}
 		}
 	}
 
 	// FIXME fire this on textfield lostFocus or textfield execution (<return> pressed)
 	public void costChanged(String cost) {
-		if (cost.length() == 0) costPerSMS = 0;
+		if (cost.length() == 0) this.setCostPerSms(0);
 		else {
 			try {
 				double costPerSMS = (InternationalisationUtils.parseCurrency(cost))/* * Utils.TIMES_TO_INT*/;//FIXME this will likely give some very odd costs - needs adjusting for moving decimal point.
-				UiGeneratorController.costPerSMS = costPerSMS;
+				this.setCostPerSms(costPerSMS);
 			} catch (ParseException e) {
 				alert("Did not understand currency value: " + cost + ".  Should be of the form: " + InternationalisationUtils.formatCurrency(123456.789)); // TODO i18n
 			} 
@@ -6391,9 +5145,16 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		updateCost();
 	}
 	
+	/**
+	 * Method called when an event is fired and should be added to the event list on the home tab.
+	 * @param newEvent New instance of {@link Event} to be added to the list.
+	 * TODO this should be handled by the {@link HomeTabController}
+	 */
 	public void newEvent(Event newEvent) {
-		if(!classicMode) {
-			if (getItems(eventListComponent).length >= EVENTS_LIMIT) {
+		// TODO addition of the item to the event list should be done in the HomeTabController
+		Object eventListComponent = find(COMPONENT_EVENTS_LIST);
+		if(eventListComponent != null) {
+			if (getItems(eventListComponent).length >= HomeTabController.EVENTS_LIMIT) {
 				remove(getItem(eventListComponent, 0));
 			}
 			add(eventListComponent, getRow(newEvent));
@@ -6431,7 +5192,7 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		setIcon(cell, icon);
 		add(row, cell);
 		add(row, createTableCell(newEvent.getDescription()));
-		add(row, createTableCell(Dependants.DEFAULT_MESSAGE_DATE_FORMAT.format(newEvent.getTime())));
+		add(row, createTableCell(InternationalisationUtils.getDatetimeFormat().format(newEvent.getTime())));
 		return row;
 	}
 
@@ -6451,22 +5212,22 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		String toAdd = "";
 		switch (type) {
 			case 0:
-				toAdd = MARKER_SENDER_NAME;
+				toAdd = CsvUtils.MARKER_SENDER_NAME;
 				break;
 			case 1:
-				toAdd = MARKER_SENDER_NUMBER;
+				toAdd = CsvUtils.MARKER_SENDER_NUMBER;
 				break;
 			case 2:
-				toAdd = MARKER_MESSAGE_CONTENT;
+				toAdd = CsvUtils.MARKER_MESSAGE_CONTENT;
 				break;
 			case 3:
-				toAdd = MARKER_KEYWORD_KEY;
+				toAdd = CsvUtils.MARKER_KEYWORD_KEY;
 				break;
 			case 4:
-				toAdd = MARKER_COMMAND_RESPONSE;
+				toAdd = CsvUtils.MARKER_COMMAND_RESPONSE;
 				break;
 			case 5:
-				toAdd = MARKER_SMS_ID;
+				toAdd = CsvUtils.MARKER_SMS_ID;
 				break;
 		}
 		LOG.debug("Setting [" + currentText + toAdd + "] to component [" + textArea + "]");
@@ -6476,12 +5237,12 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	}
 
 	public void setEmailFocusOwner(Object obj) {
-		objFocused = obj;
+		emailTabFocusOwner = obj;
 	}
 	
 	public void addConstantToEmailDialog(Object tfSubject, Object tfMessage, int type) {
 		Object toSet = tfMessage;
-		Object focused = objFocused;
+		Object focused = emailTabFocusOwner;
 		if (focused.equals(tfSubject)) {
 			toSet = tfSubject;
 		}
@@ -6500,12 +5261,12 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		Object endTextField = find(panel, COMPONENT_TF_END_DATE);
 		if (att != null) {
 			if (live) {
-				setText(startTextField, Dependants.DEFAULT_START_DATE);
-				if (getString(endTextField, Thinlet.TEXT).equals(Dependants.DEFAULT_START_DATE)) {
+				setText(startTextField, InternationalisationUtils.getDefaultStartDate());
+				if (getString(endTextField, Thinlet.TEXT).equals(InternationalisationUtils.getDefaultStartDate())) {
 					setText(endTextField, "");
 				}
 			} else {
-				setText(endTextField, Dependants.DEFAULT_START_DATE);
+				setText(endTextField, InternationalisationUtils.getDefaultStartDate());
 			}
 		}
 	}
@@ -6537,13 +5298,13 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		LOG.debug("Creating keyword [" + newKeyword + "] with description [" + description + "]");
 		Keyword keyword;
 		try {
-			keyword = keywordFactory.createKeywordsHierarchically(newKeyword.trim().split(" "), description, classicMode);
+			keyword = createKeywordsHierarchically(newKeyword, description);
 		} catch (DuplicateKeyException e) {
 			alert(InternationalisationUtils.getI18NString(MESSAGE_KEYWORD_EXISTS));
 			LOG.trace("EXIT");
 			return;
 		}
-		add(keywordListComponent, createListItem(keyword));
+		updateKeywordList();
 		remove(formPanel);
 		LOG.trace("EXIT");
 	}
@@ -6608,14 +5369,9 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	 * Writes to the property file the current window size.
 	 */
 	private void saveWindowSize() {
-		PropertySet uiProperties = PropertySet.load(PROPERTIES_UI);
-		if (frameLauncher.getExtendedState() == Frame.MAXIMIZED_BOTH) {
-			uiProperties.setProperty(PROPERTIES_WINDOW_STATE, WINDOW_STATE_MAXIMISED);
-		} else {
-			uiProperties.setProperty(PROPERTIES_WINDOW_WIDTH, String.valueOf(frameLauncher.getBounds().width));
-			uiProperties.setProperty(PROPERTIES_WINDOW_HEIGHT, String.valueOf(frameLauncher.getBounds().height));
-			uiProperties.setProperty(PROPERTIES_WINDOW_STATE, WINDOW_STATE_NORMAL);
-		}
+		UiProperties uiProperties = UiProperties.getInstance();
+		uiProperties.setWindowState(frameLauncher.getExtendedState() == Frame.MAXIMIZED_BOTH,
+				frameLauncher.getBounds().width, frameLauncher.getBounds().height);
 		uiProperties.saveToDisk();
 	}
 	
@@ -6623,19 +5379,10 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	 * Writes to the property file the current window size.
 	 */
 	private void savePropertiesBeforeChangingMode(boolean newMode) {
-		PropertySet uiProperties = PropertySet.load(PROPERTIES_UI);
-		if (newMode) {
-			uiProperties.setProperty(PROPERTIES_VIEW_MODE, CLASSIC_MODE);
-		} else {
-			uiProperties.setProperty(PROPERTIES_VIEW_MODE, NEW_MODE);
-		}
-		if (frameLauncher.getExtendedState() == Frame.MAXIMIZED_BOTH) {
-			uiProperties.setProperty(PROPERTIES_WINDOW_STATE, WINDOW_STATE_MAXIMISED);
-		} else {
-			uiProperties.setProperty(PROPERTIES_WINDOW_WIDTH, String.valueOf(frameLauncher.getBounds().width));
-			uiProperties.setProperty(PROPERTIES_WINDOW_HEIGHT, String.valueOf(frameLauncher.getBounds().height));
-			uiProperties.setProperty(PROPERTIES_WINDOW_STATE, WINDOW_STATE_NORMAL);
-		}
+		UiProperties uiProperties = UiProperties.getInstance();
+		uiProperties.setViewModeClassic(!newMode);
+		uiProperties.setWindowState(frameLauncher.getExtendedState() == Frame.MAXIMIZED_BOTH,
+				frameLauncher.getBounds().width, frameLauncher.getBounds().height);
 		uiProperties.saveToDisk();
 	}
 	
@@ -6719,7 +5466,7 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	 * @param component
 	 * @return
 	 */
-	private KeywordAction getKeywordAction(Object component) {
+	KeywordAction getKeywordAction(Object component) {
 		Object obj = getAttachedObject(component);
 		if (obj == null) return null;
 		else if (obj instanceof KeywordAction) {
@@ -6755,8 +5502,8 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		String key = keyword.getKeywordString().length() == 0 ? "<" + InternationalisationUtils.getI18NString(COMMON_BLANK) + ">" : keyword.getKeywordString();
 		add(row, createTableCell(key));
 		add(row, createTableCell(KeywordAction.KeywordUtils.getReplyText(action, DEMO_SENDER, DEMO_SENDER_MSISDN, DEMO_MESSAGE_TEXT_INCOMING, DEMO_MESSAGE_KEYWORD)));
-		add(row, createTableCell(Dependants.DEFAULT_KEYWORD_ACTION_DATE_FORMAT.format(action.getStartDate())));
-		if (action.getEndDate() != DEFAULT_END_DATE) add(row, createTableCell(Dependants.DEFAULT_KEYWORD_ACTION_DATE_FORMAT.format(action.getEndDate())));
+		add(row, createTableCell(InternationalisationUtils.getDateFormat().format(action.getStartDate())));
+		if (action.getEndDate() != DEFAULT_END_DATE) add(row, createTableCell(InternationalisationUtils.getDateFormat().format(action.getEndDate())));
 		else add(row, createTableCell(InternationalisationUtils.getI18NString(COMMON_UNDEFINED)));
 		add(row, createTableCell(Integer.toString(action.getCounter())));
 		return row;
@@ -6779,36 +5526,37 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		String key = keyword.getKeywordString().length() == 0 ? "<" + InternationalisationUtils.getI18NString(COMMON_BLANK) + ">" : keyword.getKeywordString();
 		add(surveyRow, createTableCell(key));
 		add(surveyRow, createTableCell(keyword.getDescription()));
-		add(surveyRow, createTableCell(Dependants.DEFAULT_KEYWORD_ACTION_DATE_FORMAT.format(action.getStartDate())));
-		if (action.getEndDate() != DEFAULT_END_DATE) add(surveyRow, createTableCell(Dependants.DEFAULT_KEYWORD_ACTION_DATE_FORMAT.format(action.getEndDate())));
+		add(surveyRow, createTableCell(InternationalisationUtils.getDateFormat().format(action.getStartDate())));
+		if (action.getEndDate() != DEFAULT_END_DATE) add(surveyRow, createTableCell(InternationalisationUtils.getDateFormat().format(action.getEndDate())));
 		else add(surveyRow, createTableCell(InternationalisationUtils.getI18NString(COMMON_UNDEFINED)));
 		add(surveyRow, createTableCell(Integer.toString(action.getCounter())));
 		return surveyRow;
 	}
-
 	/**
 	 * Creates a node for the supplied group, creating nodes for its sub-groups and contacts as well.
 	 * 
 	 * @param group The group to be put into a node.
-	 * @param showContactsNumber TODO
+	 * @param showContactsNumber set <code>true</code> to show the number of contacts per group in the node's text or <code>false</code> otherwise
+	 *   TODO removing this argument, and treating it as always <code>false</code> speeds up the contact tab a lot
 	 * @return
 	 */
 	public Object getNode(Group group, boolean showContactsNumber) {
 		LOG.trace("ENTER");
-		// Create the node for this Group
 		
 		LOG.debug("Group [" + group.getName() + "]");
 		
 		String toSet = group.getName();
-		if (showContactsNumber)
+		if (showContactsNumber) {
 			toSet += " (" + group.getAllMembers().size() + ")";
+		}
 		
 		Object node = createNode(toSet, group);
 
-		if ((getBoolean(node, EXPANDED) && group.hasDescendants()) || group == this.rootGroup)
+		if ((getBoolean(node, EXPANDED) && group.hasDescendants()) || group == this.rootGroup) {
 			setIcon(node, Icon.FOLDER_OPEN);
-		else 
+		} else {
 			setIcon(node, Icon.FOLDER_CLOSED);
+		}
 		
 		if (group.equals(this.unnamedContacts)) {
 			setString(node, TOOLTIP, InternationalisationUtils.getI18NString(TOOLTIP_UNNAMED_GROUP));
@@ -6961,7 +5709,7 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		int index = getSelectedIndex(keywordListComponent);
 		long startDate;
 		try {
-			startDate = Utils.parseDateForKeyword(Dependants.DEFAULT_START_DATE).getTime();
+			startDate = InternationalisationUtils.parseDate(InternationalisationUtils.getDefaultStartDate()).getTime();
 		} catch (ParseException e) {
 			LOG.debug("We never should get this", e);
 			LOG.trace("EXIT");
@@ -6975,13 +5723,13 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 			//Adding keyword as well as actions
 			String newkeyword = getText(find(panel, COMPONENT_TF_KEYWORD));
 			try {
-				keyword = keywordFactory.createKeywordsHierarchically(newkeyword.trim().split(" "), "", classicMode);
+				keyword = createKeywordsHierarchically(newkeyword, "");
 			} catch (DuplicateKeyException e) {
 				alert(InternationalisationUtils.getI18NString(MESSAGE_KEYWORD_EXISTS));
 				LOG.trace("EXIT");
 				return;
 			}
-			add(keywordListComponent, createListItem(keyword));
+			updateKeywordList();
 			reply = keywordSimple_getAutoReply(panel);
 			join = keywordSimple_getJoin(panel);
 			leave = keywordSimple_getLeave(panel);
@@ -7148,8 +5896,8 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 
 		String senderDisplayName = getSenderDisplayValue(message);
 		
-		add(row, createTableCell(getMessageStatusAsString(message.getStatus())));
-		add(row, createTableCell(Dependants.DEFAULT_MESSAGE_DATE_FORMAT.format(message.getDate())));
+		add(row, createTableCell(getMessageStatusAsString(message)));
+		add(row, createTableCell(InternationalisationUtils.getDatetimeFormat().format(message.getDate())));
 		add(row, createTableCell(senderDisplayName));
 		add(row, createTableCell(recipientDisplayName));
 		add(row, createTableCell(message.getTextContent()));
@@ -7190,7 +5938,7 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 
 		String recipientDisplayName = getRecipientDisplayValue(message);
 		
-		add(row, createTableCell(Dependants.DEFAULT_MESSAGE_DATE_FORMAT.format(message.getDate())));
+		add(row, createTableCell(InternationalisationUtils.getDatetimeFormat().format(message.getDate())));
 		add(row, createTableCell(senderDisplayName));
 		add(row, createTableCell(recipientDisplayName));
 		add(row, createTableCell(message.getTextContent()));
@@ -7218,36 +5966,6 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		Object sendConsole_groupList = find(COMPONENT_SEND_CONSOLE_GROUP_TREE);
 		removeAll(sendConsole_groupList);
 		add(sendConsole_groupList, getNode(this.rootGroup, true));
-	}
-	
-	public void stopDetection(Object list) {
-		SmsDevice dev = getDeviceHandler(getSelectedItem(list));
-		if (isSmsModem(dev)) {
-			SmsModem modem = (SmsModem) dev;
-			phoneManager.stopDetection(modem.getPort());
-			
-		}
-		refreshPhonesViews();
-	}
-	
-	public void phoneManager_enabledFields(Object popUp, Object list) {
-		Object selected = getSelectedItem(list);
-		if (selected == null) {
-			setBoolean(popUp, VISIBLE, false);
-		} else {
-			SmsDevice dev = getDeviceHandler(selected);
-			if (isSmsModem(dev)) {
-				SmsModem modem = (SmsModem) dev;
-				setBoolean(find(popUp, "miEditPhone"), VISIBLE, false);
-				setBoolean(find(popUp, "miAutoConnect"), VISIBLE, !modem.isDetecting() && !modem.isTryToConnect());
-				setBoolean(find(popUp, "miManualConnection"), VISIBLE, !modem.isDetecting() && !modem.isTryToConnect());
-				setBoolean(find(popUp, "miCancelDetection"), VISIBLE, modem.isDetecting());
-			} else {
-				for (Object o : getItems(popUp)) {
-					setVisible(o, getName(o).equals("miEditPhone") || getName(o).equals("miAutoConnect"));
-				}
-			}
-		}
 	}
 
 	/**
@@ -7306,8 +6024,8 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 
 		String senderDisplayName = getSenderDisplayValue(message);
 		
-		add(row, createTableCell(getMessageStatusAsString(message.getStatus())));
-		add(row, createTableCell(Dependants.DEFAULT_MESSAGE_DATE_FORMAT.format(message.getDate())));
+		add(row, createTableCell(getMessageStatusAsString(message)));
+		add(row, createTableCell(InternationalisationUtils.getDatetimeFormat().format(message.getDate())));
 		add(row, createTableCell(senderDisplayName));
 		add(row, createTableCell(recipientDisplayName));
 		add(row, createTableCell(message.getTextContent()));
@@ -7315,9 +6033,59 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		return row;
 	}
 	
-	public static final String getMessageStatusAsString(int messageStatus) {
-		return Dependants.MESSAGE_STATI[messageStatus];
+	/**
+	 * Get the status of a {@link Message} as a {@link String}.
+	 * @param message
+	 * @return {@link String} representation of the status.
+	 */
+	public static final String getMessageStatusAsString(Message message) {
+		switch(message.getStatus()) {
+			case Message.STATUS_DRAFT:
+				return "(draft)";
+			case Message.STATUS_RECEIVED:
+				return InternationalisationUtils.getI18NString(COMMON_RECEIVED);
+			case Message.STATUS_OUTBOX:
+				return InternationalisationUtils.getI18NString(COMMON_OUTBOX);
+			case Message.STATUS_PENDING:
+				return InternationalisationUtils.getI18NString(COMMON_PENDING);
+			case Message.STATUS_SENT:
+				return InternationalisationUtils.getI18NString(COMMON_SENT);
+			case Message.STATUS_DELIVERED:
+				return InternationalisationUtils.getI18NString(COMMON_DELIVERED);
+			case Message.STATUS_KEEP_TRYING:
+				return InternationalisationUtils.getI18NString(COMMON_RETRYING);
+			case Message.STATUS_ABORTED:
+				return "(aborted)";
+			case Message.STATUS_FAILED:
+				return InternationalisationUtils.getI18NString(COMMON_FAILED);
+			case Message.STATUS_UNKNOWN:
+			default:
+				return "(unknown)";
+		}
 	}
+	
+	/**
+	 * Get the status of a {@link Email} as a {@link String}.
+	 * @param email
+	 * @return {@link String} representation of the status.
+	 */
+	public static final String getEmailStatusAsString(Email email) {
+		switch(email.getStatus()) {
+		case Email.STATUS_OUTBOX:
+			return InternationalisationUtils.getI18NString(COMMON_OUTBOX);
+		case Email.STATUS_PENDING:
+			return InternationalisationUtils.getI18NString(COMMON_PENDING);
+		case Email.STATUS_SENT:
+			return InternationalisationUtils.getI18NString(COMMON_SENT);
+		case Email.STATUS_RETRYING:
+			return InternationalisationUtils.getI18NString(COMMON_RETRYING);
+		case Email.STATUS_FAILED:
+			return InternationalisationUtils.getI18NString(COMMON_FAILED);
+		default:
+			return "(unknown)";
+		}
+	}
+	
 	/**
 	 * Creates a row for the supplied phone for the <b>Send</b> tab.
 	 * 
@@ -7515,73 +6283,7 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		return ret.toString();
 	}
 
-	/**
-	 * Gets a table row Thinlet UI Component for the supplied handset.  This table row
-	 * is designed for display on the Phone Manager's handset list.  The PhoneHandler
-	 * object is attached to the component, and the component's icon is set appropriately.
-	 * @param handset
-	 * @return
-	 */
-	private Object phoneManager_getRow(SmsDevice dev, boolean isConnected) {
-		Object row = createTableRow(dev);
-
-// FIXME these now share getMsisdn() code.
-		String statusString, fromMsisdn, makeAndModel, serial, port, baudRate;
-		String icon;
-		if (isSmsModem(dev)) {
-			SmsModem handset = (SmsModem) dev;
-			if(handset.isConnected()) {
-				icon = Icon.LED_GREEN;
-			} else if(handset.isPhonePresent()) {
-				icon = Icon.LED_AMBER;
-			} else {
-				icon = Icon.LED_RED;
-			}
-
-			port = handset.getPort();
-			baudRate = Integer.toString(handset.getBaudRate());
-			fromMsisdn = handset.getMsisdn();
-			makeAndModel = Utils.getManufacturerAndModel(handset.getManufacturer(), handset.getModel());
-			serial = handset.getSerial();
-			
-			statusString = handset.getStatusString();
-		} else {
-			SmsInternetService serv = (SmsInternetService) dev;
-			if(serv.isConnected()) {
-				icon = Icon.LED_GREEN;
-			} else {
-				icon = Icon.LED_RED;
-			}
-			
-			port = serv.isEncrypted() ? "HTTPS" : "HTTP";
-			baudRate = "";
-			fromMsisdn = serv.getMsisdn();
-			makeAndModel = SmsInternetServiceSettingsHandler.getProviderName(serv.getClass());
-			serial = serv.getIdentifier();
-			statusString = serv.getStatusString();
-		}
-
-		// Add "status cell" - "traffic light" showing how functional the device is
-		Object statusCell = createTableCell("");
-		setIcon(statusCell, icon);
-		add(row, statusCell);
-
-		table_addCells(row, new String[]{port, baudRate, fromMsisdn, makeAndModel, serial});
-		
-		if (isConnected) {
-			Object useForSendingCell = createTableCell("");
-			if (dev.isUseForSending()) setIcon(useForSendingCell, Icon.TICK);
-			add(row, useForSendingCell);
-			Object useForReceiveCell = createTableCell("");
-			if (dev.isUseForReceiving()) setIcon(useForReceiveCell, Icon.TICK);
-			add(row, useForReceiveCell);
-		}
-		add(row, createTableCell(statusString));
-		
-		return row;
-	}
-	
-	private void table_addCells(Object tableRow, String[] cellContents) {
+	public void table_addCells(Object tableRow, String[] cellContents) {
 		for(String s : cellContents) add(tableRow, createTableCell(s));
 	}
 
@@ -7693,9 +6395,9 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		setIcon(cell, icon);
 		add(row, cell);
 		add(row, createTableCell(getActionDescription(action)));
-		add(row, createTableCell(Dependants.DEFAULT_KEYWORD_ACTION_DATE_FORMAT.format(action.getStartDate())));
+		add(row, createTableCell(InternationalisationUtils.getDateFormat().format(action.getStartDate())));
 		if (action.getEndDate() != DEFAULT_END_DATE) {
-			add(row, createTableCell(Dependants.DEFAULT_KEYWORD_ACTION_DATE_FORMAT.format(action.getEndDate())));
+			add(row, createTableCell(InternationalisationUtils.getDateFormat().format(action.getEndDate())));
 		} else {
 			add(row, createTableCell(InternationalisationUtils.getI18NString(COMMON_UNDEFINED)));
 		}
@@ -7716,7 +6418,7 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	 */
 	private Object getAnalystRow(Message message, String sender) {
 		Object row = createTableRow(message);
-		add(row, createTableCell(Dependants.DEFAULT_MESSAGE_DATE_FORMAT.format(message.getDate())));
+		add(row, createTableCell(InternationalisationUtils.getDatetimeFormat().format(message.getDate())));
 		add(row, createTableCell(sender));
 		Keyword key = getKeyword(getSelectedItem(find(COMPONENT_ANALYST_KEYWORD_LIST)));
 		String content = message.getTextContent();
@@ -7735,8 +6437,6 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		Object row = createTableRow(message);
 
 		String icon;
-		String senderDisplayName = getSenderDisplayValue(message);
-		String recipientDisplayName = getRecipientDisplayValue(message);
 		if (message.getType() == Message.TYPE_RECEIVED) {
 			icon = Icon.SMS_RECEIVE;
 		} else {
@@ -7746,12 +6446,11 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		Object iconCell = createTableCell("");
 		setIcon(iconCell, icon);
 		add(row, iconCell);
-		add(row, createTableCell(getMessageStatusAsString(message.getStatus())));
-		add(row, createTableCell(Dependants.DEFAULT_MESSAGE_DATE_FORMAT.format(message.getDate())));
-		add(row, createTableCell(senderDisplayName));
-		add(row, createTableCell(recipientDisplayName));
+		add(row, createTableCell(getMessageStatusAsString(message)));
+		add(row, createTableCell(InternationalisationUtils.getDatetimeFormat().format(message.getDate())));
+		add(row, createTableCell(message.getSenderMsisdn()));
+		add(row, createTableCell(message.getRecipientMsisdn()));
 		add(row, createTableCell(message.getTextContent()));
-
 		return row;
 	}
 
@@ -7798,11 +6497,11 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	private Object getRow(Email email) {
 		Object row = createTableRow(email);
 
-		add(row, createTableCell(getMessageStatusAsString(email.getStatus())));
+		add(row, createTableCell(getEmailStatusAsString(email)));
 		if (email.getDate() == DEFAULT_END_DATE) {
 			add(row, createTableCell(""));
 		} else {
-			add(row, createTableCell(Dependants.DEFAULT_MESSAGE_DATE_FORMAT.format(email.getDate())));
+			add(row, createTableCell(InternationalisationUtils.getDatetimeFormat().format(email.getDate())));
 		}
 		add(row, createTableCell(email.getEmailFrom().getAccountName()));
 		add(row, createTableCell(email.getEmailRecipients()));
@@ -7834,8 +6533,8 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		} else if (currentTab.equals(TAB_RECEIVE_CONSOLE)) {
 			receiveConsole_refresh();
 			setStatus(InternationalisationUtils.getI18NString(MESSAGE_MESSAGES_LOADED));
-		} else if (currentTab.equals(TAB_CLASSIC_PHONE_MANAGER) || currentTab.equals(TAB_ADVANCED_PHONE_MANAGER)) {
-			phoneManager_refreshModemList();
+		} else if (currentTab.equals(TAB_ADVANCED_PHONE_MANAGER)) {
+			this.phoneTabController.refreshPhonesViews();
 			setStatus(InternationalisationUtils.getI18NString(MESSAGE_MODEM_LIST_UPDATED));
 		} else if (currentTab.equals(TAB_MESSAGE_TRACKER)) {
 			messageTracker_refresh();
@@ -7898,7 +6597,6 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	}
 
 	private void updateGroup(Group group, Object node) {
-		setText(node, group.getName() + " (" + group.getAllMembers().size() + ")");
 		if (getBoolean(node, EXPANDED) && group.hasDescendants())
 			setIcon(node, Icon.FOLDER_OPEN);
 		else 
@@ -8010,8 +6708,8 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	}
 	
 	public void changeLanguage(Object menuItem) {
-		PropertySet appProperties = PropertySet.load(PROPERTIES_APP);
-		appProperties.setProperty(PROPERTIES_LANGUAGE_FILENAME, getAttachedObject(menuItem).toString());
+		AppProperties appProperties = AppProperties.getInstance();
+		appProperties.setLanguageFilename(getAttachedObject(menuItem).toString());
 		appProperties.saveToDisk();
 		reloadUI(false);
 	}
@@ -8030,7 +6728,8 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	
 	public void showAboutScreen() {
 		Object about = loadComponentFromFile(UI_FILE_ABOUT_PANEL);
-		setText(find(about, "version"), Dependants.TEXT_VERSION);
+		String version = InternationalisationUtils.getI18NString(FrontlineSMSConstants.I18N_APP_VERSION, BuildProperties.getInstance().getVersion());
+		setText(find(about, "version"), version);
 		add(about);
 	}
 
@@ -8074,48 +6773,48 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	}
 	
 	public void switchToPhonesTab() {
-		changeTab(classicMode ? TAB_CLASSIC_PHONE_MANAGER : TAB_ADVANCED_PHONE_MANAGER);
+		changeTab(TAB_ADVANCED_PHONE_MANAGER);
 	}
 	
 	public void tabsChanged(Object menuItem) {
 		Object tabbedPane = find(COMPONENT_TABBED_PANE);
 		String name = getName(menuItem);
 		boolean selected = isSelected(menuItem);
-		String key = "";
-		String value = String.valueOf(selected);
+		String tabName = "";
 		if (selected) {
 			// Add a tab
 			if (name.equals(COMPONENT_MI_HOME)) {
-				addHomeTab(tabbedPane);
-				key = "hometab";
+				add(new HomeTabController(this).getTab());
+				tabName = "hometab";
 			} else if (name.equals(COMPONENT_MI_KEYWORD)) {
 				addKeywordsTab(tabbedPane);
-				key = "keywordstab";
+				tabName = "keywordstab";
 			} else if (name.equals(COMPONENT_MI_EMAIL)) {
 				addEmailsTab(tabbedPane);
-				key = "emailstab";
+				tabName = "emailstab";
 			}
 		} else {
 			Object tab = null;
 			// Remove a tab
 			if (name.equals(COMPONENT_MI_HOME)) {
 				tab = find(tabbedPane, TAB_HOME);
-				key = "hometab";
+				tabName = "hometab";
 			} else if (name.equals(COMPONENT_MI_KEYWORD)) {
 				tab = find(tabbedPane, TAB_KEYWORD_MANAGER);
-				key = "keywordstab";
+				tabName = "keywordstab";
 			} else if (name.equals(COMPONENT_MI_EMAIL)) {
 				tab = find(tabbedPane, TAB_EMAIL_LOG);
-				key = "emailstab";
+				tabName = "emailstab";
 			}
 			if (tab != null) {
 				remove(tab);
 				setInteger(tabbedPane, SELECTED, 0);
 			}
 		}
-		key += ".visible";
-		PropertySet uiProperties = PropertySet.load(PROPERTIES_UI);
-		uiProperties.setProperty(key, value);
+		
+		// Save tab visibility to disk
+		UiProperties uiProperties = UiProperties.getInstance();
+		uiProperties.setTabVisible(tabName, selected);
 		uiProperties.saveToDisk();
 	}
 	
@@ -8271,6 +6970,31 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	}
 
 //> ACCESSORS
+	/** @return {@link #phoneManager} */
+	public SmsDeviceManager getPhoneManager() {
+		return this.phoneManager;
+	}
+	/** @return {@link #phoneDetailsManager} */
+	public SmsModemSettingsDao getPhoneDetailsManager() {
+		return phoneDetailsManager;
+	}
+	
+	/** return {@link #classicMode} */
+	public boolean isClassicView() {
+		return this.classicMode;
+	}
+	
+	/** @return Cost set per SMS message */
+	public double getCostPerSms() {
+		return UiProperties.getInstance().getCostPerSms();
+	}
+	/** @param costPerSMS new value for {@link #costPerSMS} */
+	private void setCostPerSms(double costPerSms) {
+		UiProperties properties = UiProperties.getInstance();
+		properties.setCostPerSms(costPerSms);
+		properties.saveToDisk();
+	}
+	
 	/** @return the current tab as an object component */
 	public Object getCurrentTab() {
 		return this.find(this.currentTab);
@@ -8294,7 +7018,7 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		return this.groupDao.getAllGroups();
 	}
     
-	public SmsInternetServiceSettingsDao getSmsInternetServiceSettingsFactory() {
+	public SmsInternetServiceSettingsDao getSmsInternetServiceSettingsDao() {
 		return frontlineController.getSmsInternetServiceSettingsDao();
 	}
 	
@@ -8304,5 +7028,35 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	
 	public void addSmsInternetService(SmsInternetService smsInternetService) {
 		this.phoneManager.addSmsInternetService(smsInternetService);
+	}
+
+	/**
+	 * 
+	 * @param keywordHierarchy
+	 * @param description
+	 * @return
+	 * @throws DuplicateKeyException If by some strange chance, the keyword we are trying to create already exists.
+	 */
+	@Transactional
+	private Keyword createKeywordsHierarchically(String keywordHierarchy, String description) throws DuplicateKeyException {
+		Keyword parent = this.keywordFactory.getFromMessageText(keywordHierarchy);
+		if(parent != null) {
+			keywordHierarchy = keywordHierarchy.substring(parent.getKeywordString().length()).trim();
+		}
+		
+		String[] keywordTexts = keywordHierarchy.split(" ");
+		for (int i = 0; i < keywordTexts.length; i++) {
+			String keywordText = keywordTexts[i];
+			Keyword keyword = new Keyword(parent, keywordText, "");
+			
+			// If this is the final keyword in the hierarchy, we need to add a description to it
+			if(i == keywordTexts.length-1) {
+				keyword.setDescription(description);
+			}
+			
+			this.keywordFactory.saveKeyword(keyword);
+			parent = keyword;
+		}
+		return parent;
 	}
 }

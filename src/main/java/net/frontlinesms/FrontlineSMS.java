@@ -25,26 +25,21 @@ import java.util.*;
 import net.frontlinesms.data.*;
 import net.frontlinesms.data.domain.*;
 import net.frontlinesms.data.repository.*;
-import net.frontlinesms.data.repository.memory.*;
-import net.frontlinesms.listener.EmailListener;
-import net.frontlinesms.listener.IncomingMessageListener;
-import net.frontlinesms.listener.SmsListener;
-import net.frontlinesms.listener.UIListener;
+import net.frontlinesms.listener.*;
 import net.frontlinesms.plugins.PluginController;
-import net.frontlinesms.properties.PropertySet;
 import net.frontlinesms.resources.ResourceUtils;
-import net.frontlinesms.smsdevice.SmsDevice;
-import net.frontlinesms.smsdevice.SmsDeviceManager;
-import net.frontlinesms.smsdevice.SmsInternetService;
-import net.frontlinesms.smsdevice.SmsModem;
-
-import com.ushahidi.plugins.mapping.data.domain.*;
-import com.ushahidi.plugins.mapping.data.repository.*;
+import net.frontlinesms.smsdevice.*;
+import net.frontlinesms.smsdevice.internet.SmsInternetService;
 
 import org.apache.log4j.Logger;
 import org.smslib.CIncomingMessage;
+import org.springframework.beans.MutablePropertyValues;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.ListFactoryBean;
+import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
+import org.springframework.context.support.StaticApplicationContext;
 
 /**
  * 
@@ -100,16 +95,9 @@ public class FrontlineSMS implements SmsSender, SmsListener, EmailListener {
 	private final EmailAccountDao emailAccountDao;
 	/** Data Access Object for {@link Email}s */
 	private final EmailDao emailDao;
-	/** Data Access Object for {@link Location}s */
-	private final LocationDao locationDao;
-	/** Data Access Object for {@link Category} */
-	private final CategoryDao categoryDao;
-	/** Data Access Object for {@link MappingSetup} */
-	private final MappingSetupDao mappingSetupDao;
-	/** Data Access Object for {@link Incident} */
-	private final IncidentDao incidentDao;
 	
 //> SERVICE MANAGERS
+	/** Class that handles sending of email messages */
 	private final EmailServerHandler emailServerManager;
 	/** Manager of SMS devices */
 	private final SmsDeviceManager smsDeviceManager;
@@ -123,6 +111,8 @@ public class FrontlineSMS implements SmsSender, SmsListener, EmailListener {
 	private EmailListener emailListener;
 	/** Listener for UI-related events */
 	private UIListener uiListener;
+	/** Listener for {@link SmsDevice} events. */
+	private SmsDeviceEventListener smsDeviceEventListener;
 	
 	/**
 	 * Create a new {@link FrontlineSMS} instance.
@@ -132,15 +122,25 @@ public class FrontlineSMS implements SmsSender, SmsListener, EmailListener {
 		LOG.trace("ENTER");
 		try {
 			// Load the data mode from the app.properties file
-			PropertySet appProperties = PropertySet.load(FrontlineSMSConstants.PROPERTIES_APP);
+			AppProperties appProperties = AppProperties.getInstance();
 
+			// Load the plugin controllers that are enabled
+			loadPluginControllers();
 			
-			// Load Spring/Hibernate application context
-			String contextPath = ResourceUtils.getConfigDirectoryPath() + ResourceUtils.DIRECTORY_PROPERTIES + File.separatorChar + appProperties.getProperty(FrontlineSMSConstants.PROPERTIES_DATABASE_CONFIG_FILE);
-			LOG.info("Loading spring application context from: " + contextPath);
-			ApplicationContext applicationContext = new FileSystemXmlApplicationContext("file:" + contextPath);			
-			//LOG.info("Context loaded successfully.");
-
+			LOG.info("Load Spring/Hibernate application context to initialise DAOs");
+				
+			// Create a base ApplicationContext defining the hibernate config file we need to import
+			StaticApplicationContext baseApplicationContext = new StaticApplicationContext();
+			baseApplicationContext.registerBeanDefinition("hibernateConfigLocations", createHibernateConfigLocationsBeanDefinition());
+			baseApplicationContext.refresh();
+			
+			// Get the spring config locations
+			String springExternalConfigPath = ResourceUtils.getConfigDirectoryPath() + ResourceUtils.PROPERTIES_DIRECTORY_NAME + File.separatorChar + appProperties.getDatabaseConfigPath();
+			String[] configLocations = getSpringConfigLocations(springExternalConfigPath);
+			ApplicationContext applicationContext = new FileSystemXmlApplicationContext(configLocations, baseApplicationContext);
+			LOG.info("Context loaded successfully.");
+			
+			LOG.info("Getting DAOs from application context...");
 			groupDao = (GroupDao) applicationContext.getBean("groupDao");
 			contactDao = (ContactDao) applicationContext.getBean("contactDao");
 			keywordDao = (KeywordDao) applicationContext.getBean("keywordDao");
@@ -150,20 +150,17 @@ public class FrontlineSMS implements SmsSender, SmsListener, EmailListener {
 			emailAccountDao = (EmailAccountDao) applicationContext.getBean("emailAccountDao");
 			smsInternetServiceSettingsDao = (SmsInternetServiceSettingsDao) applicationContext.getBean("smsInternetServiceSettingsDao");
 			smsModemSettingsDao = (SmsModemSettingsDao) applicationContext.getBean("smsModemSettingsDao");
+
+			new DatabaseConnectionTester(this).ensureConnected();
 			
-			// Initialise the DAOs for the Ushahidi plugin
-			locationDao = (LocationDao)applicationContext.getBean("locationDao");
-			categoryDao = (CategoryDao)applicationContext.getBean("categoryDao");
-			mappingSetupDao = (MappingSetupDao)applicationContext.getBean("mappingSetupDao");
-			incidentDao	= (IncidentDao)applicationContext.getBean("incidentDao");
-
-			LOG.debug("Creating default groups.");
-
 			try {
-				Keyword blankKeyword = keywordDao.createKeywordsHierarchically(new String[]{""}, "Blank keyword, used to be triggerd by every received message.", false);
+				LOG.debug("Creating blank keyword...");
+				Keyword blankKeyword = new Keyword(null, "", "Blank keyword, used to be triggerd by every received message.[i18n]");
 				keywordDao.saveKeyword(blankKeyword);
+				LOG.debug("Blank keyword created.");
 			} catch (DuplicateKeyException e) {
 				// Looks like this has been created already, so ignore the exception
+				LOG.debug("Blank keyword creation failed - already exists.");
 			}
 			
 			LOG.debug("Initialising email server handler...");
@@ -172,7 +169,7 @@ public class FrontlineSMS implements SmsSender, SmsListener, EmailListener {
 
 			LOG.debug("Initialising incoming message processor...");
 			// Initialise the incoming message processor
-			incomingMessageProcessor = new IncomingMessageProcessor(this, contactDao, keywordDao, groupDao, messageDao, emailDao, emailServerManager, appProperties.getProperty("incoming.msisdn.auto.add"), appProperties.getProperty("incoming.msisdn.auto.remove"));
+			incomingMessageProcessor = new IncomingMessageProcessor(this, contactDao, keywordDao, groupDao, messageDao, emailDao, emailServerManager);
 			incomingMessageProcessor.start();
 			
 			LOG.debug("Starting Phone Manager...");
@@ -182,7 +179,7 @@ public class FrontlineSMS implements SmsSender, SmsListener, EmailListener {
 
 			initSmsInternetServices();
 			
-			initPluginControllers(appProperties);
+			initPluginControllers(applicationContext);
 
 			LOG.debug("Starting E-mail Manager...");
 			emailServerManager.start();
@@ -212,8 +209,6 @@ public class FrontlineSMS implements SmsSender, SmsListener, EmailListener {
 	}
 	
 //> INITIALISATION METHODS
-
-
 	/** Initialise {@link SmsInternetService}s. */
 	private void initSmsInternetServices() {
 		for (SmsInternetServiceSettings settings : this.smsInternetServiceSettingsDao.getSmsInternetServiceAccounts()) {
@@ -221,7 +216,7 @@ public class FrontlineSMS implements SmsSender, SmsListener, EmailListener {
 			LOG.info("Initializing SmsInternetService of class: " + className);
 			try {
 				SmsInternetService service = (SmsInternetService) Class.forName(className).newInstance();
-				service.init(settings);
+				service.setSettings(settings);
 				this.smsDeviceManager.addSmsInternetService(service);
 			} catch (Throwable t) {
 				LOG.warn("Unable to initialize SmsInternetService of class: " + className, t);
@@ -230,18 +225,19 @@ public class FrontlineSMS implements SmsSender, SmsListener, EmailListener {
 	}
 
 	/**
-	 * Initialise {@link #pluginControllers}.
-	 * @param appProperties
+	 * Load the plugin controllers that will be used.  N.B. these will not have {@link PluginController#init(FrontlineSMS, ApplicationContext)} called
+	 * until {@link #initPluginControllers(ApplicationContext)} is called.
+	 * 
+	 * This method should only be called from the constructor {@link FrontlineSMS#FrontlineSMS()}.
 	 */
-	private void initPluginControllers(PropertySet appProperties) {
-		// Initialise plugin controllers
-		PropertySet pluginProperties = PropertySet.load("plugins");
-		System.out.println("Loading plugin controllers....");
-		for(String pluginClassName : pluginProperties.getAllKeys()) {
+	@SuppressWarnings("unchecked")
+	private void loadPluginControllers() {
+		LOG.info("Loading plugin controllers....");
+		PluginProperties pluginProperties = PluginProperties.getInstance();
+		for(String pluginClassName : pluginProperties.getPluginClassNames()) {
 			try {
-				boolean loadClass = Boolean.parseBoolean(pluginProperties.getProperty(pluginClassName));
+				boolean loadClass = pluginProperties.isPluginEnabled(pluginClassName);
 				if(loadClass) {
-					System.out.println("Loading plugin of class: " + pluginClassName);
 					LOG.info("Loading plugin of class: " + pluginClassName);
 					Class<? extends PluginController> controllerClass = (Class<? extends PluginController>) Class.forName(pluginClassName);
 					this.pluginControllers.add(controllerClass.newInstance());
@@ -252,10 +248,84 @@ public class FrontlineSMS implements SmsSender, SmsListener, EmailListener {
 				LOG.warn("Problem loading plugin controller for class: " + pluginClassName);
 			}
 		}
-		System.out.println("Plugin controllers loaded.  Initialising...");
+		LOG.info("Plugin controllers loaded.");
+	}
+	/**
+	 * Create the configLocations bean for the Hibernate config.
+	 * 
+	 * This method should only be called from within {@link FrontlineSMS#FrontlineSMS()}
+	 * 
+	 * @return {@link BeanDefinition} containing details of the hibernate config for the app and its plugins.
+	 */
+	private BeanDefinition createHibernateConfigLocationsBeanDefinition() {
+		// Initialise list of hibernate config files
+		List<String> hibernateConfigList = new ArrayList<String>();
+		// Add main hibernate config location
+		hibernateConfigList.add("classpath:frontlinesms.hibernate.cfg.xml");
+		// Add hibernate config locations for plugins
+		for(PluginController pluginController : getPluginControllers()) {
+			System.out.println("Processing plugin controller: " + pluginController);
+			String pluginHibernateLocation = pluginController.getHibernateConfigPath();
+			if(pluginHibernateLocation != null) {
+				hibernateConfigList.add(pluginHibernateLocation);
+			}
+		}
+		
+		GenericBeanDefinition myBeanDefinition = new GenericBeanDefinition();
+		myBeanDefinition.setBeanClassName(ListFactoryBean.class.getName());
+		MutablePropertyValues values = new MutablePropertyValues();
+		values.addPropertyValue("sourceList", hibernateConfigList);
+		myBeanDefinition.setPropertyValues(values);
+		
+		return myBeanDefinition;
+	}
+	
+	/**
+	 * Gets a list of configLocations required for initialising Spring {@link ApplicationContext}.
+	 * 
+	 * This method should only be called from within {@link FrontlineSMS#FrontlineSMS()}
+	 * 
+	 * @param externalConfigPath Spring path to the external Spring database config file 
+	 * @return list of configLocations used for initialising {@link ApplicationContext}
+	 */
+	private String[] getSpringConfigLocations(String externalConfigPath) {
+		LOG.info("Loading spring application context from: " + externalConfigPath);
+		
+		ArrayList<String> configLocations = new ArrayList<String>();
+		// Main Spring configuration
+		configLocations.add("classpath:frontlinesms-spring-hibernate.xml");
+		// Custom Spring configurations
+		configLocations.add("file:" + externalConfigPath);
+		// Add config locations for plugins
+		for(PluginController pluginController : getPluginControllers()) {
+			System.out.println("Processing plugin controller: " + pluginController);
+			String pluginConfigLocation = pluginController.getSpringConfigPath();
+			System.out.println("Adding plugin Spring config location: " + pluginConfigLocation);
+			if(pluginConfigLocation != null) {
+				configLocations.add(pluginConfigLocation);
+			}
+		}
+		
+		return configLocations.toArray(new String[configLocations.size()]);
+	}
+
+	/**
+	 * Initialise {@link #pluginControllers}.
+	 * 
+	 * This method should only be called from the constructor {@link FrontlineSMS#FrontlineSMS()}.
+	 * 
+	 * @param applicationContext 
+	 */
+	private void initPluginControllers(ApplicationContext applicationContext) {
+		System.out.println("Initialising plugin controllers...");
 		// Enable plugins
 		for(PluginController controller : this.pluginControllers) {
-			controller.init(this);
+			try {
+				controller.init(this, applicationContext);
+			} catch(Throwable t) {
+				// There was a problem loading the plugin controller.  Not much we can do, so log it and carry on.
+				LOG.warn("There was a problem loading plugin controller: " + controller, t);
+			}
 		}
 		System.out.println("Plugin controllers initialised.  Count: " + this.pluginControllers.size());
 	}
@@ -284,20 +354,28 @@ public class FrontlineSMS implements SmsSender, SmsListener, EmailListener {
 
 	/** Passes an outgoing message event to the SMS Listener if one is specified. */
 	public synchronized void outgoingMessageEvent(SmsDevice sender, Message outgoingMessage) {
+		// The message status will have changed, so save it here
+		this.messageDao.updateMessage(outgoingMessage);
+		
 		// FIXME should log this message here
-		if (uiListener != null) 
-			uiListener.outgoingMessageEvent(outgoingMessage);		
+		if (uiListener != null) {
+			uiListener.outgoingMessageEvent(outgoingMessage);
+		}
 	}
 
 	/** Passes a device event to the SMS Listener if one is specified. */
-	public void smsDeviceEvent(SmsDevice activeDevice, int smsDeviceEventCode) {
+	public void smsDeviceEvent(SmsDevice activeDevice, SmsDeviceStatus status) {
 		// FIXME should log this message here
-		if (uiListener != null) 
-			uiListener.smsDeviceEvent(activeDevice, smsDeviceEventCode);
+		if (this.smsDeviceEventListener != null) {
+			this.smsDeviceEventListener.smsDeviceEvent(activeDevice, status);
+		}
 	}
 
 	/** Passes an outgoing email event to {@link #emailListener} if it is defined */
 	public synchronized void outgoingEmailEvent(EmailSender sender, Email email) {
+		// The email status will have changed, so save it here
+		this.emailDao.updateEmail(email);
+		
 		if (emailListener != null) {
 			emailListener.outgoingEmailEvent(sender, email);
 		}
@@ -320,6 +398,7 @@ public class FrontlineSMS implements SmsSender, SmsListener, EmailListener {
 	 * 
 	 * @param targetNumber The recipient number.
 	 * @param textContent The message to be sent.
+	 * @return the {@link Message} describing the sent message
 	 */
 	public Message sendTextMessage(String targetNumber, String textContent) {
 		LOG.trace("ENTER");
@@ -329,7 +408,7 @@ public class FrontlineSMS implements SmsSender, SmsListener, EmailListener {
 			m.setStatus(Message.STATUS_DELIVERED);
 			messageDao.saveMessage(m);
 			outgoingMessageEvent(EMULATOR, m);
-			incomingMessageEvent(EMULATOR, new CIncomingMessage(new Date(), FrontlineSMSConstants.EMULATOR_MSISDN, textContent.trim(), 1, "NYI"));
+			incomingMessageEvent(EMULATOR, new CIncomingMessage(System.currentTimeMillis(), FrontlineSMSConstants.EMULATOR_MSISDN, textContent.trim(), 1, "NYI"));
 		} else {
 			m = Message.createOutgoingMessage(System.currentTimeMillis(), "", targetNumber, textContent.trim());
 			this.sendMessage(m);
@@ -386,6 +465,11 @@ public class FrontlineSMS implements SmsSender, SmsListener, EmailListener {
 		this.incomingMessageProcessor.setUiListener(uiListener);
 	}
 	
+	/** @param smsDeviceEventListener new value for {@link #smsDeviceEvent(SmsDevice, SmsDeviceStatus)} */
+	public void setSmsDeviceEventListener(SmsDeviceEventListener smsDeviceEventListener) {
+		this.smsDeviceEventListener = smsDeviceEventListener;
+	}
+	
 	/** @return {@link #smsDeviceManager} */
 	public SmsDeviceManager getSmsDeviceManager() {
 		return this.smsDeviceManager;
@@ -418,25 +502,5 @@ public class FrontlineSMS implements SmsSender, SmsListener, EmailListener {
 	/** @return {@link #smsDeviceManager}'s {@link SmsInternetService}s */
 	public Collection<SmsInternetService> getSmsInternetServices() {
 		return this.smsDeviceManager.getSmsInternetServices();
-	}
-	
-	/** @return {@link #locationDao} */
-	public LocationDao getLocationDao(){
-		return locationDao;
-	}
-	
-	/** @return {@link #categoryDao} */
-	public CategoryDao getCategoryDao(){
-		return categoryDao;
-	}
-	
-	/** @return {@link #mappingSetupDao} */
-	public MappingSetupDao getMappingSetupDao(){
-		return mappingSetupDao;
-	}
-	
-	/** @return {@link #incidentDao} */
-	public IncidentDao getIncidentDao(){
-		return incidentDao;
 	}
 }

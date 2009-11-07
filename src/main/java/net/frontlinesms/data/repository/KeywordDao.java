@@ -53,17 +53,6 @@ public interface KeywordDao {
 	public int getPageNumber(Keyword keyword, int keywordsPerPage);
 		
 	/**
-	 * Creates all keywords in the hierarchy that do not already exist, and returns the
-	 * last keyword in the hierarchy.
-	 * @param keywordHierarchy
-	 * @param classicMode TODO
-	 * @param description description of the lowest keyword in this hierarchy.
-	 * @return last keyword in the supplied list.
-	 * @throws DuplicateKeyException if all keywords in the hierarchy already exist
-	 */
-	public abstract Keyword createKeywordsHierarchically(String[] keywordHierarchy, String description, boolean classicMode) throws DuplicateKeyException;
-
-	/**
 	 * Get's the lowest-generation keyword from the supplied message text.
 	 * E.g. if message text is "masabi join random", will search for keyword
 	 * "masabi".  If this is found, will then search it's subkeywords for

@@ -37,7 +37,7 @@ public class HibernateMessageDao extends BaseHibernateDao<Message> implements Me
 	}
 
 	/** @see MessageDao#getAllMessages() */
-	public Collection<Message> getAllMessages() {
+	public List<Message> getAllMessages() {
 		return super.getAll();
 	}
 
@@ -217,6 +217,11 @@ public class HibernateMessageDao extends BaseHibernateDao<Message> implements Me
 	public void saveMessage(Message message) {
 		super.saveWithoutDuplicateHandling(message);
 	}
+
+	/** @see MessageDao#updateMessage(Message) */
+	public void updateMessage(Message message) {
+		super.updateWithoutDuplicateHandling(message);
+	}
 	
 	/**
 	 * Augments the supplied criteria with that required to match a keyword.
@@ -276,7 +281,9 @@ public class HibernateMessageDao extends BaseHibernateDao<Message> implements Me
 	 * @param messageType 
 	 */
 	private void addTypeCriteria(DetachedCriteria criteria, int messageType) {
-		criteria.add(Restrictions.ge(Field.TYPE.getFieldName(), messageType));
+		if(messageType != Message.TYPE_ALL) {
+			criteria.add(Restrictions.eq(Field.TYPE.getFieldName(), messageType));
+		}
 	}
 
 	/**

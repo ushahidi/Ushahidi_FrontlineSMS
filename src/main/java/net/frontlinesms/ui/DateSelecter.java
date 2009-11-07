@@ -23,6 +23,7 @@ import java.awt.Color;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -30,6 +31,7 @@ import org.apache.log4j.Logger;
 
 import net.frontlinesms.FrontlineSMSConstants;
 import net.frontlinesms.Utils;
+import net.frontlinesms.ui.i18n.InternationalisationUtils;
 import thinlet.Thinlet;
 
 /**
@@ -37,26 +39,41 @@ import thinlet.Thinlet;
  *
  */
 public class DateSelecter {
-	private static final int LAST_MONTH = 11;
+	
+//> STATIC CONSTANTS
+	/** Index of the first month, January */
 	private static final int FIRST_MONTH = 0;
+	/** Index of the last month, December */
+	private static final int LAST_MONTH = 11;
 	private static final String COMPONENT_LB_MONTH = "lbMonth";
 	private static final String COMPONENT_BT_NEXT = "btNext";
 	private static final String COMPONENT_BT_PREVIOUS = "btPrevious";
 	private static final String UI_FILE_DATE_SELECTER_FORM = "/ui/dialog/dateSelecter.xml";
-	private static final long serialVersionUID = 689178809019704708L;
 	
+	/** Logger for this class */
 	private static Logger LOG = Utils.getLogger(DateSelecter.class);
-	
+
+//> INSTANCE PROPERTIES
+	/** A calendar object with a poorly-defined role */
 	private Calendar current;
+	/** A month value with a poorly-defined role */
 	private int curMonth;
+	/** A year value with a poorly-defined role */
 	private int curYear;
-	private DateFormat format = FrontlineSMSConstants.Dependants.DEFAULT_KEYWORD_ACTION_DATE_FORMAT;
+	/** The {@link Thinlet} ui controller */
 	private UiGeneratorController ui;
+	/** The textfield that the date will be inserted into when date selection has completed. */
 	private Object textField;
 	private int dayToHighlight;
 	private int monthToHighlight;
 	private int yearToHighlight;
 	
+//> CONSTRUCTORS
+	/**
+	 * Constructs a new date selecter which will update a particular textfield.
+	 * @param ui The thinlet ui controller
+	 * @param textField The textfield that the selected date will be entered into
+	 */
 	public DateSelecter(UiGeneratorController ui, Object textField) {
 		this.ui = ui;
 		this.textField = textField;
@@ -73,13 +90,6 @@ public class DateSelecter {
 		showMonth(dialog);
 		ui.add(dialog);
 	}
-
-	/**
-	 * @param dialog
-	 */
-	public void closeDialog(Object dialog) {
-		ui.remove(dialog);
-	}
 	
 	/**
 	 * Initialises the dialog buttons, set their action method and gets the dte to be shown.
@@ -89,17 +99,17 @@ public class DateSelecter {
 	private void init(Object dialog) {
 		LOG.trace("ENTER");
 		Object prev = ui.find(dialog, COMPONENT_BT_PREVIOUS);
-		ui.setMethod(dialog, Thinlet.CLOSE, "closeDialog(this)", dialog, this);
-		ui.setMethod(prev, Thinlet.ATTRIBUTE_ACTION, "previousMonth(dateSelecter)", dialog, this);
+		ui.setCloseAction(dialog, "closeDialog(this)", dialog, this);
+		ui.setAction(prev, "previousMonth(dateSelecter)", dialog, this);
 		Object next = ui.find(dialog, COMPONENT_BT_NEXT);
-		ui.setMethod(next, Thinlet.ATTRIBUTE_ACTION, "nextMonth(dateSelecter)", dialog, this);
+		ui.setAction(next, "nextMonth(dateSelecter)", dialog, this);
 		current = Calendar.getInstance();
 		setDayToHighlight();
 		current.set(Calendar.DATE, 1);
 		if (!ui.getText(textField).equals("")) {
 			LOG.debug("Previous date is [" + ui.getText(textField) + "]");
 			try {
-				Date d = format.parse(ui.getText(textField));
+				Date d = InternationalisationUtils.getDateFormat().parse(ui.getText(textField));
 				current.setTime(d);
 				setDayToHighlight();
 			} catch (ParseException e) {}
@@ -110,13 +120,12 @@ public class DateSelecter {
 		LOG.trace("EXIT");
 	}
 
+//> UI EVENT METHODS
 	/**
-	 * Sets the day to be highlighted
+	 * @param dialog
 	 */
-	private void setDayToHighlight() {
-		dayToHighlight = current.get(Calendar.DATE);
-		monthToHighlight = current.get(Calendar.MONTH);
-		yearToHighlight = current.get(Calendar.YEAR);
+	public void closeDialog(Object dialog) {
+		ui.remove(dialog);
 	}
 
 	/**
@@ -161,11 +170,30 @@ public class DateSelecter {
 		Object lbMonth = ui.find(dialog, COMPONENT_LB_MONTH);
 		LOG.debug("Current month [" + curMonth + "]");
 		ui.setText(lbMonth, curMonth);
-		for (int i = 1; i <= 6; i++)
+		for (int i = 1; i <= 6; i++) {
 			fillRow(dialog, "pn" + i);
+		}
 		LOG.trace("EXIT");
 	}
 
+	public void selectionMade(Object dialog, String day) {
+		Calendar c = Calendar.getInstance();
+		c.set(Calendar.DATE, Integer.parseInt(day));
+		c.set(Calendar.MONTH, this.curMonth);
+		c.set(Calendar.YEAR, this.curYear);
+		String date = InternationalisationUtils.getDateFormat().format(c.getTime());
+		ui.setText(textField, date);
+		ui.remove(dialog);
+		if (ui.getMethod(textField) != null) ui.executeAction(ui.getMethod(textField));
+	}
+	
+//> UI HELPER METHODS
+	/** Sets the day to be highlighted */
+	private void setDayToHighlight() {
+		dayToHighlight = current.get(Calendar.DATE);
+		monthToHighlight = current.get(Calendar.MONTH);
+		yearToHighlight = current.get(Calendar.YEAR);
+	}
 	/**
 	 * Sets the button texts for the supplied week.
 	 * 
@@ -183,7 +211,7 @@ public class DateSelecter {
 			Object button = buttons[dayOfWeek - 1];
 			ui.setEnabled(button, true);
 			ui.setText(button, String.valueOf(current.get(Calendar.DATE)));
-			ui.setMethod(button, Thinlet.ATTRIBUTE_ACTION, "selectionMade(dateSelecter, this.text)", dialog, this);
+			ui.setAction(button, "selectionMade(dateSelecter, this.text)", dialog, this);
 			if (isDayToHighlight()) {
 				ui.setColor(button, Thinlet.FOREGROUND, Color.RED);
 			}
@@ -197,24 +225,6 @@ public class DateSelecter {
 			current.set(Calendar.YEAR, curYear);
 		}
 	}
-
-	private boolean isDayToHighlight() {
-		return (current.get(Calendar.DATE) == dayToHighlight 
-				&& current.get(Calendar.MONTH) == monthToHighlight
-				&& current.get(Calendar.YEAR) == yearToHighlight);
-	}
-
-	public void selectionMade(Object dialog, String day) {
-		Calendar c = Calendar.getInstance();
-		c.set(Calendar.DATE, Integer.parseInt(day));
-		c.set(Calendar.MONTH, this.curMonth);
-		c.set(Calendar.YEAR, this.curYear);
-		String date = format.format(c.getTime());
-		ui.setText(textField, date);
-		ui.remove(dialog);
-		if (ui.getMethod(textField) != null) ui.executeAction(ui.getMethod(textField));
-	}
-	
 	private void cleanButtons(Object[] buttons) {
 		for (Object but : buttons) {
 			ui.setText(but, "");
@@ -222,8 +232,17 @@ public class DateSelecter {
 			ui.setColor(but, Thinlet.FOREGROUND, Color.BLUE);
 		}
 	}
-
+	private boolean isDayToHighlight() {
+		return (current.get(Calendar.DATE) == dayToHighlight 
+				&& current.get(Calendar.MONTH) == monthToHighlight
+				&& current.get(Calendar.YEAR) == yearToHighlight);
+	}
+	/**
+	 * Gets the name of the month with the specified index
+	 * @param i 0-based index of the month: 0=jan, 11=dec
+	 * @return Month name
+	 */
 	private String getMonthAsString(int i) {
-		return FrontlineSMSConstants.Dependants.MONTHS[i];
+		return InternationalisationUtils.getI18NString(FrontlineSMSConstants.MONTH_KEYS[i]);
 	}
 }

@@ -4,6 +4,7 @@
 package net.frontlinesms.data.repository.memory;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -42,6 +43,18 @@ public class InMemoryGroupDao implements GroupDao {
 		ArrayList<Group> groups = new ArrayList<Group>();
 		groups.addAll(allGroups);
 		return groups;
+	}
+
+	/** @see GroupDao#getChildGroups(Group) */
+	public Collection<Group> getChildGroups(Group parent) {
+		Collection<Group> childs = new HashSet<Group>();
+		for(Group g : this.allGroups) {
+			if((parent == null && g.getParent()==null) || 
+					(parent != null && parent.equals(g.getParent()))) {
+				childs.add(g);
+			}
+		}
+		return childs;
 	}
 
 	/** @see GroupDao#getAllGroups(int, int) */

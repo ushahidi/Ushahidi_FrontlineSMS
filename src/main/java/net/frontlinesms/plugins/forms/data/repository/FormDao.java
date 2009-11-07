@@ -35,6 +35,12 @@ public interface FormDao {
 	public void saveForm(Form form);
 
 	/**
+	 * Updates the form in the data source
+	 * @param form the form to update
+	 */
+	public void updateForm(Form form);
+
+	/**
 	 * Deletes a form from the data source.
 	 * @param form form to save
 	 */

@@ -156,24 +156,40 @@ public interface MessageDao {
 	
 	/**
 	 * Gets all messages.
-	 *
+	 * @return all messages in the system 
 	 */
-	public Collection<Message> getAllMessages();
+	public List<Message> getAllMessages();
 	
 	/**
-	 * Gets all messages.
+	 * Gets a page of messages.
+	 * @param type the type of the message
+	 * @param field the field to sort by
+	 * @param order the order to sort by
+	 * @param start the start date for the messages
+	 * @param end the end date for the messages
+	 * @param startIndex the index of the first message to get
+	 * @param limit the maximum number of messages to get
+	 * @return list of all messages conforming to the specified constraints and sorted in a particular way.
 	 *
 	 */
 	public List<Message> getAllMessages(int type, Field field, Order order, Long start, Long end, int startIndex, int limit);
 	
+	/**
+	 * Gets the number of messages of a specific type from between the specified dates
+	 * @param type
+	 * @param start
+	 * @param end
+	 * @return count of messages
+	 */
 	public int getMessageCount(int type, Long start, Long end);
 	
 	/**
 	 * Gets all messages with the supplied status and type.
 	 * @param type
 	 * @param status
+	 * @return 
 	 */
-	public Collection<Message> getMessages(int type, Integer... status);
+	public Collection<Message> getMessages(int type, Integer[] status);
 	
 	/**
 	 * Gets the number of messagesthere are of the given type for the given keyword.
@@ -196,16 +212,22 @@ public interface MessageDao {
 	
 	/**
 	 * Returns all message associated with these groups.
+	 * @param messageType 
+	 * @param groups 
 	 * @param field TODO
 	 * @param order TODO
 	 * @param start TODO
 	 * @param end TODO
+	 * @param startIndex 
+	 * @param limit 
 	 * @return
 	 */
 	public List<Message> getMessagesForGroups(int messageType, List<Group> groups, Field field, Order order, Long start, Long end, int startIndex, int limit);
 	
 	/**
 	 * Returns the message count associated to these groups.
+	 * @param messageType 
+	 * @param groups 
 	 * @param start TODO
 	 * @param end TODO
 	 * @return
@@ -214,15 +236,34 @@ public interface MessageDao {
 	
 	/**
 	 * Returns the count of sent SMS associated to these groups.
+	 * @param groups 
 	 * @param start TODO
 	 * @param end TODO
 	 * @return
 	 */
 	public int getSMSCountForGroups(List<Group> groups, Long start, Long end);
-	
+
+	/**
+	 * Delete the supplied message to the data source.
+	 * @param message the message to be deleted
+	 */
 	public void deleteMessage(Message message);
 
+	/**
+	 * @param action
+	 * @return
+	 */
 	public List<Message> getMessagesForAction(KeywordAction action);
 
+	/**
+	 * Save the supplied message to the data source.
+	 * @param message the message to be saved
+	 */
 	public void saveMessage(Message message);
+
+	/**
+	 * Update the supplied message in the data source.
+	 * @param message the message to be updated
+	 */
+	public void updateMessage(Message message);
 }

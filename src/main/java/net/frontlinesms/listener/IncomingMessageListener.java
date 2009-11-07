@@ -10,5 +10,9 @@ import net.frontlinesms.data.domain.Message;
  * @author Alex
  */
 public interface IncomingMessageListener {
+	/**
+	 * Event called on a {@link IncomingMessageListener} to notify it of an incoming message event.
+	 * @param message The message which has been received
+	 */
 	public void incomingMessageEvent(Message message);
 }

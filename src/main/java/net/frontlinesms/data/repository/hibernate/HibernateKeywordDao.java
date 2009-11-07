@@ -22,28 +22,6 @@ public class HibernateKeywordDao extends BaseHibernateDao<Keyword> implements Ke
 		super(Keyword.class);
 	}
 
-	/** @see KeywordDao#createKeywordsHierarchically(String[], String, boolean) */
-	public Keyword createKeywordsHierarchically(String[] keywordHierarchy, String description, boolean classicMode) throws DuplicateKeyException {
-		Keyword parent = null;
-		int skip = 0;
-		for(String keyword : keywordHierarchy) {
-			parent = this.get(parent, keyword);
-			if(parent == null) {
-				break;
-			} else {
-				++skip;
-			}
-		}
-		if(skip == keywordHierarchy.length) {
-			throw new DuplicateKeyException();
-		} else {
-			for(; skip < keywordHierarchy.length; ++skip) {
-				parent = new Keyword(parent, keywordHierarchy[skip], description);
-			}
-		}
-		return parent;
-	}
-	
 	/**
 	 * Gets a keyword.
 	 * @param parent parent of the keyword to fetch, or <code>null</code> if it is top level
@@ -52,7 +30,7 @@ public class HibernateKeywordDao extends BaseHibernateDao<Keyword> implements Ke
 	 */
 	private Keyword get(Keyword parent, String keyword) {
 		DetachedCriteria criteria = super.getCriterion();
-		criteria.add(Restrictions.eq(Keyword.Field.PARENT.getFieldName(), parent));
+		criteria.add(getEqualsOrNull(Keyword.Field.PARENT, parent));
 		criteria.add(Restrictions.eq(Keyword.Field.KEYWORD.getFieldName(), keyword));
 		return super.getUnique(criteria);
 	}
@@ -72,20 +50,21 @@ public class HibernateKeywordDao extends BaseHibernateDao<Keyword> implements Ke
 		return super.getAll(startIndex, limit);
 	}
 
-	/** @see KeywordDao#getFromMessageText(String) */
+	/** @see KeywordDao#getFromMessageText(String)
+	 * FIXME not convinced by this method.  WRITE A PROPER UNIT TEST. */
 	public Keyword getFromMessageText(String messageText) {
-		int partCount = 0;
 		String[] messageWords = messageText.split("\\s");
+		
 		Keyword parent = null;
-		while(true) {
-			Keyword child = this.get(parent, messageWords[partCount]);
+		for(String word : messageWords) {
+			Keyword child = this.get(parent, word);
 			if(child == null) {
-				return parent;
+				break;
 			} else {
 				parent = child;
-				++partCount;
 			}
 		}
+		return parent;
 	}
 
 	/** @see KeywordDao#getPageNumber(Keyword, int) */
@@ -108,6 +87,18 @@ public class HibernateKeywordDao extends BaseHibernateDao<Keyword> implements Ke
 
 	/** @see KeywordDao#saveKeyword(Keyword) */
 	public void saveKeyword(Keyword keyword) throws DuplicateKeyException {
+		if(keyword.getParent() == null) {
+			// Check there is not already a top-level keyword with this name.  We do this here as SQL does not
+			// consider NULL == NULL, so top-level keywords with the same name are allowed in the database.
+			// TODO this check/save operation would ideally be atomic - what if someone snuck in and created
+			// this keyword between the check and the creation?
+			DetachedCriteria criteria = super.getCriterion();
+			criteria.add(Restrictions.isNull(Keyword.Field.PARENT.getFieldName()));
+			criteria.add(Restrictions.eq(Keyword.Field.KEYWORD.getFieldName(), keyword.getKeyword()));
+			if(super.getUnique(criteria) != null) {
+				throw new DuplicateKeyException();
+			}
+		}
 		super.save(keyword);
 	}
 }

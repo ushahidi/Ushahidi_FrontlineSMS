@@ -11,7 +11,7 @@ public abstract class FormsRequestDescription {
 	
 //> INSTANCE PROPERTIES
 	/** Port that this contact should be sent forms on. */
-	private int smsPort;
+	private Integer smsPort;
 	
 //> ACCESSOR METHODS
 	/**
@@ -23,7 +23,7 @@ public abstract class FormsRequestDescription {
 	/**
 	 * @return the smsPort
 	 */
-	public int getSmsPort() {
+	public Integer getSmsPort() {
 		return smsPort;
 	}
 }

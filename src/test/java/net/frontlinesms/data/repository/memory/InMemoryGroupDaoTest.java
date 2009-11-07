@@ -11,6 +11,7 @@ import net.frontlinesms.data.repository.memory.InMemoryGroupDao;
  * @author Alex
  */
 public class InMemoryGroupDaoTest extends ReusableGroupDaoTest {
+	/** Set up the test using the in-memory implementation of the DAO */
 	@Override
 	protected void setUp() throws Exception {
 		super.setDao(new InMemoryGroupDao());

@@ -23,10 +23,10 @@ import java.util.Arrays;
 
 import javax.persistence.*;
 
-import org.smslib.TpduUtils;
+import org.smslib.util.HexUtils;
+import org.smslib.util.TpduUtils;
 
 import net.frontlinesms.data.EntityField;
-import net.frontlinesms.hex.HexUtils;
 
 /**
  * Object representing an SMS message in our data structure.
@@ -35,6 +35,11 @@ import net.frontlinesms.hex.HexUtils;
  */
 @Entity
 public class Message {
+
+//> DATABASE COLUMN NAMES
+	/** Database column name for field {@link #textMessageContent} */
+	private static final String COLUMN_TEXT_CONTENT = "textContent";
+	
 //> CONSTANTS
 	/** Constant used to represent all kinds of messages */
 	public static final int TYPE_ALL = -1;
@@ -50,6 +55,7 @@ public class Message {
 	/** Number of times a failed message send is retried before status is set to STATUS_FAILED */
 	public static final int MAX_RETRIES = 2;
 	
+	/** Message status: DRAFT - nothing has been done with this message yet */
 	public static final int STATUS_DRAFT = 0;
 	/** messages of TYPE_RECEIVED should always be STATUS_RECEIVED */
 	public static final int STATUS_RECEIVED = 1;
@@ -91,7 +97,7 @@ public class Message {
 		STATUS("status"),
 		SENDER_MSISDN("senderMsisdn"),
 		RECIPIENT_MSISDN("recipientMsisdn"),
-		MESSAGE_CONTENT("messageContent"),
+		MESSAGE_CONTENT("textMessageContent"),
 		SMSC_REFERENCE("smscReference");
 		/** name of a field */
 		private final String fieldName;
@@ -119,6 +125,7 @@ public class Message {
 	private long dispatchDate;
 	private String senderMsisdn;
 	/** Text content of this message. */
+	@Column(name=COLUMN_TEXT_CONTENT, length=480)
 	private String textMessageContent;
 	/** Binary content of this message. */
 	private byte[] binaryMessageContent;
@@ -165,10 +172,26 @@ public class Message {
 	 * sets the sender number of an outgoing message, 
 	 * usually done once it is assigned to an outgoing device, 
 	 * if the MSISDN is known, or manually assigned to the device.
-	 * @param senderNumber
+	 * @param senderPhoneNumber new value for {@link #senderMsisdn}
 	 */
-	public void setSenderMsisdn(String senderMsisdn) {
-		this.senderMsisdn = senderMsisdn;
+	public void setSenderMsisdn(String senderPhoneNumber) {
+		this.senderMsisdn = senderPhoneNumber;
+	}
+	
+	/**
+	 * Sets {@link #recipientMsisdn}
+	 * @param recipientPhoneNumber new value for {@link #recipientMsisdn}
+	 */
+	public void setRecipientMsisdn(String recipientPhoneNumber) {
+		this.recipientMsisdn = recipientPhoneNumber;
+	}
+	
+	/**
+	 * Sets {@link #recipientSmsPort}
+	 * @param recipientSmsPort new value for {@link #recipientSmsPort}
+	 */
+	public void setRecipientSmsPort(int recipientSmsPort) {
+		this.recipientSmsPort = recipientSmsPort;
 	}
 	
 	/**
@@ -317,8 +340,8 @@ public class Message {
 	 */
 	public static Message createBinaryOutgoingMessage(long dateSent, String senderMsisdn, String recipientMsisdn, int recipientPort, byte[] content) {
 		Message m = new Message();
-		m.type = Message.TYPE_RECEIVED;
-		m.status = Message.STATUS_RECEIVED;
+		m.type = Message.TYPE_OUTBOUND;
+		m.status = Message.STATUS_DRAFT;
 		m.date = dateSent;
 		m.senderMsisdn = senderMsisdn;
 		m.recipientMsisdn = recipientMsisdn;
@@ -338,8 +361,8 @@ public class Message {
 	 */
 	public static Message createOutgoingMessage(long dateSent, String senderMsisdn, String recipientMsisdn, String messageContent) {
 		Message m = new Message();
-		m.type = Message.TYPE_RECEIVED;
-		m.status = Message.STATUS_RECEIVED;
+		m.type = Message.TYPE_OUTBOUND;
+		m.status = Message.STATUS_DRAFT;
 		m.date = dateSent;
 		m.senderMsisdn = senderMsisdn;
 		m.recipientMsisdn = recipientMsisdn;

@@ -22,16 +22,19 @@
 
 package org.smslib;
 
-import java.util.*;
-
+import org.smslib.sms.SmsMessageEncoding;
+import org.smslib.util.GsmAlphabet;
+import org.smslib.util.TpduUtils;
 
 /**
  * This class represents a normal (text) outgoing / outbound message.
  * PDU Type: SMS-SUBMIT
  */
 public class COutgoingMessage extends CMessage {
-	/** The date that this SMS is sent */
-	protected Date dispatchDate;
+	
+//> INSTANCE PROPERTIES
+	/** The date that this SMS is sent, in ms since the java epoch.  This is in GMT. */
+	private Long dispatchDate;
 	/**
 	 * The message validity period, in hours.  If set to 0 or a negative number, the maximum validity possible will be requested.
 	 * Maps to: [Optional: TP-VP] TP-Validity-Period
@@ -44,11 +47,13 @@ public class COutgoingMessage extends CMessage {
 	 */
 	protected boolean statusReportRequest;
 
+//> CONSTRUCTORS
+	/**
+	 * Create a new {@link COutgoingMessage}
+	 */
 	protected COutgoingMessage() {
-		super(CMessage.MessageType.Outgoing, null, null, null, "");
-
-		setDate(new Date());
-		this.messageEncoding = MessageEncoding.Enc7Bit;
+		super(CMessage.MessageType.Outgoing, null, null, "");
+		this.messageEncoding = SmsMessageEncoding.GSM_7BIT;
 	}
 
 	/**
@@ -57,25 +62,28 @@ public class COutgoingMessage extends CMessage {
 	 * @param text The message text.
 	 */
 	public COutgoingMessage(String recipient, String text) {
-		super(CMessage.MessageType.Outgoing, new Date(), null, recipient, text);
+		super(CMessage.MessageType.Outgoing, null, recipient, text);
 
-		setDate(new Date());
-		
 		// For now, we decide RIGHT HERE whether we are using unicode or standard 7-bit GSM encoding.
 		// In future, this should probably be set explicitly.
 		if(GsmAlphabet.areAllCharactersValidGSM(text))
-			this.messageEncoding = MessageEncoding.Enc7Bit;
-		else this.messageEncoding = MessageEncoding.EncUcs2;
+			this.messageEncoding = SmsMessageEncoding.GSM_7BIT;
+		else this.messageEncoding = SmsMessageEncoding.UCS2;
 	}
 
+	/**
+	 * Create a new {@link COutgoingMessage} with {@link SmsMessageEncoding#BINARY_8BIT} and a binary payload.
+	 * @param recipient
+	 * @param binary
+	 */
 	public COutgoingMessage(String recipient, byte[] binary) {
-		super(CMessage.MessageType.Outgoing, new Date(), null, recipient, binary);
+		super(CMessage.MessageType.Outgoing, null, recipient, binary);
 
 		this.messageBinary = binary;
-		setDate(new Date());
-		this.messageEncoding = MessageEncoding.Enc8Bit;
+		this.messageEncoding = SmsMessageEncoding.BINARY_8BIT;
 	}
 
+//> ACCESSORS
 	/**
 	 * Sets the Recipient's number. The number should be in international format.
 	 * @param recipient The Recipient's number.
@@ -110,7 +118,7 @@ public class COutgoingMessage extends CMessage {
 
 	/**
 	 * Sets the delivery status report functionality. Set this to true if you want to enable delivery status report for this specific message.
-	 * @param statusReport True if you want to enable delivery status reports.
+	 * @param statusReportRequest <code>true</code> if you want to enable delivery status reports.
 	 */
 	public void setStatusReport(boolean statusReportRequest) {
 		this.statusReportRequest = statusReportRequest;
@@ -127,22 +135,31 @@ public class COutgoingMessage extends CMessage {
 
 	/**
 	 * Returns the date of dispatch - the date when this message was send from SMSLib. Returns NULL if the message has not been sent yet.
-	 * 
-	 * @return The dispatch date.
+	 * @return The dispatch date, or <code>null</code> if {@link #dispatchDate} has not been set.
 	 */
-	public Date getDispatchDate() {
-		if (dispatchDate != null) return (Date) dispatchDate.clone();
-		else return null;
+	public Long getDispatchDate() {
+		return this.dispatchDate;
+	}
+	
+	/** Set {@link #dispatchDate} to the current date & timé. */
+	public void setDispatchDate() {
+		this.dispatchDate = System.currentTimeMillis();
 	}
 
+	/**
+	 * Generates the PDUs that this message should be sent as.
+	 * @param smscNumber The telephone number of the SMS Centre
+	 * @param mpRefNo The multipart reference number to be set in each PDU's UDH
+	 * @return Ordered list of PDUs that this message should be sent as.
+	 */
 	protected String[] generatePdus(String smscNumber, int mpRefNo) {
-		switch(messageEncoding) {
-			case MessageEncoding.Enc7Bit:
-				return TpduUtils.generatePdus_gsm7bit(messageText, smscNumber, this.getRecipient(), mpRefNo, sourcePort, destinationPort, this.statusReportRequest, validityPeriod, protocolIdentifier, this.getDcsByte());
-			case MessageEncoding.EncUcs2:
-				return TpduUtils.generatePdus_ucs2(messageText, smscNumber, this.getRecipient(), mpRefNo, sourcePort, destinationPort, this.statusReportRequest, validityPeriod, protocolIdentifier, this.getDcsByte());
-			default:
-				return TpduUtils.generatePdus_8bit(messageBinary, smscNumber, this.getRecipient(), mpRefNo, this.sourcePort, this.destinationPort, this.statusReportRequest, this.validityPeriod, this.protocolIdentifier, this.getDcsByte());	
+		if(messageEncoding == SmsMessageEncoding.GSM_7BIT) {
+			return TpduUtils.generatePdus_gsm7bit(messageText, smscNumber, this.getRecipient(), mpRefNo, sourcePort, destinationPort, this.statusReportRequest, validityPeriod, protocolIdentifier, this.getDcsByte());
+		} else if(messageEncoding == SmsMessageEncoding.UCS2) {
+			return TpduUtils.generatePdus_ucs2(messageText, smscNumber, this.getRecipient(), mpRefNo, sourcePort, destinationPort, this.statusReportRequest, validityPeriod, protocolIdentifier, this.getDcsByte());
+		} else {
+			// Treat custom encoding as 8-bit binary
+			return TpduUtils.generatePdus_8bit(messageBinary, smscNumber, this.getRecipient(), mpRefNo, this.sourcePort, this.destinationPort, this.statusReportRequest, this.validityPeriod, this.protocolIdentifier, this.getDcsByte());	
 		}
 	}
 }

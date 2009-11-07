@@ -1,15 +1,19 @@
 package net.frontlinesms.plugins.forms.data.domain;
 
+import java.io.Serializable;
+
 import javax.persistence.*;
 
 /**
  * A field in a form.
  * @author Alex
  */
+@SuppressWarnings("serial")
 @Entity
-public class FormField {
+public class FormField implements Serializable {
 //> INSTANCE PROPERTIES
 	/** Unique id for this entity.  This is for hibernate usage. */
+	@SuppressWarnings("unused")
 	@Id @GeneratedValue(strategy=GenerationType.IDENTITY)
 	@Column(unique=true,nullable=false,updatable=false)
 	private long id;
@@ -17,33 +21,25 @@ public class FormField {
 	/** The label attached to this field. */
 	private String label;
 	
-	/** The form this field is part of. */
-	@ManyToOne
-	private Form parentForm;
-	
 	/** The type of this field. */
 	@Enumerated(EnumType.STRING)
 	private FormFieldType type;
 
 //> CONSTRUCTORS
+	/** Empty constructor for hibernate */
+	FormField() {}
+	
 	/**
 	 * Get a new {@link FormField}.
-	 * @param parentForm
 	 * @param type
 	 * @param label
 	 */
-	public FormField(Form parentForm, FormFieldType type, String label) {
-		this.parentForm = parentForm;
+	public FormField(FormFieldType type, String label) {
 		this.type = type;
 		this.label = label;
 	}
 	
 //> ACCESSOR METHODS
-	/** @return {@link #parentForm} */
-	public Form getForm() {
-		return this.parentForm;
-	}
-
 	/** @return {@link #type} */
 	public FormFieldType getType() {
 		return this.type;

@@ -8,7 +8,6 @@ import net.frontlinesms.junit.HibernateTestCase;
 import net.frontlinesms.data.DuplicateKeyException;
 import net.frontlinesms.data.repository.ReusableSmsInternetServiceSettingsDaoTest;
 import net.frontlinesms.data.repository.SmsInternetServiceSettingsDao;
-import net.frontlinesms.data.repository.hibernate.*;
 
 import org.springframework.beans.factory.annotation.Required;
 

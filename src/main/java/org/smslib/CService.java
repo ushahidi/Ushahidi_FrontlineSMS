@@ -25,23 +25,21 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import java.util.StringTokenizer;
+import java.util.TimeZone;
 import java.util.TooManyListenersException;
 
-//#ifdef COMM_JAVAX
-import javax.comm.*;
-//#else
-//# import gnu.io.*;
-//#endif
+import serial.*;
 
-import net.frontlinesms.hex.HexUtils;
 
 import org.apache.log4j.Logger;
-import org.smslib.CMessage.MessageEncoding;
+import org.smslib.sms.SmsMessageEncoding;
+import org.smslib.util.GsmAlphabet;
+import org.smslib.util.HexUtils;
+import org.smslib.util.TpduUtils;
 
 /**
  * This is the main SMSLib service class.
@@ -79,7 +77,7 @@ public class CService {
 
 	private int asyncPollInterval = 10 * 1000;
 
-	private int asyncRecvClass = CService.MessageClass.All;
+	private MessageClass asyncRecvClass = MessageClass.ALL;
 
 	private int retriesNoResponse = 5;
 
@@ -92,6 +90,8 @@ public class CService {
 	private final Logger log;
 
 	private static final String VALUE_NOT_REPORTED = "* N/A *";
+	/** {@link TimeZone} for UTC.  This is used to standardise times. */
+	private static final TimeZone TIMEZONE_UTC = TimeZone.getTimeZone("GMT");
 
 	private String smscNumber;
 
@@ -316,11 +316,11 @@ public class CService {
 		return (asyncPollInterval / 1000);
 	}
 
-	public void setAsyncRecvClass(int msgClass) {
+	public void setAsyncRecvClass(MessageClass msgClass) {
 		asyncRecvClass = msgClass;
 	}
 
-	public int getAsyncRecvClass() {
+	public MessageClass getAsyncRecvClass() {
 		return asyncRecvClass;
 	}
 
@@ -488,23 +488,20 @@ public class CService {
 	 * Connects to the GSM modem.
 	 * <p>
 	 * The connect() function should be called before any operations. Its purpose is to open the serial link, check for modem existence, initialize modem, start background threads and prepare for subsequent operations.
+	 * @throws SMSLibDeviceException If there was a problem initiating the connection to the device
+	 * @throws IOException 
+	 * @throws TooManyListenersException 
+	 * @throws PortInUseException 
+	 * @throws NoSuchPortException 
+	 * @throws DebugException 
+	 * @throws UnsupportedCommOperationException 
 	 * 
 	 * @see #disconnect()
-	 * @throws NotConnectedException
-	 *             Nobody is answering.
-	 * @throws AlreadyConnectedException
-	 *             Already connected.
-	 * @throws NoPinException
-	 *             If PIN is requested from the modem but no PIN is defined.
-	 * @throws InvalidPinException
-	 *             If the defined PIN is not accepted by the modem.
-	 * @throws NoPduSupportException
-	 *             The modem does not support PDU mode - fatal error!
 	 */
 	// TODO this now throws a lot more exceptions!  The JAVADOC needs updating to reflect this.  Also, it would be wise
 	// to check that throwing this many different exceptions from one method is actually reasonable behaviour -  It seems
 	// logical, but also looks ridiculous.
-	public void connect() throws AlreadyConnectedException, IOException, InvalidPinException, InvalidPin2Exception, NoPinException, NoPin2Exception, NoSuchPortException, PortInUseException, NotConnectedException, UnsupportedCommOperationException, TooManyListenersException, GsmNetworkRegistrationException, NoTextSupportException, NoPduSupportException, UnrecognizedHandlerProtocolException, DebugException {
+	public void connect() throws SMSLibDeviceException, IOException, TooManyListenersException, PortInUseException, NoSuchPortException, DebugException, UnsupportedCommOperationException {
 		synchronized (_SYNC_) {
 			if (isConnected()) throw new AlreadyConnectedException();
 			else try {
@@ -515,14 +512,25 @@ public class CService {
 				atHandler.reset();
 				serialDriver.setNewMsgMonitor(newMsgMonitor);
 				if (atHandler.isAlive()) {
-					if (atHandler.waitingForPin()) {
+					
+					// check if the device is asking for PIN or PUK
+					String pinResponse = atHandler.getPinResponse();
+					if(atHandler.isWaitingForPin(pinResponse)) {
 						if (getSimPin() == null) throw new NoPinException();
-						else if (!atHandler.enterPin(getSimPin())) throw new InvalidPinException();
-						if (atHandler.waitingForPin()) {
-							if (getSimPin2() == null) throw new NoPin2Exception();
-							else if (!atHandler.enterPin(getSimPin2())) throw new InvalidPin2Exception();
-						}
+						if (!atHandler.enterPin(getSimPin())) throw new InvalidPinException();
+						
+						// If we're still waiting for the PIN, we made need the 2nd PIN number
+						String secondPinResponse = atHandler.getPinResponse();
+						if (getSimPin2() == null) throw new NoPinException();
+						if (!atHandler.enterPin(getSimPin2())) throw new InvalidPin2Exception();
 					}
+					
+					if(atHandler.isWaitingForPuk(pinResponse)) {
+						// TODO is there a more suitable exception?  If not, one should be created, as we ultimately want to catch this and allow the user to enter the PUK
+						// FIXME or is it PUK2?
+						throw new SMSLibDeviceException("PUK Required!");
+					}
+					
 					atHandler.init();
 					atHandler.echoOff();
 					waitForNetworkRegistration();
@@ -550,10 +558,10 @@ public class CService {
 				} else {
 					throw new NotConnectedException("GSM device is not responding.");
 				}
-			} catch(IOException ex) {
+			} catch(SMSLibDeviceException ex) {
 				try { disconnect(); } catch (Exception _) {}
 				throw ex;
-			} catch(NoPinException ex) {
+			} catch(IOException ex) {
 				try { disconnect(); } catch (Exception _) {}
 				throw ex;
 			} catch (NoSuchPortException ex) {
@@ -568,31 +576,7 @@ public class CService {
 			} catch (TooManyListenersException ex) {
 				try { disconnect(); } catch (Exception _) {}
 				throw ex;
-			} catch (InvalidPinException ex) {
-				try { disconnect(); } catch (Exception _) {}
-				throw ex;
-			} catch (NoPin2Exception ex) {
-				try { disconnect(); } catch (Exception _) {}
-				throw ex;
-			} catch (NoPduSupportException ex) {
-				try { disconnect(); } catch (Exception _) {}
-				throw ex;
-			} catch (NotConnectedException ex) {
-				try { disconnect(); } catch (Exception _) {}
-				throw ex;
-			} catch (NoTextSupportException ex) {
-				try { disconnect(); } catch (Exception _) {}
-				throw ex;
-			} catch (UnrecognizedHandlerProtocolException ex) {
-				try { disconnect(); } catch (Exception _) {}
-				throw ex;
-			} catch (GsmNetworkRegistrationException ex) {
-				try { disconnect(); } catch (Exception _) {}
-				throw ex;
 			} catch (DebugException ex) {
-				try { disconnect(); } catch (Exception _) {}
-				throw ex;
-			} catch (InvalidPin2Exception ex) {
 				try { disconnect(); } catch (Exception _) {}
 				throw ex;
 			}
@@ -661,14 +645,13 @@ public class CService {
 	 *            The list to be populated with messages.
 	 * @param messageClass
 	 *            The message class of the messages to read.
-	 * @throws NotConnectedException
-	 *             Either connect() is not called or modem has been disconnected.
+	 * @throws SMSLibDeviceException 
 	 * @see CService#readMessages(LinkedList, int, int)
 	 * @see CIncomingMessage
 	 * @see CService.MessageClass
 	 * @see CService#sendMessage(COutgoingMessage)
 	 */
-	public void readMessages(LinkedList<CIncomingMessage> messageList, int messageClass) throws IOException, NotConnectedException, UnrecognizedHandlerProtocolException {
+	public void readMessages(LinkedList<CIncomingMessage> messageList, MessageClass messageClass) throws IOException, SMSLibDeviceException {
 		switch (protocol) {
 			case Protocol.PDU:
 				readMessages_PDU(messageList, messageClass);
@@ -710,13 +693,14 @@ public class CService {
 		if (isIncomingMessage(pdu)) {
 			log.info("PDU appears to be an incoming message.  Processing accordingly.");
 			CIncomingMessage msg = new CIncomingMessage(pdu, memIndex, atHandler.storageLocations.substring((memoryLocation * 2), (memoryLocation * 2) + 2));
-			// Check if this message is multipart.  We can tell this from the mpRefNo of the
-			// message.  If it is set to zero, then we assume that this is a single-part message.
-			if (msg.getMpRefNo() == CIncomingMessage.CONCAT_REFERENCE_NUMBER_NOT_SET) {
+			// Check if this message is multipart.
+			if (!msg.isMultipart()) {
+				// This message has only one part, so add it to the list for immediate processing
 				log.info("Single part message; adding to message list.");
 				messageList.add(msg);
 				deviceInfo.getStatistics().incTotalIn();
 			} else {
+				// This message has multiple parts, so add it to the list of concat messages
 				log.info("Concatenated message part.  Adding to concat parts list.");
 				addConcatenatedMessagePart(msg);
 			}
@@ -729,7 +713,7 @@ public class CService {
 		}
 	}
 
-	private void readMessages_PDU(LinkedList<CIncomingMessage> messageList, int messageClass) throws IOException, NotConnectedException, UnrecognizedHandlerProtocolException
+	private void readMessages_PDU(LinkedList<CIncomingMessage> messageList, MessageClass messageClass) throws IOException, SMSLibDeviceException
 	{
 		synchronized (_SYNC_) {
 			if (!isConnected()) {
@@ -788,13 +772,16 @@ public class CService {
 		log.debug("IN-DTLS: MI:" + messagePart.getMemIndex() + " REF:" + messagePart.getMpRefNo() + " MAX:" + messagePart.getMpMaxNo() + " SEQ:" + messagePart.getMpSeqNo());
 		// Check to see if this message is part of a multipart message that we already have a
 		// bit of.  If this is the case, we'll join it up with the other bits.  If it is a
-		// duplicate then TODO we should probably delete it.  If it is not related to any other
-		// parts we already have, we just add it to our parts list.
+		// duplicate then TODO we should probably delete it from the device.  If it is not related
+		// to any other parts we already have, we just add it to our parts list.
 		for (int k = 0; k < mpMsgList.size(); k++) {
 			LinkedList<CIncomingMessage> tmpList = mpMsgList.get(k);
 			CIncomingMessage listMsg =  tmpList.get(0);
 			
-			if (listMsg.getMpRefNo() == messagePart.getMpRefNo()) {
+			// We can tell if a message is part of another message by checking the reference number
+			// and the sender number are the same.
+			if (listMsg.getMpRefNo() == messagePart.getMpRefNo()
+					&& listMsg.getOriginator().equals(messagePart.getOriginator())) {
 				// We've found the message that this is a part of.  Check if it's
 				// a duplicate.
 				for (int l = 0; l < tmpList.size(); l++) {
@@ -829,7 +816,7 @@ public class CService {
 		return Integer.parseInt(responseLine.substring(i + 1, j).trim());
 	}
 
-	private void readMessages_TEXT(LinkedList<CIncomingMessage> messageList, int messageClass) throws IOException, NotConnectedException, UnrecognizedHandlerProtocolException
+	private void readMessages_TEXT(LinkedList<CIncomingMessage> messageList, MessageClass messageClass) throws IOException, SMSLibDeviceException
 	{
 		int i, j, memIndex;
 		byte[] bytes;
@@ -837,8 +824,6 @@ public class CService {
 		BufferedReader reader;
 		StringTokenizer tokens;
 		CIncomingMessage msg;
-		Calendar cal1 = Calendar.getInstance();
-		Calendar cal2 = Calendar.getInstance();
 
 		synchronized (_SYNC_) {
 			if (isConnected()) {
@@ -865,6 +850,9 @@ public class CService {
 							tokens.nextToken();
 							tokens.nextToken();
 							if (Character.isDigit(tokens.nextToken().trim().charAt(0))) {
+								Calendar cal1 = Calendar.getInstance(TIMEZONE_UTC);
+								Calendar cal2 = Calendar.getInstance(TIMEZONE_UTC);
+								
 								line = line.replaceAll(",,", ", ,");
 								tokens = new StringTokenizer(line, ",");
 								tokens.nextToken();
@@ -889,11 +877,13 @@ public class CService {
 								cal2.set(Calendar.MINUTE, Integer.parseInt(dateStr.substring(3, 5)));
 								cal2.set(Calendar.SECOND, Integer.parseInt(dateStr.substring(6, 8)));
 
-								msg = new CStatusReportMessage(Integer.parseInt(refNo), memIndex, atHandler.storageLocations.substring((ml * 2), (ml * 2) + 2), cal1.getTime(), cal2.getTime());
+								msg = new CStatusReportMessage(Integer.parseInt(refNo), memIndex, atHandler.storageLocations.substring((ml * 2), (ml * 2) + 2), cal1.getTimeInMillis(), cal2.getTimeInMillis());
 								log.debug("IN-DTLS: MI:" + msg.getMemIndex());
 								messageList.add(msg);
 								deviceInfo.getStatistics().incTotalIn();
 							} else {
+								Calendar cal1 = Calendar.getInstance(TIMEZONE_UTC);
+								
 								line = line.replaceAll(",,", ", ,");
 								tokens = new StringTokenizer(line, ",");
 								tokens.nextToken();
@@ -925,7 +915,7 @@ public class CService {
 									// N.B. should confirm that is exactly what it's doing before replacing!
 								}
 								
-								msg = new CIncomingMessage(cal1.getTime(), originator, msgText, memIndex, atHandler.storageLocations.substring((ml * 2), (ml * 2) + 2));
+								msg = new CIncomingMessage(cal1.getTimeInMillis(), originator, msgText, memIndex, atHandler.storageLocations.substring((ml * 2), (ml * 2) + 2));
 								log.debug("IN-DTLS: MI:" + msg.getMemIndex());
 								messageList.add(msg);
 								deviceInfo.getStatistics().incTotalIn();
@@ -971,9 +961,10 @@ public class CService {
 								// TODO Does this properly handle multipart messages whose parts are received in the wrong order?
 								if (mpMsg != null)
 								{
-									if (mpMsg.getMessageEncoding() == MessageEncoding.Enc7Bit || mpMsg.getMessageEncoding() == MessageEncoding.EncUcs2) {
+									if (mpMsg.getMessageEncoding() == SmsMessageEncoding.GSM_7BIT || mpMsg.getMessageEncoding() == SmsMessageEncoding.UCS2) {
 										mpMsg.setText(mpMsg.getText() + listMsg.getText());
 									} else {
+										// FIXME this really doesn't look like it concatenates binary messages properly
 										byte[] extraBinary = listMsg.getBinary();
 										byte[] binary = mpMsg.getBinary();
 										byte[] newContent = new byte[binary.length + extraBinary.length];
@@ -1103,13 +1094,12 @@ public class CService {
 			}
 			if (refNo >= 0) {
 				message.setRefNo(refNo);
-				message.dispatchDate = new Date();
+				message.setDispatchDate();
 				deviceInfo.getStatistics().incTotalOut();
 			} else if (refNo == -2) {
 				disconnect();
 				return;
 			} else {
-				message.dispatchDate = null;
 				break;
 			}
 		}
@@ -1140,13 +1130,21 @@ public class CService {
 		synchronized (_SYNC_) {
 			refNo = atHandler.sendMessage(0, null, message.getRecipient(), hexText);
 		}
+		// The refNo should only be set here if the message was sent
 		if (refNo >= 0) {
 			message.setRefNo(refNo);
-			message.dispatchDate = new Date();
+			message.setDispatchDate();
 			deviceInfo.getStatistics().incTotalOut();
-		} else message.dispatchDate = null;
+		}
 	}
 
+	/**
+	 * Delete the message at a specific location in a specific memory of the device.
+	 * @param memIndex The index into the message memory.
+	 * @param memLocation The name of the memory.
+	 * @throws NotConnectedException if the device is not connected
+	 * @throws IOException if there is a problem communicating with the device
+	 */
 	protected void deleteMessage(int memIndex, String memLocation) throws NotConnectedException, IOException {
 		synchronized (_SYNC_) {
 			if (isConnected()) atHandler.deleteMessage(memIndex, memLocation);
@@ -1508,13 +1506,39 @@ public class CService {
 	}
 
 	/** Holds values representing the message class of the message to be read from the GSM device. */
-	public static class MessageClass {
+	public static enum MessageClass {
 		/** Read all messages. */
-		public static final int All = 1;
+		ALL(4, "ALL"),
 		/** Read unread messages. After reading, all returned messages will be marked as read. */
-		public static final int Unread = 2;
+		UNREAD(0, "REC UNREAD"),
 		/** Read already-read messages. */
-		public static final int Read = 3;
+		READ(1, "REC READ");
+
+	//> INSTANCE PROPERTIES
+		/** text ID for this {@link MessageClass} when listing messages on a device in TEXT mode */
+		private final String textModeId;
+		/** integer ID for this {@link MessageClass} when listing messages on a device in PDU mode */
+		private final int pduModeId;
+		
+	//> CONSTRUCTORS
+		/**
+		 * Create a new {@link MessageClass}
+		 * @param pduModeId value for {@link #pduModeId}
+		 * @param textModeId value for {@link #textModeId}
+		 */
+		MessageClass(int pduModeId, String textModeId) {
+			this.pduModeId = pduModeId;
+			this.textModeId = textModeId;
+		}
+
+		/** @return the text ID for this {@link MessageClass} when listing messages on a device in TEXT mode. */
+		public String getTextId() {
+			return this.textModeId;
+		}
+		/** @return the integer ID for this {@link MessageClass} when listing messages on a device in PDU mode. */
+		public int getPduModeId() {
+			return this.pduModeId;
+		}
 	}
 
 	/**

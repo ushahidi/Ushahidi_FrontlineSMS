@@ -51,6 +51,7 @@
 				</panel>
 			</panel>
 			<panel columns="1" weightx="1" weighty="1">
+			    <!-- Commented out by Emmanuel Kala 
 				<panel weightx="1" gap="5" bottom="5">
 					<checkbox text="i18n.common.clustered.data" icon="/icons/clustered_data.png" group="datatype" />
 					<checkbox text="i18n.common.point.data" icon="/icons/point_data.png" group="datatype" selected="true" />
@@ -67,20 +68,29 @@
 						</panel>
 					</panel>
 				</panel>
+				-->
+				<panel halign="center" weightx="1" gap="5" bottom="10">
+					<label text="Zoom "/>
+					<slider minimum="1" unit="1" block="1" maximum="25" value="7" orientation="horizontal" 
+						name="sld_ZoomController" action="zoomMap(this)"/>					
+				</panel>
 				<panel weightx="1" weighty="1" border="true">
 					<bean name="mapBean" bean="com.ushahidi.plugins.mapping.ui.MapBean" weightx="1" weighty="1">
-		                <popupmenu name="menu">		                    		                    		                   
+		                <popupmenu name="menu">
+		                    <!-- Commented out by Emmanuel Kala -->		                    		                    		                   
+		                    <!--
 		                    <menu name="onlineMapsMenu" text="i18n.action.add.to.group"/>
 		                    <menu name="offlineMapsMenu" text="i18n.action.add.to.group"/>
 		                    <separator name="sp1"/>
-		                    <menuitem name="saveMap" text="i18n.action.save.map" action="saveMap" />		                    		                    
+		                    -->
+		                    <menuitem icon="/icons/tick.png" name="saveMap" text="i18n.action.save" action="saveMap" />		                    		                    
 		                </popupmenu>					
 					</bean>
 				</panel>
 				<panel weightx="1" top="10">
 					<panel gap="10">
 						<button icon="/icons/map_setup.png" text="i18n.common.setup" action="showSetupDialog" />
-						<button icon="/icons/map_reports.png" text="i18n.common.reports" />
+						<button icon="/icons/map_reports.png" text="i18n.common.reports" action="showReports"/>
 					</panel>
 					<panel gap="10" left="15" halign="center" weightx="1" weighty="1">
 						<label icon="/icons/powered_by.gif" />

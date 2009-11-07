@@ -31,21 +31,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-//#ifdef COMM_JAVAX
-import javax.comm.*;
-//#else
-//# import gnu.io.*;
-//#endif
+import serial.*;
 
 import net.frontlinesms.CommUtils;
-import net.frontlinesms.FrontlineSMSConstants;
 import net.frontlinesms.Utils;
 import net.frontlinesms.data.domain.Message;
 import net.frontlinesms.listener.SmsListener;
-import net.frontlinesms.properties.PropertySet;
+import net.frontlinesms.smsdevice.internet.SmsInternetService;
 
 import org.apache.log4j.Logger;
 import org.smslib.CIncomingMessage;
+import org.smslib.handler.CATHandler;
 
 /**
  * SmsHandler should be run as a separate thread.
@@ -127,12 +123,10 @@ public class SmsDeviceManager extends Thread implements SmsListener {
 	public SmsDeviceManager() {
 		super("SmsDeviceManager");
 		LOG.trace("ENTER");
+
 		// Load the COMM properties file, and extract the IGNORE list from
-		// it - this is a list of COM ports that should be ignored.
-		PropertySet properties = PropertySet.load(FrontlineSMSConstants.PROPERTIES_COMM);
-		String ignore = properties.getProperty(FrontlineSMSConstants.PROPERTIES_COMM_IGNORE);
-		if (ignore == null) portIgnoreList = new String[0];
-		else portIgnoreList = ignore.toUpperCase().split(",");
+		// it - this is a list of COM ports that should be ignored.		
+		this.portIgnoreList = CommProperties.getInstance().getIgnoreList();
 
 		listComPortsAndOwners(false);
 		LOG.trace("EXIT");
@@ -501,20 +495,21 @@ public class SmsDeviceManager extends Thread implements SmsListener {
 	 * @param activeDevice
 	 * @param smsDeviceEventCode
 	 */
-	public void smsDeviceEvent(SmsDevice device, int smsDeviceEventCode) {
+	public void smsDeviceEvent(SmsDevice device, SmsDeviceStatus deviceStatus) {
 		LOG.trace("ENTER");
+		
+		// Special handling for modems
 		if (device instanceof SmsModem) {
-			LOG.debug("Event [" + FrontlineSMSConstants.Dependants.STATUS_CODE_MESSAGES[smsDeviceEventCode] + "]");
+			LOG.debug("Event [" + deviceStatus + "]");
 			SmsModem activeDevice = (SmsModem) device;
-			switch (smsDeviceEventCode) {
-			case SmsModem.STATUS_DISCONNECTED:
+			if(deviceStatus.equals(SmsModemStatus.DISCONNECTED)) {
 				// A device has just disconnected.  If we aren't using the device for sending or receiving,
 				// then we should just ditch it.  However, if we *are* actively using the device, then we
 				// would probably want to attempt to reconnect.  Also, if we were previously connected to 
 				// this device then we should now remove its serial number from the list of connected serials.
 				if(!activeDevice.isDuplicate()) connectedSerials.remove(activeDevice.getSerial());
-				break;
-			case SmsModem.STATUS_CONNECTING:
+			}
+			if(deviceStatus.equals(SmsModemStatus.CONNECTING)) {
 				// The max speed for this connection has been found.  If this connection
 				// is a duplicate, we should set the duplicate flag to true.  Otherwise,
 				// we may wish to reconnect.
@@ -523,10 +518,12 @@ public class SmsDeviceManager extends Thread implements SmsListener {
 					activeDevice.setDuplicate(isDuplicate);
 					if(!isDuplicate) activeDevice.connect();
 				}
-				break;
 			}
 		}
-		if (smsListener != null) smsListener.smsDeviceEvent(device, smsDeviceEventCode);
+		
+		if (smsListener != null) {
+			smsListener.smsDeviceEvent(device, deviceStatus);
+		}
 		LOG.trace("EXIT");
 	}
 
@@ -551,26 +548,35 @@ public class SmsDeviceManager extends Thread implements SmsListener {
 		requestConnect(CommPortIdentifier.getPortIdentifier(port), true);
 	}
 
-	public void requestConnect(String portName, int baudRate, String preferredCATHandler) throws NoSuchPortException {
+	/**
+	 * <p>Attempt to connect to an {@link SmsModem} on a particular COM port.  This method allows you to specify
+	 * the preffered {@link CATHandler} to be used.</p>
+	 * <p>If the port is already in use then connection to the port will not be attempted.</p>
+	 * @param portName
+	 * @param baudRate
+	 * @param preferredCATHandler
+	 * @return <code>true</code> if connection is being attempted to the port; <code>false</code> if the port is already in use.
+	 * @throws NoSuchPortException
+	 */
+	public boolean requestConnect(String portName, int baudRate, String preferredCATHandler) throws NoSuchPortException {
 		CommPortIdentifier portIdentifier = CommPortIdentifier.getPortIdentifier(portName);
 
-		LOG.debug("Port Name [" + portName + "]");
-		if(!shouldIgnore(portName) && portIdentifier.getPortType() == CommPortIdentifier.PORT_SERIAL) {
-			LOG.debug("It is a suitable port.");
-			if(!portIdentifier.isCurrentlyOwned()) {
-				LOG.debug("Connecting to port...");
-				SmsModem phoneHandler = new SmsModem(portName, this);
-				phoneHandlers.put(portName, phoneHandler);
-				phoneHandler.start(baudRate, preferredCATHandler);
-			} else {
-				if(!phoneHandlers.containsKey(portName)) {
-					// If we don't have a handle on this port, but it's owned by someone else,
-					// then we add it to the phoneHandlers list anyway so that we can see its
-					// status.
-					LOG.debug("Port currently owned by another process.");
-					phoneHandlers.put(portName, new SmsModem(portName, this));
-				}
+		if(LOG.isInfoEnabled()) LOG.info("Requested connection to port: '" + portName + "'");
+		if(!portIdentifier.isCurrentlyOwned()) {
+			LOG.info("Connecting to port...");
+			SmsModem phoneHandler = new SmsModem(portName, this);
+			phoneHandlers.put(portName, phoneHandler);
+			phoneHandler.start(baudRate, preferredCATHandler);
+			return true;
+		} else {
+			LOG.info("Port currently owned by another process: '" + portIdentifier.getCurrentOwner() + "'");
+			if(!phoneHandlers.containsKey(portName)) {
+				// If we don't have a handle on this port, but it's owned by someone else,
+				// then we add it to the phoneHandlers list anyway so that we can see its
+				// status.
+				phoneHandlers.put(portName, new SmsModem(portName, this));
 			}
+			return false;
 		}
 	}
 

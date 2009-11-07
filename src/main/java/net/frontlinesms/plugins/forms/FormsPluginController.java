@@ -8,6 +8,8 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Required;
+import org.springframework.context.ApplicationContext;
 
 import net.frontlinesms.FrontlineSMS;
 import net.frontlinesms.Utils;
@@ -16,6 +18,7 @@ import net.frontlinesms.data.domain.Contact;
 import net.frontlinesms.data.domain.Message;
 import net.frontlinesms.listener.IncomingMessageListener;
 import net.frontlinesms.plugins.PluginController;
+import net.frontlinesms.plugins.PluginInitialisationException;
 import net.frontlinesms.plugins.forms.data.domain.Form;
 import net.frontlinesms.plugins.forms.data.domain.FormResponse;
 import net.frontlinesms.plugins.forms.data.domain.ResponseValue;
@@ -29,6 +32,8 @@ import net.frontlinesms.plugins.forms.response.FormsResponseDescription;
 import net.frontlinesms.plugins.forms.response.NewFormsResponse;
 import net.frontlinesms.plugins.forms.response.SubmittedDataResponse;
 import net.frontlinesms.plugins.forms.ui.FormsThinletTabController;
+import net.frontlinesms.resources.PropertySet;
+import net.frontlinesms.resources.ResourceUtils;
 import net.frontlinesms.ui.UiGeneratorController;
 
 /**
@@ -52,20 +57,52 @@ public class FormsPluginController implements PluginController, IncomingMessageL
 	/** DAO for form responses */
 	private FormResponseDao formResponseDao;
 	
+//> CONFIG METHODS
+	/** @see PluginController#getSpringConfigPath() */
+	public String getSpringConfigPath() {
+		return "classpath:net/frontlinesms/plugins/forms/frontlineforms-spring-hibernate.xml";
+	}
+	
+	/** @see PluginController#getHibernateConfigPath() */
+	public String getHibernateConfigPath() {
+		return "classpath:net/frontlinesms/plugins/forms/frontlineforms.hibernate.cfg.xml";
+	}
+	
 	/** @see PluginController#getName() */
 	public String getName() {
 		return "Forms";
 	}
 	
-	/** @see PluginController#init(FrontlineSMS) */
-	public void init(FrontlineSMS frontlineController) {
+	/** @see PluginController#init(FrontlineSMS, ApplicationContext) */
+	public void init(FrontlineSMS frontlineController, ApplicationContext applicationContext) throws PluginInitialisationException {
 		this.frontlineController = frontlineController;
 		this.frontlineController.addIncomingMessageListener(this);
+		
+		try {
+			this.formsDao = (FormDao) applicationContext.getBean("formDao");
+			this.formResponseDao = (FormResponseDao) applicationContext.getBean("formResponseDao");
+			
+			String handlerClassName = FormsProperties.getInstance().getHandlerClassName();
+			this.formsMessageHandler = (FormsMessageHandler) Class.forName(handlerClassName).newInstance();
+		} catch(Throwable t) {
+			log.warn("Unable to load form handler class.", t);
+			throw new PluginInitialisationException(t);
+		}
 	}
 
 	/** @see PluginController#getTab(UiGeneratorController)  */
 	public Object getTab(UiGeneratorController uiController) {
-		return uiController.loadComponentFromFile(XML_FORMS_TAB, new FormsThinletTabController(this, uiController));
+		FormsThinletTabController tabController = new FormsThinletTabController(this, uiController);
+		tabController.setContactDao(this.frontlineController.getContactDao());
+		tabController.setFormsDao(formsDao);
+		tabController.setFormResponseDao(formResponseDao);
+
+		Object formsTab = uiController.loadComponentFromFile(XML_FORMS_TAB, tabController);
+		tabController.setTabComponent(formsTab);
+		
+		tabController.refresh();
+		
+		return formsTab;
 	}
 
 	/** @return {@link #frontlineController} */
@@ -77,18 +114,26 @@ public class FormsPluginController implements PluginController, IncomingMessageL
 	public void incomingMessageEvent(Message message) {
 		try {
 			FormsRequestDescription request = this.formsMessageHandler.handleIncomingMessage(message);
-			FormsResponseDescription response = null;
+			
+			FormsResponseDescription response;
 			if(request instanceof DataSubmissionRequest) {
-				handleDataSubmissionRequest((DataSubmissionRequest)request, message);
+				response = handleDataSubmissionRequest((DataSubmissionRequest)request, message);
 			} else if(request instanceof NewFormRequest) {
-				handleNewFormRequest((NewFormRequest)request, message);
+				response = handleNewFormRequest((NewFormRequest)request, message);
 			} else {
 				throw new IllegalStateException("Unknown form request description type: " + request);
 			}
+			
+			// If there is a response to send back to the form submitter, then process it
 			if(response != null) {
 				Collection<Message> responseMessages = this.formsMessageHandler.handleOutgoingMessage(response);
 				log.info("Sending forms response.  Response messages: " + responseMessages.size());
 				for(Message responseMessage : responseMessages) {
+					// Make sure that the response is sent to the correct recipient!
+					responseMessage.setRecipientMsisdn(message.getSenderMsisdn());
+					if(request.getSmsPort() != null) {
+						responseMessage.setRecipientSmsPort(request.getSmsPort());
+					}
 					this.frontlineController.sendMessage(responseMessage);
 				}
 				log.trace("Response messages sent.");
@@ -158,7 +203,32 @@ public class FormsPluginController implements PluginController, IncomingMessageL
 	 * @param contacts the contacts to send the form to
 	 */
 	public void sendForm(Form form, Collection<Contact> contacts) {
-		// TODO Auto-generated method stub
+		// TODO if it is possible, we could send forms directly to people here
+		// Send a text SMS to each contact informing them that a new form is available.
+		
+		// FIXME i18n this
+		String messageContent = "There is a new form available: " + form.getName();
+		for(Contact c : contacts) {
+			this.frontlineController.sendTextMessage(c.getMsisdn(), messageContent);
+		}
+	}
+
+	/**
+	 * Set {@link #formResponseDao}
+	 * @param formResponseDao new value for {@link #formResponseDao}
+	 */
+	@Required
+	public void setFormResponseDao(FormResponseDao formResponseDao) {
+		this.formResponseDao = formResponseDao;
+	}
+	
+	/**
+	 * Set {@link #formsDao}
+	 * @param formsDao new value for {@link #formsDao}
+	 */
+	@Required
+	public void setFormsDao(FormDao formsDao) {
+		this.formsDao = formsDao;
 	}
 
 	public void initializePluginData() {

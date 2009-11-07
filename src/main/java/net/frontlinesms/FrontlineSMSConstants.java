@@ -19,18 +19,17 @@
  */
 package net.frontlinesms;
 
-import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import net.frontlinesms.data.DuplicateKeyException;
 import net.frontlinesms.data.domain.Contact;
 import net.frontlinesms.ui.i18n.InternationalisationUtils;
 
 // FIXME many of these constants are UI-specific
-public class FrontlineSMSConstants {	
-	public static final String VERSION = Utils.getVersion();
+public final class FrontlineSMSConstants {
+	/** String for displaying the version of the application.  This has 1 substitution variable. */
+	public static final String I18N_APP_VERSION = "application.version";
 	
 	public static final String FRONTLINE_SUPPORT_EMAIL = "frontlinesupport@kiwanja.net";
 	public static final String FRONTLINE_SUPPORT_EMAIL_SERVER = "mail.kiwanja.net";
@@ -38,10 +37,6 @@ public class FrontlineSMSConstants {
 	public static final String ZIPPED_LOGS_FILENAME = "logs.zip";
 	
 	public static final String USE_DATABASE = "db";
-	public static final String CLASSIC_MODE = "classic";
-	public static final String NEW_MODE = "new";
-	public static final String WINDOW_STATE_MAXIMISED = "maximised";
-	public static final String WINDOW_STATE_NORMAL = "normal";
 	
 	public static final String UNKNOWN_NOTES = "sentence.contact.added.automatically";
 	public static final String UNKNOWN_NAME = "common.unnamed.contact";
@@ -62,62 +57,11 @@ public class FrontlineSMSConstants {
 	public static final String PROPERTY_ACTION = "action";
 	public static final String PROPERTY_COUNT = "count";
 	
-	/** Filename of the database config file to use. */
-	public static final String PROPERTIES_DATABASE_CONFIG_FILE = "database.config";
-	public static final String PROPERTIES_VIEW_MODE = "view.mode";
-	public static final String PROPERTIES_APP = "app";
 	public static final String PROPERTIES_SMS_INTERNET_ICONS = "sms.internet.icons";
-	public static final String PROPERTIES_UI = "ui";
-	public static final String PROPERTIES_COMM = "comm";
-	public static final String PROPERTIES_COMM_IGNORE = "ignore";
-	public static final String PROPERTIES_WINDOW_WIDTH = "window.width";
-	public static final String PROPERTIES_WINDOW_STATE = "window.state";
-	public static final String PROPERTIES_WINDOW_HEIGHT = "window.height";
-	public static final String PROPERTIES_DATABASE_PASSWORD = "database.password";
-	public static final String PROPERTIES_DATABASE_USERNAME = "database.username";
-	public static final String PROPERTIES_DERBY = "derby";
-	public static final String PROPERTIES_SERVER_PASSWORD = "server.password";
-	public static final String PROPERTIES_SERVER_USERNAME = "server.username";
-	public static final String PROPERTIES_SERVER_PORT = "server.port";
-	public static final String PROPERTIES_SERVER_ADDRESS = "server.address";
-	public static final String PROPERTIES_MYSQL = "mysql";
-	public static final String PROPERTIES_DATABASE_NAME = "database.name";
-	public static final String PROPERTIES_SQLITE = "sqlite";
-	public static final String PROPERTIES_DATABASE_TYPE = "database.type";
-	public static final String PROPERTIES_DATABASE = "database";
-	public static final String PROPERTIES_SHOW_WIZARD = "first.time.wizard";
-	public static final String PROPERTIES_LANGUAGE_FILENAME = "language.filename";
-	
-	public static final String MARKER_SENDER_NUMBER = "${sender_number}";
-	public static final String MARKER_SENDER_NAME = "${sender_name}";
-	public static final String MARKER_RECIPIENT_NUMBER = "${recipient_number}";
-	public static final String MARKER_RECIPIENT_NAME = "${recipient_name}";
-	public static final String MARKER_MESSAGE_CONTENT = "${message_content}";
-	public static final String MARKER_MESSAGE_DATE = "${message_date}";
-	public static final String MARKER_CONTACT_NAME = "${contact_name}";
-	public static final String MARKER_CONTACT_PHONE = "${contact_phone}";
-	public static final String MARKER_CONTACT_OTHER_PHONE = "${contact_other_phone}";
-	public static final String MARKER_CONTACT_EMAIL = "${contact_email}";
-	public static final String MARKER_CONTACT_STATUS = "${contact_status}";
-	public static final String MARKER_CONTACT_NOTES = "${contact_notes}";
-	public static final String MARKER_CONTACT_GROUPS = "${contact_groups}";
-	public static final String MARKER_MESSAGE_TYPE = "${message_type}";
-	public static final String MARKER_MESSAGE_STATUS = "${message_status}";
-	public static final String MARKER_KEYWORD_KEY = "${keyword}";
-	public static final String MARKER_KEYWORD_DESCRIPTION = "${keyword_description}";
-	public static final String MARKER_COMMAND_RESPONSE = "${command_response}";
-	public static final String MARKER_SMS_ID = "${sms_id}";
 	
 	public static final String USER_MARKER_TO_NAME = "$to";
 
-	public static final String PROPERTY_USER_HOME = "user.home";
-
 	public static final int RESULTS_PER_PAGE_DEFAULT = 100;
-
-	public static final int DEFAULT_HEIGHT = 768;
-	public static final int DEFAULT_WIDTH = 1024;
-
-	public static final String TITLE = "FrontlineSMS " + VERSION;
 
 	public static final String ACTION_FORWARD = "action.create.forward.msg";
 	public static final String ACTION_ADD_KEYWORD = "action.add.keyword";
@@ -126,12 +70,18 @@ public class FrontlineSMSConstants {
 	public static final String ACTION_SAVE = "action.save";
 	public static final String ACTION_CANCEL = "action.cancel";
 	
+//> CONTACTS i18n Keys
+	/** [i18n key] "All contacts" */
+	public static final String CONTACTS_ALL = "contacts.all";
+	/** [i18n key] "Unnamed contacts" */
+	public static final String CONTACTS_UNNAMED = "contacts.unnamed";
+	/** [i18n key] "Ungrouped contacts" */
+	public static final String CONTACTS_UNGROUPED = "contacts.ungrouped";
+	
+// COMMON i18n Keys TODO these need commenting
 	public static final String COMMON_ALL = "common.all";
 	public static final String COMMON_ALL_MESSAGES = "common.all.messages";
-	public static final String COMMON_UNNAMED = "common.unnamed";
-	public static final String COMMON_UNGROUPED = "common.ungrouped";
 	public static final String COMMON_CONTACTS = "common.contacts";
-	public static final String COMMON_SETTINGS_FOR_PHONE = "common.settings.for.phone";
 	public static final String COMMON_GROUP = "common.group";
 	public static final String COMMON_SURVEY = "common.survey";
 	public static final String COMMON_REPLY = "common.reply";
@@ -193,10 +143,6 @@ public class FrontlineSMSConstants {
 	public static final String COMMON_CONTENT = "common.content";
 	public static final String COMMON_CONTACTS_IN_GROUP = "common.contacts.in.group";
 	public static final String COMMON_KEYWORD_ACTIONS_OF = "common.keyword.actions.of";
-	public static final String COMMON_PHONE_CONNECTED = "common.phone.connected";
-	public static final String COMMON_SMS_INTERNET_SERVICE_CONNECTED = "common.sms.internet.service.connected";
-	public static final String COMMON_SMS_INTERNET_SERVICE_RECEIVING_FAILED = "common.sms.internet.service.receiving.failed";
-	public static final String COMMON_FIRST_TIME_WIZARD = "common.first.time.wizard";
 	public static final String COMMON_EDITING_SMS_SERVICE = "common.edting.sms.service";
 	public static final String COMMON_EDITING_EMAIL_ACCOUNT = "common.editing.email.account";
 	public static final String COMMON_BLANK = "common.blank";
@@ -236,18 +182,10 @@ public class FrontlineSMSConstants {
 	public static final String MESSAGE_GROUP_NO_MEMBERS = "message.no.members";
 	public static final String MESSAGE_KEYWORD_EXISTS = "message.keyword.already.exists";
 	public static final String MESSAGE_KEYWORD_SAVED = "message.keyword.saved";
-	public static final String MESSAGE_EXPORTING_ALL_CONTACTS = "message.exporting.all.contacts";
-	public static final String MESSAGE_EXPORTING_ALL_MESSAGES = "message.exporting.all.messages";
-	public static final String MESSAGE_EXPORTING_ALL_KEYWORDS = "message.exporting.all.keywords";
 	public static final String MESSAGE_MESSAGE_OR_CMD_BLANK = "message.message.or.cmd.blank";
 	public static final String MESSAGE_KEYWORD_BLANK = "message.keyword.blank";
 	public static final String MESSAGE_CONTACT_IS_ALREADY_LISTED = "message.contact.is.already.listed";
 	public static final String MESSAGE_GROUP_IS_ALREADY_LISTED = "message.group.is.already.listed";
-	public static final String MESSAGE_IMPORT_FAILED = "message.import.data.failed";
-	public static final String MESSAGE_IMPORTING_RECEIVED_MESSAGES = "message.importing.received.messages";
-	public static final String MESSAGE_IMPORTING_SENT_MESSAGES = "message.importing.sent.messages";
-	public static final String MESSAGE_IMPORTING_KEYWORDACTIONS = "message.importing.keywordactions";
-	public static final String MESSAGE_IMPORTING_CONTACTS_GROUPS = "message.importing.contacts.groups";
 	public static final String MESSAGE_ACCOUNT_NAME_BLANK = "message.account.name.blank";
 	public static final String MESSAGE_ACCOUNT_NAME_ALREADY_EXISTS = "message.account.already.exists";
 	public static final String MESSAGE_FAILED_TO_CONNECT = "message.failed.to.connect";
@@ -256,11 +194,6 @@ public class FrontlineSMSConstants {
 	public static final String MESSAGE_ONLY_DORMANTS = "message.only.dormants";
 	public static final String MESSAGE_WRONG_FORMAT_DATE = "message.wrong.format.date";
 	public static final String MESSAGE_START_DATE_AFTER_END = "message.start.date.after.end";
-	public static final String MESSAGE_GSM_REGISTRATION_FAILED = "message.gsm.registration.failed";
-	public static final String MESSAGE_OWNER_IS = "message.owner.is";
-	public static final String MESSAGE_EXPORTING_SELECTED_CONTACTS = "message.exporting.selected.contacts";
-	public static final String MESSAGE_EXPORTING_SELECTED_KEYWORDS = "message.exporting.selected.keywords";
-	public static final String MESSAGE_EXPORTING_SELECTED_MESSAGES = "message.exporting.selected.messages";
 	public static final String MESSAGE_CLICKATELL_ACCOUNT_BLANK = "message.clickatell.account.blank";
 	public static final String MESSAGE_LOG_FILES_SENT = "message.log.files.sent";
 	public static final String MESSAGE_FAILED_TO_SEND_REPORT = "message.failed.to.send.report";
@@ -278,25 +211,66 @@ public class FrontlineSMSConstants {
 	public static final String TOOLTIP_DRAG_TO_REMOVE = "tooltip.drag.to.remove";
 	public static final String TOOLTIP_DRAG_TO_PREVIEW = "tooltip.drag.to.preview";
 	
-	public static final String MONTH_JAN = "month.jan";
-	public static final String MONTH_FEB = "month.feb";
-	public static final String MONTH_MAR = "month.mar";
-	public static final String MONTH_APR = "month.apr";
-	public static final String MONTH_MAY = "month.may";
-	public static final String MONTH_JUN = "month.jun";
-	public static final String MONTH_JUL = "month.jul";
-	public static final String MONTH_AUG = "month.aug";
-	public static final String MONTH_SEP = "month.sep";
-	public static final String MONTH_OCT = "month.oct";
-	public static final String MONTH_NOV = "month.nov";
-	public static final String MONTH_DEC = "month.dec";
+	/** Keys for fetching month names from the language bundle. */
+	public static final String[] MONTH_KEYS = {
+			"month.jan",
+			"month.feb",
+			"month.mar",
+			"month.apr",
+			"month.may",
+			"month.jun",
+			"month.jul",
+			"month.aug",
+			"month.sep",
+			"month.oct",
+			"month.nov",
+			"month.dec"
+	};
+	
+
+//> SMS DEVICE STATUS KEYS
+	/** Key for text: SMS Device Status: dormant */
+	public static final String SMS_DEVICE_STATUS_DORMANT = COMMON_DORMANT;
+	/** Key for text: SMS Device Status: TODO */
+	public static final String SMS_DEVICE_STATUS_SEARCHING = "message.searching.for.devices";
+	/** Key for text: SMS Device Status: TODO */
+	public static final String SMS_DEVICE_STATUS_DETECTED = "message.phone.detected";
+	/** Key for text: SMS Device Status: TODO */
+	public static final String SMS_DEVICE_STATUS_CONNECTED = "common.connected";
+	/** Key for text: SMS Device Status: TODO */
+	public static final String SMS_DEVICE_STATUS_DISCONNECT = "common.disconnect";
+	/** Key for text: SMS Device Status: Disconnect forced - the device was forced to disconnect for some reason and cannot reconnect. */
+	public static final String SMS_DEVICE_STATUS_DISCONNECT_FORCED = "common.disconnect.forced";
+	/** Key for text: SMS Device Status: TODO */
+	public static final String SMS_DEVICE_STATUS_DUPLICATE = "message.duplicate.connection";
+	/** Key for text: SMS Device Status: TODO */
+	public static final String SMS_DEVICE_STATUS_MAX_SPEED = "message.max.speed.found";
+	/** Key for text: SMS Device Status: TODO */
+	public static final String SMS_DEVICE_STATUS_TRYING_TO_CONNECT = "message.trying.to.connect";
+	/** Key for text: SMS Device Status: TODO */
+	public static final String SMS_DEVICE_STATUS_NO_PHONE_DETECTED = "message.no.phone.detected";
+	/** Key for text: SMS Device Status: TODO */
+	public static final String SMS_DEVICE_STATUS_CONNECTING = "common.connecting";
+	/** Key for text: SMS Device Status: TODO */
+	public static final String SMS_DEVICE_STATUS_FAILED_TO_CONNECT = "common.failed.connect";
+	/** Key for text: SMS Device Status: TODO */
+	public static final String SMS_DEVICE_STATUS_LOW_CREDIT = "common.low.credit";
+	/** Key for text: SMS Device Status: TODO */
+	public static final String SMS_DEVICE_STATUS_DISCONNECTING = "common.disconnecting";
+	/** Key for text: SMS Device Status: TODO */
+	public static final String SMS_DEVICE_STATUS_RECEIVING_FAILED = "common.receiving.failed";
+	/** Key for text: SMS Device Status: TODO */
+	public static final String SMS_DEVICE_STATUS_TRYING_RECONNECT = "common.trying.to.reconnect";
+	/** Key for text: SMS Device Status: TODO */
+	public static final String SMS_MODEM_STATUS_GSM_REG_FAILED = "message.gsm.registration.failed";
+	/** Key for text: SMS Device Status: TODO */
+	public static final String SMS_MODEM_STATUS_ALREADY_OWNED = "message.owner.is";
 
 	/** String in messages which is substituted for a value */
 	public static final String ARG_VALUE = "%";
 
 	public static final String PROPERTY_FIELD = "field";
 
-	public static final String MESSAGE_NO_FIELD_SELECTED = "message.no.field.selected";
 	public static final String MESSAGE_GROUP_MANAGER_LOADED = "message.group.manager.loaded";
 	public static final String MESSAGE_SURVEY_ANALYST_LOADED = "message.survey.analyst.loaded";
 	public static final String MESSAGE_REPLY_MANAGER_LOADED = "message.reply.manager.loaded";
@@ -313,9 +287,6 @@ public class FrontlineSMSConstants {
 	public static final String MESSAGE_NO_GROUP_SELECTED_TO_FWD = "message.no.group.selected";
 	public static final String MESSAGE_NO_ACCOUNT_SELECTED_TO_SEND_FROM = "message.no.email.account.selected";
 	public static final String MESSAGE_BLANK_RECIPIENTS = "message.recipients.blank";
-	public static final String MESSAGE_EXPORT_TASK_FAILED = "message.export.failed";
-	public static final String MESSAGE_EXPORT_TASK_SUCCESSFUL = "message.export.successful";
-	public static final String MESSAGE_EXPORTED_MESSAGES_TO_FILE = "message.exported.message.to.file";
 	public static final String MESSAGE_NO_CONTACT_SELECTED = "message.no.contact.selected";
 	public static final String MESSAGE_NO_GROUP_CREATED_BY_USERS = "message.no.group.created.by.users";
 	public static final String MESSAGE_KEYWORD_ACTIONS_DELETED = "message.keyword.actions.deleted";
@@ -323,7 +294,6 @@ public class FrontlineSMSConstants {
 	public static final String MESSAGE_REMOVING_KEYWORD_ACTIONS = "message.removing.keyword.actions";
 	public static final String MESSAGE_REMOVING_TASKS = "message.removing.tasks";
 	public static final String MESSAGE_MESSAGE_RECEIVED = "message.message.received";
-	public static final String MESSAGE_PHONE = "common.phone";
 	public static final String MESSAGE_CONTACTS_DELETED = "message.contacts.deleted";
 	public static final String MESSAGE_REMOVING_CONTACTS = "message.removing.contacts";
 	public static final String MESSAGE_GROUP_ALREADY_EXISTS = "message.group.already.exists";
@@ -342,17 +312,11 @@ public class FrontlineSMSConstants {
 	public static final String MESSAGE_PHONE_MANAGER_INITIALISED = "message.phone.manager.initialised";
 	public static final String MESSAGE_INITIALISING_PHONE_MANAGER = "message.starting.phone.manager";
 	public static final String MESSAGE_STARTING = "message.starting";
-	public static final String MESSAGE_NO_FILENAME = "message.filename.blank";
-	public static final String MESSAGE_INVALID_BAUD_RATE = "message.invalid.baud.rate";
-	public static final String MESSAGE_PORT_NOT_FOUND = "message.port.not.found";
-	public static final String MESSAGE_PORT_ALREADY_CONNECTED = "message.port.already.connected";
 	
 	public static final String DEFAULT_GROUPS_DELIMITER = ", ";
 	public static final String PROPERTY_TYPE = "type";
 	public static final String OPEN_MODE = "open";
 	public static final String SAVE_MODE = "save";
-
-	public static final String CSV_EXTENSION = ".csv";
 
 	public static final String DEMO_SENDER_NAME = "<senderName>";
 	public static final String DEMO_SENDER_MSISDN = "<senderPhoneNumber>";
@@ -365,129 +329,11 @@ public class FrontlineSMSConstants {
 	public static final String DEFAULT_EXPORT_DATE_FORMAT = "date.export.format";
 	
 	public static final String DEFAULT_TIME = "00:00";
-	
-	public static final class Dependants {
-		// FIXME constants used in this class need to be extracted
-		// TODO there is an argument for ONLY defining value in INIT() rather than in the static initializer as well
-		public static final void init() {
-			STATUS_CODE_MESSAGES = new String[] {
-					InternationalisationUtils.getI18NString("common.dormant"),
-					InternationalisationUtils.getI18NString("message.searching.for.devices"),
-					InternationalisationUtils.getI18NString("message.phone.detected"),
-					InternationalisationUtils.getI18NString("common.connected"),
-					InternationalisationUtils.getI18NString("common.disconnect"),
-					InternationalisationUtils.getI18NString("message.invalid.sim.card"),
-					InternationalisationUtils.getI18NString("message.duplicate.connection"),
-					InternationalisationUtils.getI18NString("message.max.speed.found"),
-					InternationalisationUtils.getI18NString("message.trying.to.connect"),
-					InternationalisationUtils.getI18NString("message.no.phone.detected"), 
-					InternationalisationUtils.getI18NString("common.connecting"),
-					InternationalisationUtils.getI18NString("common.failed.connect"),
-					InternationalisationUtils.getI18NString("common.low.credit"),
-					InternationalisationUtils.getI18NString("common.disconnecting"),
-					InternationalisationUtils.getI18NString("common.receiving.failed"),
-					InternationalisationUtils.getI18NString("common.trying.to.reconnect")
-			};
-			FREQUENCIES = new String[] { 
-					InternationalisationUtils.getI18NString("frequency.once"),
-					InternationalisationUtils.getI18NString("frequency.hour"),
-					InternationalisationUtils.getI18NString("frequency.day"),
-					InternationalisationUtils.getI18NString("frequency.week"),
-					InternationalisationUtils.getI18NString("frequency.month"),
-					InternationalisationUtils.getI18NString("frequency.year") 
-			};
-			TEXT_VERSION = InternationalisationUtils.getI18NString("common.version") + ": " + VERSION;
-			TEXT_AT_SPEED = ' ' + InternationalisationUtils.getI18NString("common.at.speed");
-			
-			MONTHS = new String[] { 
-					InternationalisationUtils.getI18NString(MONTH_JAN), InternationalisationUtils.getI18NString(MONTH_FEB), 
-					InternationalisationUtils.getI18NString(MONTH_MAR), InternationalisationUtils.getI18NString(MONTH_APR), 
-					InternationalisationUtils.getI18NString(MONTH_MAY), InternationalisationUtils.getI18NString(MONTH_JUN), 
-					InternationalisationUtils.getI18NString(MONTH_JUL), InternationalisationUtils.getI18NString(MONTH_AUG), 
-					InternationalisationUtils.getI18NString(MONTH_SEP), InternationalisationUtils.getI18NString(MONTH_OCT), 
-					InternationalisationUtils.getI18NString(MONTH_NOV), InternationalisationUtils.getI18NString(MONTH_DEC) 
-			};
-			MESSAGE_STATI = new String[] { 
-					"",
-					InternationalisationUtils.getI18NString(COMMON_RECEIVED),
-					InternationalisationUtils.getI18NString(COMMON_OUTBOX),
-					InternationalisationUtils.getI18NString(COMMON_PENDING),
-					InternationalisationUtils.getI18NString(COMMON_SENT),
-					InternationalisationUtils.getI18NString(COMMON_DELIVERED),
-					InternationalisationUtils.getI18NString(COMMON_RETRYING), 
-					"", 
-					"",
-					InternationalisationUtils.getI18NString(COMMON_FAILED) 
-			};
-			DEFAULT_MESSAGE_DATE_FORMAT = new SimpleDateFormat(InternationalisationUtils.getI18NString("date.message.format"));
-			DEFAULT_KEYWORD_ACTION_DATE_FORMAT = new SimpleDateFormat(InternationalisationUtils.getI18NString("date.keyword.action.format"));
-			DEFAULT_TASK_DATE_FORMAT = new SimpleDateFormat(InternationalisationUtils.getI18NString("date.task.format"));
 
-			ROOT_NAME = "FrontlineSMS" + " " + InternationalisationUtils.getI18NString(FrontlineSMSConstants.COMMON_CONTACTS);
-			UNGROUPED_NAME = InternationalisationUtils.getI18NString(FrontlineSMSConstants.COMMON_UNGROUPED) + " " + InternationalisationUtils.getI18NString(FrontlineSMSConstants.COMMON_CONTACTS);
-			UNNAMED_NAME = InternationalisationUtils.getI18NString(FrontlineSMSConstants.COMMON_UNNAMED) + " " + InternationalisationUtils.getI18NString(FrontlineSMSConstants.COMMON_CONTACTS);
-		}
-		
-		/** Messages describing different statuses as defined by STATUS_ constants */
-		public static String[] STATUS_CODE_MESSAGES = {
-				InternationalisationUtils.getI18NString("common.dormant"),
-				InternationalisationUtils.getI18NString("message.searching.for.devices"),
-				InternationalisationUtils.getI18NString("message.phone.detected"),
-				InternationalisationUtils.getI18NString("common.connected"),
-				InternationalisationUtils.getI18NString("common.disconnect"),
-				InternationalisationUtils.getI18NString("message.invalid.sim.card"),
-				InternationalisationUtils.getI18NString("message.duplicate.connection"),
-				InternationalisationUtils.getI18NString("message.max.speed.found"),
-				InternationalisationUtils.getI18NString("message.trying.to.connect"),
-				InternationalisationUtils.getI18NString("message.no.phone.detected"),
-				InternationalisationUtils.getI18NString("common.connecting"),
-				InternationalisationUtils.getI18NString("common.failed.connect"),
-				InternationalisationUtils.getI18NString("common.low.credit"),
-				InternationalisationUtils.getI18NString("common.disconnecting"),
-				InternationalisationUtils.getI18NString("common.receiving.failed"),
-				InternationalisationUtils.getI18NString("common.trying.to.reconnect")
-		};
-	
-		public static String[] FREQUENCIES = new String[] { 
-			InternationalisationUtils.getI18NString("frequency.once"),
-			InternationalisationUtils.getI18NString("frequency.hour"),
-			InternationalisationUtils.getI18NString("frequency.day"),
-			InternationalisationUtils.getI18NString("frequency.week"),
-			InternationalisationUtils.getI18NString("frequency.month"),
-			InternationalisationUtils.getI18NString("frequency.year") 
-		};
-		
-		public static String TEXT_VERSION = InternationalisationUtils.getI18NString("common.version") + ": " + VERSION;
-		public static String TEXT_AT_SPEED = ' ' + InternationalisationUtils.getI18NString("common.at.speed");
-		
-		public static String[] MONTHS = new String[] { 
-			InternationalisationUtils.getI18NString(MONTH_JAN), InternationalisationUtils.getI18NString(MONTH_FEB), 
-			InternationalisationUtils.getI18NString(MONTH_MAR), InternationalisationUtils.getI18NString(MONTH_APR), 
-			InternationalisationUtils.getI18NString(MONTH_MAY), InternationalisationUtils.getI18NString(MONTH_JUN), 
-			InternationalisationUtils.getI18NString(MONTH_JUL), InternationalisationUtils.getI18NString(MONTH_AUG), 
-			InternationalisationUtils.getI18NString(MONTH_SEP), InternationalisationUtils.getI18NString(MONTH_OCT), 
-			InternationalisationUtils.getI18NString(MONTH_NOV), InternationalisationUtils.getI18NString(MONTH_DEC) 
-		};
-		public static String[] MESSAGE_STATI = new String[] { 
-			"",
-			InternationalisationUtils.getI18NString(COMMON_RECEIVED),
-			InternationalisationUtils.getI18NString(COMMON_OUTBOX),
-			InternationalisationUtils.getI18NString(COMMON_PENDING),
-			InternationalisationUtils.getI18NString(COMMON_SENT),
-			InternationalisationUtils.getI18NString(COMMON_DELIVERED),
-			InternationalisationUtils.getI18NString(COMMON_RETRYING), 
-			"", 
-			"",
-			InternationalisationUtils.getI18NString(COMMON_FAILED) 
-		};
-		public static DateFormat DEFAULT_MESSAGE_DATE_FORMAT = new SimpleDateFormat(InternationalisationUtils.getI18NString("date.message.format"));
-		public static DateFormat DEFAULT_KEYWORD_ACTION_DATE_FORMAT = new SimpleDateFormat(InternationalisationUtils.getI18NString("date.keyword.action.format"));
-		public static DateFormat DEFAULT_TASK_DATE_FORMAT = new SimpleDateFormat(InternationalisationUtils.getI18NString("date.task.format"));
-		
-		public static String DEFAULT_START_DATE = DEFAULT_KEYWORD_ACTION_DATE_FORMAT.format(new Date());
-		/** The NAME of the root group from which all other groups are descended.  There is strong argument for ditching this, and identifying the root group in some other way. */
-		public static String ROOT_NAME = "FrontlineSMS" + " " + InternationalisationUtils.getI18NString(FrontlineSMSConstants.COMMON_CONTACTS);
-		public static String UNGROUPED_NAME = InternationalisationUtils.getI18NString(FrontlineSMSConstants.COMMON_UNGROUPED) + " " + InternationalisationUtils.getI18NString(FrontlineSMSConstants.COMMON_CONTACTS);
-		public static String UNNAMED_NAME = InternationalisationUtils.getI18NString(FrontlineSMSConstants.COMMON_UNNAMED) + " " + InternationalisationUtils.getI18NString(FrontlineSMSConstants.COMMON_CONTACTS);
-	}
+//> DATE FORMATS
+	/** [i18n key to Date format] years, months and days.
+	 * This should specify a 4 digit year as it will be used for parsing entered dates as well as displaying used ones. */
+	public static final String DATEFORMAT_YMD = "date.keyword.action.format";
+	/** [i18n key to Date format] This date format is for displaying the date and time of an event, message etc.  It is not used for parsing input. */
+	public static final String DATEFORMAT_YMD_HMS = "date.message.format";
 }

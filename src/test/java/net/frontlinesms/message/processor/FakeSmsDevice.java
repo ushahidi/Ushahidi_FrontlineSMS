@@ -22,6 +22,7 @@ package net.frontlinesms.message.processor;
 import net.frontlinesms.data.domain.Message;
 import net.frontlinesms.listener.SmsListener;
 import net.frontlinesms.smsdevice.SmsDevice;
+import net.frontlinesms.smsdevice.SmsDeviceStatus;
 
 /**
  * 
@@ -124,6 +125,16 @@ public class FakeSmsDevice implements SmsDevice {
 	public boolean supportsReceive() {
 		// TODO Auto-generated method stub
 		return false;
+	}
+
+	public SmsDeviceStatus getStatus() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public String getStatusDetail() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

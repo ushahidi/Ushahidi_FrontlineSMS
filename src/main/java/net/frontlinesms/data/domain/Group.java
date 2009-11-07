@@ -28,25 +28,36 @@ import java.util.Set;
 import javax.persistence.*;
 
 import net.frontlinesms.data.EntityField;
-import net.frontlinesms.data.domain.Contact.Field;
 
 /**
  * Object representing a named group of contacts.  A group can contain sub-groups
  * whose membership is entirely independent of the main group.
  * @author Alex
- *
  */
 @Entity(name="frontline_group")
+@Table(uniqueConstraints={@UniqueConstraint(columnNames={Group.COLUMN_NAME, Group.COLUMN_PARENT + "_id"})})
 public class Group {
-	
-	static final String FIELD_NAME = "name";
-	static final String FIELD_DIRECT_MEMBERS = "directMembers";
-	
+
+//> DATABASE COLUMN NAMES
+	/** Database column name for property: {@link #name} */
+	static final String COLUMN_NAME = "name";
+	/** Database column name for property: {@link #directMembers} */
+	static final String COLUMN_DIRECT_MEMBERS = "directMembers";
+	/** Database column name for property: {@link #parent} */
+	static final String COLUMN_PARENT = "parent";
+	/** Database column name for property: {@link #parent} */
+	static final String COLUMN_CHILDREN = "children";
+
 //> ENTITY FIELDS
 	/** Details of the fields that this class has. */
 	public enum Field implements EntityField<Group> {
-		NAME(FIELD_NAME),
-		DIRECT_MEMBERS(FIELD_DIRECT_MEMBERS);
+		/** Represents {@link #name} */
+		NAME(COLUMN_NAME),
+		/** Represents {@link #parent} */
+		PARENT(COLUMN_PARENT),
+		/** Represents {@link #directMembers} */
+		DIRECT_MEMBERS(COLUMN_DIRECT_MEMBERS);
+		
 		/** name of a field */
 		private final String fieldName;
 		/**
@@ -60,28 +71,32 @@ public class Group {
 	
 //> PROPERTIES
 	/** Unique id for this entity.  This is for hibernate usage. */
-	@Id @GeneratedValue(strategy=GenerationType.IDENTITY) @Column(unique=true,nullable=false,updatable=false) @SuppressWarnings("unused")
+	@Id
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@Column(unique=true,nullable=false,updatable=false)
+	@SuppressWarnings("unused")
 	private long id;
 	
 	/** The name of this group. */
-	@Column(name=FIELD_NAME)
+	@Column(name=COLUMN_NAME)
 	private String name;
 	
 	/** Contacts who are direct members of this group */
 	@ManyToMany(fetch=FetchType.EAGER, targetEntity=Contact.class)
-	@Column(name=FIELD_DIRECT_MEMBERS)
+	@Column(name=COLUMN_DIRECT_MEMBERS)
 	private Set<Contact> directMembers = new HashSet<Contact>();
-	
+
 	/** Parent of this group */
-	@ManyToOne(optional=true, targetEntity=Group.class)
+	@ManyToOne(fetch=FetchType.EAGER, targetEntity=Group.class)
 	private Group parent;
 
 	/** Subgroups */
-	@OneToMany(mappedBy="parent", targetEntity=Group.class, fetch=FetchType.EAGER)
+	@OneToMany(fetch=FetchType.EAGER, mappedBy=COLUMN_PARENT, targetEntity=Group.class, cascade=CascadeType.REMOVE)
+	@Column(name=COLUMN_CHILDREN)
 	private Set<Group> children = new HashSet<Group>();
 	
 //> CONSTRUCTORS
-	/** Empty contructor for hibernate */
+	/** Empty constructor for hibernate */
 	Group() {}
 	
 	/**
@@ -92,6 +107,9 @@ public class Group {
 	public Group(Group parent, String name) {
 		this.name = name;
 		this.parent = parent;
+		if(this.parent != null) {
+			this.parent.addChild(this);
+		}
 	}
 	
 //> ACCESSOR METHODS
@@ -147,10 +165,7 @@ public class Group {
 		return this.directMembers.remove(contact);
 	}
 
-	/**
-	 * Returns an unordered list of all members of this group.
-	 * @return
-	 */
+	/** @return  an unsorted list of all members of this group. */
 	public Collection<Contact> getAllMembers() {
 		Set<Contact> allMembers = new HashSet<Contact>();
 		addAllMembers(allMembers);
@@ -172,7 +187,7 @@ public class Group {
 	 * Returns a sub-section of the list of members of this group.
 	 * @param startIndex
 	 * @param limit
-	 * @return
+	 * @return a page from the list of all members of this group
 	 */
 	public List<Contact> getAllMembers(int startIndex, int limit) {
 		List<Contact> allMembers = new ArrayList<Contact>();
@@ -182,7 +197,7 @@ public class Group {
 	
 	/**
 	 * Returns the number of members in this group. 
-	 * @return
+	 * @return the number of members in this group
 	 */
 	public int getAllMembersCount() {
 		return getAllMembers().size();
@@ -190,7 +205,7 @@ public class Group {
 	
 	/**
 	 * Returns the parent of this group. 
-	 * @return
+	 * @return {@link #parent}
 	 */
 	public Group getParent() {
 		return this.parent;
@@ -222,6 +237,14 @@ public class Group {
 	public void addChild(Group group) {
 		this.children.add(group);
 	}
+	
+	/**
+	 * Remove a group from {@link #children}
+	 * @param group group to remove from {@link #children}
+	 */
+	public void removeChild(Group group) {
+		this.children.remove(group);
+	}
 
 
 //> GENERATED CODE
@@ -230,7 +253,6 @@ public class Group {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + (int) (id ^ (id >>> 32));
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + ((parent == null) ? 0 : parent.hashCode());
 		return result;
@@ -246,8 +268,6 @@ public class Group {
 		if (getClass() != obj.getClass())
 			return false;
 		Group other = (Group) obj;
-		if (id != other.id)
-			return false;
 		if (name == null) {
 			if (other.name != null)
 				return false;

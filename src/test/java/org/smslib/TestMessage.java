@@ -9,7 +9,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
 
-import net.frontlinesms.hex.HexUtils;
+import org.smslib.sms.SmsMessageEncoding;
+import org.smslib.util.HexUtils;
+
 
 /**
  * @author Alex
@@ -33,7 +35,7 @@ public class TestMessage {
 //> Instance properties
 	private final int destinationPort;
 	private final int sourcePort;
-	private final int encoding;
+	private final SmsMessageEncoding encoding;
 	private final String text;
 	private final String[] pdus;
 	private final String recipient;
@@ -72,8 +74,10 @@ public class TestMessage {
 	 * @param recipient
 	 * @param type
 	 * @param binaryContent
+	 * @param smscNumber 
+	 * @param mpRefNo 
 	 */
-	private TestMessage(int destinationPort, int sourcePort, int encoding,
+	private TestMessage(int destinationPort, int sourcePort, SmsMessageEncoding encoding,
 			String text, String[] pdus, String recipient, int type,
 			byte[] binaryContent, String smscNumber, int mpRefNo) {
 		this.destinationPort = destinationPort;
@@ -104,7 +108,7 @@ public class TestMessage {
 		String binary = prop.getProperty(PROP_BINARY);
 		byte[] binaryContent = null;
 		if(binary != null) binaryContent = HexUtils.decode(binary);
-		int encoding = Integer.parseInt(prop.getProperty(PROP_ENCODING));
+		SmsMessageEncoding encoding = SmsMessageEncoding.valueOf(prop.getProperty(PROP_ENCODING));
 		String recipient = prop.getProperty(PROP_RECIPIENT);
 		int type = Integer.parseInt(prop.getProperty(PROP_TYPE));
 		
@@ -141,7 +145,7 @@ public class TestMessage {
 		
 		messageDetails.setProperty(PROP_RECIPIENT, this.recipient);
 		
-		messageDetails.setProperty(PROP_ENCODING, Integer.toString(this.encoding));
+		messageDetails.setProperty(PROP_ENCODING, this.encoding.toString());
 
 		messageDetails.setProperty(PROP_TYPE, Integer.toString(this.type));
 		int messageParts = this.pdus.length;
@@ -180,7 +184,7 @@ public class TestMessage {
 	/**
 	 * @return the encoding
 	 */
-	public int getEncoding() {
+	public SmsMessageEncoding getEncoding() {
 		return encoding;
 	}
 

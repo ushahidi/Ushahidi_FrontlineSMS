@@ -29,8 +29,10 @@ public class InMemoryMessageDao implements MessageDao {
 	}
 
 	/** @see MessageDao#getAllMessages() */
-	public Collection<Message> getAllMessages() {
-		return this.messages;
+	public List<Message> getAllMessages() {
+		ArrayList<Message> allMessages = new ArrayList<Message>();
+		allMessages.addAll(this.messages);
+		return allMessages;
 	}
 
 	/** @see MessageDao#getAllMessages(int, Field, Order, Long, Long, int, int) */
@@ -136,9 +138,7 @@ public class InMemoryMessageDao implements MessageDao {
 		return sortedList;
 	}
 
-	/* (non-Javadoc)
-	 * @see MessageDao#getMessagesForAction(KeywordAction)
-	 */
+	/** @see MessageDao#getMessagesForAction(KeywordAction) */
 	public List<Message> getMessagesForAction(KeywordAction action) {
 		// TODO Auto-generated method stub
 		return null;
@@ -293,17 +293,22 @@ public class InMemoryMessageDao implements MessageDao {
 	public int getSMSCountForMsisdn(String number, Long start, Long end) {
 		int count = 0;
 		for(Message m : getSms(start, end)) {
-			String mNum = m.getSenderMsisdn();
-			if(number.equals(mNum)) {
+			if(number.equals(m.getSenderMsisdn())
+					|| number.equals(m.getRecipientMsisdn())) {
 				++count;
 			}
 		}
 		return count;
 	}
 
-	/** Save a message to the data source */
+	/** @see MessageDao#saveMessage(Message) */
 	public void saveMessage(Message message) {
 		this.messages.add(message);
+	}
+
+	/** @see MessageDao#updateMessage(Message) */
+	public void updateMessage(Message message) {
+		// No need to do anything for in-memory DAO
 	}
 	
 	/**

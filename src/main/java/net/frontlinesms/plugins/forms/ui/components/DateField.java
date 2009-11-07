@@ -33,18 +33,25 @@ import net.frontlinesms.FrontlineSMSConstants;
 import net.frontlinesms.ui.i18n.InternationalisationUtils;
 
 
+/**
+ * FComponent for displaying and editing a form date field.
+ * @author Kadu
+ */
 @SuppressWarnings("serial")
 public class DateField extends FComponent {
+	/** @see FComponent#getDescription() */
 	@Override
 	public String getDescription() {
 		return InternationalisationUtils.getI18NString(FrontlineSMSConstants.COMMON_DATE);
 	}
 
+	/** @see FComponent#getIcon() */
 	@Override
 	public String getIcon() {
 		return "datefield.png";
 	}
 
+	/** @see FComponent#getDrawingComponent() */
 	@Override
 	public Container getDrawingComponent() {
 		JPanel pn = new JPanel();
@@ -54,7 +61,7 @@ public class DateField extends FComponent {
 		pn.add(desc);
 		int width = desc.getFontMetrics(desc.getFont()).stringWidth(desc.getText());
 		width = renderWidth - width;
-		DateFormatter df = new DateFormatter(FrontlineSMSConstants.Dependants.DEFAULT_KEYWORD_ACTION_DATE_FORMAT);
+		DateFormatter df = new DateFormatter(InternationalisationUtils.getDateFormat());
 		JFormattedTextField tf = new JFormattedTextField(df);
 		tf.setPreferredSize(new Dimension(width, 20));
 		tf.setEditable(false);

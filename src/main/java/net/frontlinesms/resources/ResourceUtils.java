@@ -22,9 +22,9 @@ package net.frontlinesms.resources;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.zip.*;
 
-import net.frontlinesms.FrontlineSMSConstants;
 import net.frontlinesms.Utils;
 
 import org.apache.log4j.Logger;
@@ -36,17 +36,36 @@ import org.apache.log4j.Logger;
 public class ResourceUtils {
 	
 //> CONSTANTS
+	/** System property: user.home */
+	public static final String SYSPROPERTY_USER_HOME = "user.home";
+	
 	/** Logging object for this class */
 	private static Logger LOG = Utils.getLogger(ResourceUtils.class);
 	/** The size of byte buffers used in this class. */
 	private static final int BUFFER_SIZE = 2048;
 	/** Name of directory that discarded resources are put in after an upgrade of FrontlineSMS. */
 	private static final String GRAVEYARD = "old";
-
-	/** Name of the resource directory containing properties. */
-	public static final String DIRECTORY_PROPERTIES = "properties";
+	
+	/** The location of {@link PropertySet} files. */
+	public static final String PROPERTIES_DIRECTORY_NAME = "properties";
+	/** The filename extension used for {@link PropertySet} files. */
+	private static final String PROPERTIES_EXTENSION = ".properties";
+	
+	/** Name of the FrontlineSMS resource initialisation file. */
+	private static final String RESOURCE_INI_FILE = "frontlinesms.ini";
+	/** Property key within # for the location of the resources directory */
+	private static final String PROPKEY_RESOURCE_PATH = "resources.path";
+	
+//> STATIC PROPERTIES
+	/** Location of resources for this instance of FrontlineSMS.  This is set via the method {#getConfigDirectoryPath()} the first time we try to access the field. */
+	private static String resourcePath;
 	
 //> STATIC UTILITY METHODS
+	/** @return the user home path */
+	public static String getUserHome() {
+		return System.getProperty("user.home");
+	}
+	
 	/**
 	 * Unzips a compressed archive to the specified output directory.  The archive's directory
 	 * structure is rebuilt in the output directory if it does not already exist.  Optionally,
@@ -102,26 +121,28 @@ public class ResourceUtils {
 	
 	/**
 	 * Generate a timestamp to be appended to the graveyard directories' names.
-	 * @return
+	 * @return string timestamp in the form YYYYMMDDHHSSMM
 	 */
 	private static String generateGraveyardTimestamp() {
 		Calendar cal = Calendar.getInstance();
-		return "" + cal.get(Calendar.YEAR)
-			+ (cal.get(Calendar.MONTH) + 1)
-			+ cal.get(Calendar.DAY_OF_MONTH)
-			+ cal.get(Calendar.HOUR_OF_DAY)
-			+ Integer.toString(100 + cal.get(Calendar.MINUTE)).substring(1)
-			+ Integer.toString(1000 + cal.get(Calendar.MILLISECOND)).substring(1);
+		return ""
+			+ Integer.toString(10000 + cal.get(Calendar.YEAR)).substring(1)
+			+ Integer.toString(  100 + (cal.get(Calendar.MONTH) + 1)).substring(1)
+			+ Integer.toString(  100 + cal.get(Calendar.DAY_OF_MONTH)).substring(1)
+			+ Integer.toString(  100 + cal.get(Calendar.HOUR_OF_DAY)).substring(1)
+			+ Integer.toString(  100 + cal.get(Calendar.MINUTE)).substring(1)
+			+ Integer.toString( 1000 + cal.get(Calendar.MILLISECOND)).substring(1);
 	}
 
 	/**
 	 * Checks if a configuration file should be over-ridden by a new version when FrontlineSMS is upgraded. 
 	 * @param outputFile
-	 * @return
+	 * @return <code>true</code> if the supplied file should be overwritten; <code>false</code> otherwise
 	 */
 	private static boolean isOverwriteable(File outputFile) {
 		// Overwrite all files, as we dump old files in the graveyard.  This should remove any painful
 		// upgrade procedures we might have to go through
+		// TODO this should be made less indiscriminate - it would actually be very useful to keep a lot of config files
 		return true;
 	}
 
@@ -208,8 +229,11 @@ public class ResourceUtils {
 	/**
 	 * Loads a list from a textfile, ignoring any blank lines, or lines that
 	 * start with a # character.
+	 * 
+	 * FIXME this appears to be charset dependent, which is very naughty
+	 * 
 	 * @param filename
-	 * @return
+	 * @return array of lines containing useful data from the supplied file
 	 */
 	public static final String[] getUsefulLines(String filename) {
 		FileInputStream fis = null;
@@ -240,12 +264,47 @@ public class ResourceUtils {
 		}
 		return lines.toArray(new String[lines.size()]);
 	}
-
+	
 	/**
 	 * Gets the path to the configuration directory in which languages, conf, and properties directories all lie.
-	 * @return
+	 * @return path to the directory containing resources for FrontlineSMS
 	 */
-	public static String getConfigDirectoryPath() {
-		return System.getProperty("user.home") + File.separatorChar + "FrontlineSMS" + File.separatorChar;
+	public synchronized static String getConfigDirectoryPath() {
+		// If we have not checked this before, then we load the magic properties file from the
+		// working directory which dictates where the other properties files are located.
+		if(resourcePath == null) {
+			try {
+				File resourceLocationsFile = new File(RESOURCE_INI_FILE);
+				HashMap<String, String> resourceLocation = PropertySet.load(resourceLocationsFile);
+				resourcePath = resourceLocation.get(PROPKEY_RESOURCE_PATH);
+			} catch(Throwable t) {
+				// If there is a problem loading the path from the working directory, then we just
+				// use the old default that used to be the only option.
+				LOG.warn("Problem locating resource path property.", t);
+			}
+
+			// If resource path has not been set yet, use the default value
+			if(resourcePath == null) {
+				resourcePath = getUserHome() + File.separatorChar + "FrontlineSMS" + File.separatorChar;
+			}
+			
+			// If the resource path does not end with a /, add one so that we don't have to worry about this later
+			if(resourcePath.charAt(resourcePath.length()-1) != File.separatorChar) {
+				resourcePath += File.separatorChar;
+			}
+		}
+		
+		return resourcePath;
+	}
+	
+	/**
+	 * Gets the path of the file where a {@link PropertySet} is persisted.
+	 * @param propertySetName
+	 * @return the path to a particular property file
+	 */
+	protected static final File getPropertiesFile(String propertySetName) {
+		return new File(ResourceUtils.getConfigDirectoryPath()
+				+ PROPERTIES_DIRECTORY_NAME + File.separatorChar
+				+ propertySetName + PROPERTIES_EXTENSION);
 	}
 }

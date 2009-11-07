@@ -11,6 +11,7 @@ import net.frontlinesms.data.repository.memory.InMemoryMessageDao;
  * @author Alex
  */
 public class InMemoryMessageDaoTest extends ReusableMessageDaoTest {
+	/** Set up the test using the in-memory implementation of the DAO */
 	@Override
 	protected void setUp() throws Exception {
 		super.setDao(new InMemoryMessageDao());

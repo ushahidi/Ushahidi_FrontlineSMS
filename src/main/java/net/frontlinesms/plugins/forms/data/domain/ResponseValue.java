@@ -18,6 +18,7 @@ public class ResponseValue {
 	
 //> INSTANCE PROPERTIES
 	/** Unique id for this entity.  This is for hibernate usage. */
+	@SuppressWarnings("unused")
 	@Id @GeneratedValue(strategy=GenerationType.IDENTITY)
 	@Column(unique=true,nullable=false,updatable=false)
 	private long id;
@@ -33,6 +34,7 @@ public class ResponseValue {
 		this.value = value;
 	}
 	
+	/** @return the value of this response */
 	@Override
 	public String toString() {
 		return this.value;

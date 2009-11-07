@@ -3,18 +3,18 @@
 	<menubar weightx="1" name="menubar">
 		<menu text="i18n.menubar.file">
 			<menu icon="/icons/export.png" text="i18n.menu.export" name="menu_export">
-				<menuitem icon="/icons/users.png" text="i18n.common.contacts" action="showExportWizard(0)"/>
-				<menuitem icon="/icons/sms.png" text="i18n.common.messages" action="showExportWizard(1)"/>
-				<menuitem icon="/icons/keyword.png" text="i18n.common.keywords" action="showExportWizard(2)"/>
+				<menuitem icon="/icons/users.png" text="i18n.common.contacts" action="showExportWizard('contacts')"/>
+				<menuitem icon="/icons/sms.png" text="i18n.common.messages" action="showExportWizard('messages')"/>
+				<menuitem icon="/icons/keyword.png" text="i18n.common.keywords" action="showExportWizard('keywords')"/>
 			</menu>
-			<separator />
-			<menuitem icon="/icons/importContacts.png" text="i18n.menuitem.import.contacts" name="menu_import_contacts" action="showImportContacts"/>
+			<menu icon="/icons/import.png" text="i18n.menu.import" name="menu_import">
+				<menuitem icon="/icons/users.png" text="i18n.common.contacts" action="showImportWizard('contacts')"/>
+			</menu>
 			<separator />
 			<menuitem icon="/icons/exit.png" text="i18n.menuitem.exit" name="menu_exit" action="close"/>
 		</menu>
 		<menu text="i18n.menubar.settings">
 			<menuitem icon="/icons/emailAccount_edit.png" text="i18n.menuitem.email.settings" name="menu_emailSettings" action="showEmailAccountsSettings"/>
-			<menuitem icon="/icons/phone_edit.png" text="i18n.common.incoming.number.settings" name="menu_incNumberSettings" action="showIncomingNumberSettings"/>
 			<menuitem icon="/icons/sms_http_edit.png" text="i18n.smsdevice.internet.settings" action="showSmsInternetServiceSettings"/>
 			<separator />
 			<menu icon="/icons/language.png" text="i18n.menu.language" name="menu_language">

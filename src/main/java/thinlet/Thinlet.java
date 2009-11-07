@@ -26,9 +26,7 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Image;
-import java.awt.MediaTracker;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ComponentEvent;
@@ -57,19 +55,23 @@ import java.util.StringTokenizer;
 /**
  *
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({ "unchecked", "serial" })
 public class Thinlet extends Container implements Runnable, Serializable, ThinletText, ThinletChars {
-	private static final long serialVersionUID = -5903871498681346L;
+	
+//> CONSTANTS
+	/** Set <code>true</code> if method trace should be output to the standard output. */
 	private static final boolean METHOD_TRACE = false;
-
 	/** Total horizontal padding found around an icon */
 	private static final int PADDING_ICON_H = 2;
-	
+	/** Set to <code>true</code> if you are debugging {@link #rightToLeft} */
 	private static final boolean DEBUGGING_R2L = false;
+
+//> INSTANCE PROPERTIES
 	/** Right-to-left language flag, e.g. arabic. */
 	private boolean rightToLeft;
-	
+	/** The font used to render text */
 	private transient Font font;
+	/** Colour: background */
 	private transient Color c_bg;
 	private transient Color c_text;
 	private transient Color c_textbg;
@@ -87,15 +89,18 @@ public class Thinlet extends Container implements Runnable, Serializable, Thinle
 	private transient long watchdelay;
 	private transient long watch;
 	private transient String clipboard;
+	
+	// FIXME why are there 4 different i18n bundles here?  Presumably there should be max. 2!
 	private transient Map<String, String> resourcebundle; // for internationalization
 	public static Map<String, String> DEFAULT_ENGLISH_BUNDLE; // for internationalization
-	
 	private static Map<String, String> langResource = null; // for I18N
 	private static Map<String, String> langResourceDefault = null; // for I18N
+	
 	private transient boolean allI18n = false; // for I18N
 	
-	// enter the starting characters of a list item text within a short time to select
+	/** The text being used to search a list item */
 	private transient String findprefix = "";
+	/** Time the last character of {@link #findprefix} was entered */
 	private transient long findtime;
 
 	private Object content = createImpl(DESKTOP);
@@ -123,9 +128,13 @@ public class Thinlet extends Container implements Runnable, Serializable, Thinle
 	private static Object[] G_AA;
 	private static int evm = 0;
 	
+	/** Mouse button code: LEFT mouse button */
 	private static final int LEFT_BUTTON = MouseEvent.BUTTON1;
+	/** Mouse button code: RIGHT mouse button */
 	private static final int RIGHT_BUTTON = MouseEvent.BUTTON3;
+	/** <code>true</code> if the caret should be drawn on this paint.  This is only applicable when the caret should be drawn anyway, e.g. there is a textfield selected */
 	private boolean drawCaret;
+	/** Thread for flashing the caret.  This is done by setting {@link #drawCaret} */
 	private Thread flashCursor;
 	
 	/**
@@ -536,7 +545,7 @@ public class Thinlet extends Container implements Runnable, Serializable, Thinle
 					Object column = get(header, ":comp");
 					for (int i = 0; i < columnwidths.length; i++) {
 						if (i != 0) { column = get(column, ":next"); }
-						columnwidths[i] = getInteger(column, "width", 80);
+						columnwidths[i] = getInteger(column, ATTRIBUTE_WIDTH, 80);
 						width += columnwidths[i];
 						Dimension d = getSize(column, 2, 3);
 						columnheight = Math.max(columnheight, d.height);
@@ -1173,7 +1182,7 @@ public class Thinlet extends Container implements Runnable, Serializable, Thinle
 	private Dimension getPreferredSize(Object component) {
 		if (METHOD_TRACE)
 			System.out.println("Thinlet.getPreferredSize() : ENTRY");
-		int width = getInteger(component, "width", 0);
+		int width = getInteger(component, ATTRIBUTE_WIDTH, 0);
 		int height = getInteger(component, "height", 0);
 		if ((width > 0) && (height > 0)) {
 			if (METHOD_TRACE)
@@ -1442,8 +1451,8 @@ public class Thinlet extends Container implements Runnable, Serializable, Thinle
 				columnheight[x + j] = y + rowspan;
 			}
 
-			int weightx = getInteger(comp, "weightx", 0);
-			int weighty = getInteger(comp, "weighty", 0);
+			int weightx = getInteger(comp, ATTRIBUTE_WEIGHT_X, 0);
+			int weighty = getInteger(comp, ATTRIBUTE_WEIGHT_Y, 0);
 			Dimension d = getPreferredSize(comp);
 
 			if (colspan == 1) {
@@ -4020,9 +4029,9 @@ public class Thinlet extends Container implements Runnable, Serializable, Thinle
 				} else if(id == MouseEvent.MOUSE_DRAGGED) {
 					//resize the column, but limit its minimum size to a width of 10
 					Object column = get(header,":resizecomponent");
-					int newSize = getInteger(column, "width") + x - referencex;
+					int newSize = getInteger(column, ATTRIBUTE_WIDTH) + x - referencex;
 					if(newSize>10) {
-						setInteger(column, "width", newSize);
+						setInteger(column, ATTRIBUTE_WIDTH, newSize);
 						referencex = x;
 						doLayout(component);
 						repaint(component);
@@ -4334,7 +4343,8 @@ public class Thinlet extends Container implements Runnable, Serializable, Thinle
 	 * @param recursive true if tree
 	 * @return next (or first) item
 	 */
-	protected Object getNextItem(Object component, Object item, boolean recursive) {
+	// FIXME change back to protected?
+	public Object getNextItem(Object component, Object item, boolean recursive) {
 		if (!recursive) return get(item, ":next");
 		Object next = get(item, ":comp");
 		if ((next == null) || !getBoolean(item, EXPANDED, true)) {
@@ -6235,8 +6245,7 @@ public class Thinlet extends Container implements Runnable, Serializable, Thinle
 		}
 		else if (BEAN == definition[0]) {
 			try {
-				Class<? extends CustomComponent> beanClass = (Class<? extends CustomComponent>) Class.forName(value);
-				CustomComponent bean = beanClass.newInstance();
+				CustomComponent bean = (CustomComponent) Class.forName(value).newInstance();
 				set(component, key, bean);
 				bean.setThinlet(this);
 				bean.setComponent(component);
@@ -6248,7 +6257,7 @@ public class Thinlet extends Container implements Runnable, Serializable, Thinle
 
 	private String getI18NString(String key) {
 		String value = null;
-		if (key.startsWith("i18n.")) {
+		if (key.startsWith(TEXT_I18N_PREFIX)) {
 			// remove i18n prefix from key
 			String i18nKey = key.substring(5);
 			try {
@@ -6358,67 +6367,12 @@ public class Thinlet extends Container implements Runnable, Serializable, Thinle
 	/**
 	 * Sets the given property pair (key and value) for the component
 	 */
-	public void setBoolean(Object component, String key, boolean value) {
+	protected void setBoolean(Object component, String key, boolean value) {
 		Object[] definition = getDefinition(getClass(component), key, BOOLEAN);
 		if (setBoolean(component, (String) definition[1],
 				value, (definition[3] == Boolean.TRUE))) {
 			update(component, definition[2]);
 		}
-	}
-
-	/**
-	 * Gets the property value of the given component by the property key
-	 */
-	public boolean getBoolean(Object component, String key) {
-		return get(component, key, BOOLEAN) == Boolean.TRUE;
-	}
-	
-	public void setVisible(Object component, boolean visible) {
-		setBoolean(component, VISIBLE, visible);
-	}
-
-	public boolean isSelected(Object component) {
-		return getBoolean(component, SELECTED);
-	}
-
-	public boolean isEnabled(Object component) {
-		return getBoolean(component, ENABLED);
-	}
-	
-	/**
-	 * Sets the given property pair (key and value) for the component
-	 */
-	public void setInteger(Object component, String key, int value) {
-		Object[] definition = getDefinition(getClass(component), key, INTEGER);
-		if (setInteger(component, (String) definition[1],
-				value, ((Integer) definition[3]).intValue())) {
-			update(component, definition[2]);
-		}
-	}
-
-	/**
-	 * Gets the property value of the given component by the property key
-	 */
-	public int getInteger(Object component, String key) {
-		return ((Integer) get(component, key, INTEGER)).intValue();
-	}
-
-	/**
-	 * Sets the given property pair (key and value) for the component
-	 */
-	public void setIcon(Object component, String key, Image icon) {
-		Object[] definition = getDefinition(getClass(component), key, ICON);
-		if (set(component, definition[1], icon)) {
-			update(component, definition[2]);
-		}
-	}
-	
-	public void setIcon(Object component, Image icon) {
-		setIcon(component, ICON, icon);
-	}
-	
-	public void setIcon(Object component, String iconPath) {
-		setIcon(component, ICON, getIcon(iconPath));
 	}
 
 	/**
@@ -6568,7 +6522,7 @@ public class Thinlet extends Container implements Runnable, Serializable, Thinle
 	 * @param handler the target event handler object including the method
 	 * @throws java.lang.IllegalArgumentException
 	 */
-	public void setMethod(Object component, String key, String value, Object root, Object handler) {
+	protected void setMethod(Object component, String key, String value, Object root, Object handler) {
 		key = (String) getDefinition(getClass(component), key, METHOD)[1];
 		Object[] method = getMethod(component, value, root, handler);
 		set(component, key, method);
@@ -6725,7 +6679,7 @@ public class Thinlet extends Container implements Runnable, Serializable, Thinle
 	private boolean setString(Object component, String key, String value, String defaultvalue) {
 		if (allI18n && (langResource != null) &&
 				((key == TEXT) || (key == "tooltip"))) {
-			putProperty(component, "i18n." + key, null); // for I18N
+			putProperty(component, TEXT_I18N_PREFIX + key, null); // for I18N
 		}
 		return set(component, key, value); // use defaultvalue
 	}
@@ -6756,11 +6710,11 @@ public class Thinlet extends Container implements Runnable, Serializable, Thinle
 	private String getI18NString(Object component, String key, String text) { // for I18N
 		if (allI18n && (langResource != null) &&
 				((key == TEXT) || (key == "tooltip")) &&
-				getBoolean(component, "i18n", true)) {
-			String ikey = (String) getProperty(component, "i18n." + key);
+				getBoolean(component, ThinletText.ATTRIBUTE_I18N, true)) {
+			String ikey = (String) getProperty(component, TEXT_I18N_PREFIX + key);
 			if (!"__NONE__".equals(ikey)) {
 				if (ikey == null) { // initialize
-					putProperty(component, "i18n." + key, ikey = text);
+					putProperty(component, TEXT_I18N_PREFIX + key, ikey = text);
 				}
 				try {
 					return langResource.get(ikey);
@@ -6769,7 +6723,7 @@ public class Thinlet extends Container implements Runnable, Serializable, Thinle
 						try {
 							return langResourceDefault.get(ikey);
 						} catch (Exception dexc) {
-							putProperty(component, "i18n." + key, "__NONE__");
+							putProperty(component, TEXT_I18N_PREFIX + key, "__NONE__");
 						}
 					}
 				}
@@ -6802,24 +6756,57 @@ public class Thinlet extends Container implements Runnable, Serializable, Thinle
 
 	private boolean setBoolean(Object component,
 			String key, boolean value, boolean defaultvalue) {
-		return set(component, key, (value == defaultvalue) ? null :
-			(value ? Boolean.TRUE : Boolean.FALSE));
+		return set(component, key, (value == defaultvalue) ? null : value);
 	}
 
-	private boolean getBoolean(Object component, 
-			String key, boolean defaultvalue) {
+	private boolean getBoolean(Object component, String key, boolean defaultvalue) {
 		Object value = get(component, key);
 		return (value == null) ? defaultvalue : ((Boolean) value).booleanValue();
+	}
+	
+	/**
+	 * Gets the property value of the given component by the property key
+	 */
+	public boolean getBoolean(Object component, String key) {
+		return get(component, key, BOOLEAN) == Boolean.TRUE;
+	}
+
+	private int getInteger(Object component, String key, int defaultvalue) {
+		Object value = get(component, key);
+		return (value == null) ? defaultvalue : ((Integer) value).intValue();
+	}
+
+	/**
+	 * Gets the property value of the given component by the property key
+	 */
+	public int getInteger(Object component, String key) {
+		return ((Integer) get(component, key, INTEGER)).intValue();
 	}
 
 	protected boolean setInteger(Object component,
 			String key, int value, int defaultvalue) {
 		return set(component, key, (value == defaultvalue) ? null : new Integer(value));
 	}
+	
+	/**
+	 * Sets the given property pair (key and value) for the component
+	 */
+	public void setInteger(Object component, String key, int value) {
+		Object[] definition = getDefinition(getClass(component), key, INTEGER);
+		if (setInteger(component, (String) definition[1],
+				value, ((Integer) definition[3]).intValue())) {
+			update(component, definition[2]);
+		}
+	}
 
-	private int getInteger(Object component, String key, int defaultvalue) {
-		Object value = get(component, key);
-		return (value == null) ? defaultvalue : ((Integer) value).intValue();
+	/**
+	 * Sets the given property pair (key and value) for the component
+	 */
+	public void setIcon(Object component, String key, Image icon) {
+		Object[] definition = getDefinition(getClass(component), key, ICON);
+		if (set(component, definition[1], icon)) {
+			update(component, definition[2]);
+		}
 	}
 
 	private void setRectangle(Object component,
@@ -6891,17 +6878,17 @@ public class Thinlet extends Container implements Runnable, Serializable, Thinle
 				{ STRING, NAME, null, null },
 				{ BOOLEAN, ENABLED, PAINT, Boolean.TRUE },
 				{ BOOLEAN, "visible", "parent", Boolean.TRUE },
-				{ BOOLEAN, "i18n", VALIDATE, Boolean.FALSE }, // for I18N
+				{ BOOLEAN, ThinletText.ATTRIBUTE_I18N, VALIDATE, Boolean.FALSE }, // for I18N
 				{ STRING, "tooltip", null, null },
 				{ FONT, FONT, VALIDATE, null },
 				{ COLOR, "foreground", PAINT, null },
 				{ COLOR, "background", PAINT, null },
-				{ INTEGER, "width", VALIDATE, integer0 },
+				{ INTEGER, ATTRIBUTE_WIDTH, VALIDATE, integer0 },
 				{ INTEGER, "height", VALIDATE, integer0 },
 				{ INTEGER, ATTRIBUTE_COLSPAN, VALIDATE, integer1 },
 				{ INTEGER, ThinletText.ATTRIBUTE_ROWSPAN, VALIDATE, integer1 },
-				{ INTEGER, "weightx", VALIDATE, integer0 },
-				{ INTEGER, "weighty", VALIDATE, integer0 },
+				{ INTEGER, ATTRIBUTE_WEIGHT_X, VALIDATE, integer0 },
+				{ INTEGER, ATTRIBUTE_WEIGHT_Y, VALIDATE, integer0 },
 				{ CHOICE, "halign", VALIDATE,
 					new String[] { "fill", CENTER, LEFT, RIGHT } },
 				{ CHOICE, "valign", VALIDATE,
@@ -6934,7 +6921,7 @@ public class Thinlet extends Container implements Runnable, Serializable, Thinle
 			CHOICE, null, new Object[][] {
 				{ STRING, NAME, null, null },
 				{ BOOLEAN, ENABLED, PAINT, Boolean.TRUE },
-				{ BOOLEAN, "i18n", VALIDATE, Boolean.FALSE }, // for I18N
+				{ BOOLEAN, ThinletText.ATTRIBUTE_I18N, VALIDATE, Boolean.FALSE }, // for I18N
 				{ STRING, TEXT, "parent", null },
 				{ ICON, ICON, "parent", null },
 				{ CHOICE, "alignment", "parent", leftcenterright },
@@ -7028,7 +7015,7 @@ public class Thinlet extends Container implements Runnable, Serializable, Thinle
 				// selection row column cell
 				// editing row/column
 			COLUMN, CHOICE, new Object[][] {
-				{ INTEGER, "width", null, new Integer(80) },
+				{ INTEGER, ATTRIBUTE_WIDTH, null, new Integer(80) },
 				{ CHOICE, SORT, null, new String[] { NONE, ASCENT, DESCENT } },
 				{ BOOLEAN, SELECTED, null, Boolean.FALSE } },
 			ROW, null, new Object[][] {
@@ -7061,298 +7048,8 @@ public class Thinlet extends Container implements Runnable, Serializable, Thinle
 				{ BEAN, BEAN, null, null } }
 		};
 	}
-	
-	/**
-	 * Create a modal, closeable and resizeable dialog!
-	 * @param title
-	 * @return
-	 */
-	protected final Object createDialog(String title) {
-		Object dialog = Thinlet.create(DIALOG);
-		setString(dialog, TEXT, title);
-		setBoolean(dialog, MODAL, true);
-		setBoolean(dialog, CLOSABLE, true);
-		setBoolean(dialog, "resizable", true);
-		return dialog;
-	}
-	
-	/**
-	 * Create's a Thinlet UI Component of type BUTTON and set's the button's
-	 * action and text label.
-	 * @param text
-	 * @param action
-	 * @param root
-	 * @return
-	 */
-	protected final Object createButton(String text, String action, Object root) {
-		Object button = Thinlet.create(BUTTON);
-		setString(button, TEXT, text);
-		setMethod(button, ATTRIBUTE_ACTION, action, root, this);
-		return button;
-	}
-	
-	/**
-	 * Create's a Thinlet UI Component of type BUTTON and set's the button's
-	 * action and text label.
-	 * TODO how often is this used?
-	 * @param text
-	 * @return
-	 */
-	public final Object createButton(String text) {
-		Object button = Thinlet.create(BUTTON);
-		setString(button, TEXT, text);
-		return button;
-	}
-	
-	/**
-	 * Create's a Thinlet UI Component of type LABEL with the supplied TEXT.
-	 * @param text The text displayed for this label.
-	 * @return
-	 */
-	public final Object createLabel(String text) {
-		Object label = create(LABEL);
-		setString(label, TEXT, text);
-		return label;
-	}
-	
-	/**
-	 * Creates a thinlet Checkbox UI component.
-	 * @param text
-	 * @param checked
-	 * @return
-	 */
-	public final Object createCheckbox(String name, String text, boolean checked) {
-		Object item = create(WIDGET_CHECKBOX);
-		setText(item, text);
-		setName(item, name);
-		setBoolean(item, SELECTED, checked);
-		return item;
-	}
-	
-	/**
-	 * Creates a thinlet Radio Button UI component.
-	 * @param text
-	 * @param checked
-	 * @return
-	 */
-	public final Object createRadioButton(String name, String text, String group, boolean selected) {
-		Object item = create(WIDGET_CHECKBOX);
-		setText(item, text);
-		setString(item, GROUP, group);
-		setName(item, name);
-		setBoolean(item, SELECTED, selected);
-		return item;
-	}
-	
-	/**
-	 * Creates a thinlet Panel UI component.
-	 * @param text
-	 * @param checked
-	 * @return
-	 */
-	public final Object createPanel(String name) {
-		Object item = Thinlet.create(PANEL);
-		setName(item, name);
-		return item;
-	}
-	
-	/**
-	 * Creates a textfield with the supplied object name and initial text.
-	 * @param name
-	 * @param initialText
-	 * @return
-	 */
-	public final Object createTextfield(String name, String initialText) {
-		Object item = Thinlet.create(TEXTFIELD);
-		setText(item, initialText);
-		setName(item, name);
-		return item;
-	}
-	
-	/**
-	 * Creates a passwordfield with the supplied object name and initial text.
-	 * @param name
-	 * @param initialText
-	 * @return
-	 */
-	public final Object createPasswordfield(String name, String initialText) {
-		Object item = Thinlet.create(PASSWORDFIELD);
-		setText(item, initialText);
-		setName(item, name);
-		return item;
-	}
-	
-	/**
-	 * Sets the thinlet name of the supplied thinlet component.
-	 * @param component
-	 * @param name
-	 */
-	public final void setName(Object component, String name) {
-		setString(component, NAME, name);
-	}
-	
-	/**
-	 * Creates a Thinlet UI Component of type LIST ITEM, set's the component's
-	 * TEXT attribute to the supplied text and attaches the supplied OBJECT.
-	 * @param text
-	 * @param attachedObject
-	 * @return
-	 */
-	public final Object createListItem(String text, Object attachment) {
-		Object item = Thinlet.create(ITEM);
-		setString(item, TEXT, text);
-		setAttachedObject(item, attachment);
-		return item;
-	}
-	
-	/**
-	 * Creates a choice for use in a combobox.
-	 * @param text
-	 * @param attachment
-	 * @return
-	 */
-	public final Object createChoice(String text, Object attachment) {
-		Object item = Thinlet.create(CHOICE);
-		setString(item, TEXT, text);
-		setAttachedObject(item, attachment);
-		return item;
-	}
-	
-	/**
-	 * Creates a Thinlet UI Component of type COMBOBOX CHOICE, set's the component's
-	 * TEXT attribute to the supplied text and attaches the supplied OBJECT.
-	 * @param text
-	 * @param attachedObject
-	 * @return
-	 */
-	protected final Object createComboboxChoice(String text, Object attachment) {
-		Object item = Thinlet.create(CHOICE);
-		setString(item, TEXT, text);
-		setAttachedObject(item, attachment);
-		return item;
-	}
-	
-	/**
-	 * Creates a Thinlet UI Component of type COMBOBOX CHOICE, set's the component's
-	 * TEXT attribute to the supplied text and attaches the supplied OBJECT.
-	 * @param text
-	 * @param attachedObject
-	 * @return
-	 */
-	public final Object createColumn(String text, Object attachment) {
-		Object item = Thinlet.create(COLUMN);
-		setString(item, TEXT, text);
-		setAttachedObject(item, attachment);
-		return item;
-	}
-	
-	/**
-	 * Attaches an object to a component.
-	 * @param component
-	 * @param attachment
-	 */
-	public final void setAttachedObject(Object component, Object attachment) {
-		putProperty(component, PROPERTY_ATTACHED_OBJECT, attachment);
-	}
-	
-	/**
-	 * Retrieves the attached object from this component.
-	 * @param component
-	 * @return
-	 */
-	public final Object getAttachedObject(Object component) {
-		return getProperty(component, PROPERTY_ATTACHED_OBJECT);
-	}
-	
-	/**
-	 * Creates a Thinlet UI Component of type NODE, sets the component's TEXT
-	 * attribute to the supplied text and attaches the supplied OBJECT. 
-	 * @param text
-	 * @param attachedObject
-	 * @return
-	 */
-	public final Object createNode(String text, Object attachment) {
-		Object node = Thinlet.create(NODE);
-		setString(node, TEXT, text);
-		setAttachedObject(node, attachment);
-		return node;
-	}
 
-	/**
-	 * Create a Thinlet UI Component of type table row, and attaches the
-	 * supplied object to it.
-	 * @param attachment
-	 * @return
-	 */
-	public final Object createTableRow(Object attachment) {
-        	Object row = Thinlet.create(ROW);
-        	setAttachedObject(row, attachment);
-        	return row;
-        }
-	
-	/**
-	 * Create a Thinlet UI component of type table cell containing the
-	 * supplied text.
-	 * @param text
-	 * @return
-	 */
-	public final Object createTableCell(int text) {
-        	return createTableCell(Integer.toString(text));
-        }
-        
-	/**
-	 * Creates a UI table cell component containing the specified text. 
-	 * @param text
-	 * @return
-	 */
-	public final Object createTableCell(String text) {
-		Object cell = Thinlet.create(CELL);
-		setString(cell, TEXT, text);
-		return cell;
-	}
-        
-	/**
-	 * Creates a Thinlet UI component of type table cell in the table row provided.
-	 * The cell text is also set. 
-	 * @param text
-	 * @return The cell I created.
-	 */
-	protected final Object createTableCell(Object row, String text) {
-		Object cell = Thinlet.create(CELL);
-		setString(cell, TEXT, text);
-		add(row, cell);
-		return cell;
-	}
-
-	/**
-	 * Disables a UI component and all descended components.
-	 * @param component
-	 */
-	public final void deactivate(Object component) {
-		setEnabledRecursively(component, false);
-	}
-	
-	/**
-	 * Enables a UI component and all descended components.
-	 * @param component
-	 */
-	public final void activate(Object component) {
-		setEnabledRecursively(component, true);
-	}
-	
-	/**
-	 * Recursivelty sets a boolean attribute on a UI component and all its sub-components.
-	 * @param parent
-	 * @param attribute
-	 * @param value
-	 */
-	private final void setEnabledRecursively(Object parent, boolean value) {
-		setBoolean(parent, ENABLED, value);
-		for(Object component : getItems(parent)) {
-			if(!getClass(parent).equals(TABLE)) setEnabledRecursively(component, value);
-		}
-	}
-	
+//> THINLET INSTANCE ACCESSORS
 	/** @return {@link #iconManager} */
 	public IconManager getIconManager() {
 		return this.iconManager;

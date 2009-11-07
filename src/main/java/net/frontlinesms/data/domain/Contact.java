@@ -29,9 +29,8 @@ import net.frontlinesms.data.DuplicateKeyException;
 import net.frontlinesms.data.EntityField;
 
 /**
- * Data object representing a contact.  A contact can be uniquely identified by his MSISDN (phone number).
+ * Data object representing a contact.  A contact is uniquely identified by his phone number.
  * @author Alex
- *
  */
 @Entity
 public class Contact {
@@ -84,7 +83,7 @@ public class Contact {
 	private boolean active;
 	
 	/** Groups that this chap is a member of. */
-	@ManyToMany(fetch=FetchType.EAGER, mappedBy=Group.FIELD_DIRECT_MEMBERS, targetEntity=Group.class)
+	@ManyToMany(fetch=FetchType.EAGER, mappedBy=Group.COLUMN_DIRECT_MEMBERS, targetEntity=Group.class)
 	@Column(name=FIELD_GROUPS)
 	private Set<Group> groups = new HashSet<Group>();
 	
@@ -253,6 +252,19 @@ public class Contact {
 	}
 
 //> GENERATED CODE
+	/** @see Object#toString() */
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return this.getClass().getName() + "[" +
+				"name=" + this.name + ";"+
+				"phoneNumber=" + this.phoneNumber + ";"+
+				"emailAddress=" + this.emailAddress + ";"+
+				"otherMsisdn=" + this.otherMsisdn + ";"+
+				"notes=" + this.notes +
+				"]";
+	}
+	
 	/** @see java.lang.Object#hashCode() */
 	@Override
 	public int hashCode() {

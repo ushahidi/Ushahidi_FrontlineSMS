@@ -33,7 +33,7 @@ public interface SmsListener {
 	/**
 	 * Event Handler for incoming SMS messages
 	 * @param receiver The device that this message was received on.
-	 * @param msg org.smslib.CIncomingMessage The received message.
+	 * @param incomingMessage The received message.
 	 */
 	public void incomingMessageEvent(SmsDevice receiver, CIncomingMessage incomingMessage);
 	
@@ -50,8 +50,8 @@ public interface SmsListener {
 	 * see PhoneHandler.STATUS_CODE_MESSAGES[smsDeviceEventCode] to get the relevant messages
 	 *  
 	 * @param activeDevice
-	 * @param smsDeviceEventCode
+	 * @param smsDeviceStatus the new status of the {@link SmsDevice}
 	 */
-	public void smsDeviceEvent(SmsDevice activeDevice, int smsDeviceEventCode);
+	public void smsDeviceEvent(SmsDevice activeDevice, SmsDeviceStatus smsDeviceStatus);
 		
 }

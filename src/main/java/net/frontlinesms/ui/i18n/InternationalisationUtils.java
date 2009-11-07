@@ -28,15 +28,17 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
+import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Currency;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.MissingResourceException;
-import java.util.PropertyResourceBundle;
 
 import net.frontlinesms.FrontlineSMSConstants;
 import net.frontlinesms.Utils;
@@ -50,126 +52,26 @@ import thinlet.Thinlet;
 /**
  * Utilities for helping internationalise text etc.
  * @author Alex
+ * 
+ * TODO always use UTF-8 with no exceptions.  All Unicode characters, and therefore all characters, can be encoded as UTF-8
  */
 public class InternationalisationUtils {
+	
+//> STATIC PROPERTIES
 	/** Logging object for this class */
 	private static Logger LOG = Utils.getLogger(InternationalisationUtils.class);
 	
-	/**
-	 * The default characterset, UTF-8.
-	 * This is defined here to remove the need to catch {@link UnsupportedCharsetException}
-	 * etc. every time a characterset is specified.
-	 */
-	private static final Charset DEFAULT_CHARSET;
-	static {
-		Charset charset;
-		try {
-			charset = Charset.forName("UTF-8");
-		} catch(Throwable t) {
-			charset = Charset.defaultCharset();
-		}
-		DEFAULT_CHARSET = charset;
-	}
+//> GENERAL i18n HELP METHODS
+	/** The default characterset, UTF-8.  This must be available for every JVM. */
+	private static final Charset CHARSET_UTF8 = Charset.forName("UTF-8");
 	
-	/**
-	 * Loads a {@link LanguageBundle} from the classpath. 
-	 * @param path
-	 * @return
-	 * @throws IOException 
-	 */
-	public static final LanguageBundle getLanguageBundleFromClasspath(String path) throws IOException {
-		return getLanguageBundle(path, InternationalisationUtils.class.getResourceAsStream(path), DEFAULT_CHARSET);
-	}
-	
-	/**
-	 * Loads a {@link LanguageBundle} from a file.  Default encoding is UTF-8, although others may be specifed in encoding.properties
-	 * 
-	 * TODO change this to use {@link Currency}, and put the ISO 4217 currency code in the l10n file.
-	 *  
-	 * @param file
-	 * @return The loaded bundle, or NULL if the bundle could not be loaded.
-	 */
-	public static final LanguageBundle getLanguageBundle(File file) {
-		String encoding = null;
-		try {
-			PropertyResourceBundle prop = null;
-			try {
-				prop = new PropertyResourceBundle(new FileInputStream(getLanguageDirectoryPath() + "encoding.properties"));
-				encoding = prop.getString(file.getName());
-			} catch (Exception e) {
-				encoding = null;
-			}
-			
-			Charset charset = DEFAULT_CHARSET;
-			// If an encoding has been specified, use that.  Otherwise, we stick with the default.
-			if(encoding != null && encoding.length() > 0) {
-				charset = Charset.forName(encoding);
-			}
-			
-			LanguageBundle bundle = getLanguageBundle(file.getName(), new FileInputStream(file), charset);
-			LOG.info("Successfully loaded language bundle from file: " + file.getName());
-			LOG.info("Bundle reports filename as: " + bundle.getFilename());
-			LOG.info("Language      : " + bundle.getLanguage());
-			LOG.info("Country       : " + bundle.getCountry());
-			LOG.info("Right-To-Left : " + bundle.isRightToLeft());
-			return bundle;
-		} catch(IllegalCharsetNameException ex) {
-			LOG.error("Charset name not recognized '" + encoding + "' for file: " + file.getName());
-			return null;
-		} catch(UnsupportedCharsetException ex) {
-			LOG.error("Charset not supported '" + encoding + "' for file: " + file.getName());
-			return null;
-		} catch(Exception ex) {
-			LOG.error("Problem reading language file: " + file.getName(), ex);
-			return null;
-		} finally {
-			// TODO close all streams
-		}
-	}
-	
-	/**
-	 * Loads a {@link LanguageBundle} from an {@link InputStream}, using the specified encoding.
-	 * @param filename
-	 * @param inputStream
-	 * @param encoding
-	 * @return
-	 * @throws IOException 
-	 */
-	private static final LanguageBundle getLanguageBundle(String filename, InputStream inputStream, Charset charset) throws IOException {
-		HashMap<String, String> i18nStrings = new HashMap<String, String>();
-		BufferedReader in = new BufferedReader(new InputStreamReader(inputStream, charset));
-		String line;
-		while((line = in.readLine()) != null) {
-			line = line.trim();
-			if(line.length() > 0 && line.charAt(0) != '#') {
-				int splitChar =  line.indexOf('=');
-				if(splitChar <= 0) {
-					// there's no "key=value" pair on this line, but it does have text on it.  That's
-					// not strictly legal, so we'll log a warning and carry on.
-					LOG.warn("Bad line in language file '" + filename + "': '" + line + "'");
-				} else {
-					String key = line.substring(0, splitChar);					
-					if(i18nStrings.containsKey(key)) {
-						// This key has already been read from the language file.  Ignore the new value.
-						LOG.warn("Duplicate key in language file '': ''");
-					} else {
-						String value = line.substring(splitChar + 1);
-						i18nStrings.put(key, value);
-					}
-				}
-			}
-		}
-		
-		return new LanguageBundle(filename, i18nStrings);
-	}
-	
+//>
 	/**
 	 * Return an internationalised message for this key. 
 	 * <br> This method tries to get the string for the current bundle and if it does not exist, it looks into
 	 * the default bundle (English GB). 
-	 * 
 	 * @param key
-	 * @return
+	 * @return the inernationalised text, or the english text if no internationalised text could be found
 	 */
 	public static String getI18NString(String key) {
 		if(FrontlineUI.currentResourceBundle != null) {
@@ -181,34 +83,36 @@ public class InternationalisationUtils {
 	}
 
 	/**
-	 * Return an internationalised message for this key.  This calls {@link getI18NString}
-	 * and then replaces any instance of {@link FrontlineSMSConstants#ARG_VALUE} with @param argValue
+	 * Return an internationalised message for this key.  This calls {@link #getI18NString(String)}
+	 * and then replaces any instance of {@link FrontlineSMSConstants#ARG_VALUE} with @param argValues
 	 * 
 	 * @param key
-	 * @param argValue
-	 * @return
+	 * @param argValues
+	 * @return an internationalised string with any substitution variables converted
 	 */
-	public static String getI18NString(String key, String argValue) {
-		return getI18NString(key).replace(FrontlineSMSConstants.ARG_VALUE, argValue);
-	}
-
 	public static String getI18NString(String key, String... argValues) {
 		String string = getI18NString(key);
-		// Iterate backwards through the replacements and replace the arguments with the new values.  Need
-		// to iterate backwards so e.g. %10 is replaced before %1
-		for (int i = argValues.length-1; i >= 0; --i) {
-			string = string.replace(FrontlineSMSConstants.ARG_VALUE + i, argValues[i]);
+		
+		if(argValues != null) {
+			// Iterate backwards through the replacements and replace the arguments with the new values.  Need
+			// to iterate backwards so e.g. %10 is replaced before %1
+			for (int i = argValues.length-1; i >= 0; --i) {
+				String arg = argValues[i];
+				if(arg != null) {
+					if(LOG.isDebugEnabled()) LOG.debug("Subbing " + arg + " as " + (FrontlineSMSConstants.ARG_VALUE + i) + " into: " + string);
+					string = string.replace(FrontlineSMSConstants.ARG_VALUE + i, arg);
+				}
+			}
 		}
 		return string;
 	}
 
 	/**
-	 * Return an internationalised message for this key.  This calls {@link getI18NString}
-	 * and then replaces any instance of {@link FrontlineSMSConstants#ARG_VALUE} with the number @param intValue
-	 * 
+	 * Return an internationalised message for this key.  This converts the integer to a {@link String} and then
+	 * calls {@link #getI18NString(String, String...)} with this argument.
 	 * @param key
 	 * @param intValue
-	 * @return
+	 * @return the internationalised string with the supplied integer embedded at the appropriate place
 	 */
 	public static String getI18NString(String key, int intValue) {
 		return getI18NString(key, Integer.toString(intValue));
@@ -218,7 +122,7 @@ public class InternationalisationUtils {
 	 * Parses a string representation of an amount of currency to an integer.  This will handle
 	 * cases where the currency symbol has not been included in the <code>currencyString</code> 
 	 * @param currencyString
-	 * @return
+	 * @return the currency amount represented by the supplied string
 	 * @throws ParseException
 	 */
 	public static final double parseCurrency(String currencyString) throws ParseException {
@@ -253,7 +157,11 @@ public class InternationalisationUtils {
 		return symbolPosition == 0;
 	}
 
-	/** @see #formatCurrency(double, boolean) */
+	/**
+	 * @param value 
+	 * @return a formatted currency string
+	 * @see #formatCurrency(double, boolean)
+	 */
 	public static final String formatCurrency(double value) {
 		return InternationalisationUtils.formatCurrency(value, true);
 	}
@@ -262,7 +170,7 @@ public class InternationalisationUtils {
 	 * Format an integer into a decimal string for use as a currency value.
 	 * @param value 
 	 * @param showSymbol 
-	 * @return 
+	 * @return a formatted currency string
 	 */
 	public static final String formatCurrency(double value, boolean showSymbol) {
 		String formatted = InternationalisationUtils.getCurrencyFormat().format(value);
@@ -292,6 +200,90 @@ public class InternationalisationUtils {
 		}
 		return currencyFormat;
 	}
+	
+//> LANGUAGE BUNDLE LOADING METHODS
+	/**
+	 * Loads a {@link LanguageBundle} from the classpath. 
+	 * @param path
+	 * @return the language bundle at the specified location
+	 * @throws IOException 
+	 */
+	public static final LanguageBundle getLanguageBundleFromClasspath(String path) throws IOException {
+		return getLanguageBundle(path, InternationalisationUtils.class.getResourceAsStream(path), CHARSET_UTF8);
+	}
+	
+	/**
+	 * Loads a {@link LanguageBundle} from a file.  All files are encoded with UTF-8.
+	 * TODO change this to use {@link Currency}, and put the ISO 4217 currency code in the l10n file.
+	 * @param file
+	 * @return The loaded bundle, or NULL if the bundle could not be loaded.
+	 */
+	public static final LanguageBundle getLanguageBundle(File file) {
+		FileInputStream fileInputStream = null;
+		try {
+			fileInputStream = new FileInputStream(file);
+			LanguageBundle bundle = getLanguageBundle(file.getName(), fileInputStream, CHARSET_UTF8);
+			LOG.info("Successfully loaded language bundle from file: " + file.getName());
+			LOG.info("Bundle reports filename as: " + bundle.getFilename());
+			LOG.info("Language      : " + bundle.getLanguage());
+			LOG.info("Country       : " + bundle.getCountry());
+			LOG.info("Right-To-Left : " + bundle.isRightToLeft());
+			return bundle;
+		} catch(IllegalCharsetNameException ex) {
+			throw new IllegalStateException("UTF-8 must be supported by all JVMs.");
+		} catch(UnsupportedCharsetException ex) {
+			throw new IllegalStateException("UTF-8 must be supported by all JVMs.");
+		} catch(Exception ex) {
+			LOG.error("Problem reading language file: " + file.getName(), ex);
+			return null;
+		} finally {
+			// Close all streams
+			if(fileInputStream != null) {
+				try {
+					fileInputStream.close();
+				} catch(Exception ex) {
+					// nothing we can do, so just log the error
+					LOG.warn("Exception thrown closing stream.", ex);
+				} 
+			}
+		}
+	}
+	
+	/**
+	 * Loads a {@link LanguageBundle} from an {@link InputStream}, using the specified encoding.
+	 * @param filename
+	 * @param inputStream
+	 * @param charset
+	 * @return the language bundle in the supplied stream
+	 * @throws IOException if there was an error loading the bundle
+	 */
+	private static final LanguageBundle getLanguageBundle(String filename, InputStream inputStream, Charset charset) throws IOException {
+		HashMap<String, String> i18nStrings = new HashMap<String, String>();
+		BufferedReader in = new BufferedReader(new InputStreamReader(inputStream, charset));
+		String line;
+		while((line = in.readLine()) != null) {
+			line = line.trim();
+			if(line.length() > 0 && line.charAt(0) != '#') {
+				int splitChar =  line.indexOf('=');
+				if(splitChar <= 0) {
+					// there's no "key=value" pair on this line, but it does have text on it.  That's
+					// not strictly legal, so we'll log a warning and carry on.
+					LOG.warn("Bad line in language file '" + filename + "': '" + line + "'");
+				} else {
+					String key = line.substring(0, splitChar);					
+					if(i18nStrings.containsKey(key)) {
+						// This key has already been read from the language file.  Ignore the new value.
+						LOG.warn("Duplicate key in language file '': ''");
+					} else {
+						String value = line.substring(splitChar + 1);
+						i18nStrings.put(key, value);
+					}
+				}
+			}
+		}
+		
+		return new LanguageBundle(filename, i18nStrings);
+	}
 
 	/**
 	 * Loads all language bundles from within and without the JAR
@@ -314,5 +306,41 @@ public class InternationalisationUtils {
 	/** @return path of the directory in which language bundles are located. */
 	public static final String getLanguageDirectoryPath() {
 		return ResourceUtils.getConfigDirectoryPath() + "languages" + File.separatorChar;
+	}
+
+//> DATE FORMAT GETTERS
+	/**
+	 * N.B. This {@link DateFormat} may be used for parsing user-entered data.
+	 * @return date format for displaying and entering year (4 digits), month and day.
+	 */
+	public static DateFormat getDateFormat() {
+		return new SimpleDateFormat(getI18NString(FrontlineSMSConstants.DATEFORMAT_YMD));
+	}
+
+	/**
+	 * This is not used for parsing user-entered data. 
+	 * @return date format for displaying date and time.#
+	 */
+	public static DateFormat getDatetimeFormat() {
+		return new SimpleDateFormat(getI18NString(FrontlineSMSConstants.DATEFORMAT_YMD_HMS));
+	}
+
+	/**
+	 * TODO what is this method used for?  This value seems completely nonsensical - why wouldn't you just use the timestamp itself?  When do you ever need the date as an actual string?
+	 * @return current time as a formatted date string
+	 */
+	public static String getDefaultStartDate() {
+		return getDateFormat().format(new Date());
+	}
+
+	/**
+	 * Parse the supplied {@link String} into a {@link Date}.
+	 * This method assumes that the supplied date is in the same format as {@link #getDateFormat()}.
+	 * @param date A date {@link String} formatted with {@link #getDateFormat()}
+	 * @return a java {@link Date} object describing the supplied date
+	 * @throws ParseException
+	 */
+	public static Date parseDate(String date) throws ParseException {
+		return getDateFormat().parse(date);
 	}
 }

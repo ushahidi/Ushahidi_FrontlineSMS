@@ -136,4 +136,9 @@ public class HibernateIncidentDao extends BaseHibernateDao<Incident> implements
 		}
 	}
 
+	public void updateIncident(Incident incident) throws DuplicateKeyException {
+		super.update(incident);
+	}
+	
+
 }

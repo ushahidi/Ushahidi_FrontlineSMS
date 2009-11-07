@@ -34,4 +34,8 @@ public class HibernateSmsInternetServiceSettingsDao extends BaseHibernateDao<Sms
 		super.save(settings);
 	}
 
+	/** @see SmsInternetServiceSettingsDao#updateSmsInternetServiceSettings(SmsInternetServiceSettings) */
+	public void updateSmsInternetServiceSettings(SmsInternetServiceSettings settings) {
+		super.updateWithoutDuplicateHandling(settings);
+	}
 }

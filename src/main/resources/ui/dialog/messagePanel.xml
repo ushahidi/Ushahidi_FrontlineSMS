@@ -10,10 +10,11 @@
             <label icon="/icons/sms_disabled.png" name="lbThird"/>
         </panel>
     </panel>
-    <textarea action="messageChanged(pnMessage, this.text)" rows="10" columns="40" name="tfMessage"/>
+    <textarea action="messageChanged(this.text)" rows="10" columns="40" name="tfMessage"/>
     <panel name="pnBottom" gap="13" weightx="1">
         <panel halign="left" weightx="1">
-            <button icon="/icons/sms_send.png" name="btSend" text="i18n.common.send" enabled="false"/>
+            <button icon="/icons/sms_send.png" name="btSend" text="i18n.common.send" enabled="false"
+            		action="send"/>
         </panel>
         <panel gap="11" halign="right" top="3" weightx="1">
             <label icon="/icons/money.png" text="i18n.common.estimated.cost"/>

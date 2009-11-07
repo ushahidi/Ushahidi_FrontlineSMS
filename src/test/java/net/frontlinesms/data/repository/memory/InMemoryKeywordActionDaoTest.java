@@ -11,6 +11,7 @@ import net.frontlinesms.data.repository.memory.InMemoryKeywordActionDao;
  * @author Alex
  */
 public class InMemoryKeywordActionDaoTest extends ReusableKeywordActionDaoTest {
+	/** Set up the test using the in-memory implementation of the DAO */
 	@Override
 	protected void setUp() throws Exception {
 		super.setDao(new InMemoryKeywordActionDao());

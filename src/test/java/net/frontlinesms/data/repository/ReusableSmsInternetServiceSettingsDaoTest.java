@@ -6,7 +6,7 @@ package net.frontlinesms.data.repository;
 import net.frontlinesms.data.DuplicateKeyException;
 import net.frontlinesms.data.domain.SmsInternetServiceSettings;
 import net.frontlinesms.junit.ReusableTestCase;
-import net.frontlinesms.smsdevice.ClickatellInternetService;
+import net.frontlinesms.smsdevice.internet.ClickatellInternetService;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

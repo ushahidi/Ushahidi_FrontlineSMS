@@ -21,11 +21,7 @@
 
 package org.smslib;
 
-//#ifdef COMM_JAVAX
-import javax.comm.*;
-//#else
-//#	import gnu.io.*;
-//#endif
+import serial.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -130,42 +126,48 @@ public class CSerialDriver implements SerialPortEventListener {
 	}
 
 	public void serialEvent(SerialPortEvent event) {
-		switch (event.getEventType())
-		{
-			case SerialPortEvent.BI:
-				break;
-			case SerialPortEvent.OE:
-				if (log != null) log.error("COMM-ERROR: Overrun Error!");
-				break;
-			case SerialPortEvent.FE:
-				if (log != null) log.error("COMM-ERROR: Framing Error!");
-				break;
-			case SerialPortEvent.PE:
-				if (log != null) log.error("COMM-ERROR: Parity Error!");
-				break;
-			case SerialPortEvent.CD:
-				break;
-			case SerialPortEvent.CTS:
-				if(DEBUG) System.out.println("CSERIAL DRIVER ->> CTS event:"+event.getNewValue()+ "on "+port);
-				//numberOfCTSevents++;
-				if (/*(numberOfCTSevents>=MAX_CTS_EVENTS_BEFORE_CLOSE) &&*/ !event.getNewValue()) {
-					//try disconnect
-					if(DEBUG) System.out.println("CSERIAL DRIVER ->> CTS event: closing port");
-					close();
-				}
-				break;
-			case SerialPortEvent.DSR:
-				break;
-			case SerialPortEvent.RI:
-				break;
-			case SerialPortEvent.OUTPUT_BUFFER_EMPTY:
-				break;
-			case SerialPortEvent.DATA_AVAILABLE:
-				//System.out.println("\tRaising...");
-				if (newMsgMonitor != null) newMsgMonitor.raise(CNewMsgMonitor.DATA);
-				break;
-			default:
-				break;
+		int eventType = event.getEventType();
+		if(eventType == SerialPortEvent.BI) {
+			return;
+		}
+		if(eventType == SerialPortEvent.OE) {
+			if (log != null) log.error("COMM-ERROR: Overrun Error!");
+			return;
+		}
+		if(eventType == SerialPortEvent.FE) {
+			if (log != null) log.error("COMM-ERROR: Framing Error!");
+			return;
+		}
+		if(eventType == SerialPortEvent.PE) {
+			if (log != null) log.error("COMM-ERROR: Parity Error!");
+			return;
+		}
+		if(eventType == SerialPortEvent.CD) {
+			return;
+		}
+		if(eventType == SerialPortEvent.CTS) {
+			if(DEBUG) System.out.println("CSERIAL DRIVER ->> CTS event:"+event.getNewValue()+ "on "+port);
+			//numberOfCTSevents++;
+			if (/*(numberOfCTSevents>=MAX_CTS_EVENTS_BEFORE_CLOSE) &&*/ !event.getNewValue()) {
+				//try disconnect
+				if(DEBUG) System.out.println("CSERIAL DRIVER ->> CTS event: closing port");
+				close();
+			}
+			return;
+		}
+		if(eventType == SerialPortEvent.DSR) {
+			return;
+		}
+		if(eventType == SerialPortEvent.RI) {
+			return;
+		}
+		if(eventType == SerialPortEvent.OUTPUT_BUFFER_EMPTY) {
+			return;
+		}
+		if(eventType == SerialPortEvent.DATA_AVAILABLE) {
+			//System.out.println("\tRaising...");
+			if (newMsgMonitor != null) newMsgMonitor.raise(CNewMsgMonitor.DATA);
+			return;
 		}
 	}
 
