@@ -1,0 +1,48 @@
+<tab text="i18n.tab.phone.manager" icon="/icons/big_phone.png" name=":advancedPhoneManager">
+	<panel columns="4" top="9" bottom="9" left="9" right="9" gap="9">
+		<label rowspan="4" valign="top" icon="/icons/header/phoneManager.png"/>
+		<label icon="/icons/phone_working.png" text="i18n.common.working.devices" colspan="3"/>
+		<table name="phoneManager_modemList" colspan="3" weightx="2" weighty="2" perform="showPhoneSettingsDialog(this)">
+			<header>
+				<column text="" width="18"/>
+				<column icon="/icons/port_open.png" text="i18n.common.port"/>
+				<column icon="/icons/baudrate.png" text="i18n.common.baud.rate"/>
+				<column icon="/icons/phone_number.png" text="i18n.common.phone.number" width="120"/>
+				<column icon="/icons/phone_make_model.png" text="i18n.common.make.model" width="150"/>
+				<column icon="/icons/serial.png" text="i18n.common.serial"/>
+				<column text="" width="19" icon="/icons/sms_send.png"/>
+				<column text="" width="19" icon="/icons/sms_receive.png"/>
+				<column icon="/icons/status.png" text="i18n.common.status"/>
+			</header>
+			<popupmenu menushown="editPhoneEnabled(phoneManager_modemList, this)" name="popMenu">
+				<menuitem name="miDisconnect" text="i18n.action.disconnect" icon="/icons/phone_disconnect.png" action="disconnectFromSelected(phoneManager_modemList)"/>
+				<menuitem name="miEditPhone" text="i18n.action.view.edit.phone" icon="/icons/phone_edit.png" action="showPhoneSettingsDialog(phoneManager_modemList)"/>
+			</popupmenu>
+		</table>
+		<label icon="/icons/phone_notWorking.png" text="i18n.common.non.working.devices" colspan="3"/>
+		<table name="phoneManager_modemListError" colspan="3" weightx="2" weighty="2">
+			<header>
+				<column text="" width="18"/>
+				<column icon="/icons/port_open.png" text="i18n.common.port"/>
+				<column icon="/icons/baudrate.png" text="i18n.common.baud.rate"/>
+				<column icon="/icons/phone_number.png" text="i18n.common.phone.number" width="120"/>
+				<column icon="/icons/phone_make_model.png" text="i18n.common.make.model" width="150"/>
+				<column icon="/icons/serial.png" text="i18n.common.serial"/>
+				<column icon="/icons/status.png" text="i18n.common.status"/>
+			</header>
+			<popupmenu menushown="phoneManager_enabledFields(this, phoneManager_modemListError)">
+				<menuitem name="miAutoConnect" text="i18n.action.auto.connect" icon="/icons/phone_autoDetect.png" action="connectToSelectedPhoneHandler"/>
+				<menuitem name="miManualConnection" text="i18n.action.manually.connect" icon="/icons/phone_manualConfigure.png" action="showPhoneConfigDialog(phoneManager_modemListError)"/>
+				<menuitem name="miEditPhone" text="i18n.action.view.edit.phone" icon="/icons/phone_edit.png" action="showPhoneSettingsDialog(phoneManager_modemListError)"/>
+				<menuitem name="miCancelDetection" text="i18n.action.stop.detection" icon="/icons/stopDetection.png" action="stopDetection(phoneManager_modemListError)"/>
+			</popupmenu>
+		</table>
+		<button tooltip="i18n.tooltip.click.for.help" valign="bottom" action="showHelpPage('help-menu.htm')" icon="/icons/big_help.png" type="link"/>
+		<panel columns="1" gap="8">
+			<button type="link" text="i18n.phones.help.moreinfo" action="showHelpPage('phonemanager.htm')"/>
+			<button type="link" text="i18n.phones.help.trouble" action="showHelpPage('troubleshooting.htm')"/>
+		</panel>
+		<button icon="/icons/big_phone_manualConfigure.png" name="ManualConfig" text="i18n.action.manually.connect" halign="right" action="showPhoneConfigDialog(phoneManager_modemListError)" weightx="1"/>
+		<button icon="/icons/big_phone_autoDetect.png" name="AutoDetect" tooltip="i18n.tooltip.detect.phones" text="i18n.action.detect.phones" action="phoneManager_detectModems" halign="right"/>
+	</panel>
+</tab>

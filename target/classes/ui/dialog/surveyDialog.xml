@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
-<dialog closable="true" close="removeDialog(this)" bottom="10" columns="1" gap="10" icon="/icons/survey.png" left="10" modal="true" name="surveyDialog" resizable="true" right="10" text="i18n.common.survey" top="10">
-    <separator/>
-    <panel gap="5" halign="center">
-        <button action="do_newKActionSurvey(surveyDialog)" icon="/icons/tick.png" name="btSave" text="i18n.action.save"/>
-        <button action="removeDialog(surveyDialog)" icon="/icons/cross.png" name="btCancel" text="i18n.action.cancel"/>
-    </panel>
-</dialog>

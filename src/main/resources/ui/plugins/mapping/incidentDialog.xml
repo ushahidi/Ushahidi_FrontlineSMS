@@ -1,0 +1,40 @@
+<dialog text="" name="incident_Dialog" closable="true" close="removeDialog(this)" modal="true">
+ 	<panel name="pnl_IncidentInfo" weightx="1" weighty="1" columns="1" gap="5" top="10" right="3" bottom="3" left="3">
+ 		<label text="Date/Time: "/>
+ 		<textfield name="txtIncidentDate" columns="30" editable="false"/>
+ 		
+ 		<label text="Sender: "/>
+ 		<textfield name="txtIncidentSender" columns="30" editable="false"/> 		
+ 		
+ 		<panel columns="1" weightx="1">
+	 		<label text="Location: "/>
+	 		<panel columns="3" weightx="1">
+	 		    <combobox name="cboLocations" columns="20"></combobox>
+	 			<label text=" or "/>
+	 			<button name="btnSelectPoint" text="Select point on a map" type="link" action="startPointSelection(incident_Dialog)"/>
+	 		</panel>
+ 		</panel>
+ 		
+ 		<!-- Displays the fields when a location is selected from the map -->
+ 		<panel name="pnl_SelectedLocation" border="true" columns="2" weightx="1" visible="false" gap="5" top="5" right="5" bottom="5" left="5">
+ 			<label text="Name: " />
+ 			<textfield name="txtLocationName" columns="30" />
+ 			<label text="Longitude: "/>
+ 			<label text="" name="lbl_Longitude" />
+ 			<label text="Latitude: "/>
+ 			<label text="" name="lbl_Latitude" />
+ 		</panel>
+ 		
+ 		<label text="Message: "/>
+ 		<textarea name="txtMessage" columns="8" rows="2" wrap="true" editable="false"/>
+ 		
+ 		<label text="Additional Info:" />
+ 		<textarea name="txtAdditionalInfo" columns="8" rows="4"/>
+ 		
+ 		<panel weightx="1" halign="center" gap="3" top="3" right="3" bottom="3" left="3">
+ 			<button icon="/icons/tick.png" text="i18n.action.save" />
+ 			<button icon="/icons/cross.png" text="i18n.action.cancel" action="removeDialog(incident_Dialog"/>
+ 		</panel>
+
+ 	</panel>
+</dialog>

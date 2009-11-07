@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC "-//Hibernate/Hibernate Configuration DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+    <session-factory>
+        <mapping class="com.ushahidi.plugins.mapping.data.domain.Category" />
+        <mapping class="com.ushahidi.plugins.mapping.data.domain.Location" />
+        <mapping class="com.ushahidi.plugins.mapping.data.domain.Incident" />
+        <mapping class="com.ushahidi.plugins.mapping.data.domain.MappingSetup" />
+    </session-factory>
+</hibernate-configuration>

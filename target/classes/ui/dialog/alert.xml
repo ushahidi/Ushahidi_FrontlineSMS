@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
-<dialog closable="true" close="removeDialog(this)" bottom="4" gap="8" icon="/icons/status_attention.png" left="4" modal="true" name="alertDialog" right="4" text="i18n.common.warning" top="4" columns="1">
-    <label icon="/icons/alert.png" name="alertMessage"/>
-    <button action="removeDialog(alertDialog)" icon="/icons/tick.png" text="i18n.action.ok" halign="center"/>
-</dialog>

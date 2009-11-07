@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:p="http://www.springframework.org/schema/p"
+        xmlns:context="http://www.springframework.org/schema/context"
+        xmlns:tx="http://www.springframework.org/schema/tx"
+		xsi:schemaLocation="http://www.springframework.org/schema/beans		http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+							http://www.springframework.org/schema/context   http://www.springframework.org/schema/context/spring-context-2.5.xsd
+							http://www.springframework.org/schema/tx		http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
+							">
+
+	<!-- turn on annotation support -->
+	<context:annotation-config />
+	<tx:annotation-driven />
+
+	<!-- Bean wiring for the mapping plugin  -->
+	<bean id="categoryDao" class="com.ushahidi.plugins.mapping.data.repository.hibernate.HibernateCategoryDao">
+		<property name="sessionFactory" ref="sessionFactory" />
+	</bean>
+	
+	<bean id="locationDao" class="com.ushahidi.plugins.mapping.data.repository.hibernate.HibernateLocationDao">
+		<property name="sessionFactory" ref="sessionFactory" />
+	</bean>
+	
+	<bean id="incidentDao" class="com.ushahidi.plugins.mapping.data.repository.hibernate.HibernateIncidentDao">
+		<property name="sessionFactory" ref="sessionFactory" />
+	</bean>
+	
+	<bean id="mappingSetupDao" class="com.ushahidi.plugins.mapping.data.repository.hibernate.HibernateMappingSetupDao">
+		<property name="sessionFactory" ref="sessionFactory" />
+	</bean>
+</beans>

@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
-<dialog closable="true" close="remove(this)" bottom="4" columns="1" gap="8" height="240" icon="/icons/users.png" left="4" modal="true" name="contactSelecter" resizable="true" right="4" text="i18n.common.select.contact" top="4" width="320">
-    <label name="contactSelecter_title"/>
-    <list width="200" height="150" name="contactSelecter_contactList" weightx="2" weighty="2"/>
-    <panel gap="5" halign="center">
-	    <button icon="/icons/tick.png" name="contactSelecter_okButton" text="i18n.action.done"/>
-	    <button action="remove(contactSelecter)" icon="/icons/cross.png" text="i18n.action.cancel"/>
-	</panel>
-</dialog>

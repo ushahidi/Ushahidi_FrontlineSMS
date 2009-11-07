@@ -1,8 +1,0 @@
-<panel name="pagePanel" gap="4" halign="left">
-    <label text="i18n.common.page"/>
-    <label font="bold" name="lbPageNumber" text="1"/>
-    <label text="i18n.common.of"/>
-    <label font="bold" name="lbNumberOfPages" text="1"/>
-    <button enabled="false" icon="/icons/left.png" name="btPreviousPage"/>
-    <button enabled="false" icon="/icons/right.png" name="btNextPage"/>
-</panel>

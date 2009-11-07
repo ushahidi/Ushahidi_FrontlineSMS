@@ -1,0 +1,20 @@
+<dialog text="" name="reportDetails_Dialog" modal="true" closable="true" close="removeDialog(this)" gap="10" top="3" right="3"
+   bottom="3" left="3">
+   <panel columns="1" gap="5" top="3" right="3" bottom="3" right="3" columns="1">
+       <label text="Item Title" />
+       <textfield name="txtReportTitle" columns="60"/>
+       <label text="Description" />
+       <textarea name="txtReportDescription" columns="30" rows="8" />
+       <label text="Date"/>
+       <textfield name="txtReportDate"/>
+       <label text="Location" />
+       <panel columns="2" gap="5">
+          <textfield name="txtReportLocation" columns="25"/>
+          <label name="lbl_ReportLocationCoords" />
+       </panel>
+       <panel gap="5" top="10" halign="center" weightx="1">
+           <button icon="/icons/tick.png" text="i18n.action.save" action="saveReport(reportDetails_Dialog)"/>
+           <button icon="/icons/cross.png" text="i18n.action.cancel" action="removeDialog(reportDetails_Dialog)" />
+       </panel>
+   </panel> 
+</dialog>

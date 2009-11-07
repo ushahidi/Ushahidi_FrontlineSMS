@@ -1,0 +1,13 @@
+<dialog text="i18n.common.reports" name="reports_Dialog" modal="true" closable="true" close="removeDialog(this)"
+    gap="10" top="3" right="3" bottom="3" left="3" columns="1" width="600" height="450">
+	<table name="tbl_IncidentReports" weightx="1" weighty="1" perform="showReportDetails(item)">
+		<header>
+			<column text="Report Title" width="350"/>
+			<column text="Location" width="120"/>
+			<column text="Date" width="50"/>
+		</header>
+	</table>
+	<panel halign="right" gap="3" top="3" right="3" bottom="3" left="3">
+		<button icon="/icons/cross.png" text="i18n.action.close" action="removeDialog(reports_Dialog"/>
+	</panel>
+</dialog>
