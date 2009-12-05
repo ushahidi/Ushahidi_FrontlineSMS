@@ -29,6 +29,6 @@
         </panel>
     </panel>
     <panel gap="5" halign="center">
-        <button action="remove(emailConfigDialog)" icon="/icons/cross.png" text="i18n.action.close"/>
+        <button action="removeDialog(emailConfigDialog)" icon="/icons/cross.png" text="i18n.action.close"/>
     </panel>
 </dialog>

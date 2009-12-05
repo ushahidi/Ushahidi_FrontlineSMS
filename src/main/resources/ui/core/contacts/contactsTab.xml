@@ -11,7 +11,7 @@
 	                    <menuitem action="show_composeMessageForm(contactManager_groupList)" icon="/icons/sms_send.png" name="miSendSMS" text="i18n.action.send.sms"/>
 	                    <menuitem action="showMessageHistory(contactManager_groupList)" icon="/icons/history.png" name="msg_history" text="i18n.action.message.history"/>
 	                    <separator name="sp2"/>
-	                    <menuitem text="i18n.action.new.contact" action="showNewContactDialog(contactManager_groupList)" icon="/icons/user_add.png" name="miNewContact"/>
+	                    <menuitem text="i18n.action.new.contact" action="showNewContactDialog()" icon="/icons/user_add.png" name="miNewContact"/>
 	                    <menuitem action="showDeleteOptionDialog(contactManager_groupList)" icon="/icons/group_delete.png" name="miDelete" text="i18n.action.delete" tooltip="i18n.tooltip.remove.contacts.and.groups"/>
 	                </popupmenu>
 	            </tree>
@@ -48,7 +48,7 @@
 	                </popupmenu>
 	            </table>
 	            <panel colspan="3" gap="5">
-	                <button action="showNewContactDialog(contactManager_groupList)" icon="/icons/big_user_add.png" text="i18n.action.new.contact" weightx="1" weighty="1"/>
+	                <button action="showNewContactDialog()" icon="/icons/big_user_add.png" text="i18n.action.new.contact" weightx="1" weighty="1"/>
 	                <button action="showConfirmationDialog('deleteSelectedContacts')" enabled="false" icon="/icons/big_user_delete.png" name="deleteNewContact" text="i18n.action.delete.selected.contacts" weightx="1" weighty="1"/>
 	                <button action="showContactDetails(contactManager_contactList)" enabled="false" icon="/icons/big_user_edit.png" name="viewContactButton" text="i18n.action.edit" weightx="1" weighty="1"/>
 	                <button action="show_composeMessageForm(contactManager_contactList)" enabled="false" icon="/icons/big_sms_send.png" name="sendSMSButton" text="i18n.action.send.sms" weightx="1" weighty="1"/>

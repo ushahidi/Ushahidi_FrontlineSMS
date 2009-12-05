@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<panel bottom="10" columns="1" gap="10" left="10" right="10" top="10">
+    <panel columns="1" gap="6" weightx="1">
+        <label icon="/icons/help.png" text="There was a problem connecting to the database."/>
+        <button text="Retry Connection" icon="/icons/refresh.png" action="reconnect()"/>
+    </panel>
+</panel>

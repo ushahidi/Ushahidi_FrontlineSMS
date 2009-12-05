@@ -16,14 +16,17 @@
  		</panel>
  		
  		<!-- Displays the fields when a location is selected from the map -->
- 		<panel name="pnl_SelectedLocation" border="true" columns="2" weightx="1" visible="false" gap="5" top="5" right="5" bottom="5" left="5">
+ 		<panel name="pnl_SelectedLocation" border="true" columns="2" weightx="1" gap="5" top="5" right="5" bottom="5" left="5">
  			<label text="Name: " />
- 			<textfield name="txtLocationName" columns="30" />
+ 			<textfield name="txtLocationName" columns="30" enabled="false"/>
  			<label text="Longitude: "/>
  			<label text="" name="lbl_Longitude" />
  			<label text="Latitude: "/>
  			<label text="" name="lbl_Latitude" />
  		</panel>
+ 		
+ 		<label text="Category: "/>
+ 		<combobox name="cboCategories" columns="20"/>
  		
  		<label text="Message: "/>
  		<textarea name="txtMessage" columns="8" rows="2" wrap="true" editable="false"/>
@@ -32,7 +35,7 @@
  		<textarea name="txtAdditionalInfo" columns="8" rows="4"/>
  		
  		<panel weightx="1" halign="center" gap="3" top="3" right="3" bottom="3" left="3">
- 			<button icon="/icons/tick.png" text="i18n.action.save" />
+ 			<button icon="/icons/tick.png" text="i18n.action.save" action="saveIncident"/>
  			<button icon="/icons/cross.png" text="i18n.action.cancel" action="removeDialog(incident_Dialog"/>
  		</panel>
 

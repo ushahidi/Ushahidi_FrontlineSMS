@@ -14,7 +14,7 @@
     <label icon="/icons/note.png" text="i18n.common.notes"/>
     <textarea colspan="2" name="contact_notes" rows="3"/>
     <label icon="/icons/group.png" text="i18n.common.groups"/>
-    <list colspan="2" name="newContact_groupList" selection="multiple"/>
+    <list colspan="2" name="newContact_groupList" selection="single"/>
     <label/>
     <panel bottom="5" columns="4" gap="5" left="65" right="49" weightx="1">
         <button action="saveContactDetailsAdvancedView(contactDetailsDialog)" icon="/icons/tick.png" text="i18n.action.save" weightx="1"/>
