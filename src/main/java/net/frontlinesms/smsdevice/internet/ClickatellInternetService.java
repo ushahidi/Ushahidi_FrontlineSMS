@@ -277,7 +277,8 @@ public class ClickatellInternetService extends AbstractSmsInternetService {
 	 */
 	private void verifyGatewayConnection() {
 		// Let's verify it is really connected
-		if (gateway.getGatewayStatus() != GatewayStatuses.OK) {
+		if (this.gateway != null
+				&& gateway.getGatewayStatus() != GatewayStatuses.OK) {
 			try {
 				if (gateway.getStarted()) {
 					this.setStatus(SmsInternetServiceStatus.TRYING_TO_RECONNECT, null);

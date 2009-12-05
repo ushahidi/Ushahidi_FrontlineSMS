@@ -53,7 +53,7 @@ public class ArcaneDataImporter {
 					contactDao.saveContact(contact);
 				}
 				Group newGroup = extractGroup(arcaneContact);
-				newGroup.addContact(contact);
+				newGroup.addDirectMember(contact);
 				groupDao.updateGroup(newGroup);
 			}
 		} catch(DuplicateKeyException ex) {

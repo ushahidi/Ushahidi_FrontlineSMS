@@ -30,9 +30,6 @@ import net.frontlinesms.data.domain.*;
  *
  */
 public interface KeywordDao {
-	/** @return an alphabetically-sorted list of all keywords without parents. */
-	public List<Keyword> getRootKeywords();
-	
 	/** @return an alphabetically-sorted list of all keywords. */
 	public List<Keyword> getAllKeywords();
 	

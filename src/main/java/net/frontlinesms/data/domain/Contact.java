@@ -36,6 +36,8 @@ import net.frontlinesms.data.EntityField;
 public class Contact {
 	
 //> COLUMN NAME CONSTANTS
+	/** Column name for {@link #id} */
+	static final String COLUMN_ID = "contact_id";
 	/** Column name for {@link #name} */
 	private static final String FIELD_NAME = "name";
 	/** Column name for {@link #phoneNumber} */
@@ -66,7 +68,7 @@ public class Contact {
 //> INSTANCE PROPERTIES
 	/** Unique id for this entity.  This is for hibernate usage. */
 	@Id @GeneratedValue(strategy=GenerationType.IDENTITY)
-	@Column(unique=true,nullable=false,updatable=false)
+	@Column(name=COLUMN_ID,unique=true,nullable=false,updatable=false)
 	private long id;
 	
 	/** Name of this contact */
@@ -83,8 +85,7 @@ public class Contact {
 	private boolean active;
 	
 	/** Groups that this chap is a member of. */
-	@ManyToMany(fetch=FetchType.EAGER, mappedBy=Group.COLUMN_DIRECT_MEMBERS, targetEntity=Group.class)
-	@Column(name=FIELD_GROUPS)
+	@ManyToMany(fetch=FetchType.EAGER, mappedBy=Group.COLUMN_DIRECT_MEMBERS, cascade=CascadeType.REMOVE)
 	private Set<Group> groups = new HashSet<Group>();
 	
 //> CONSTRUCTORS
@@ -233,6 +234,11 @@ public class Contact {
 	 */
 	public Collection<Group> getGroups() {
 		return this.groups;
+	}
+	
+	/** @param groups new value for {@link #groups} */
+	public void setGroups(Set<Group> groups) {
+		this.groups = groups;
 	}
 	
 	/**

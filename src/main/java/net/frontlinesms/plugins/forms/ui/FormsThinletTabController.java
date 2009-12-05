@@ -22,7 +22,6 @@ import net.frontlinesms.plugins.forms.data.domain.*;
 import net.frontlinesms.plugins.forms.data.repository.*;
 import net.frontlinesms.plugins.forms.ui.components.*;
 import net.frontlinesms.plugins.PluginController;
-import net.frontlinesms.ui.FrontlineUI;
 import net.frontlinesms.ui.Icon;
 import net.frontlinesms.ui.ThinletUiEventHandler;
 import net.frontlinesms.ui.UiGeneratorController;
@@ -47,11 +46,11 @@ public class FormsThinletTabController implements ThinletUiEventHandler {
 	/** Component name of the forms list */
 	private static final String FORMS_LIST_COMPONENT_NAME = "formsList";
 	/** i18n key: "Form Name" */
-	static final String I18N_KEY_FORM_NAME = "form.name";
+	static final String I18N_KEY_FORM_NAME = "forms.editor.name.label";
 	/** i18n key: "Form Editor" */
-	static final String I18N_KEY_FORMS_EDITOR = "form.editor";
+	static final String I18N_KEY_FORMS_EDITOR = "forms.editor.title";
 	/** i18n key: "You have not entered a name for this form" */
-	static final String I18N_KEY_MESSAGE_FORM_NAME_BLANK = "form.contact.unknown";
+	static final String I18N_KEY_MESSAGE_FORM_NAME_BLANK = "forms.editor.name.validation.notset";
 	/** i18n key: "Currency field" */
 	public static final String I18N_KEY_FIELD_CURRENCY = "form.field.currency";
 	
@@ -86,11 +85,27 @@ public class FormsThinletTabController implements ThinletUiEventHandler {
 		this.uiController = uiController;
 	}
 	
-	/**
-	 * Refresh the tab's display.
-	 */
+	/** Refresh the tab's display. */
 	public void refresh() {
-		refreshFormsList();
+		Object formList = getFormsList();
+		
+		// If there was something selected previously, we will attempt to select it again after updating the list
+		Object previousSelectedItem = this.uiController.getSelectedItem(formList);
+		Form previousSelectedForm = previousSelectedItem == null ? null : this.uiController.getAttachedObject(previousSelectedItem, Form.class);
+		uiController.removeAll(formList);
+		Object newSelectedItem = null;
+		for(Form f : formsDao.getAllForms()) {
+			Object formNode = getNode(f);
+			uiController.add(formList, formNode);
+			if(f.equals(previousSelectedForm)) {
+				newSelectedItem = formNode;
+			}
+		}
+		
+		// Restore the selected item
+		if(newSelectedItem != null) {
+			this.uiController.setSelectedItem(formList, newSelectedItem);
+		}
 	}
 	
 //> PASS-THROUGH METHODS TO UI CONTROLLER
@@ -166,7 +181,6 @@ public class FormsThinletTabController implements ThinletUiEventHandler {
 					f.setName(visualForm.getName());
 				}
 				updateForm(old, visualForm.getComponents(), f);
-				addToFormsList(f);
 				formsTab_selectionChanged(list);
 			}
 		}
@@ -199,9 +213,9 @@ public class FormsThinletTabController implements ThinletUiEventHandler {
 			// Set the permitted group for this form, then save it
 			form.setPermittedGroup(group);
 			this.formsDao.updateForm(form);
+			this.refresh();
 			
 			removeDialog(groupSelecter);
-			refreshFormsList();
 		}
 	}
 	
@@ -239,9 +253,7 @@ public class FormsThinletTabController implements ThinletUiEventHandler {
 			// if form is not finalised, finalise it now
 			if(!form.isFinalised()) {
 				formsDao.finaliseForm(form);
-
-				// Update forms list so the newly-finalised form has the correct icon.
-				refreshFormsList();
+				this.refresh();
 			}
 			
 			// show selection dialog for Contacts in the form's group
@@ -291,8 +303,8 @@ public class FormsThinletTabController implements ThinletUiEventHandler {
 		Form selectedForm = getForm(selectedComponent);
 		if(selectedForm != null) {
 			this.formsDao.deleteForm(selectedForm);
-			uiController.remove(selectedComponent);
 		}
+		this.refresh();
 		// Now remove the confirmation dialog.
 		uiController.removeConfirmationDialog();
 	}
@@ -306,9 +318,10 @@ public class FormsThinletTabController implements ThinletUiEventHandler {
 		Form clone = new Form(selected.getName() + '*');
 		for (FormField oldField : selected.getFields()) {
 			FormField newField = new FormField(oldField.getType(), oldField.getLabel());
-			clone.addField(newField, oldField.getPosition());
+			clone.addField(newField, oldField.getPositionIndex());
 		}
-		addToFormsList(clone);
+		this.formsDao.saveForm(clone);
+		this.refresh();
 	}
 	
 	/**
@@ -386,15 +399,6 @@ public class FormsThinletTabController implements ThinletUiEventHandler {
 		return uiController.find(this.tabComponent, FormsThinletTabController.FORMS_LIST_COMPONENT_NAME);
 	}
 	
-	/** Reload and refresh the list of forms */
-	private synchronized void refreshFormsList() {
-		Object formList = getFormsList();
-		uiController.removeAll(formList);
-		for(Form f : formsDao.getAllForms()) {
-			uiController.add(formList, getNode(f));
-		}
-	}
-	
 	/** @return the form or form field attached to the selection of the forms list */
 	private Object formsList_getSelection() {
 		return uiController.getSelectedItem(uiController.find(FORMS_LIST_COMPONENT_NAME));
@@ -409,28 +413,7 @@ public class FormsThinletTabController implements ThinletUiEventHandler {
 			form.addField(newField);
 		}
 		this.formsDao.saveForm(form);
-		addToFormsList(form);
-	}
-
-	/**
-	 * Adds or refreshes a form's ui component on the forms list.
-	 * @param form The form to update or add.
-	 */
-	private void addToFormsList(Form form) {
-		Object list = uiController.find(FORMS_LIST_COMPONENT_NAME);
-		int index = -1;
-		int indexToSelect = uiController.getSelectedIndex(list);
-		for (Object o : uiController.getItems(list)) {
-			if (uiController.getAttachedObject(o).equals(form)) {
-				index = uiController.getIndex(list, o);
-				break;
-			}
-		}
-		if (index != -1) {
-			uiController.remove(uiController.getItem(list, index));
-		}
-		uiController.add(list, getNode(form), index);
-		uiController.setSelectedIndex(list, indexToSelect);
+		this.refresh();
 	}
 	
 	private void updateForm(List<PreviewComponent> old, List<PreviewComponent> newComp, Form form) {
@@ -446,8 +429,8 @@ public class FormsThinletTabController implements ThinletUiEventHandler {
 		for (PreviewComponent c : newComp) {
 			if (c.getFormField() != null) {
 				FormField ff = c.getFormField();
-				if (ff.getPosition() != newComp.indexOf(c)) {
-					ff.setPosition(newComp.indexOf(c));
+				if (ff.getPositionIndex() != newComp.indexOf(c)) {
+					ff.setPositionIndex(newComp.indexOf(c));
 				}
 				ff.setLabel(c.getComponent().getLabel());
 			} else {
@@ -458,6 +441,7 @@ public class FormsThinletTabController implements ThinletUiEventHandler {
 		}
 		
 		this.formsDao.updateForm(form);
+		this.refresh();
 	}
 	
 	/** Adds the result panel to the forms tab. */

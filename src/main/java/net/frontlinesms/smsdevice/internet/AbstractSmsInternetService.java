@@ -96,14 +96,16 @@ abstract class AbstractSmsInternetService implements SmsInternetService {
 	 * @param detail detail relating to the status
 	 */
 	protected void setStatus(SmsInternetServiceStatus status, String detail) {
-		this.status = status;
-		this.statusDetail = detail;
-		LOG.debug("Status [" + status.name()
-				+ (detail == null?"":": "+detail)
-				+ "]");
-
-		if (smsListener != null) {
-			smsListener.smsDeviceEvent(this, status);
+		if(this.status == null || !this.status.equals(status) || this.statusDetail == null || this.statusDetail.equals(detail)) {
+			this.status = status;
+			this.statusDetail = detail;
+			LOG.debug("Status [" + status.name()
+					+ (detail == null?"":": "+detail)
+					+ "]");
+	
+			if (smsListener != null) {
+				smsListener.smsDeviceEvent(this, status);
+			}
 		}
 	}
 	

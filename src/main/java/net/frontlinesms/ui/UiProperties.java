@@ -99,7 +99,7 @@ final class UiProperties extends PropertySet {
 	public boolean isWindowStateMaximized() {
 		String windowState = super.getProperty(KEY_WINDOW_STATE);
 		return windowState != null
-				&& windowState.equals(WINDOW_STATE_NORMAL);
+				&& windowState.equals(WINDOW_STATE_MAXIMISED);
 	}	
 	/** @return the saved width of the window, or <code>null</code> if none was set. */
 	public Integer getWindowWidth() {

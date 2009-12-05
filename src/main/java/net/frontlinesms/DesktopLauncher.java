@@ -26,6 +26,7 @@ import javax.swing.UIManager;
 
 import net.frontlinesms.resources.ResourceUtils;
 import net.frontlinesms.ui.FirstTimeWizard;
+import net.frontlinesms.ui.ThinletDatabaseConnectionTestHandler;
 import net.frontlinesms.ui.UiGeneratorController;
 import net.frontlinesms.ui.i18n.InternationalisationUtils;
 import net.frontlinesms.ui.i18n.LanguageBundle;
@@ -80,7 +81,7 @@ public class DesktopLauncher {
 			appProperties.setLastRunVersion(VERSION);
 			appProperties.saveToDisk();
 
-			frontline = new FrontlineSMS();
+			frontline = new FrontlineSMS(new ThinletDatabaseConnectionTestHandler());
 			if (showWizard) {
 				new FirstTimeWizard(frontline);
 			} else {

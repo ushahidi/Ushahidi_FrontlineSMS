@@ -24,6 +24,9 @@ public class FormField implements Serializable {
 	/** The type of this field. */
 	@Enumerated(EnumType.STRING)
 	private FormFieldType type;
+	
+	/** The position of the field within the form. */
+	private int positionIndex;
 
 //> CONSTRUCTORS
 	/** Empty constructor for hibernate */
@@ -54,14 +57,49 @@ public class FormField implements Serializable {
 	public void setLabel(String label) {
 		this.label = label;
 	}
-
-	public int getPosition() {
-		// TODO Auto-generated method stub
-		return 0;
+	/** @return {@link #positionIndex} */
+	public int getPositionIndex() {
+		return this.positionIndex;
+	}
+	/** @param positionIndex new value for {@link #positionIndex} */
+	public void setPositionIndex(int positionIndex) {
+		this.positionIndex = positionIndex;
 	}
 
-	public void setPosition(int indexOf) {
-		// TODO Auto-generated method stub
-		
+//> GENERATED CODE
+	/** @see java.lang.Object#hashCode() */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((label == null) ? 0 : label.hashCode());
+		result = prime * result + positionIndex;
+		result = prime * result + ((type == null) ? 0 : type.hashCode());
+		return result;
+	}
+
+	/** @see java.lang.Object#equals(java.lang.Object) */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		FormField other = (FormField) obj;
+		if (label == null) {
+			if (other.label != null)
+				return false;
+		} else if (!label.equals(other.label))
+			return false;
+		if (positionIndex != other.positionIndex)
+			return false;
+		if (type == null) {
+			if (other.type != null)
+				return false;
+		} else if (!type.equals(other.type))
+			return false;
+		return true;
 	}
 }

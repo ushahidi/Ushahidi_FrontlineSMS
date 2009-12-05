@@ -27,6 +27,7 @@ import net.frontlinesms.data.domain.*;
 import net.frontlinesms.data.repository.*;
 import net.frontlinesms.listener.*;
 import net.frontlinesms.plugins.PluginController;
+import net.frontlinesms.plugins.PluginProperties;
 import net.frontlinesms.resources.ResourceUtils;
 import net.frontlinesms.smsdevice.*;
 import net.frontlinesms.smsdevice.internet.SmsInternetService;
@@ -116,9 +117,10 @@ public class FrontlineSMS implements SmsSender, SmsListener, EmailListener {
 	
 	/**
 	 * Create a new {@link FrontlineSMS} instance.
+	 * @param databaseConnectionTestHandler handler for failed database connection test
 	 * @throws Throwable
 	 */
-	public FrontlineSMS() throws Throwable {
+	public FrontlineSMS(DatabaseConnectionTestHandler databaseConnectionTestHandler) throws Throwable {
 		LOG.trace("ENTER");
 		try {
 			// Load the data mode from the app.properties file
@@ -151,11 +153,14 @@ public class FrontlineSMS implements SmsSender, SmsListener, EmailListener {
 			smsInternetServiceSettingsDao = (SmsInternetServiceSettingsDao) applicationContext.getBean("smsInternetServiceSettingsDao");
 			smsModemSettingsDao = (SmsModemSettingsDao) applicationContext.getBean("smsModemSettingsDao");
 
-			new DatabaseConnectionTester(this).ensureConnected();
+			DatabaseConnectionTester databaseConnectionTester = new DatabaseConnectionTester();
+			databaseConnectionTester.setContactDao(this.contactDao);
+			databaseConnectionTester.setTestHandler(databaseConnectionTestHandler);
+			databaseConnectionTester.ensureConnected();
 			
 			try {
 				LOG.debug("Creating blank keyword...");
-				Keyword blankKeyword = new Keyword(null, "", "Blank keyword, used to be triggerd by every received message.[i18n]");
+				Keyword blankKeyword = new Keyword("", "Blank keyword, used to be triggerd by every received message.[i18n]");
 				keywordDao.saveKeyword(blankKeyword);
 				LOG.debug("Blank keyword created.");
 			} catch (DuplicateKeyException e) {
@@ -169,7 +174,7 @@ public class FrontlineSMS implements SmsSender, SmsListener, EmailListener {
 
 			LOG.debug("Initialising incoming message processor...");
 			// Initialise the incoming message processor
-			incomingMessageProcessor = new IncomingMessageProcessor(this, contactDao, keywordDao, groupDao, messageDao, emailDao, emailServerManager);
+			incomingMessageProcessor = new IncomingMessageProcessor(this, contactDao, keywordDao, keywordActionDao, groupDao, messageDao, emailDao, emailServerManager);
 			incomingMessageProcessor.start();
 			
 			LOG.debug("Starting Phone Manager...");
@@ -343,6 +348,10 @@ public class FrontlineSMS implements SmsSender, SmsListener, EmailListener {
 			LOG.debug("Stopping E-mail Manager...");
 			emailServerManager.stopRunning();
 		}
+		if(this.incomingMessageProcessor != null) {
+			LOG.debug("Stopping the incoming message processor...");
+			this.incomingMessageProcessor.die();
+		}
 		LOG.trace("EXIT");
 	}
 	
@@ -365,6 +374,7 @@ public class FrontlineSMS implements SmsSender, SmsListener, EmailListener {
 
 	/** Passes a device event to the SMS Listener if one is specified. */
 	public void smsDeviceEvent(SmsDevice activeDevice, SmsDeviceStatus status) {
+		// FIXME these events MUST be queued and processed on a separate thread
 		// FIXME should log this message here
 		if (this.smsDeviceEventListener != null) {
 			this.smsDeviceEventListener.smsDeviceEvent(activeDevice, status);
@@ -405,7 +415,7 @@ public class FrontlineSMS implements SmsSender, SmsListener, EmailListener {
 		Message m;
 		if (targetNumber.equals(FrontlineSMSConstants.EMULATOR_MSISDN)) {
 			m = Message.createOutgoingMessage(System.currentTimeMillis(), FrontlineSMSConstants.EMULATOR_MSISDN, FrontlineSMSConstants.EMULATOR_MSISDN, textContent.trim());
-			m.setStatus(Message.STATUS_DELIVERED);
+			m.setStatus(Message.STATUS_SENT);
 			messageDao.saveMessage(m);
 			outgoingMessageEvent(EMULATOR, m);
 			incomingMessageEvent(EMULATOR, new CIncomingMessage(System.currentTimeMillis(), FrontlineSMSConstants.EMULATOR_MSISDN, textContent.trim(), 1, "NYI"));

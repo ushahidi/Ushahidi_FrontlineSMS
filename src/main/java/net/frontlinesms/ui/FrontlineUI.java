@@ -330,7 +330,7 @@ public abstract class FrontlineUI extends ExtendedThinlet implements ThinletUiEv
 				// shut down the last one so that ownership of any connected phones
 				// is relinquished
 				if (frontlineController != null) frontlineController.destroy();
-				new UiGeneratorController(new FrontlineSMS(), false);
+				new UiGeneratorController(new FrontlineSMS(new ThinletDatabaseConnectionTestHandler()), false);
 			} else {
 				new UiGeneratorController(frontlineController, false);
 			}

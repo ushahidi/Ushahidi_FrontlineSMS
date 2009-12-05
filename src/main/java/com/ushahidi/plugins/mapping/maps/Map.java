@@ -166,8 +166,11 @@ public class Map implements TileRequestor {
 						LOG.debug("Updating tile offset "
 								+ tileCoord);
 						TileRequest tile2 = tileRequests.get(tileKey);
-						tile2.setOffset(tilePoint);
-						tile2.setUpdateId(updateId);
+						//Prevent NullPointerException
+						if(tile2 != null){
+							tile2.setOffset(tilePoint);
+							tile2.setUpdateId(updateId);
+						}
 					} else {
 						LOG.debug("Queueing tile " + tileCoord);
 						// Queue tile request

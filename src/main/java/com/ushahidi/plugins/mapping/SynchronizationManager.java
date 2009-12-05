@@ -15,8 +15,10 @@ public class SynchronizationManager {
 	private final MappingUIController mappingController;
 	
 	/** Executor service to handle synchronisation tasks */
-	private static final ExecutorService executorService = 
-		Executors.newFixedThreadPool(MAX_THREAD_POOL_SIZE);
+	private static final ExecutorService executorService = Executors.newFixedThreadPool(MAX_THREAD_POOL_SIZE);
+	
+	/** Status of the synchronization*/
+	private boolean complete = false;
 	
 	/**
 	 * Creates an instance of {@link SynchronizationManager}
@@ -64,6 +66,7 @@ public class SynchronizationManager {
 		
 		incidentTask.addRequestParameter(SynchronizationAPI.INCIDENTS_BY_ALL);
 		executorService.submit(incidentTask);
+		
 	}
 	
 	/**
@@ -91,6 +94,10 @@ public class SynchronizationManager {
 	
 	public synchronized List<Incident> getPendingIncidents(){
 		return mappingController.getPendingIncidents();
+	}
+	
+	public boolean synchronizationComplete(){
+		return complete;
 	}
 		
 }

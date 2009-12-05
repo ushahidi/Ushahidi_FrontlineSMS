@@ -26,13 +26,19 @@ public class InMemoryContactDao implements ContactDao {
 		return Collections.unmodifiableList(contactsList);
 	}
 
-	/** Gets a sublist of all the contacts. */
+	/**
+	 * Gets a sublist of all the contacts.
+	 * @see ContactDao#getAllContacts(int, int)
+	 */
 	public List<Contact> getAllContacts(int startIndex, int limit) {
 		List<Contact> allContacts = this.getAllContacts();
 		return allContacts.subList(startIndex, Math.min(allContacts.size(), startIndex+limit));
 	}
 
-	/** Gets a contact given his name. */
+	/**
+	 * Gets a contact given his name.
+	 * @see ContactDao#getContactByName(String)
+	 */
 	public Contact getContactByName(String name) {
 		for(Contact c : allContacts.values()) {
 			if(name.equals(c.getName())) {
@@ -42,7 +48,10 @@ public class InMemoryContactDao implements ContactDao {
 		return null;
 	}
 
-	/** Gets the total number of saved contacts. */
+	/**
+	 * Gets the total number of saved contacts.
+	 * @see ContactDao#getContactCount()
+	 */
 	public int getContactCount() {
 		return allContacts.size();
 	}

@@ -458,9 +458,15 @@ public class SmsDeviceManager extends Thread implements SmsListener {
 
 		// Disconnect all phones.
 		for(SmsModem p : phoneHandlers.values()) {
+			p.setDetecting(false);
 			p.setAutoReconnect(false);
 			p.disconnect();
 			connectedSerials.remove(p.getSerial());
+		}
+		
+		// Stop all SMS Internet Services
+		for(SmsInternetService service : this.smsInternetServices) {
+			service.stopThisThing();
 		}
 	}
 
@@ -612,8 +618,11 @@ public class SmsDeviceManager extends Thread implements SmsListener {
 
 	public void stopDetection(String port) {
 		// FIXME is this thread-safe?  Should really get handler ONCE and then call methods.
-		phoneHandlers.get(port).setDetecting(false);
-		phoneHandlers.get(port).setAutoReconnect(false);
+		SmsModem smsModem = phoneHandlers.get(port);
+		if(smsModem != null) {
+			smsModem.setDetecting(false);
+			smsModem.setAutoReconnect(false);
+		}
 	}
 
 	private void disconnectSmsInternetService(SmsInternetService device) {

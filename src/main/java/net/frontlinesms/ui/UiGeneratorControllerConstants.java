@@ -12,7 +12,6 @@ public class UiGeneratorControllerConstants {
 	
 //> UI FILES
 	protected static final String UI_FILE_HOME = "/ui/frontline.xml";
-	protected static final String UI_FILE_NEW_GROUP_FORM = "/ui/dialog/newGroupForm.xml";
 	protected static final String UI_FILE_DATE_PANEL = "/ui/dialog/datePanel.xml";
 	protected static final String UI_FILE_PENDING_MESSAGES_FORM = "/ui/dialog/pendingMessagesDialog.xml";
 	protected static final String UI_FILE_COMPOSE_MESSAGE_FORM = "/ui/dialog/composeMessageForm.xml";
@@ -31,10 +30,8 @@ public class UiGeneratorControllerConstants {
 	protected static final String UI_FILE_EXPORT_DIALOG_FORM = "/ui/dialog/exportDialogForm.xml";
 	protected static final String UI_FILE_SMS_HTTP_SERVICE_SETTINGS_FORM = "/ui/dialog/smsHttpServiceSettings.xml";
 	protected static final String UI_FILE_EMAIL_ACCOUNT_FORM = "/ui/dialog/emailAccountSettings.xml";
-	protected static final String UI_FILE_DELETE_OPTION_DIALOG_FORM = "/ui/dialog/deleteOptionDialogForm.xml";
 	protected static final String UI_FILE_CONNECTION_WARNING_FORM = "/ui/dialog/connectionWarningForm.xml";
 	protected static final String UI_FILE_CONFIRMATION_DIALOG_FORM = "/ui/dialog/confirmationDialog.xml";
-	protected static final String UI_FILE_CREATE_CONTACT_FORM = "/ui/dialog/createContactDialog.xml";
 	protected static final String UI_FILE_HISTORY_FORM = "/ui/dialog/historyForm.xml";
 	// FIXME this should probably be abstracted via a getter in UIGC or similar
 	public static final String UI_FILE_PAGE_PANEL = "/ui/dialog/pagePanel.xml";
@@ -44,8 +41,6 @@ public class UiGeneratorControllerConstants {
 	protected static final String UI_FILE_INCOMING_NUMBER_SETTINGS_FORM = "/ui/dialog/incomingNumberSettingsDialog.xml";
 	protected static final String UI_FILE_USER_DETAILS_DIALOG = "/ui/dialog/userDetailsDialog.xml";
 	
-	//Advanced view
-	protected static final String UI_FILE_CONTACTS_TAB = "/ui/advanced/contactsTab.xml";
 	//keyword panel
 	protected static final String UI_FILE_KEYWORDS_TAB = "/ui/advanced/keywordsTab.xml";
 	protected static final String UI_FILE_KEYWORDS_SIMPLE_VIEW = "/ui/advanced/keywordSimpleView.xml";
@@ -55,7 +50,6 @@ public class UiGeneratorControllerConstants {
 	protected static final String UI_FILE_EMAILS_TAB = "/ui/advanced/emailsTab.xml";
 	
 	//Classic view
-	protected static final String UI_FILE_CONTACT_MANAGER_TAB = "/ui/classic/contactManagerTab.xml";
 	protected static final String UI_FILE_SURVEY_MANAGER_TAB = "/ui/classic/surveyManagerTab.xml";
 	protected static final String UI_FILE_SURVEY_ANALYST_TAB = "/ui/classic/surveyAnalystTab.xml";
 	protected static final String UI_FILE_SEND_CONSOLE_TAB = "/ui/classic/sendConsoleTab.xml";
@@ -230,7 +224,6 @@ public class UiGeneratorControllerConstants {
 	static final String COMPONENT_GROUP_MANAGER_SEND_SMS_BUTTON = "groupManager_sendSMSButton";
 	static final String COMPONENT_GROUP_MANAGER_CREATE_NEW_CONTACT = "group_manager_createNewContact";
 	static final String COMPONENT_GROUP_MANAGER_CONTACT_LIST = "groupManager_contactList";
-	static final String COMPONENT_GROUP_MANAGER_GROUP_LIST = "groupManager_groupList";
 	static final String COMPONENT_MENU_SWITCH_MODE = "menu_switchMode";
 	static final String COMPONENT_ANALYST_MESSAGES_UNREGISTERED = "analystMessages_unregistered";
 	static final String COMPONENT_ANALYST_MESSAGES = "analystMessages";
@@ -272,7 +265,6 @@ public class UiGeneratorControllerConstants {
 	static final String COMPONENT_CONTACT_EMAIL_ADDRESS = "contact_emailAddress";
 	static final String COMPONENT_CONTACT_NOTES = "contact_notes";
 	static final String COMPONENT_CONTACT_DORMANT = "rb_dormant";
-	static final String COMPONENT_CONTACT_GROUP = "newContact_groupList";
 	/** Thinlet Component Name: TODO document */
 	static final String COMPONENT_CB_GROUPS = "cbGroups";
 }

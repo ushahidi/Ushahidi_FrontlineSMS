@@ -90,11 +90,6 @@ public class HttpTriggerPluginController implements PluginController, ThinletUiE
 		frontlineController.sendTextMessage(toPhoneNumber, message);
 	}
 
-	public void initializePluginData() {
-		// TODO Auto-generated method stub
-		
-	}
-
 //> STATIC FACTORIES
 
 //> STATIC HELPER METHODS

@@ -229,7 +229,8 @@ public class HibernateMessageDao extends BaseHibernateDao<Message> implements Me
 	 * @param keyword 
 	 */
 	private void addKeywordMatchCriteria(DetachedCriteria criteria, Keyword keyword) {
-		String keywordString = keyword.getKeywordString();
+		String keywordString = keyword.getKeyword();
+		// FIXME this should be case-insensitive
 		Criterion matchKeyword = Restrictions.or(
 				Restrictions.eq(Field.MESSAGE_CONTENT.getFieldName(), keywordString),
 				Restrictions.like(Field.MESSAGE_CONTENT.getFieldName(), keywordString + ' '));

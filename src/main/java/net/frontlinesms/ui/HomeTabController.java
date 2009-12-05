@@ -26,7 +26,7 @@ public class HomeTabController implements ThinletUiEventHandler {
 	static final int EVENTS_LIMIT = 30;
 	
 	/** UI XML File Path: the Home Tab itself */
-	protected static final String UI_FILE_HOME_TAB = "/ui/advanced/homeTab.xml";
+	protected static final String UI_FILE_HOME_TAB = "/ui/core/home/homeTab.xml";
 	/** UI XML File Path: settings dialog for the home tab */
 	private static final String UI_FILE_HOME_TAB_SETTINGS = "/ui/dialog/homeTabSettingsDialog.xml";
 	/** Thinlet Component Name: Home Tab: logo */
@@ -171,10 +171,10 @@ public class HomeTabController implements ThinletUiEventHandler {
 	}
 	/**
 	 * @param component The component to remove
-	 * @see UiGeneratorController#remove(Object)
+	 * @see UiGeneratorController#removeDialog(Object)
 	 */
-	public void remove(Object component) {
-		this.uiController.remove(component);
+	public void removeDialog(Object component) {
+		this.uiController.removeDialog(component);
 	}
 	
 //> INSTANCE HELPER METHODS	

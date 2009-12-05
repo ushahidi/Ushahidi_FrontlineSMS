@@ -33,12 +33,12 @@ import net.frontlinesms.data.*;
 import net.frontlinesms.listener.IncomingMessageListener;
 import net.frontlinesms.listener.UIListener;
 import net.frontlinesms.smsdevice.SmsDevice;
-import net.frontlinesms.ui.i18n.InternationalisationUtils;
 
 import org.apache.log4j.Logger;
 import org.jdom.JDOMException;
 import org.smslib.CIncomingMessage;
 import org.smslib.CStatusReportMessage;
+import org.smslib.CMessage.MessageType;
 import org.smslib.sms.SmsMessageEncoding;
 
 /**
@@ -54,12 +54,13 @@ public class IncomingMessageProcessor extends Thread {
 	/** Set hi when the thread should terminate. */
 	private boolean keepAlive;
 	/** Queue of messages to process. */
-	private final BlockingQueue<IncomingMessageDetails> incomingMessageQueue = new LinkedBlockingQueue<IncomingMessageDetails>();
+	private final BlockingQueue<IncomingMessageProcessorQueueItem> incomingMessageQueue = new LinkedBlockingQueue<IncomingMessageProcessorQueueItem>();
 	
 //> DATA ACCESS OBJECTS
 	private final FrontlineSMS frontlineSms;
 	private final ContactDao contactDao;
 	private final KeywordDao keywordDao;
+	private final KeywordActionDao keywordActionDao;
 	private final GroupDao groupDao;
 	private final MessageDao messageFactory;
 	private EmailDao emailDao;
@@ -74,22 +75,22 @@ public class IncomingMessageProcessor extends Thread {
 	 * @param frontlineSms
 	 * @param contactFactory
 	 * @param keywordFactory
+	 * @param keywordActionDao 
 	 * @param groupFactory
 	 * @param messageFactory
-	 * @param formsFactory
-	 * @param formsMessageHandler
 	 * @param emailFactory
 	 * @param emailServerManager
 	 */
 	public IncomingMessageProcessor(FrontlineSMS frontlineSms,
 			ContactDao contactFactory, KeywordDao keywordFactory,
-			GroupDao groupFactory,
+			KeywordActionDao keywordActionDao, GroupDao groupFactory,
 			MessageDao messageFactory, EmailDao emailFactory,
 			EmailServerHandler emailServerManager) {
 		super("Incoming message processor");
 		this.frontlineSms = frontlineSms;
 		this.contactDao = contactFactory;
 		this.keywordDao = keywordFactory;
+		this.keywordActionDao = keywordActionDao;
 		this.groupDao = groupFactory;
 		this.messageFactory = messageFactory;
 		this.emailDao = emailFactory;
@@ -107,102 +108,116 @@ public class IncomingMessageProcessor extends Thread {
 	
 	public void die() {
 		keepAlive = false;
-		incomingMessageQueue.notify();
+		incomingMessageQueue.add(new IncomingMessageProcessorQueueKiller());
 	}
 	
 	public void run() {
-		keepAlive = true;
+		boolean keepAlive = true;
 		while(keepAlive) {
-			IncomingMessageDetails incomingMessageDetails = null;
+			IncomingMessageProcessorQueueItem queueItem = null;
 			LOG.trace("Getting incoming message from queue.");
 			try {
-				incomingMessageDetails = incomingMessageQueue.take();
+				queueItem = incomingMessageQueue.take();
 			} catch(InterruptedException ex) {
 				LOG.warn("Thread interrupted.", ex);
 			}
 		
-			if (incomingMessageDetails == null) {
+			if (queueItem == null) {
 				// we may have popped out when queue was notified, which means job may be null
 				LOG.trace("There were no messages in the queue.");
 				continue;
 			} else {
-				try {
-					// We've got a new message, so process it.				
-					CIncomingMessage incomingMessage = incomingMessageDetails.message;
-					SmsDevice receiver = incomingMessageDetails.receiver;
-					LOG.trace("Got message from queue: " + receiver.hashCode() + ":" + incomingMessage.hashCode());
-					
-					// Check the incoming message details with the KeywordFactory to make sure there are no details
-					// that should be hidden before creating the message object...
-					String incomingSenderMsisdn = incomingMessage.getOriginator();
-					LOG.debug("Sender [" + incomingSenderMsisdn + "]");
-					int type = incomingMessage.getType();
-					if (type == CIncomingMessage.MessageType.StatusReport) {
-						// Match the status report with a previously sent message, and update that message's
-						// status.  If no message is found to match this to, just ditch the status report.  This
-						// means that shredding is of no concern here.
-						CStatusReportMessage statusReport = (CStatusReportMessage) incomingMessage;
-						// Here, we strip the first four characters off the originator's number.  This is because we
-						// cannot be sure if the numbers supplied by the PhoneHandler are localised, or international
-						// with or without leading +.
-						Message message = messageFactory.getMessageForStatusUpdate(statusReport.getOriginator().substring(4), incomingMessage.getRefNo());
-						if (message != null) {
-							LOG.debug("It's a delivery report for message [" + message + "]");
-							switch(statusReport.getDeliveryStatus()) {
-							case CStatusReportMessage.DeliveryStatus.Delivered:
-								message.setStatus(Message.STATUS_DELIVERED);
-								break;
-							case CStatusReportMessage.DeliveryStatus.Aborted:
-								message.setStatus(Message.STATUS_FAILED);
-								break;
+				if(queueItem instanceof IncomingMessageProcessorQueueKiller) {
+					// We have been given a "poisoned" item so must terminate this thread
+					keepAlive = false;
+				} else {
+					try {
+						// We've got a new message, so process it.
+						IncomingMessageDetails incomingMessageDetails = (IncomingMessageDetails) queueItem;
+						CIncomingMessage incomingMessage = incomingMessageDetails.getMessage();
+						SmsDevice receiver = incomingMessageDetails.getReceiver();
+						LOG.trace("Got message from queue: " + receiver.hashCode() + ":" + incomingMessage.hashCode());
+						
+						// Check the incoming message details with the KeywordFactory to make sure there are no details
+						// that should be hidden before creating the message object...
+						String incomingSenderMsisdn = incomingMessage.getOriginator();
+						LOG.debug("Sender [" + incomingSenderMsisdn + "]");
+						if (incomingMessage.getType() == CIncomingMessage.MessageType.StatusReport) {
+							handleStatusReport(incomingMessage);
+						} else {
+							// This is an incoming message, so process accordingly
+							Message incoming;
+							if (incomingMessage.getMessageEncoding() == SmsMessageEncoding.GSM_7BIT || incomingMessage.getMessageEncoding() == SmsMessageEncoding.UCS2) {
+								// Only do the keyword stuff if this isn't a delivery report
+								String incomingMessageText = incomingMessage.getText();
+								LOG.debug("It's a incoming message [" + incomingMessageText + "]");
+								incoming = Message.createIncomingMessage(incomingMessage.getDate(), incomingSenderMsisdn, receiver.getMsisdn(), incomingMessageText.trim());
+								messageFactory.saveMessage(incoming);
+								handleTextMessage(incoming, incomingMessage.getRefNo());
+							} else {
+								Contact sender = contactDao.getFromMsisdn(incomingSenderMsisdn);
+								if(sender == null) {
+									try {
+										sender = new Contact(null, incomingSenderMsisdn, null, null, null, true);
+										contactDao.saveContact(sender);
+									} catch (DuplicateKeyException ex) {
+										LOG.error(ex);
+									}
+								}
+								
+								// Save the binary message
+								incoming = Message.createBinaryIncomingMessage(incomingMessage.getDate(), incomingSenderMsisdn, receiver.getMsisdn(), -1, incomingMessage.getBinary());
+								messageFactory.saveMessage(incoming);
+							}
+
+							for(IncomingMessageListener listener : this.incomingMessageListeners) {
+								listener.incomingMessageEvent(incoming);
 							}
 							if (uiListener != null) {
-								uiListener.outgoingMessageEvent(message);
+								uiListener.incomingMessageEvent(incoming);
 							}
 						}
-					} else {
-						// This is an incoming message, so process accordingly
-						Message incoming;
-						if (incomingMessage.getMessageEncoding() == SmsMessageEncoding.GSM_7BIT || incomingMessage.getMessageEncoding() == SmsMessageEncoding.UCS2) {
-							// Only do the keyword stuff if this isn't a delivery report
-							String incomingMessageText = incomingMessage.getText();
-							LOG.debug("It's a incoming message [" + incomingMessageText + "]");
-							incoming = Message.createIncomingMessage(incomingMessage.getDate(), incomingSenderMsisdn, receiver.getMsisdn(), incomingMessageText.trim());
-							messageFactory.saveMessage(incoming);
-							handleTextMessage(incoming, incomingMessage.getRefNo());
-						} else {
-							Contact sender = contactDao.getFromMsisdn(incomingSenderMsisdn);
-							if(sender == null) {
-								try {
-									sender = new Contact(null, incomingSenderMsisdn, null, null, null, true);
-									contactDao.saveContact(sender);
-								} catch (DuplicateKeyException ex) {
-									LOG.error(ex);
-								}
-							}
-							
-							// Save the binary message
-							incoming = Message.createBinaryIncomingMessage(incomingMessage.getDate(), incomingSenderMsisdn, receiver.getMsisdn(), -1, incomingMessage.getBinary());
-							messageFactory.saveMessage(incoming);
-						}
-
-						for(IncomingMessageListener listener : this.incomingMessageListeners) {
-							listener.incomingMessageEvent(incoming);
-						}
-						if (uiListener != null) {
-							uiListener.incomingMessageEvent(incoming);
-						}
+					} catch(Throwable t) {
+						// There was a problem processing the message.  At this stage, any issue should be a database
+						// connectivity issue.  Stop processing messages for a while, and re-queue this one.
+						LOG.warn("Error processing message.  It will be queued for re-processing.");
+						incomingMessageQueue.add(queueItem);
+						Utils.sleep_ignoreInterrupts(THREAD_SLEEP_AFTER_PROCESSING_FAILED);
 					}
-				} catch(Throwable t) {
-					// There was a problem processing the message.  At this stage, any issue should be a database
-					// connectivity issue.  Stop processing messages for a while, and re-queue this one.
-					LOG.warn("Error processing message.  It will be queued for re-processing.");
-					incomingMessageQueue.add(incomingMessageDetails);
-					Utils.sleep_ignoreInterrupts(THREAD_SLEEP_AFTER_PROCESSING_FAILED);
 				}
 			}
 		}
 		LOG.trace("EXIT");
+	}
+	
+	/**
+	 * Process an incoming status report.  The status should be set to
+	 * @param incomingMessage The incoming status report.
+	 */
+	private void handleStatusReport(CIncomingMessage incomingMessage) {
+		assert(incomingMessage.getType() == MessageType.StatusReport) : "This method can ONLY be called on an incoming status report.";
+		// Match the status report with a previously sent message, and update that message's
+		// status.  If no message is found to match this to, just ditch the status report.  This
+		// means that shredding is of no concern here.
+		CStatusReportMessage statusReport = (CStatusReportMessage) incomingMessage;
+		// Here, we strip the first four characters off the originator's number.  This is because we
+		// cannot be sure if the numbers supplied by the PhoneHandler are localised, or international
+		// with or without leading +.
+		Message message = messageFactory.getMessageForStatusUpdate(statusReport.getOriginator().substring(4), incomingMessage.getRefNo());
+		if (message != null) {
+			LOG.debug("It's a delivery report for message [" + message + "]");
+			switch(statusReport.getDeliveryStatus()) {
+			case CStatusReportMessage.DeliveryStatus.Delivered:
+				message.setStatus(Message.STATUS_DELIVERED);
+				break;
+			case CStatusReportMessage.DeliveryStatus.Aborted:
+				message.setStatus(Message.STATUS_FAILED);
+				break;
+			}
+			if (uiListener != null) {
+				uiListener.outgoingMessageEvent(message);
+			}
+		}
 	}
 
 	/**
@@ -212,11 +227,9 @@ public class IncomingMessageProcessor extends Thread {
 	 */
 	private void handleTextMessage(final Message incoming, final int refNo) {
 		Keyword keyword = keywordDao.getFromMessageText(incoming.getTextContent());
-		if (keyword == null) keyword = keywordDao.getFromMessageText("");
 		if (keyword != null) {
-			final Collection<KeywordAction> actions;
-			LOG.debug("The message contains keyword [" + keyword.getKeywordString() + "]");
-			actions = keyword.getActions();
+			LOG.debug("The message contains keyword [" + keyword.getKeyword() + "]");
+			final Collection<KeywordAction> actions = this.keywordActionDao.getActions(keyword);
 			// TODO process pre-message actions (e.g. "shred") TODO this should actually be done BEFORE the message object is persisted
 
 			if(actions.size() > 0) {
@@ -278,7 +291,7 @@ public class IncomingMessageProcessor extends Thread {
 				}
 				Group group = action.getGroup();
 				LOG.debug("Adding contact [" + contact.getName() + "], Number [" + contact.getMsisdn() + "] to Group [" + group.getName() + "]");
-				boolean contactAdded = group.addContact(contact);
+				boolean contactAdded = group.addDirectMember(contact);
 				if(contactAdded) {
 					groupDao.updateGroup(group);
 					if(uiListener != null) {
@@ -357,11 +370,11 @@ public class IncomingMessageProcessor extends Thread {
 	
 
 	/**
-	 * Executes a external command (HTTP or Command Line) and threats its response
-	 * according to what is defined in the action.
-	 * 
+	 * Executes a external command (HTTP or Command Line) and treats its response according to what is defined in the action.
 	 * @param action
-	 * @param incoming
+	 * @param incomingSenderMsisdn 
+	 * @param incomingMessageText 
+	 * @param refNo 
 	 * @throws IOException 
 	 * @throws InterruptedException 
 	 * @throws JDOMException 
@@ -443,9 +456,8 @@ public class IncomingMessageProcessor extends Thread {
 
 	/**
 	 * Handles the command response for this action.
-	 * 
 	 * @param action
-	 * @param incoming
+	 * @param incomingSenderMsisdn
 	 * @param response
 	 */
 	private void handleResponse(KeywordAction action, String incomingSenderMsisdn,
@@ -494,13 +506,42 @@ public class IncomingMessageProcessor extends Thread {
 	void addIncomingMessageListener(IncomingMessageListener incomingMessageListener) {
 		this.incomingMessageListeners.add(incomingMessageListener);
 	}
-	
-	private class IncomingMessageDetails {
-		private final CIncomingMessage message;
-		private final SmsDevice receiver;
-		public IncomingMessageDetails(SmsDevice receiver, CIncomingMessage message) {
-			this.receiver = receiver;
-			this.message = message;
-		}
+}
+
+/** Empty interface implemented by items which are put in the {@link IncomingMessageProcessor}'s queue. */
+interface IncomingMessageProcessorQueueItem {}
+
+/**
+ * Queue item which contains details of an incoming message.
+ * @author Alex
+ */
+class IncomingMessageDetails implements IncomingMessageProcessorQueueItem {
+	/** the message received */
+	private final CIncomingMessage message;
+	/** the device the message was received on */
+	private final SmsDevice receiver;
+//> CONSTRUCTOR
+	/**
+	 * @param receiver The device which this message was received on. 
+	 * @param message The message
+	 */
+	public IncomingMessageDetails(SmsDevice receiver, CIncomingMessage message) {
+		this.receiver = receiver;
+		this.message = message;
+	}
+//> ACCESSORS
+	/** @return the message received */
+	public CIncomingMessage getMessage() {
+		return message;
+	}
+	/** @return the device the message was received on */
+	public SmsDevice getReceiver() {
+		return receiver;
 	}
 }
+
+/**
+ * Queuing an instance of this class will kill the {@link IncomingMessageProcessor}.
+ * @author Alex
+ */
+class IncomingMessageProcessorQueueKiller implements IncomingMessageProcessorQueueItem {}

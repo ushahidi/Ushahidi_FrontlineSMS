@@ -230,9 +230,4 @@ public class FormsPluginController implements PluginController, IncomingMessageL
 	public void setFormsDao(FormDao formsDao) {
 		this.formsDao = formsDao;
 	}
-
-	public void initializePluginData() {
-		// TODO Auto-generated method stub
-		
-	}
 }

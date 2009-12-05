@@ -265,7 +265,7 @@ public class CsvExporter {
 				if (messageType == -1) {
 					// User dont want any message from this keywords.
 					CsvUtils.writeLine(out, rowFormat, 
-							CsvUtils.MARKER_KEYWORD_KEY, 		/*->*/ keyword.getKeywordString(),
+							CsvUtils.MARKER_KEYWORD_KEY, 		/*->*/ keyword.getKeyword(),
 							CsvUtils.MARKER_KEYWORD_DESCRIPTION, /*->*/ keyword.getDescription());
 				} else {
 					for (Message message : messageFactory.getMessagesForKeyword(messageType, keyword)) {
@@ -289,7 +289,7 @@ public class CsvExporter {
 						}
 						
 						CsvUtils.writeLine(out, rowFormat, 
-									CsvUtils.MARKER_KEYWORD_KEY,			/*->*/ keyword.getKeywordString(),
+									CsvUtils.MARKER_KEYWORD_KEY,			/*->*/ keyword.getKeyword(),
 									CsvUtils.MARKER_KEYWORD_DESCRIPTION,	/*->*/ keyword.getDescription(),
 									CsvUtils.MARKER_MESSAGE_TYPE,		/*->*/ message.getType() == Message.TYPE_RECEIVED ? InternationalisationUtils.getI18NString(COMMON_RECEIVED) : InternationalisationUtils.getI18NString(COMMON_SENT),
 									CsvUtils.MARKER_MESSAGE_DATE, 		/*->*/ dateFormatter.format(new Date(message.getDate())),

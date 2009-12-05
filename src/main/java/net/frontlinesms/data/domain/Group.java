@@ -35,10 +35,12 @@ import net.frontlinesms.data.EntityField;
  * @author Alex
  */
 @Entity(name="frontline_group")
-@Table(uniqueConstraints={@UniqueConstraint(columnNames={Group.COLUMN_NAME, Group.COLUMN_PARENT + "_id"})})
+@Table(uniqueConstraints={@UniqueConstraint(columnNames={Group.COLUMN_NAME, Group.COLUMN_PARENT + "_" + Group.COLUMN_ID})})
 public class Group {
 
 //> DATABASE COLUMN NAMES
+	/** Database column name for property: {@link #name} */
+	static final String COLUMN_ID = "group_id";
 	/** Database column name for property: {@link #name} */
 	static final String COLUMN_NAME = "name";
 	/** Database column name for property: {@link #directMembers} */
@@ -51,6 +53,7 @@ public class Group {
 //> ENTITY FIELDS
 	/** Details of the fields that this class has. */
 	public enum Field implements EntityField<Group> {
+		ID(COLUMN_ID),
 		/** Represents {@link #name} */
 		NAME(COLUMN_NAME),
 		/** Represents {@link #parent} */
@@ -73,7 +76,7 @@ public class Group {
 	/** Unique id for this entity.  This is for hibernate usage. */
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
-	@Column(unique=true,nullable=false,updatable=false)
+	@Column(name=COLUMN_ID,unique=true,nullable=false,updatable=false)
 	@SuppressWarnings("unused")
 	private long id;
 	
@@ -82,8 +85,12 @@ public class Group {
 	private String name;
 	
 	/** Contacts who are direct members of this group */
-	@ManyToMany(fetch=FetchType.EAGER, targetEntity=Contact.class)
-	@Column(name=COLUMN_DIRECT_MEMBERS)
+	@ManyToMany(
+			fetch=FetchType.EAGER)
+	@JoinTable(
+			name="group_contact",
+			joinColumns=@JoinColumn(name=Group.COLUMN_ID),
+			inverseJoinColumns=@JoinColumn(name=Contact.COLUMN_ID))
 	private Set<Contact> directMembers = new HashSet<Contact>();
 
 	/** Parent of this group */
@@ -137,6 +144,11 @@ public class Group {
 		return this.directMembers;
 	}
 	
+	/** @param directMembers new value for {@link #directMembers} */
+	public void setDirectMembers(Set<Contact> directMembers) {
+		this.directMembers = directMembers;
+	}
+	
 	/**
 	 * Gets the name of this group.
 	 * @return {@link #name}
@@ -150,7 +162,7 @@ public class Group {
 	 * @param contact The contact to add to this group.
 	 * @return TRUE if the contact has been added to this group, or FALSE if the contact was already a member.
 	 */
-	public boolean addContact(Contact contact) {
+	public boolean addDirectMember(Contact contact) {
 		contact.addToGroup(this);
 		return this.directMembers.add(contact);
 	}

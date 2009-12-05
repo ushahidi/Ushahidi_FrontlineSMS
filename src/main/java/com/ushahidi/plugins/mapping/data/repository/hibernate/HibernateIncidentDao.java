@@ -29,10 +29,7 @@ public class HibernateIncidentDao extends BaseHibernateDao<Incident> implements
 		return getAll(startIndex, limit);
 	}
 
-	public void saveIncident(Incident incident) throws DuplicateKeyException {
-		if(Long.toString(incident.getFrontendId())== null)
-			incident.setMarked(false);
-		
+	public void saveIncident(Incident incident) throws DuplicateKeyException {		
 		super.save(incident);
 
 	}

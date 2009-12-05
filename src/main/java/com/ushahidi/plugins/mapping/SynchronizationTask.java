@@ -23,7 +23,7 @@ import com.ushahidi.plugins.mapping.data.domain.Incident;
 import net.frontlinesms.Utils;
 
 public class SynchronizationTask implements Runnable{
-	/** The type of synchronization to be performed; pull or push*/
+	/** The type of synchronization to be performed; pull or push */
 	private String synchronizationType;
 	
 	/** The base task to be performed by the API; that which requires no extra parameters*/
@@ -146,15 +146,15 @@ public class SynchronizationTask implements Runnable{
 	 * marked for posting are submitted
 	 */
 	public void performPushTask(){
-		String urlParameterStr = null;
+		String urlParameterStr = getRequestURL();
 		if(baseTask.equalsIgnoreCase(SynchronizationAPI.POST_INCIDENT)){
-			urlParameterStr = SynchronizationAPI.getSubmitURLParameters(baseTask);
+			urlParameterStr += SynchronizationAPI.getSubmitURLParameters(baseTask);
 			//Fetch all incidents and post them one by one
 			for(Incident incident: syncManager.getPendingIncidents())
 				postIncident(incident, urlParameterStr);
 			
 		}else if(baseTask.equalsIgnoreCase(SynchronizationAPI.TAG_NEWS)){
-			urlParameterStr = SynchronizationAPI.getSubmitURLParameters(baseTask);
+			urlParameterStr += SynchronizationAPI.getSubmitURLParameters(baseTask);
 		}
 	}
 	
@@ -254,14 +254,19 @@ public class SynchronizationTask implements Runnable{
 	 * @param urlParameterStr Pre-defined url parmaeter string for posting an incident to the frontend
 	 */
 	private void postIncident(Incident incident, String urlParameterStr){
+		Date date = incident.getIncidentDate();
 		String parameterStr = String.format(urlParameterStr, incident.getTitle(), 
-				incident.getDescription(), incident.getIncidentDate(), 
-				null, null, null, 
-				incident.getCategory().getFrontendId(),
-				incident.getLocation().getLatitude(), incident.getLocation().getLongitude(),
+				incident.getDescription(), getDateTimeComponent(date, "MM/dd/yyyy"), 
+				getDateTimeComponent(date, "HH"), getDateTimeComponent(date, "mm"),
+				getDateTimeComponent(date, "a"), 
+				null,
+				//incident.getCategory().getFrontendId(),
+				Double.toString(incident.getLocation().getLatitude()), 
+				Double.toString(incident.getLocation().getLongitude()),
 				incident.getLocation().getName()
 				);
 		//post the incident to the frontend
+		//System.out.println(parameterStr);
 		try{
 			URL url = new URL(parameterStr);
 			url.openConnection();
@@ -270,6 +275,11 @@ public class SynchronizationTask implements Runnable{
 		}catch(IOException io){
 			LOG.debug("IO Error", io); 
 		}
+	}
+	
+	private String getDateTimeComponent(Date date, String part){
+		SimpleDateFormat dateFormat = new SimpleDateFormat(part);
+		return dateFormat.format(date);
 	}
 	
 }

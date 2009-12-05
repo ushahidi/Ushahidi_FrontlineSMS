@@ -119,6 +119,8 @@ public class IntelliSmsInternetService extends AbstractSmsInternetService implem
 		try {
 			// We've got a message, so try and find it's text content.
 			String messageText = PopUtils.getMessageText(message);
+			// For now, if the message text was null then set it to an empty string
+			if(messageText == null) messageText = "";
 			this.processPopMessage(PopUtils.getSender(message), message.getSentDate().getTime(), message.getSubject(), messageText);
 		} catch (Exception ex) {
 			LOG.warn("Error processing email.");

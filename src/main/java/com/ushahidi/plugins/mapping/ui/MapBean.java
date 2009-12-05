@@ -178,16 +178,14 @@ public class MapBean extends CustomComponent implements ImageObserver {
 
 	public void plotIncidents(Graphics g){
 		if(location != null && map != null && incidents!=null){			
-			//Make the points translucent				
-			//g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.45f));
 			g.setColor(Color.RED);
-			for(Incident incident: incidents){				
+			for(Incident incident: incidents){
 				double lat = incident.getLocation().getLatitude();
 				double lon = incident.getLocation().getLongitude();
-				Point incidentPoint = map.locationPoint(new Location(lat, lon));				
-				//g.drawImage(new IncidentMarker(this, incident).getMarker(), (int)incidentPoint.x, 
-				//		(int)incidentPoint.y, this);
-				g.fillOval((int)incidentPoint.x, (int)incidentPoint.y, pointSize, pointSize);
+				Point incidentPoint = map.locationPoint(new Location(lat, lon));
+				// g.drawImage(new IncidentMarker(this, incident),(int)incidentPoint.x,
+				// (int)incidentPoint.y, this);
+				g.fillOval((int) incidentPoint.x, (int) incidentPoint.y, pointSize, pointSize);
 			}
 		}		
 	}

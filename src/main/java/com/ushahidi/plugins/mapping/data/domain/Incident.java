@@ -8,7 +8,7 @@ import net.frontlinesms.data.EntityField;
 
 
 @Entity
-@Table(uniqueConstraints={@UniqueConstraint(columnNames={"frontendId","mappingSetup_id"})})
+@Table(uniqueConstraints={@UniqueConstraint(columnNames={"id","mappingSetup_id"})})
 public class Incident {
 	
 //>	COLUMN NAME CONSTANTS
@@ -22,6 +22,19 @@ public class Incident {
 	private static final String FIELD_INCIDENT_DATE = "incidentDate";
 	/** Column name for  {@link #marked} */
 	private static final String FIELD_MARKED = "marked";
+	/** Column name for {@link #active} */
+	private static final String FIELD_ACTIVE = "active";
+	/** Column name for {@link #verified} */
+	private static final String FIELD_VERIFIED  = "verified";
+	/** Column name for {@link #firstName} */
+	private static final String FIELD_FIRST_NAME = "firstName";
+	/** Column name for {@link #lastName} */
+	private static final String FIELD_LAST_NAME = "lastName";
+	/** Column name for {@link #emailAddress } */
+	private static final String FIELD_EMAIL = "emailAddress";
+	/** Column name for {@link #phoneNumber} */
+	private static final String FIELD_PHONE_NUMBER = "phoneNumber";
+	
 	
 //>	ENTITY DETAILS
 	/** Field mapping for the properties contained in this class/entity */
@@ -87,7 +100,7 @@ public class Incident {
 	/** MappingSetup associated with this incident */
 	@ManyToOne
 	private MappingSetup mappingSetup;
-	
+		
 	/**
 	 * Sets a unique identifier for this Incident
 	 * @param id

@@ -11,11 +11,16 @@
 	<!-- turn on annotation support -->
 	<context:annotation-config/>
 	<tx:annotation-driven />
+	
+	<bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<description>This property configurer allows the use of Systemp Properties in the Spring XML config.</description>
+	</bean>
 
 	<bean id="transactionManager" class="org.springframework.orm.hibernate3.HibernateTransactionManager">
 		<property name="sessionFactory" ref="sessionFactory" />
 	</bean>
 
+	<!-- TODO should be able to auto-wire these.  Will make addition of plugin DAOs and entities much cleaner. -->
 	<bean id="contactDao" class="net.frontlinesms.data.repository.hibernate.HibernateContactDao">
 		<property name="sessionFactory" ref="sessionFactory" />
 	</bean>

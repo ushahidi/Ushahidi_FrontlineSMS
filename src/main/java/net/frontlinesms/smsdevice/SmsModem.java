@@ -47,7 +47,8 @@ public class SmsModem extends Thread implements SmsDevice {
 	private static final boolean SEND_BULK = true;
 	private static final int SMS_BULK_LIMIT = 10;
 
-	/** The time, in millis, that this phone handler must have been unresponsive for before it is deemed TIMED OUT */
+	/** The time, in millis, that this phone handler must have been unresponsive for before it is deemed TIMED OUT
+	 * As far as I know there is no basis for the time chosen for this timeout. */
 	private static final int TIMEOUT = 80 * 1000; // = 80 seconds;
 
 	/** The different baud rates that a PhoneHandler may connect at. */
@@ -136,6 +137,17 @@ public class SmsModem extends Thread implements SmsDevice {
 	 */
 	public SmsModem(String portName, SmsListener smsListener) {
 		super("SmsModem :: " + portName);
+		/*
+		 * Make this into a daemon thread - we never know when it may get blocked in native code.  Indeed this can be
+		 * witnessed by connecting to a port without a device attached, which can then block as such (I think this one 
+		 * was a bluetooth port):
+		 *	Win32SerialPort.nwrite(byte[], int, int) line: not available [native method]	
+		 *	Win32SerialPort.write(byte[], int, int) line: 672	
+		 *	Win32SerialPort.write(int) line: 664	
+		 *	Win32SerialOutputStream.write(int) line: 34
+		 *  ...
+		 */	
+		super.setDaemon(true);
 
 		this.smsListener = smsListener;
 		this.portName = portName;

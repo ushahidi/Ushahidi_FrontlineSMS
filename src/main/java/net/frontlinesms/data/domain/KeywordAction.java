@@ -23,10 +23,8 @@ import javax.persistence.*;
 
 import net.frontlinesms.FrontlineSMSConstants;
 import net.frontlinesms.Utils;
-import net.frontlinesms.csv.CsvExporter;
 import net.frontlinesms.csv.CsvUtils;
 import net.frontlinesms.data.EntityField;
-import net.frontlinesms.data.domain.Contact.Field;
 
 /**
  * @author Alex Anderson alex(at)masabi(dot)com
@@ -36,7 +34,8 @@ public class KeywordAction {
 //> ENTITY FIELDS
 	/** Details of the fields that this class has. */
 	public enum Field implements EntityField<KeywordAction> {
-		TYPE("type");
+		TYPE("type"),
+		KEYWORD("keyword");
 		/** name of a field */
 		private final String fieldName;
 		/**
@@ -49,8 +48,20 @@ public class KeywordAction {
 	}
 	
 //> CONSTRUCTORS
-	/** Default constructor, to be used by hibernate. */
+	/**
+	 * Default constructor, to be used by hibernate.
+	 * This constructor should not be used in factory methods.
+	 */
 	KeywordAction() {}
+
+	/**
+	 * Creates a new keyword action and sets the keyword for it. 
+	 * @param keyword value for {@link #keyword}.
+	 */
+	KeywordAction(int type, Keyword keyword) {
+		this.type = type;
+		this.keyword = keyword;
+	}
 	
 //> CONSTANTS
 	/** Action: forward the received message to a group */
@@ -85,7 +96,7 @@ public class KeywordAction {
 	private long id;
 	private int type;
 	/** Keyword which this action is attached to */
-	@ManyToOne(fetch=FetchType.EAGER, targetEntity=Keyword.class, optional=false)
+	@ManyToOne(targetEntity=Keyword.class, optional=false)
 	private Keyword keyword;
 	@ManyToOne(optional=true)
 	private Group group;
@@ -536,7 +547,7 @@ public class KeywordAction {
 		}
 		
 		static String formatText(String unformattedText, boolean urlEncode, KeywordAction action, String senderMsisdn, String senderDisplayName, String incomingMessageText, Integer refNo) {
-			String keywordString = action.getKeyword().getKeywordString();
+			String keywordString = action.getKeyword().getKeyword();
 			
 			String keywordInMessage = extractKeyword(incomingMessageText, keywordString);
 			String messageWithoutKeyword = removeKeyword(incomingMessageText, keywordString);
@@ -573,9 +584,7 @@ public class KeywordAction {
 	 * @return a new instance of KeywordAction
 	 */
 	public static KeywordAction createReplyAction(Keyword keyword, String replyText, long start, long end) {
-		KeywordAction action = new KeywordAction();
-		action.setType(TYPE_REPLY);
-		action.setKeyword(keyword);
+		KeywordAction action = new KeywordAction(TYPE_REPLY, keyword);
 		action.setReplyText(replyText);
 		action.setStartDate(start);
 		action.setEndDate(end);
@@ -594,9 +603,7 @@ public class KeywordAction {
 	 * @return a new instance of KeywordAction
 	 */
 	public static KeywordAction createEmailAction(Keyword keyword, String replyText, EmailAccount account, String to, String subject,long start, long end) {
-		KeywordAction action = new KeywordAction();
-		action.setType(TYPE_EMAIL);
-		action.setKeyword(keyword);
+		KeywordAction action = new KeywordAction(TYPE_EMAIL, keyword);
 		action.setReplyText(replyText);
 		action.setEmailAccount(account);
 		action.setEmailRecipients(to);
@@ -630,13 +637,12 @@ public class KeywordAction {
 	 */
 	public static KeywordAction createExternalCommandAction(Keyword keyword, String commandLine, int commandType, int responseType,
 			int responseActionType, String commandMsg, Group toFwd, long start, long end) {
-		KeywordAction action = new KeywordAction();
-		action.setType(TYPE_EXTERNAL_CMD);
-		action.setKeyword(keyword);
+		KeywordAction action = new KeywordAction(TYPE_EXTERNAL_CMD, keyword);
 		action.setCommandLine(commandLine);
 		action.setExternalCommandType(commandType);
 		action.setExternalCommandResponseType(responseType);
 		action.setCommandResponseActionType(responseActionType);
+		action.setCommandText(commandMsg);
 		action.setGroup(toFwd);
 		action.setStartDate(start);
 		action.setEndDate(end);
@@ -650,9 +656,7 @@ public class KeywordAction {
 	 * @return a new instance of KeywordAction
 	 */
 	public static KeywordAction createGroupJoinAction(Keyword keyword, Group group, long start, long end) {
-		KeywordAction action = new KeywordAction();
-		action.setType(TYPE_JOIN);
-		action.setKeyword(keyword);
+		KeywordAction action = new KeywordAction(TYPE_JOIN, keyword);
 		action.setGroup(group);
 		action.setStartDate(start);
 		action.setEndDate(end);
@@ -666,9 +670,7 @@ public class KeywordAction {
 	 * @return a new instance of KeywordAction
 	 */
 	public static KeywordAction createGroupLeaveAction(Keyword keyword, Group group, long start, long end) {
-		KeywordAction action = new KeywordAction();
-		action.setType(TYPE_LEAVE);
-		action.setKeyword(keyword);
+		KeywordAction action = new KeywordAction(TYPE_LEAVE, keyword);
 		action.setGroup(group);
 		action.setStartDate(start);
 		action.setEndDate(end);
@@ -683,9 +685,7 @@ public class KeywordAction {
 	 * @return a new instance of KeywordAction
 	 */
 	public static KeywordAction createForwardAction(Keyword keyword, Group group, String forwardText, long start, long end) {
-		KeywordAction action = new KeywordAction();
-		action.setType(TYPE_FORWARD);
-		action.setKeyword(keyword);
+		KeywordAction action = new KeywordAction(TYPE_FORWARD, keyword);
 		action.setGroup(group);
 		action.setForwardText(forwardText);
 		action.setStartDate(start);
@@ -699,9 +699,7 @@ public class KeywordAction {
 	 * @return
 	 */
 	public static KeywordAction createSurveyAction(Keyword keyword, long start, long end) {
-		KeywordAction action = new KeywordAction();
-		action.setType(TYPE_SURVEY);
-		action.setKeyword(keyword);
+		KeywordAction action = new KeywordAction(TYPE_SURVEY, keyword);
 		action.setStartDate(start);
 		action.setEndDate(end);
 		return action;

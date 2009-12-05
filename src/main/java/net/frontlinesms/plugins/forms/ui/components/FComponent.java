@@ -40,7 +40,7 @@ public abstract class FComponent implements Serializable, Cloneable {
 	private int renderHeight = 30;
 	protected static final int renderWidth = 205;
 
-	private String label;
+	private String label = "";
 	
 //> ABSTRACT ACCESSORS
 	/** @return the path of the icon to be displayed with this component. */
@@ -79,6 +79,7 @@ public abstract class FComponent implements Serializable, Cloneable {
 	
 	/** @param label new value for {@link #label} */
 	public void setLabel(String label) {
+		if(label == null) label = "";
 		this.label = label;
 	}
 

@@ -23,6 +23,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -71,6 +72,7 @@ import org.apache.log4j.LogManager;
 
 import serial.SerialClassFactory;
 
+import net.frontlinesms.plugins.PluginProperties;
 import net.frontlinesms.resources.ResourceUtils;
 import net.frontlinesms.smsdevice.CommProperties;
 import net.frontlinesms.ui.SimpleConstraints;
@@ -170,7 +172,7 @@ public class ErrorUtils {
 		int cumulativeY = EM__LINESPACING;
 		
 		final JLabel emailInstructions = new JLabel("You can e-mail FrontlineSMS support team for troubleshooting.");
-		ImageIcon emailInstructionsIcon = new ImageIcon(Utils.getImage("/icons/tip.png", DesktopLauncher.class));
+		ImageIcon emailInstructionsIcon = getImageIcon("/icons/tip.png");
 		int emailInstructionsIconWidth = 0;
 		if(emailInstructionsIcon != null) {
 			emailInstructions.setIcon(emailInstructionsIcon);
@@ -200,7 +202,7 @@ public class ErrorUtils {
 		emailPanel.add(emailTextfield, new SimpleConstraints(TF_NAME_X, cumulativeY));
 		
 		final JButton btSend = new JButton("Send Logs");
-		ImageIcon sendIcon = new ImageIcon(Utils.getImage("/icons/email_send.png", DesktopLauncher.class));
+		ImageIcon sendIcon = getImageIcon("/icons/email_send.png");
 		if(sendIcon != null) {
 			btSend.setIcon(sendIcon);
 		}
@@ -303,7 +305,7 @@ public class ErrorUtils {
 		
 		final int finalHeight_noDetails = LAST_COMPONENT_Y + lastComponent.getHeight() + EM__LINESPACING + EM__LINESPACING;
 		
-		btDetails.setIcon(new ImageIcon(Utils.getImage("/icons/about.png", DesktopLauncher.class)));
+		btDetails.setIcon(getImageIcon("/icons/about.png"));
 		btDetails.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				JToggleButton bt = (JToggleButton) e.getSource();
@@ -600,42 +602,56 @@ public class ErrorUtils {
 		}
 		return null;
 	}
-
+	
 	/**
-	 * Wrapper for an AWT component that we have built, including the expected
-	 * height of the component.
-	 * @author Alex
+	 * Attempts to load an {@link ImageIcon} from the specified location on the classpath.
+	 * @param path The path to the image
+	 * @return the {@link ImageIcon} found at the specified location, or <code>null</code> if none could be found.
 	 */
-	private static class ComponentDescription {
-		/** AWT Component we are wrapping */
-		private final Component component;
-		/** Expected height of the component. */
-		private final int height;
-		
-		/**
-		 * Wrap a component and additional details about it.
-		 * @param component
-		 * @param height
-		 */
-		ComponentDescription(Component component, int height) {
-			super();
-			this.component = component;
-			this.height = height;
+	private static ImageIcon getImageIcon(String path) {
+		Image image = Utils.getImage(path, ErrorUtils.class);
+		if(image == null) {
+			return null;
+		} else {
+			return new ImageIcon(image);
 		}
-		
-		/**
-		 * get {@link #component} 
-		 * @return {@link #component}
-		 */
-		public Component getComponent() {
-			return component;
-		}
-		/**
-		 * get {@link #height} 
-		 * @return {@link #height}
-		 */
-		public int getHeight() {
-			return height;
-		}
+	}
+}
+
+/**
+ * Wrapper for an AWT component that we have built, including the expected
+ * height of the component.
+ * @author Alex
+ */
+class ComponentDescription {
+	/** AWT Component we are wrapping */
+	private final Component component;
+	/** Expected height of the component. */
+	private final int height;
+	
+	/**
+	 * Wrap a component and additional details about it.
+	 * @param component
+	 * @param height
+	 */
+	ComponentDescription(Component component, int height) {
+		super();
+		this.component = component;
+		this.height = height;
+	}
+	
+	/**
+	 * get {@link #component} 
+	 * @return {@link #component}
+	 */
+	public Component getComponent() {
+		return component;
+	}
+	/**
+	 * get {@link #height} 
+	 * @return {@link #height}
+	 */
+	public int getHeight() {
+		return height;
 	}
 }

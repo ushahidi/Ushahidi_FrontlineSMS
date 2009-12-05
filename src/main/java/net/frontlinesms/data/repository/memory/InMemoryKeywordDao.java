@@ -23,9 +23,6 @@ public class InMemoryKeywordDao implements KeywordDao {
 	
 	/** @see KeywordDao#deleteKeyword(Keyword) */
 	public void deleteKeyword(Keyword keyword) {
-		for(Keyword child : getAllSubWords(keyword)) {
-			this.deleteKeyword(child);
-		}
 		this.allKeywords.remove(keyword);
 	}
 
@@ -33,7 +30,7 @@ public class InMemoryKeywordDao implements KeywordDao {
 	public List<Keyword> getAllKeywords() {
 		TreeMap<String, Keyword> sortedKeywords = new TreeMap<String, Keyword>();
 		for(Keyword k : allKeywords) {
-			sortedKeywords.put(k.getKeywordString(), k);
+			sortedKeywords.put(k.getKeyword(), k);
 		}
 		ArrayList<Keyword> keywordList = new ArrayList<Keyword>();
 		keywordList.addAll(sortedKeywords.values());
@@ -48,51 +45,23 @@ public class InMemoryKeywordDao implements KeywordDao {
 
 	/** @see net.frontlinesms.data.repository.KeywordDao#getFromMessageText(java.lang.String) */
 	public Keyword getFromMessageText(String messageText) {
-		Keyword last = null;
-		Keyword current = null;
-		Collection<Keyword> currentChildren = getRootKeywords();
-		while(true) {
-			current = getFromMessageText(messageText, currentChildren);
-			if(current == null) {
-				return last;
-			} else {
-				last = current;
-				currentChildren = getDirectSubWords(current);
-			}
-		}
-	}
-	
-	/**
-	 * Gets the keyword from a supplied group who matches a message's text.  This method
-	 * returns the first match, so should only be called on keywords of the same level
-	 * as each other, rather than e.g. {@link #allKeywords}
-	 * @param messageText
-	 * @param possibleKeywords
-	 * @return first keyword that matches the message text
-	 */
-	private Keyword getFromMessageText(String messageText, Collection<Keyword> possibleKeywords) {
-		for(Keyword k : possibleKeywords) {
+		Keyword matchingKeyword = null;
+		for(Keyword k : this.allKeywords) {
+			// Check if this keyword matches the message text
 			if(k.matches(messageText)) {
-				return k;
+				// Check if the previously matched keyword is longer than this one
+				assert(matchingKeyword == null || matchingKeyword.getKeyword().length() != k.getKeyword().length()):"Two keywords cannot both match if they are the same length.";
+				if(matchingKeyword == null || matchingKeyword.getKeyword().length() < k.getKeyword().length()) {
+					matchingKeyword = k;
+				}
 			}
 		}
-		return null;
+		return matchingKeyword;
 	}
 
 	/** @see KeywordDao#getPageNumber(Keyword, int) */
 	public int getPageNumber(Keyword keyword, int keywordsPerPage) {
 		return getAllKeywords().indexOf(keyword) / keywordsPerPage;
-	}
-
-	/** @see net.frontlinesms.data.repository.KeywordDao#getRootKeywords() */
-	public List<Keyword> getRootKeywords() {
-		List<Keyword> keywords = getAllKeywords();
-		for(Keyword k : keywords.toArray(new Keyword[0])) {
-			if(k.getParent() != null) {
-				keywords.remove(k);
-			}
-		}
-		return keywords;
 	}
 
 	/** @see net.frontlinesms.data.repository.KeywordDao#getTotalKeywordCount() */
@@ -104,46 +73,6 @@ public class InMemoryKeywordDao implements KeywordDao {
 	public void saveKeyword(Keyword keyword) throws DuplicateKeyException {
 		if(!this.allKeywords.add(keyword)) {
 			throw new DuplicateKeyException();
-		}
-	}
-	
-	/**
-	 * Gets all direct children of a keyword.
-	 * @param keyword
-	 * @return all direct children of the supplied keyword
-	 */
-	private Collection<Keyword> getDirectSubWords(Keyword keyword) {
-		HashSet<Keyword> subwords = new HashSet<Keyword>();
-		for(Keyword k : this.getAllKeywords()) {
-			if(keyword.equals(k.getParent())) {
-				subwords.add(k);
-			}
-		}
-		return subwords;
-	}
-
-	/**
-	 * Gets all subwords of the supplied keyword.
-	 * @param keyword
-	 * @return all subwords of the supplied keyword.
-	 */
-	private Collection<Keyword> getAllSubWords(Keyword keyword) {
-		HashSet<Keyword> subwords = new HashSet<Keyword>();
-		getAllSubwords(subwords, keyword);
-		return subwords;
-	}
-
-	/**
-	 * Gets all subwords of the supplied keyword, and inserts them into the supplied set.
-	 * @param subwords
-	 * @param keyword
-	 */
-	private void getAllSubwords(HashSet<Keyword> subwords, Keyword keyword) {
-		for(Keyword k : this.getAllKeywords()) {
-			if(k.getParent().equals(keyword)) {
-				subwords.add(k);
-				getAllSubwords(subwords, k);
-			}
 		}
 	}
 }

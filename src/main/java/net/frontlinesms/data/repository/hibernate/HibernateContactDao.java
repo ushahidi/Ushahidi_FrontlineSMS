@@ -41,7 +41,7 @@ public class HibernateContactDao extends BaseHibernateDao<Contact> implements Co
 		return super.getAll();
 	}
 
-	/** @see ContactDao#getAllContacts() */
+	/** @see ContactDao#getAllContacts(int, int) */
 	public List<Contact> getAllContacts(int startIndex, int limit) {
 		return super.getAll(startIndex, limit);
 	}

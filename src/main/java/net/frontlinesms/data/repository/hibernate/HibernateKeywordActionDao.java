@@ -4,10 +4,12 @@
 package net.frontlinesms.data.repository.hibernate;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Restrictions;
 
+import net.frontlinesms.data.domain.Keyword;
 import net.frontlinesms.data.domain.KeywordAction;
 import net.frontlinesms.data.repository.KeywordActionDao;
 
@@ -45,4 +47,23 @@ public class HibernateKeywordActionDao extends BaseHibernateDao<KeywordAction> i
 		super.saveWithoutDuplicateHandling(action);
 	}
 
+	/** @see KeywordActionDao#updateKeywordAction(KeywordAction) */
+	public void updateKeywordAction(KeywordAction action) {
+		super.updateWithoutDuplicateHandling(action);
+	}
+
+	/** @see net.frontlinesms.data.repository.KeywordActionDao#getAction(net.frontlinesms.data.domain.Keyword, int) */
+	public KeywordAction getAction(Keyword keyword, int actionType) {
+		DetachedCriteria criteria = super.getCriterion();
+		criteria.add(Restrictions.eq(KeywordAction.Field.KEYWORD.getFieldName(), keyword));
+		criteria.add(Restrictions.eq(KeywordAction.Field.TYPE.getFieldName(), actionType));
+		return super.getUnique(criteria);
+	}
+	
+	/** @see net.frontlinesms.data.repository.KeywordActionDao#getActions(net.frontlinesms.data.domain.Keyword)*/
+	public List<KeywordAction> getActions(Keyword keyword) {
+		DetachedCriteria criteria = super.getCriterion();
+		criteria.add(Restrictions.eq(KeywordAction.Field.KEYWORD.getFieldName(), keyword));
+		return super.getList(criteria);
+	}
 }

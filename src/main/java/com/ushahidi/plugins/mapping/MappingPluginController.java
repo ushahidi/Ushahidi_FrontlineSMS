@@ -8,6 +8,8 @@ import com.ushahidi.plugins.mapping.ui.MappingUIController;
 
 import net.frontlinesms.FrontlineSMS;
 import net.frontlinesms.Utils;
+import net.frontlinesms.data.domain.Message;
+import net.frontlinesms.listener.IncomingMessageListener;
 import net.frontlinesms.plugins.PluginController;
 import net.frontlinesms.plugins.PluginInitialisationException;
 import net.frontlinesms.ui.UiGeneratorController;
@@ -15,7 +17,7 @@ import net.frontlinesms.ui.UiGeneratorController;
 import org.apache.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 
-public class MappingPluginController implements PluginController {
+public class MappingPluginController implements PluginController, IncomingMessageListener {
 	/** Filename and path of the XML containing the mapping tab */
 	private static final String XML_MAPPING_TAB = "/ui/plugins/mapping/mappingTab.xml";
 	/** Logger */
@@ -45,6 +47,7 @@ public class MappingPluginController implements PluginController {
 	public void init(FrontlineSMS frontlineController, ApplicationContext applicationContext) 
 		throws PluginInitialisationException {
 		this.frontlineController = frontlineController;
+		this.frontlineController.addIncomingMessageListener(this);
 		
 		try{
 			locationDao = (LocationDao)applicationContext.getBean("locationDao");
@@ -69,13 +72,20 @@ public class MappingPluginController implements PluginController {
 
 	public Object getTab(UiGeneratorController uiController) {
 		mappingUIController = new MappingUIController(this, frontlineController, uiController);			
-		return uiController.loadComponentFromFile(XML_MAPPING_TAB, mappingUIController);
-	}
-
-	public void initializePluginData() {
+		Object mappingTab =  uiController.loadComponentFromFile(XML_MAPPING_TAB, mappingUIController);
+		
+		mappingUIController.setTabComponent(mappingTab);
 		mappingUIController.initUIController();
+		
+		return mappingTab;
 	}
 	
+	public void incomingMessageEvent(Message message) {
+		LOG.debug("Incident report received");
+		mappingUIController.handleIncomingMessage(message);
+	}
+
+
 	public LocationDao getLocationDao(){
 		return locationDao;
 	}

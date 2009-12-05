@@ -53,12 +53,4 @@ public interface PluginController {
 	 * @return the location of the hibernate config for this plugin, or <code>null</code> if none is required.
 	 */
 	public String getHibernateConfigPath();
-	
-	/**
-	 * Modified by Emmanuel Kala ekala<at>gmail.com
-	 * 
-	 * Initializes the data of the plug-in so that the plug-in components are added to the UI with
-	 * the data from the database 
-	 */
-	public void initializePluginData();
 }

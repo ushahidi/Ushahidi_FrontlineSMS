@@ -47,6 +47,7 @@ public class PropertiesTable extends JTable {
 		model.setDataVector(data, columns);
 		this.setModel(model);
 		this.getTableHeader().setReorderingAllowed(false);
+		this.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
 		this.setBorder(null);
 	}
 	

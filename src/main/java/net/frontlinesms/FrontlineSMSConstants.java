@@ -46,7 +46,7 @@ public final class FrontlineSMSConstants {
 	public static final String TEST_NUMBER_NAME = "Test Number";
 	public static final String EMULATOR_MSISDN = "000";
 
-	public static final long DEFAULT_END_DATE = 0L;
+	public static final long DEFAULT_END_DATE = Long.MAX_VALUE;
 
 	public static final int MOBILE_ID_LIMIT = 256;
 	
@@ -303,7 +303,6 @@ public final class FrontlineSMSConstants {
 	public static final String MESSAGE_REMOVING_MESSAGES = "message.removing.messages";
 	public static final String MESSAGE_REMOVING_EMAILS = "message.removing.emails";
 	public static final String MESSAGE_GROUPS_AND_CONTACTS_DELETED = "message.group.and.contacts.deleted";
-	public static final String MESSAGE_REMOVING_GROUPS_AND_CONTACTS = "message.removing.groups.and.contacts";
 	public static final String MESSAGE_EXISTENT_CONTACT = "message.contact.already.exists";
 	public static final String MESSAGE_PHONE_BLANK = "message.phone.number.blank";
 	public static final String MESSAGE_NO_GROUP_SELECTED = "message.no.group.selected.to.send";

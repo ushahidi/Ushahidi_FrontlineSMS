@@ -1,8 +1,10 @@
 package com.ushahidi.plugins.mapping.ui;
 
-import java.awt.Font;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,8 +44,8 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	private static final String COMPONENT_DATE_CB = "cbMfDate";
 	private static final String COMPONENT_LOCATION_BUTTON = "btnSelectPoint";
 	private static final String COMPONENT_LOCATION_LABEL = "lblLoction";
-	private static final String COMPONENT_LOCATION_COMBO = "cboLocations";
-	private static final String COMPONENT_ADDITIONAL_INFO_TEXTFIELD = "tfAdditionalInfo";
+	private static final String COMPONENT_CATEGORIES_COMBO = "cboCategories";
+	private static final String COMPONENT_ADDITIONAL_INFO_TEXTFIELD = "txtAdditionalInfo";
 	private static final String COMPONENT_SAVE_BUTTON = "btSave";
 	private static final String COMPONENT_MAP_BEAN = "mapBean";
 	private static final String COMPONENT_KEYWORDS_TABLE = "tblKeywords";
@@ -71,17 +73,21 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	private static final String COMPONENT_REPORT_DATE_FIELD = "txtReportDate";
 	private static final String COMPONENT_REPORT_LOCATION_NAME_FIELD = "txtReportLocation";
 	private static final String COMPONENT_REPORT_LOCATION_COORDS_LABEL = "lbl_ReportLocationCoords";
+	private static final String COMPONENT_LOCATION_NAME_FIELD = "txtLocationName";
 	
 	private FrontlineSMS frontlineController;
 	private final UiGeneratorController ui;
 	
-	private LocationDao locationDao;
-	private CategoryDao categoryDao;
-	private IncidentDao incidentDao;
-	private MappingSetupDao mappingSetupDao;
+	private final LocationDao locationDao;
+	private final CategoryDao categoryDao;
+	private final IncidentDao incidentDao;
+	private final MappingSetupDao mappingSetupDao;
 		
 	private boolean syncStarted = false;
 	private MapBean mapBean;
+	
+	/** Thinlet component containing the mapping tab */
+	private Object tabComponent;
 	
 	public static Logger LOG = Utils.getLogger(MappingUIController.class);	
 	
@@ -95,7 +101,6 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		incidentDao = pluginController.getIncidentDao();
 		mappingSetupDao = pluginController.getMappingSetupDao();
 		
-		//check if the mapping plugin has been configured
 		checkPluginConfiguration();
 	}
 	
@@ -119,7 +124,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		if(mappingSetupDao.getDefaultSetup() != null){
 			double latitude = mappingSetupDao.getDefaultSetup().getLatitude();
 			double longitude = mappingSetupDao.getDefaultSetup().getLongitude();
-			mapBean = (MapBean)get(ui.find(getTab(), COMPONENT_MAP_BEAN), BEAN);
+			mapBean = (MapBean)get(ui.find(this.tabComponent, COMPONENT_MAP_BEAN), BEAN);
 			
 			//Check if offline mode for the default setup is enabled
 			if(mappingSetupDao.getDefaultSetup().isOffline()){
@@ -176,15 +181,11 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	
 	
 	public void updateMappingTab() {
-		Object messageTableComponent = ui.find(getTab(), COMPONENT_MESSAGE_TABLE);
+		Object messageTableComponent = ui.find(this.tabComponent, COMPONENT_MESSAGE_TABLE);
 		removeAll(messageTableComponent);
 		Integer[] status = {Message.STATUS_RECEIVED};
 		for (Message m : frontlineController.getMessageDao().getMessages(Message.TYPE_RECEIVED, status)) {
-			Object row = createTableRow(m);
-			ui.add(row, createTableCell(InternationalisationUtils.getDatetimeFormat().format(m.getDate())));
-			ui.add(row, createTableCell(getSenderDisplayValue(m)));
-			ui.add(row, createTableCell(m.getTextContent()));
-			ui.add(messageTableComponent, row);
+			ui.add(messageTableComponent, getRow(m));
 		}	
 	}
 	
@@ -208,12 +209,18 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 			ui.setAttachedObject(dialog, message);
 			
 			//Populate the locations combo
-			Object cbCategory = find(dialog, COMPONENT_LOCATIONS_COMBO);
+			Object cbLocation = find(dialog, COMPONENT_LOCATIONS_COMBO);
 			for(Location  l: locationDao.getAllLocations()) {				
 				Object choice = createComboboxChoice(l.getName(), l);
-				ui.add(cbCategory, choice);
+				ui.add(cbLocation, choice);
 			}
 			
+			Object cbCategory = find(dialog, COMPONENT_CATEGORIES_COMBO);
+			for(Category c: categoryDao.getAllCategories()){
+				Object choice = createComboboxChoice(c.getTitle(), c);
+				ui.add(cbCategory, choice);
+			}
+				
 			//Load Message Details			
 			setText(find(dialog, "txtIncidentDate"), InternationalisationUtils.getDatetimeFormat().format(message.getDate()));
 			setText(find(dialog, "txtIncidentSender"), getSenderDisplayValue(message));
@@ -260,15 +267,13 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		
 		
 		//Show the selected point and the text field for the name to be input
-		setVisible(ui.find(dialog, COMPONENT_PANEL_SELECTED_LOCATION), true);
+		setBoolean(ui.find(dialog, COMPONENT_LOCATION_NAME_FIELD), Thinlet.ENABLED , true);
 		setText(ui.find(dialog, COMPONENT_LBL_SELECTED_LATITUDE), Double.toString(lat));
 		setText(ui.find(dialog, COMPONENT_LBL_SELECTED_LONGITUDE), Double.toString(lon));
 
-		setEnabled(ui.find(dialog, COMPONENT_LOCATION_COMBO), false);		
+		setBoolean(ui.find(dialog, COMPONENT_LOCATIONS_COMBO), Thinlet.ENABLED, false);		
 		//setVisible(ui.find(dialog, COMPONENT_LOCATION_BUTTON), false);
 
-		//setInteger(ui.find(dialog, COMPONENT_PANEL_INCIDENT_INFO),"rowspan", 20);
-		
 		setVisible(dialog, true);
 		setBoolean(dialog, Thinlet.MODAL, true);
 		
@@ -291,31 +296,75 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	public void saveIncident() throws DuplicateKeyException {
 		Object dialog = ui.find(COMPONENT_INCIDENT_DIALOG);
 		
-		//Get form values
-		Object cbCategory = ui.find(dialog, COMPONENT_LOCATIONS_COMBO);
-		Category category = (Category) ui.getAttachedObject(ui.getSelectedItem(cbCategory));
-		Message message = (Message) ui.getAttachedObject(dialog);
-		Object tfAdditionalInfo = ui.find(dialog,COMPONENT_ADDITIONAL_INFO_TEXTFIELD);
-		String additionalInfo = ui.getText(tfAdditionalInfo);
-		Object lblLocation = ui.find(dialog,COMPONENT_LOCATION_LABEL);
-		String location = ui.getText(lblLocation);
-		Double lat = Double.parseDouble(location.split(",")[0]);
-		Double lon = Double.parseDouble(location.split(",")[1]);
-		
-		//Save Incident
-		/*
-		Incident incident = incidentDao.getIncidentByMessage(message);
-		if(incident == null) {
-			//New incident
-			incident = new Incident(message, category, additionalInfo, lat, lon);
-			incidentDao.saveIncident(incident);
-		} else {
-			incident.setAdditionalInfo(additionalInfo);
-			incident.setLatitude(lat);
-			incident.setLongitude(lon);			
+		Message message = (Message)getAttachedObject(dialog);
+		if(message != null){
+			Incident incident = new Incident();
+			String dateStr = getText(ui.find(dialog, "txtIncidentDate"));
+			String title = message.getTextContent();
+			String additionalInfo = getText(ui.find(dialog, COMPONENT_ADDITIONAL_INFO_TEXTFIELD));			
+			
+			Location location = null;
+			
+			//Get form values
+			Object cboLocations = ui.find(dialog, COMPONENT_LOCATIONS_COMBO);
+			if(getBoolean(cboLocations, ENABLED)){
+				location = (Location)getAttachedObject(getSelectedItem(cboLocations));
+				incident.setLocation(location);
+			}else{
+				double lat = Double.parseDouble(getText(ui.find(dialog, COMPONENT_LBL_SELECTED_LATITUDE)));
+				double lon = Double.parseDouble(getText(ui.find(dialog, COMPONENT_LBL_SELECTED_LONGITUDE)));
+				
+				String name = getText(ui.find(dialog, COMPONENT_LOCATION_NAME_FIELD));
+				location = new Location(lat, lon);
+				location.setName(name);
+				location.setMappingSetup(mappingSetupDao.getDefaultSetup());
+				
+				try{
+					locationDao.saveLocation(location);					
+				}catch(DuplicateKeyException de){
+					LOG.debug(de);
+					//de.printStackTrace();
+					ui.alert("The location ["+name+"] could not be saved.");
+					return;
+				}
+				
+				//Reload the list of keywords
+				updateKeywordList();
+				
+			}			
+			
+			incident.setTitle(title);
+			incident.setDescription(additionalInfo);
+			incident.setLocation(location);
+			incident.setMappingSetup(mappingSetupDao.getDefaultSetup());
+			
+			Object cboCategories = ui.find(dialog, COMPONENT_CATEGORIES_COMBO);
+			Category category = (Category)getAttachedObject(getSelectedItem(cboCategories));
+			incident.setCategory(category);
+			incident.setMarked(true);
+			
+			try{
+				incident.setIncidentDate(InternationalisationUtils.getDatetimeFormat().parse(dateStr));
+			}catch(ParseException pe){
+				LOG.debug("Invalid date string", pe);
+				ui.alert("The incident date [" + dateStr + "] is invalid");
+				return;
+			}
+						
+			try{
+				incidentDao.saveIncident(incident);
+			}catch(DuplicateKeyException de){
+				LOG.debug(de);
+				ui.alert("ERROR: Unable to create an incident from the text message");
+				return;
+			}
 		}
-		*/
+		
+		//Re-plot the incidents on the map
+		mapBean.setIncidents(incidentDao.getAllIncidents());
+		
 		removeDialog(dialog);
+		
 	}
 	
 	/**
@@ -441,6 +490,15 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		return row;
 	}
 	
+	private Object getRow(Message message){		
+		Object row = createTableRow(message);
+		createTableCell(row, InternationalisationUtils.getDatetimeFormat().format(message.getDate()));
+		createTableCell(row, getSenderDisplayValue(message));
+		createTableCell(row, message.getTextContent());
+		
+		return row;
+	}
+	
 	public void clearSourceFields(Object dialog){
 		setText(find(dialog, SETUP_DLG_COMPONENT_FLD_SOURCE_NAME), "");
 		setText(find(dialog, SETUP_DLG_COMPONENT_FLD_SOURCE),"");
@@ -474,6 +532,9 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	 * Updates the keyword list with the new items 
 	 */
 	private void updateKeywordList(){
+		//Clear the contents of the keyword list
+		removeAll(ui.find(this.tabComponent, COMPONENT_KEYWORDS_TABLE));
+		
 		/*
 		for(Category category: categoryDao.getAllCategories()){
 			Object row = createTableRow(category);
@@ -487,10 +548,10 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 			Object row = createTableRow(location);
 			createTableCell(row, "");
 			createTableCell(row, location.getName());
-			add(ui.find(COMPONENT_KEYWORDS_TABLE), row);
+			add(ui.find(this.tabComponent, COMPONENT_KEYWORDS_TABLE), row);
 		}
 		
-		ui.repaint(ui.find(COMPONENT_KEYWORDS_TABLE));
+		ui.repaint(ui.find(this.tabComponent, COMPONENT_KEYWORDS_TABLE));
 	}
 	
 	/**
@@ -511,14 +572,14 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		}
 		
 		//Add category to the keyword listing
-		if(!exists){
+		/*if(!exists){
 			Object row = ui.createTableRow(category);
 			createTableCell(row, "");
 			createTableCell(row, category.getTitle());
 			ui.add(ui.find(getTab(), COMPONENT_KEYWORDS_TABLE), row);
 			ui.repaint();
 		}
-		
+		*/
 		LOG.debug("Category [" + category.getTitle() + "] added!");
 	}
 	
@@ -736,8 +797,9 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		
 		if(incidentDao.getCount() > 0){
 			Object table = ui.find(dialog, COMPONENT_TBL_INCIDENT_REPORTS);
-			for(Incident incident: incidentDao.getAllIncidents())
+			for(Incident incident: incidentDao.getAllIncidents()){
 				add(table, getRow(incident));
+			}
 		}
 	}
 	
@@ -799,5 +861,24 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		int zoomVal = getInteger(zoomController, ExtendedThinlet.VALUE);
 		mapBean.setZoomValue(zoomVal);
 	}
+
+	public void handleIncomingMessage(Message message) {
+		Object messageTableComponent = ui.find(this.tabComponent, COMPONENT_MESSAGE_TABLE);
+		ui.add(messageTableComponent, getRow(message));
+		ui.repaint();
+	}
 	
+	public void setTabComponent(Object tabComponent){
+		this.tabComponent = tabComponent;
+		
+		/*
+		addMouseListener(new MouseAdapter(){
+			public void mousePressed(MouseEvent me){
+				//check if the mapping plugin has been configured
+				checkPluginConfiguration();
+			}
+		});
+		*/
+	}
+		
 }

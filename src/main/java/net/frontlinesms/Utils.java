@@ -259,22 +259,6 @@ public class Utils {
 	}
 
 	/**
-	 * Finds the first action for the supplied type.
-	 * @param keyword
-	 * @param keyType
-	 * @return first action of the specified type attached to the keyword, or <code>null</code> if none could be found
-	 */
-	public static KeywordAction findKeywordAction(Keyword keyword, int keyType) {
-		for (KeywordAction action : keyword.getActions()) {
-			int type = action.getType();
-			if (type == keyType) {
-				return action;
-			}
-		}
-		return null;
-	}
-
-	/**
 	 * This class compares files and directories, giving higher priority to directories.
 	 * 
 	 * @author Carlos Eduardo Genz

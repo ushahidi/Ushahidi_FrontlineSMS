@@ -11,7 +11,7 @@ import javax.persistence.*;
 import net.frontlinesms.data.EntityField;
 
 @Entity
-@Table(uniqueConstraints={@UniqueConstraint(columnNames={"frontendId","mappingSetup_id"})})
+@Table(uniqueConstraints={@UniqueConstraint(columnNames={"id","mappingSetup_id"})})
 public class Location {
 	
 //>	COLUMN NAME CONSTANTS
@@ -71,7 +71,24 @@ public class Location {
 	
 	@ManyToOne
 	private MappingSetup mappingSetup;
+	
+	/**
+	 * Creates an instance of Location with the longitude and latitude values
+	 * @param lat Latitude of the location
+	 * @param lon Longitude of the location
+	 */
+	public Location(double lat, double lon){
+		this.latitude = lat;
+		this.longitude = lon;
+	}
+	
+	/**
+	 * Empty constructor
+	 */
+	public Location(){
 		
+	}
+	
 	/**
 	 * Sets the unique id of the location
 	 * @param id

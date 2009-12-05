@@ -21,7 +21,7 @@ public final class SynchronizationAPI {
 	public static final String LOCATIONS = "locations";
 	
 	/* Adds an incident */
-	public static final String POST_INCIDENT = "report";
+	public static final String POST_INCIDENT = "report&";
 		
 	
 	/* All incidents */

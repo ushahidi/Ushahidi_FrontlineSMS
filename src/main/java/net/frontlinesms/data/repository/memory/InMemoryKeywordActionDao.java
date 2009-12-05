@@ -48,4 +48,30 @@ public class InMemoryKeywordActionDao implements KeywordActionDao {
 		this.allActions.add(action);
 	}
 
+	/** @see KeywordActionDao#updateKeywordAction(KeywordAction) */
+	public void updateKeywordAction(KeywordAction action) {
+		// Do nothing!
+	}
+
+	/** @see net.frontlinesms.data.repository.KeywordActionDao#getAction(net.frontlinesms.data.domain.Keyword, int) */
+	public KeywordAction getAction(Keyword keyword, int actionType) {
+		for(KeywordAction action : this.allActions) {
+			if(action.getType() == actionType && action.getKeyword().equals(keyword)) {
+				return action;
+			}
+		}
+		return null;
+	}
+
+	/** @see net.frontlinesms.data.repository.KeywordActionDao#getActions(net.frontlinesms.data.domain.Keyword) */
+	public List<KeywordAction> getActions(Keyword keyword) {
+		ArrayList<KeywordAction> actions = new ArrayList<KeywordAction>();
+		for(KeywordAction action : this.allActions) {
+			if(action.getKeyword().equals(keyword)) {
+				actions.add(action);
+			}
+		}
+		return actions;
+	}
+
 }

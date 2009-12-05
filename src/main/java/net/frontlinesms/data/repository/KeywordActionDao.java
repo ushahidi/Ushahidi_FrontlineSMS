@@ -20,6 +20,7 @@
 package net.frontlinesms.data.repository;
 
 import java.util.Collection;
+import java.util.List;
 
 import net.frontlinesms.data.domain.*;
 
@@ -32,13 +33,13 @@ public interface KeywordActionDao {
 	 * Gets all keyword actions of TYPE_REPLY.
 	 * @return all {@link KeywordAction} of type {@link KeywordAction#TYPE_REPLY}
 	 */
-	public abstract Collection<KeywordAction> getReplyActions();
+	public Collection<KeywordAction> getReplyActions();
 	
 	/**
 	 * Gets the survey action attached to this keyword.
 	 * @return all {@link KeywordAction} of type {@link KeywordAction#TYPE_SURVEY}
 	 */
-	public abstract Collection<KeywordAction> getSurveysActions();
+	public Collection<KeywordAction> getSurveysActions();
 
 	/**
 	 * Deletes a {@link KeywordAction}.
@@ -48,7 +49,28 @@ public interface KeywordActionDao {
 	
 	/**
 	 * Saves a {@link KeywordAction}
-	 * @param action action to delete
+	 * @param action action to save
 	 */
 	public void saveKeywordAction(KeywordAction action);
+	
+	/**
+	 * Updates a {@link KeywordAction}
+	 * @param action action to update
+	 */
+	public void updateKeywordAction(KeywordAction action);
+	
+	/**
+	 * Gets a list of all {@link KeywordAction}s for the supplied keyword.
+	 * @param keyword
+	 * @return all {@link KeywordAction}s attached to the supplied {@link Keyword}
+	 */
+	public List<KeywordAction> getActions(Keyword keyword);
+	
+	/**
+	 * Gets a {@link KeywordAction} of a specified type for a particular {@link Keyword}.
+	 * @param keyword The keyword whose action we want to fetch
+	 * @param actionType the type of the action to fetch
+	 * @return The action of the specified type, or <code>null</code> if there is none available
+	 */
+	public KeywordAction getAction(Keyword keyword, int actionType);
 }
