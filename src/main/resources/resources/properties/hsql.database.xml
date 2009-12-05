@@ -17,7 +17,7 @@
 
 	<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
 		<property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-		<property name="url" value="jdbc:hsqldb:file:frontlinesms_hsql_db" />
+		<property name="url" value="jdbc:hsqldb:file:${user.home}/FrontlineSMS/frontlinesms_hsql_db;shutdown=true" />
 		<property name="username" value="sa" />
 		<property name="password" value="" />
 	</bean>
