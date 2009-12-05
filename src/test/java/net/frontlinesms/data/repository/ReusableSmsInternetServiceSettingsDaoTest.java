@@ -28,7 +28,7 @@ public abstract class ReusableSmsInternetServiceSettingsDaoTest extends Reusable
 	}
 	
 	@Override
-	protected void tearDown() throws Exception {
+	public void tearDown() throws Exception {
 		this.dao = null;
 	}
 	

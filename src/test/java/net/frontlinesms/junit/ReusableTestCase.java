@@ -40,6 +40,11 @@ public abstract class ReusableTestCase<T> extends TestCase {
 			assertEquals((T)arrayOne[i], (T)arrayTwo[i]);
 		}
 	}
+
+	/** Increase the visibility of {@link TestCase#tearDown()} */
+	public void tearDown() throws Exception {
+		super.tearDown();
+	}
 	
 	/**
 	 * The method that does the tests.

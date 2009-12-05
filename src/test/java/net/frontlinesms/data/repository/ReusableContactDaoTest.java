@@ -26,7 +26,7 @@ public abstract class ReusableContactDaoTest extends ReusableTestCase<Contact> {
 	}
 	
 	@Override
-	protected void tearDown() throws Exception {
+	public void tearDown() throws Exception {
 		this.dao = null;
 	}
 	

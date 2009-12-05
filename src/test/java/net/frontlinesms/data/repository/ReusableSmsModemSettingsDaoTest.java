@@ -32,7 +32,7 @@ public abstract class ReusableSmsModemSettingsDaoTest extends ReusableTestCase<S
 	}
 	
 	@Override
-	protected void tearDown() throws Exception {
+	public void tearDown() throws Exception {
 		this.dao = null;
 	}
 	

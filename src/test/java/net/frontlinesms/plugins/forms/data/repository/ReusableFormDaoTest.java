@@ -26,7 +26,7 @@ public abstract class ReusableFormDaoTest extends ReusableTestCase<Form> {
 	
 	/** @see junit.framework.TestCase#tearDown() */
 	@Override
-	protected void tearDown() throws Exception {
+	public void tearDown() throws Exception {
 		this.dao = null;
 	}
 	

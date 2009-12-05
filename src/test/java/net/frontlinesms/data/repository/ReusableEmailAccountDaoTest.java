@@ -10,8 +10,6 @@ import net.frontlinesms.junit.ReusableTestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import junit.framework.TestCase;
-
 /**
  * Base test class for testing {@link EmailAccountDao}
  * @author Alex
@@ -29,7 +27,7 @@ public abstract class ReusableEmailAccountDaoTest extends ReusableTestCase<Email
 	}
 	
 	@Override
-	protected void tearDown() throws Exception {
+	public void tearDown() throws Exception {
 		// Delete all email accounts still in the DAO
 		for(EmailAccount account : this.dao.getAllEmailAccounts()) {
 			this.dao.deleteEmailAccount(account);
@@ -40,17 +38,16 @@ public abstract class ReusableEmailAccountDaoTest extends ReusableTestCase<Email
 	}
 	
 	/**
-	 * Test everything all at once!
-	 * @throws DuplicateKeyException 
+	 * Test basic functionality of the DAO.
 	 */
 	public void test() throws DuplicateKeyException {
 		assertEquals("Checking there are no unexpected entries in the email DAO.", 0, dao.getAllEmailAccounts().size());
-		
+
+		boolean useSsl = false;
 		String accountName = "test@frontlinesms.com";
 		String accountServer = "FrontlineSMS Test";
 		int accountServerPort = 123;
 		String accountPassword = "secretpassword";
-		boolean useSsl = false;
 		EmailAccount account = new EmailAccount(accountName, accountServer, accountServerPort, accountPassword, useSsl);
 		dao.saveEmailAccount(account);
 		assertEquals(1, dao.getAllEmailAccounts().size());
@@ -62,19 +59,32 @@ public abstract class ReusableEmailAccountDaoTest extends ReusableTestCase<Email
 		assertEquals(accountPassword, retrievedAccount.getAccountPassword());
 		assertEquals(useSsl, retrievedAccount.useSsl());
 		
-		EmailAccount duplicateAccount = new EmailAccount(accountName, accountServer, accountServerPort, accountPassword, useSsl);
-		try {
-			System.out.println("Preparing to save...");
-			dao.saveEmailAccount(duplicateAccount);
-			System.out.println("Save passed!");
-			fail("Should have thrown DKE");
-		} catch(DuplicateKeyException ex) { /* expected */ }
-		System.out.println("Everything is cool");
 		
 		assertEquals(1, dao.getAllEmailAccounts().size());
 
 		dao.deleteEmailAccount(account);
 		
 		assertEquals(0, dao.getAllEmailAccounts().size());
+	}
+	
+	/**
+	 * Test handling of duplicate accounts being saved.
+	 * @throws DuplicateKeyException
+	 */
+	public void testDuplicates() throws DuplicateKeyException {
+		boolean useSsl = false;
+		String accountName = "test@frontlinesms.com";
+		String accountServer = "FrontlineSMS Test";
+		int accountServerPort = 123;
+		String accountPassword = "secretpassword";
+		EmailAccount account = new EmailAccount(accountName, accountServer, accountServerPort, accountPassword, useSsl);
+		dao.saveEmailAccount(account);
+		EmailAccount duplicateAccount = new EmailAccount(accountName, accountServer, accountServerPort, accountPassword, useSsl);
+		try {
+			System.out.println("Preparing to save...");
+			dao.saveEmailAccount(duplicateAccount);
+			System.out.println("Save passed!");
+			fail("Should have thrown DKE");
+		} catch(DuplicateKeyException ex) { /* expected */ }		
 	}
 }

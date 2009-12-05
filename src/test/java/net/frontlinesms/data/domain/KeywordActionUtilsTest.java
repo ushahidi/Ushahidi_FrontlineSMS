@@ -139,7 +139,7 @@ public class KeywordActionUtilsTest extends BaseTestCase {
 	 * @return a survey action
 	 */
 	private static KeywordAction createAction(String keyword) {
-		Keyword kw = new Keyword(null, keyword, "a test keyword");
+		Keyword kw = new Keyword(keyword, "a test keyword");
 		return KeywordAction.createSurveyAction(kw, -1, -1);
 	}
 }

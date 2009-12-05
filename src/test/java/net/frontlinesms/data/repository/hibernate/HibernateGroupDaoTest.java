@@ -25,6 +25,21 @@ public class HibernateGroupDaoTest extends HibernateTestCase {
 	public void test() throws DuplicateKeyException {
 		test.test();
 	}
+	/** @see ReusableGroupDaoTest#testCascadingDelete() */
+	public void testCascadingDelete() throws DuplicateKeyException {
+		test.testCascadingDelete();
+	}
+	/** @see ReusableGroupDaoTest#testChildDelete() */
+	public void testChildDelete() throws DuplicateKeyException {
+		test.testChildDelete();
+	}
+
+//> TEST SETUP/TEARDOWN
+	/** @see net.frontlinesms.junit.HibernateTestCase#doTearDown() */
+	@Override
+	public void doTearDown() throws Exception {
+		this.test.tearDown();
+	}
 	
 //> ACCESSORS
 	/** @param d The DAO to use for the test. */

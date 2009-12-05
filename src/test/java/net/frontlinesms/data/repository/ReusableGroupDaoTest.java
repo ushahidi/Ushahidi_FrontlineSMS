@@ -35,22 +35,19 @@ public abstract class ReusableGroupDaoTest extends ReusableTestCase<Group> {
 	}
 	
 	@Override
-	protected void tearDown() throws Exception {
+	public void tearDown() throws Exception {
+		for(Group g : this.dao.getAllGroups()) {
+			this.dao.deleteGroup(g, false);
+		}
 		this.dao = null;
 	}
 	
-//> JUNIT TEST METHODS
-	public void test() throws DuplicateKeyException {
-		testSimple();
-		testChildDelete();
-		testCascadingDelete();
-	}
-	
+//> JUNIT TEST METHODS	
 	/**
 	 * Test everything all at once!
 	 * @throws DuplicateKeyException 
 	 */
-	public void testSimple() throws DuplicateKeyException {
+	public void test() throws DuplicateKeyException {
 		confirmSanity();
 		Group group = new Group(null, MY_GROUP_NAME);
 		confirmSanity();
@@ -73,6 +70,7 @@ public abstract class ReusableGroupDaoTest extends ReusableTestCase<Group> {
 		
 		assertNull("My group should have been deleted.", dao.getGroupByName(MY_GROUP_NAME));
 		
+		group = new Group(null, MY_GROUP_NAME);
 		dao.saveGroup(group);
 		
 		assertEquals(1, dao.getGroupCount());

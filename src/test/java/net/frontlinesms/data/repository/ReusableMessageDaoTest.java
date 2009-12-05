@@ -34,7 +34,7 @@ public abstract class ReusableMessageDaoTest extends ReusableTestCase<Message> {
 	
 //> TEST SETUP METHODS
 	@Override
-	protected void tearDown() throws Exception {
+	public void tearDown() throws Exception {
 		this.dao = null;
 	}
 	

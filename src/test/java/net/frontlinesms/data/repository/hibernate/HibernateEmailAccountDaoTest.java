@@ -21,9 +21,21 @@ public class HibernateEmailAccountDaoTest extends HibernateTestCase {
 	private final ReusableEmailAccountDaoTest test = new ReusableEmailAccountDaoTest() { /* nothing needs to be added */ };
 
 //> TEST METHODS
-	/** @see HibernateTestCase#test() */
+	/** @throws DuplicateKeyException 
+	 * @see HibernateTestCase#test() */
 	public void test() throws DuplicateKeyException {
 		test.test();
+	}
+	/** @see ReusableEmailAccountDaoTest#testDuplicates() */
+	public void testDuplicates() throws DuplicateKeyException {
+		test.testDuplicates();
+	}
+
+//> TEST SETUP/TEARDOWN
+	/** @see net.frontlinesms.junit.HibernateTestCase#doTearDown() */
+	@Override
+	public void doTearDown() throws Exception {
+		this.test.tearDown();
 	}
 	
 //> ACCESSORS

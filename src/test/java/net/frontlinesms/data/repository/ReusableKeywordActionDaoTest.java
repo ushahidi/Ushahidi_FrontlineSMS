@@ -26,7 +26,7 @@ public abstract class ReusableKeywordActionDaoTest extends ReusableTestCase<Keyw
 	}
 	
 	@Override
-	protected void tearDown() throws Exception {
+	public void tearDown() throws Exception {
 		this.dao = null;
 	}
 	

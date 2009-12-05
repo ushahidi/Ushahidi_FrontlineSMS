@@ -25,11 +25,27 @@ public class HibernateKeywordDaoTest extends HibernateTestCase {
 	public void test() throws DuplicateKeyException {
 		test.test();
 	}
+	/** @see ReusableKeywordDaoTest#testDuplicates() */
+	public void testDuplicates() throws DuplicateKeyException {
+		test.testDuplicates();
+	}
+	/** @see ReusableKeywordDaoTest#testKeywordMatching() */
+	public void testKeywordMatching() throws DuplicateKeyException {
+		test.testKeywordMatching();
+	}
+
+//> TEST SETUP/TEARDOWN
+	/** @see net.frontlinesms.junit.HibernateTestCase#doTearDown() */
+	@Override
+	public void doTearDown() throws Exception {
+		this.test.tearDown();
+	}
 	
 //> ACCESSORS
-	/** @param d The DAO to use for the test. */
+	/** @param d The DAO to use for the test. 
+	 * @throws DuplicateKeyException */
 	@Required
-	public void setKeywordDao(KeywordDao d)
+	public void setKeywordDao(KeywordDao d) throws DuplicateKeyException
 	{
 		// we can just set the DAO once in the test
 		test.setDao(d);
