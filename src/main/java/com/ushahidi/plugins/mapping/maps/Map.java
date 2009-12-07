@@ -240,6 +240,7 @@ public class Map implements TileRequestor {
 	public void zoomBy(double delta) {
 		coordinate = coordinate.zoomBy(delta);
 		offset = MapFactory.calculateMapCenter(provider, coordinate);
+		coordinate = coordinate.container();
 	}
 
 	public void setObserver(ImageObserver observer) {

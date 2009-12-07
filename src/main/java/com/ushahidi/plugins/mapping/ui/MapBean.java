@@ -10,7 +10,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.image.ImageObserver;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -80,11 +79,10 @@ public class MapBean extends CustomComponent implements ImageObserver {
 				}
 				
 				// Zoom & center on double click
-				/**
-				if(me.getClickCount() == 2) {					
+				/*if(me.getClickCount() == 2) {					
 					LOG.debug("Double Clicked");
 					map.zoomBy(1);
-					map.panTo(me.getX(), me.getY());
+					//map.panTo(me.getX(), me.getY());
 					map.draw();
 					
 					repaint();
@@ -125,14 +123,14 @@ public class MapBean extends CustomComponent implements ImageObserver {
 	}
 	
 	public void paint(Graphics g) {
-		LOG.debug("paint");
+		//LOG.debug("paint");
 		if (dimensions == null) {
 			dimensions = getSize();
 		}
 
 		//Check if the location has been set
 		if(location == null){
-			LOG.debug("Map location not set");
+			LOG.error("Map location not set");
 			LOG.trace("EXIT");
 			return;
 		}
@@ -140,12 +138,12 @@ public class MapBean extends CustomComponent implements ImageObserver {
 		if (map == null && location != null ) {
 			if(offlineMapFile == null)
 				map = MapFactory.mapByCenterZoom(
-						new MicrosoftRoadProvider(), location, 7, new Point(dimensions.getWidth(), 
+						new MicrosoftRoadProvider(), location, DEFAULT_ZOOM_LEVEL, new Point(dimensions.getWidth(), 
 								dimensions.getHeight()));
 			else{
 				try {
 					map = MapFactory.mapByCenterZoom(new OfflineProvider(offlineMapFile),
-							location, 7, new Point(dimensions.width, dimensions.height));
+							location, DEFAULT_ZOOM_LEVEL, new Point(dimensions.width, dimensions.height));
 				} catch (IOException e) {
 					LOG.debug(e);
 				}				
@@ -203,7 +201,7 @@ public class MapBean extends CustomComponent implements ImageObserver {
 
 	public boolean imageUpdate(Image img, int infoflags, int x, int y,
 			int width, int height) {
-		LOG.debug("Image Update");
+		//LOG.debug("Image Update");
 		repaint();
 		return true;
 	}
@@ -254,6 +252,7 @@ public class MapBean extends CustomComponent implements ImageObserver {
 	}
 	
 	public void setZoomValue(double zoomVal){
+		LOG.debug("ZOOM VAL = " + zoomVal);
 		pointSize = (zoomVal < map.getZoomLevel())? pointSize-4 : 
 			((zoomVal >= DEFAULT_ZOOM_LEVEL)? DEFAULT_POINT_SIZE : pointSize+4);
 		map.zoomBy(zoomVal-map.getZoomLevel());
