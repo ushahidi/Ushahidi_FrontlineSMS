@@ -146,7 +146,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 			}
 			
 			mapBean.setLocation(longitude, latitude);			
-			mapBean.setIncidents(incidentDao.getAllIncidents());
+			mapBean.setIncidents(incidentDao.getAllIncidents(mappingSetupDao.getDefaultSetup()));
 			mapBean.setMappingUIController(this);
 		}		
 	}
@@ -210,13 +210,13 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 			
 			//Populate the locations combo
 			Object cbLocation = find(dialog, COMPONENT_LOCATIONS_COMBO);
-			for(Location  l: locationDao.getAllLocations()) {				
+			for(Location  l: locationDao.getAllLocations(mappingSetupDao.getDefaultSetup())) {				
 				Object choice = createComboboxChoice(l.getName(), l);
 				ui.add(cbLocation, choice);
 			}
 			
 			Object cbCategory = find(dialog, COMPONENT_CATEGORIES_COMBO);
-			for(Category c: categoryDao.getAllCategories()){
+			for(Category c: categoryDao.getAllCategories(mappingSetupDao.getDefaultSetup())){
 				Object choice = createComboboxChoice(c.getTitle(), c);
 				ui.add(cbCategory, choice);
 			}
@@ -536,7 +536,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		removeAll(ui.find(this.tabComponent, COMPONENT_KEYWORDS_TABLE));
 		
 		/*
-		for(Category category: categoryDao.getAllCategories()){
+		for(Category category: categoryDao.getAllCategories(mappingSetupDao.getDefaultSetup())){
 			Object row = createTableRow(category);
 			createTableCell(row,"");
 			createTableCell(row, category.getTitle());			
@@ -544,7 +544,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		}
 		*/
 		
-		for(Location location: locationDao.getAllLocations()){
+		for(Location location: locationDao.getAllLocations(mappingSetupDao.getDefaultSetup())){
 			Object row = createTableRow(location);
 			createTableCell(row, "");
 			createTableCell(row, location.getName());
@@ -563,14 +563,14 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		category.setMappingSetup(mappingSetupDao.getDefaultSetup());
 		boolean exists = false;
 		try{
-			categoryDao.saveCategory(category);
+			categoryDao.saveCategory(category);			
 		}catch(DuplicateKeyException e){
 			exists = true;
 			LOG.debug("Category already exists", e);
 			LOG.trace("EXIT");
 			return;
 		}
-		
+				
 		//Add category to the keyword listing
 		/*if(!exists){
 			Object row = ui.createTableRow(category);
@@ -671,7 +671,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	}
 	
 	public List<Incident> getPendingIncidents(){
-		return incidentDao.getUnMarkedIncidents();
+		return incidentDao.getUnMarkedIncidents(mappingSetupDao.getDefaultSetup());
 	}
 	
 	/**
@@ -680,7 +680,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	 */
 	public List<String> getLocationIds(){
 		ArrayList<String> items = new ArrayList<String>();
-		for(Location location: locationDao.getAllLocations())
+		for(Location location: locationDao.getAllLocations(mappingSetupDao.getDefaultSetup()))
 			items.add(Long.toString(location.getFrontendId()));
 		return items;
 	}
@@ -691,7 +691,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	 */
 	public List<String> getCategoryNames(){
 		ArrayList<String> items = new ArrayList<String>();
-		for(Category category: categoryDao.getAllCategories())
+		for(Category category: categoryDao.getAllCategories(mappingSetupDao.getDefaultSetup()))
 			items.add(category.getTitle().toLowerCase());
 		return items;
 	}
@@ -704,6 +704,12 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		ui.add(saveDialog);
 	}
 	
+	/**
+	 * Saves the map tiles to a file on the disk
+	 * 
+	 * @param dialog Map Save dialog
+	 * @param mapName Name of the file to save the map to
+	 */
 	public void doMapSave(Object dialog, String mapName) {
 		MapBean mapBean = (MapBean) get(ui.find(COMPONENT_MAP_BEAN), BEAN);
 		Map map = mapBean.getMap();
@@ -797,12 +803,19 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		
 		if(incidentDao.getCount() > 0){
 			Object table = ui.find(dialog, COMPONENT_TBL_INCIDENT_REPORTS);
-			for(Incident incident: incidentDao.getAllIncidents()){
+			for(Incident incident: incidentDao.getAllIncidents(mappingSetupDao.getDefaultSetup())){
 				add(table, getRow(incident));
 			}
 		}
 	}
 	
+	/**
+	 * Returns a row with an incident attached to it
+	 * 
+	 * @param incident see {@link #Incident}
+	 * 
+	 * @return
+	 */
 	public Object getRow(Incident incident){
 		Object row = createTableRow(incident);
 		createTableCell(row, incident.getTitle());
@@ -846,7 +859,10 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		if(incident != null){
 			incident.setTitle(getText(ui.find(dialog, COMPONENT_REPORT_TITLE_FIELD)));
 			incident.setDescription(getText(ui.find(dialog, COMPONENT_REPORT_DESC_FIELD)));
-			incident.setMarked(true);
+			//Only locally created incidents should be marked for posting to the frontend
+			//TODO: Accomodate editing and posting of incidents fetched from the frontend; API feature request
+			if(Long.toString(incident.getFrontendId()).equals(null))
+				incident.setMarked(true);
 			
 			//
 			try{
@@ -857,11 +873,22 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		}
 	}
 	
+	/**
+	 * Changes the zoom level of the map
+	 * 
+	 * @param zoomController The Zoom UI control
+	 */
 	public void zoomMap(Object zoomController){
 		int zoomVal = getInteger(zoomController, ExtendedThinlet.VALUE);
 		mapBean.setZoomValue(zoomVal);
 	}
 
+	/**
+	 * Adds an incoming message (received via the connected mobile phone) to the list of
+	 * messages
+	 * 
+	 * @param message The received message
+	 */
 	public void handleIncomingMessage(Message message) {
 		Object messageTableComponent = ui.find(this.tabComponent, COMPONENT_MESSAGE_TABLE);
 		ui.add(messageTableComponent, getRow(message));
@@ -870,15 +897,6 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	
 	public void setTabComponent(Object tabComponent){
 		this.tabComponent = tabComponent;
-		
-		/*
-		addMouseListener(new MouseAdapter(){
-			public void mousePressed(MouseEvent me){
-				//check if the mapping plugin has been configured
-				checkPluginConfiguration();
-			}
-		});
-		*/
 	}
 		
 }
