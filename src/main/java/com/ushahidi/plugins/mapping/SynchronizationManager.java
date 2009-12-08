@@ -1,6 +1,9 @@
 package com.ushahidi.plugins.mapping;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -20,6 +23,9 @@ public class SynchronizationManager {
 	/** Status of the synchronization*/
 	private boolean complete = false;
 	
+	/** Synchronization primitive that keeps track of the number of failed sync attempts */
+	private Set<Incident> failedIncidents = new HashSet<Incident>();
+		
 	/**
 	 * Creates an instance of {@link SynchronizationManager}
 	 * 
@@ -67,6 +73,9 @@ public class SynchronizationManager {
 		incidentTask.addRequestParameter(SynchronizationAPI.INCIDENTS_BY_ALL);
 		executorService.submit(incidentTask);
 		
+		//Initiate shutdown of the sync manager
+		executorService.shutdown();
+		
 	}
 	
 	/**
@@ -80,6 +89,32 @@ public class SynchronizationManager {
 		}
 	}
 	
+	/**
+	 * Updates the failure count by 1
+	 */
+	public synchronized void updateFailedIncidents(Incident incident){
+		failedIncidents.add(incident);
+	}
+	
+	/**
+	 * Gets the list of failed synchronization tasks
+	 * @return
+	 */
+	public synchronized List<Incident> getFailedIncidents(){
+		ArrayList<Incident> list = new ArrayList<Incident>();
+		list.addAll(failedIncidents);
+		return list;
+	}
+	
+	/**
+	 * Clears the posted incident from the list of pending incidents
+	 * 
+	 * @param incident
+	 */
+	public synchronized void updatePostedIncidents(Incident incident){
+		mappingController.updatePostedIncident(incident);
+	}
+		
 	public void addCategory(Category category){
 		mappingController.addCategory(category);
 	}
