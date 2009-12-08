@@ -3,8 +3,10 @@ package com.ushahidi.plugins.mapping;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.net.MalformedURLException;
+import java.net.URLConnection;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
 import java.util.Date;
@@ -146,7 +148,7 @@ public class SynchronizationTask implements Runnable{
 	 * marked for posting are submitted
 	 */
 	public void performPushTask(){
-		String urlParameterStr = getRequestURL();
+		String urlParameterStr = SynchronizationAPI.REQUEST_URL_PREFIX + taskBuffer.toString();
 		if(baseTask.equalsIgnoreCase(SynchronizationAPI.POST_INCIDENT)){
 			urlParameterStr += SynchronizationAPI.getSubmitURLParameters(baseTask);
 			//Fetch all incidents and post them one by one
@@ -164,7 +166,8 @@ public class SynchronizationTask implements Runnable{
 	 */
 	public String getRequestURL(){
 		String extra = (baseURL.charAt(baseURL.length()-1) == '/')? "" : "/";
-		return baseURL + extra + SynchronizationAPI.REQUEST_URL_PREFIX + taskBuffer.toString();
+		return (baseTask == SynchronizationAPI.POST_INCIDENT)? baseURL + extra : 
+			baseURL + extra + SynchronizationAPI.REQUEST_URL_PREFIX + taskBuffer.toString();
 	}
 	
 	/**
@@ -256,8 +259,8 @@ public class SynchronizationTask implements Runnable{
 	private void postIncident(Incident incident, String urlParameterStr){
 		Date date = incident.getIncidentDate();
 		String parameterStr = String.format(urlParameterStr, 
-				incident.getTitle().replace(' ', '+'), 
-				incident.getDescription().replace(' ', '+'), 
+				incident.getTitle(), 
+				incident.getDescription(), 
 				getDateTimeComponent(date, "MM/dd/yyyy"), 
 				getDateTimeComponent(date, "HH"), getDateTimeComponent(date, "mm"),
 				getDateTimeComponent(date, "a").toLowerCase(),
@@ -267,21 +270,50 @@ public class SynchronizationTask implements Runnable{
 				incident.getLocation().getName()
 				);
 		//post the incident to the frontend
-		LOG.debug("Posting incident "+urlParameterStr);
-		System.out.println(parameterStr);
+		LOG.debug("Posting incident "+parameterStr);
+		//System.out.println(getRequestURL() + parameterStr);
 		try{
-			URL url = new URL(parameterStr);
+			//Send data
+			URL url = new URL(getRequestURL());			
+			URLConnection conn = url.openConnection();
+			conn.setDoOutput(true);
+			OutputStreamWriter writer = new OutputStreamWriter(conn.getOutputStream());
+		
+			//write parameters
+			writer.write(parameterStr);
+			writer.flush();
+			
+			//Get the response
+			BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 			String line = null;
 			StringBuffer sb = new StringBuffer();
-			BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
 			while((line = reader.readLine()) != null){
 				sb.append(line);
 			}
-			System.out.println(sb.toString());
+
+			//System.out.println(sb.toString());
+			
+			reader.close();
+			writer.close();
+						
+			//Get the status of the posting and update the sync manager with the list of failed incidents
+			JSONObject payload = new JSONObject(sb.toString());
+			JSONObject status = payload.getJSONObject("error");			
+			if(((String)status.get("code")).equalsIgnoreCase("0")){
+				syncManager.updatePostedIncidents(incident);
+				LOG.debug("Incident post succeeded: " + payload);
+			}else{
+				syncManager.updateFailedIncidents(incident);
+				LOG.debug("Incident post failed: "+ payload.toString());
+			}
+			
 		}catch(MalformedURLException me){
-			LOG.debug("URL error", me);
+			LOG.debug("URL error: ", me);
 		}catch(IOException io){
-			LOG.debug("IO Error", io); 
+			LOG.debug("IO Error: ", io); 
+			//io.printStackTrace();
+		}catch(JSONException jsx){
+			LOG.debug("JSON Error: ", jsx);
 		}
 	}
 	
