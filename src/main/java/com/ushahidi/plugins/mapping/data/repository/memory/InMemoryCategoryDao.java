@@ -27,6 +27,10 @@ public class InMemoryCategoryDao implements CategoryDao {
 		return categories;
 	}
 	
+	public List<Category> getAllCategories(MappingSetup setup){
+		return null;
+	}
+	
 	public void saveCategory(Category category) throws DuplicateKeyException {
 		allCategories.add(category);		
 	}

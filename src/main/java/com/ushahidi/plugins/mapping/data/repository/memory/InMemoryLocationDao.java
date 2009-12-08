@@ -21,6 +21,10 @@ public class InMemoryLocationDao implements LocationDao{
 		locations.addAll(allLocations);
 		return locations;
 	}
+	
+	public List<Location> getAllLocations(MappingSetup setup){
+		return null;
+	}
 
 	public void saveLocation(Location location) throws DuplicateKeyException {
 		allLocations.add(location);

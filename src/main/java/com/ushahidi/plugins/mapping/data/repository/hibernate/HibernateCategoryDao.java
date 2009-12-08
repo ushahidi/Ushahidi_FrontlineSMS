@@ -26,6 +26,16 @@ public class HibernateCategoryDao extends BaseHibernateDao<Category> implements
 	public List<Category> getAllCategories() {
 		return super.getAll();
 	}
+	
+	public List<Category> getAllCategories(MappingSetup setup){
+		if(getCount() == 0){
+			return null;
+		}else{
+			DetachedCriteria criteria = super.getCriterion();
+			criteria.add(Restrictions.eq(Category.Field.MAPPING_SETUP.getFieldName(), setup));
+			return super.getList(criteria);
+		}
+	}
 
 	public void flush() {
 		//Do nothing

@@ -32,6 +32,10 @@ public class InMemoryIncidentDao implements IncidentDao {
 		return incidents;
 	}
 	
+	public List<Incident>getAllIncidents(MappingSetup setup){
+		return null;
+	}
+	
 	public void saveIncident(Incident incident)	throws DuplicateKeyException {
 		allIncidents.add(incident);
 	}
