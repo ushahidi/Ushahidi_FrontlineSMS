@@ -44,7 +44,7 @@ public class InMemoryIncidentDao implements IncidentDao {
 		return allIncidents.size();
 	}
 
-	public List<Incident> getUnMarkedIncidents() {
+	public List<Incident> getUnMarkedIncidents(MappingSetup setup) {
 		// TODO Auto-generated method stub
 		return null;
 	}
