@@ -13,6 +13,8 @@ public interface CategoryDao {
 	
 	public List<Category> getAllCategories();
 	
+	public List<Category> getAllCategories(MappingSetup setup);
+	
 	public void saveCategory(Category category) throws DuplicateKeyException;
 	
 	public void saveCategory(List<Category> categories);

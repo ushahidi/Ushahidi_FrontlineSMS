@@ -19,6 +19,8 @@ public interface IncidentDao {
 	
 	public List<Incident>getAllIncidents();
 	
+	public List<Incident>getAllIncidents(MappingSetup setup);
+	
 	public int getCount();
 	
 	public List<Incident> getUnMarkedIncidents();

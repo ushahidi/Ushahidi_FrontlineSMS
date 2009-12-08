@@ -14,6 +14,8 @@ public interface LocationDao {
 	
 	public List<Location> getAllLocations();
 	
+	public List<Location> getAllLocations(MappingSetup setup);
+	
 	/** Clears the InMemory database */
 	public void flush();
 	
