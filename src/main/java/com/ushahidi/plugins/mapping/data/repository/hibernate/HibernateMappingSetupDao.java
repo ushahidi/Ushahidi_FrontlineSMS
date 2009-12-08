@@ -1,5 +1,6 @@
 package com.ushahidi.plugins.mapping.data.repository.hibernate;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import net.frontlinesms.data.DuplicateKeyException;
@@ -25,7 +26,7 @@ public class HibernateMappingSetupDao extends BaseHibernateDao<MappingSetup> imp
 	 * Gets all setup items
 	 */
 	public List<MappingSetup> getAllSetupItems() {
-		return super.getAll();
+		return (getCount() == 0)? new ArrayList<MappingSetup>() : super.getAll();
 	}
 
 	/**

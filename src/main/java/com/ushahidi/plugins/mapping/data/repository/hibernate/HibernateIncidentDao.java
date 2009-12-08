@@ -1,5 +1,6 @@
 package com.ushahidi.plugins.mapping.data.repository.hibernate;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.ushahidi.plugins.mapping.data.domain.Category;
@@ -22,11 +23,11 @@ public class HibernateIncidentDao extends BaseHibernateDao<Incident> implements
 	}
 	
 	public List<Incident> getAllIncidents() {
-		return getAll();
+		return (getCount() == 0)? new ArrayList<Incident>() : super.getAll();
 	}
 
 	public List<Incident> getAllIncidents(int startIndex, int limit) {
-		return getAll(startIndex, limit);
+		return (getCount() == 0)?new ArrayList<Incident>():getAll(startIndex, limit);
 	}
 
 	public void saveIncident(Incident incident) throws DuplicateKeyException {		
@@ -126,7 +127,7 @@ public class HibernateIncidentDao extends BaseHibernateDao<Incident> implements
 	 */
 	public List<Incident> getAllIncidents(MappingSetup setup){
 		if(getCount() == 0)
-			return null;
+			return new ArrayList<Incident>();
 		else{
 			DetachedCriteria criteria = super.getCriterion();
 			criteria.add(Restrictions.eq(Incident.Field.MAPPING_SETUP.getFieldName(), setup));

@@ -1,5 +1,6 @@
 package com.ushahidi.plugins.mapping.data.repository.hibernate;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.hibernate.criterion.DetachedCriteria;
@@ -20,12 +21,12 @@ public class HibernateLocationDao extends BaseHibernateDao<Location> implements
 	}
 	
 	public List<Location> getAllLocations() {
-		return super.getAll();
+		return (getCount() == 0)? new ArrayList<Location>() : super.getAll();
 	}
 	
 	public List<Location> getAllLocations(MappingSetup setup){
 		if(getCount() == 0){
-			return null;
+			return new ArrayList<Location>();
 		}else{
 			DetachedCriteria criteria = super.getCriterion();
 			criteria.add(Restrictions.eq(Location.Field.MAPPING_SETUP.getFieldName(), setup));
