@@ -23,7 +23,7 @@ public interface IncidentDao {
 	
 	public int getCount();
 	
-	public List<Incident> getUnMarkedIncidents();
+	public List<Incident> getUnMarkedIncidents(MappingSetup setup);
 	
 	public void flush();
 	
