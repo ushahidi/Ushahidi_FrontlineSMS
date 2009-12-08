@@ -21,7 +21,7 @@ public final class SynchronizationAPI {
 	public static final String LOCATIONS = "locations";
 	
 	/* Adds an incident */
-	public static final String POST_INCIDENT = "report&";
+	public static final String POST_INCIDENT = "report";
 		
 	
 	/* All incidents */
@@ -86,9 +86,9 @@ public final class SynchronizationAPI {
 	
 	
 	/* Parameters for reporting an incident through the Ushahidi API */
-	private static final String REPORT_INCIDENT_PARAMETERS = "incident_title=%s"+
+	private static final String REPORT_INCIDENT_PARAMETERS = "&incident_title=%s"+
 		"&incident_description=%s&incident_date=%s&incident_hour=%s&incident_minute=%s"+
-		"&incident_ampm=%s&incident_category=%s;&latitude=%s&longitude=%s&location_name=%s";
+		"&incident_ampm=%s&incident_category=%s&latitude=%s&longitude=%s&location_name=%s";
 	
 	/* Parameters for all tagging tasks for media (photos, video and news) */
 	private static final String TAGMEDIA_TASK_PARAMETERS = "id=%d&url=%s";
