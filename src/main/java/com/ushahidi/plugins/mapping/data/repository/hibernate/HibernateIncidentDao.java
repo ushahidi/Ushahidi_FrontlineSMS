@@ -41,8 +41,9 @@ public class HibernateIncidentDao extends BaseHibernateDao<Incident> implements
 	/**
 	 * Gets the list of all incidents that are yet to be pushed to the frontend (online instance)
 	 */
-	public List<Incident> getUnMarkedIncidents() {
+	public List<Incident> getUnMarkedIncidents(MappingSetup setup) {
 		DetachedCriteria criteria = super.getCriterion();
+		criteria.add(Restrictions.eq(Incident.Field.MAPPING_SETUP.getFieldName(), setup));
 		criteria.add(Restrictions.eq(Incident.Field.MARKED.getFieldName(), new Boolean(true)));
 		return super.getList(criteria);
 	}

@@ -255,21 +255,29 @@ public class SynchronizationTask implements Runnable{
 	 */
 	private void postIncident(Incident incident, String urlParameterStr){
 		Date date = incident.getIncidentDate();
-		String parameterStr = String.format(urlParameterStr, incident.getTitle(), 
-				incident.getDescription(), getDateTimeComponent(date, "MM/dd/yyyy"), 
+		String parameterStr = String.format(urlParameterStr, 
+				incident.getTitle().replace(' ', '+'), 
+				incident.getDescription().replace(' ', '+'), 
+				getDateTimeComponent(date, "MM/dd/yyyy"), 
 				getDateTimeComponent(date, "HH"), getDateTimeComponent(date, "mm"),
-				getDateTimeComponent(date, "a"), 
-				null,
-				//incident.getCategory().getFrontendId(),
+				getDateTimeComponent(date, "a").toLowerCase(),
+				incident.getCategory().getFrontendId(),
 				Double.toString(incident.getLocation().getLatitude()), 
 				Double.toString(incident.getLocation().getLongitude()),
 				incident.getLocation().getName()
 				);
 		//post the incident to the frontend
-		//System.out.println(parameterStr);
+		LOG.debug("Posting incident "+urlParameterStr);
+		System.out.println(parameterStr);
 		try{
 			URL url = new URL(parameterStr);
-			url.openConnection();
+			String line = null;
+			StringBuffer sb = new StringBuffer();
+			BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
+			while((line = reader.readLine()) != null){
+				sb.append(line);
+			}
+			System.out.println(sb.toString());
 		}catch(MalformedURLException me){
 			LOG.debug("URL error", me);
 		}catch(IOException io){
