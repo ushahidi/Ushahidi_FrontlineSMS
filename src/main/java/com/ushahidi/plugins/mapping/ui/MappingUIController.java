@@ -101,7 +101,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		incidentDao = pluginController.getIncidentDao();
 		mappingSetupDao = pluginController.getMappingSetupDao();
 		
-		checkPluginConfiguration();
+		//checkPluginConfiguration();
 	}
 	
 	public void initUIController(){
@@ -417,6 +417,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		
 		if(item instanceof MappingSetup){
 			setup = (MappingSetup)item;
+			setAttachedObject(dialog,  null);
 		}else{
 			setup = new MappingSetup();
 		}
@@ -428,49 +429,54 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		setup.setName(sourceName);
 		setup.setSourceURL(sourceURL);
 		setup.setLatitude(Double.parseDouble(lat));
-		setup.setLongitude(Double.parseDouble(lng));
-		setup.setDefaultSetup(active);
+		setup.setLongitude(Double.parseDouble(lng));		
 		
 		//Check if the current item is the only one and if its being unset as the default
-		if(currentDefault != null && mappingSetupDao.getCount() == 1 && item !=null)
-			if(setup.getId() == currentDefault.getId() && !active){
-				LOG.debug("There must be a default mapping setup");
-				ui.alert("There is only one setup item for the map ["+setup.getSourceURL()+"] " +
-						"and it must be set as the default");
-				return;
-			}
+		if(currentDefault != null && mappingSetupDao.getCount() == 1 && !active){
+			LOG.debug("There must be a default mapping setup");
+			ui.alert("There is only one setup item for the map ["+setup.getSourceURL()+"] " +
+					"and it must be set as the default");
+			
+			return;
+		}
+		
+		if(currentDefault != null && mappingSetupDao.getCount() > 1 && setup.getId() == currentDefault.getId() && !active){
+			LOG.debug("Default mapping setup not specified");
+			ui.alert("A default set of mapping configurations must be selected for Mapping to work");
+			
+			return;
+		}
+		
+		//Set the active flag for the mapping setup 
+		setup.setDefaultSetup(active);
 		
 		try{
 			Object table = ui.find(dialog, SETUP_DLG_COMPONENT_SOURCE_TABLE);
 
 			//Update the current default setup if it is different from the new one
-			if(active && item != null && currentDefault != null)
-				if(currentDefault.getId() != setup.getId()){
-					currentDefault.setDefaultSetup(false);
-					mappingSetupDao.updateMappingSetup(currentDefault);
-				}
+			if(setup.getId() != currentDefault.getId() && setup.isDefaultSetup()){
+				currentDefault.setDefaultSetup(false);
+				mappingSetupDao.updateMappingSetup(currentDefault);
+				LOG.debug("Changed default mapping setup to " + setup.getName());
+			}
 			
 			if(item == null){
 				mappingSetupDao.saveMappingSetup(setup);				
 				add(table, getRow(setup));
 			}else{
 				mappingSetupDao.updateMappingSetup(setup);
-				
-				int index = getSelectedIndex(table);
-				remove(getSelectedItem(table));
-				add(table,getRow(setup), index);
 			}
+			
+			removeAll(table);
+			for(MappingSetup s: mappingSetupDao.getAllSetupItems())
+				add(table, getRow(s));
+			
 		}catch(DuplicateKeyException e){
 			LOG.debug("Mapping setup parameter already exists", e);
 			ui.alert("Mapping setup parameter already exists");
 			LOG.trace("EXIT");
 			return;
 		}
-		
-		//if(!currentDefault.isDefaultSetup()){
-			//TODO: Restart the application if the default map setup changes
-			//LOG.debug("Default map setup has changed! Restarting FrontlineSMS");
-		//}
 		
 		LOG.debug("Mapping setup parameter for [" + setup.getSourceURL() +"] created!");
 				
@@ -517,7 +523,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 			ui.alert("Synchronization has already started!");
 			return;
 		}
-		checkPluginConfiguration();
+		check_PluginConfiguration();
 		SynchronizationManager syncManager = new SynchronizationManager(this);
 		
 		//Run a full sync
@@ -654,7 +660,8 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	/**
 	 * Checks whether the mapping plugin has been configured
 	 */
-	private void checkPluginConfiguration(){
+	public void check_PluginConfiguration(){
+		//System.out.println("focus gaiend");
 		if(mappingSetupDao.getCount() == 0){
 			LOG.debug("Mapping plugin has not been configured");
 			showSetupDialog();
