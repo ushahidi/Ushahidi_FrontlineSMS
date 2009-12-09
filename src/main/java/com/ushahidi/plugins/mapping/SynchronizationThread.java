@@ -11,6 +11,8 @@ import java.text.SimpleDateFormat;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ArrayBlockingQueue;
 
 import org.json.JSONObject;
 import org.json.JSONArray;
@@ -24,10 +26,11 @@ import com.ushahidi.plugins.mapping.data.domain.Incident;
 
 import net.frontlinesms.Utils;
 
-public class SynchronizationTask implements Runnable{
-	/** The type of synchronization to be performed; pull or push */
-	private String synchronizationType;
+public class SynchronizationThread extends Thread{
+//>	STATIC	
+	private static Logger LOG = Utils.getLogger(SynchronizationThread.class);
 	
+//>	INSTANCE VARIABLES
 	/** The base task to be performed by the API; that which requires no extra parameters*/
 	private String baseTask;
 	
@@ -36,75 +39,56 @@ public class SynchronizationTask implements Runnable{
 	
 	/** Instance of the SynchronizationManager that spawned this thread */
 	private SynchronizationManager syncManager;
-	
-	/** List of values url parameter values */
-	private List<String> taskValues = null;
-	
+		
 	/** URL parameter value appendend at the end of the final url to the submitted*/
 	private String urlParameterValue = null;
 	
 	/** Target URL for the synchronisation */
 	private final String baseURL;
 	
-	private static Logger LOG = Utils.getLogger(SynchronizationTask.class);
+	/** Tasks queue for processing the sync jobs in  a FIFO fashion */
+	private ArrayBlockingQueue<SynchronizationTask> taskQueue = new ArrayBlockingQueue<SynchronizationTask>(10);
 	
 	/**
-	 * Creates an instance of the {@link SynchronizationTask}
+	 * Creates an instance of SynchronizationThread
 	 * 
-	 * @param syncManager Reference to the SynchronizationManger instance
-	 * @param sourceURL Location with which to synchronise
-	 * @param syncType Type of synchronisation; Can be either a push or pull task
-	 * @param baseTask Task to be performed by this thread 
+	 * @param syncManager SynchronizationManager spawning this thread
+	 * @param syncURL The URL to be used for synchronization
 	 */
-	public SynchronizationTask(SynchronizationManager syncManager, String sourceURL, String syncType, 
-			String baseTask){
-		this.synchronizationType = syncType;
-		this.baseTask = baseTask;
+	public SynchronizationThread(SynchronizationManager syncManager, String syncURL){
 		this.syncManager = syncManager;
-		this.baseURL = sourceURL;
-		
-		//initialize the task buffer and store the initial request
-		taskBuffer = new StringBuffer();
-		taskBuffer.append(baseTask);
-	}
-	
-	/**
-	 * Creates an instance of {@link SynchronizationTask} @param taskValues results in more than
-	 * one request being sent to the the Ushahidi API
-	 * 
-	 * @param syncManager Reference to the synchronisation manager
-	 * @param syncURL URL for the synchronisation activity
-	 * @param syncType Type of of synchronisation to be done
-	 * @param baseTask Base task to be performed @see {@link SynchronizationAPI}
-	 * @param taskValues List of values to be passed to the URL being submitted to the frontend 
-	 */
-	public SynchronizationTask(SynchronizationManager syncManager, String syncURL, String syncType,
-			String baseTask, List<String> taskValues){
-		
-		this.syncManager = syncManager;
-		this.synchronizationType = syncType;
-		this.baseTask = baseTask;
 		this.baseURL = syncURL;
-		this.taskValues = (taskValues == null)? null : taskValues;
-		
-		//initialise the task buffer
-		taskBuffer = new StringBuffer();
-		taskBuffer.append(baseTask);
 	}
 	
 	/**
-	 * Adds extra request parameters for fetching info through the Ushahidi API
-	 * @param parameter The extra request parameter
+	 * Adds a {@link SynchronizationTask} to the task queue
+	 * @param task
 	 */
-	public void addRequestParameter(String parameter){
-		taskBuffer.append(parameter);
+	public void addJob(SynchronizationTask task){
+		taskQueue.add(task);
 	}
+	
 	
 	public void run(){
-		if(synchronizationType.equalsIgnoreCase(SynchronizationAPI.PULL_TASK)){
-			if(taskValues == null) performPullTask(); else multiplePullTask();
-		}else if(synchronizationType.equalsIgnoreCase(SynchronizationAPI.PUSH_TASK)){
-			performPushTask();
+		//Process the items in the task queue in a FIFO fashion
+		while(!taskQueue.isEmpty()){
+			try{
+				SynchronizationTask task = taskQueue.take();
+				this.baseTask = task.getTaskName();
+				taskBuffer = new StringBuffer();
+				taskBuffer.append(this.baseTask);
+				if(task.getRequestParameter() != null)
+					taskBuffer.append(task.getRequestParameter());
+
+				if(task.getTaskType().equalsIgnoreCase(SynchronizationAPI.PULL_TASK)){
+					if(task.getTaskValues().size() == 0) performPullTask(); else multiplePullTask(task.getTaskValues());
+				}else if(task.getTaskType().equalsIgnoreCase(SynchronizationAPI.PUSH_TASK)){
+					performPushTask();
+				}
+				syncManager.updateCurrentTaskNo();
+			}catch(InterruptedException e){
+				LOG.debug("Interruppted synchronization task while waiting ", e);
+			}
 		}
 	}
 	
@@ -115,6 +99,9 @@ public class SynchronizationTask implements Runnable{
 	public void performPullTask(){
 		String urlStr = getRequestURL();
 		urlStr += (urlParameterValue == null)? "":urlParameterValue;
+		
+		LOG.debug("URL: " + urlStr);
+		
 		StringBuffer buffer = new StringBuffer();
 		try{
 			String line = null;
@@ -123,8 +110,9 @@ public class SynchronizationTask implements Runnable{
 			while((line = reader.readLine()) != null){
 				buffer.append(line);
 			}
-			reader.close();
+			LOG.debug("Payload :" + buffer.toString());			
 			processPayload(buffer.toString());
+			reader.close();
 		}catch(MalformedURLException mex){
 			LOG.debug("Invalid url ", mex);
 		}catch(IOException iox){
@@ -135,8 +123,8 @@ public class SynchronizationTask implements Runnable{
 	}
 	
 	/** Performs a pull task for each of the values in {@link #taskValues} */
-	private void multiplePullTask(){
-		for(String value: taskValues){
+	private void multiplePullTask(List<String> values){
+		for(String value: values){
 			urlParameterValue = value;
 			performPullTask();
 		}
@@ -149,6 +137,7 @@ public class SynchronizationTask implements Runnable{
 	 */
 	public void performPushTask(){
 		String urlParameterStr = SynchronizationAPI.REQUEST_URL_PREFIX + taskBuffer.toString();
+		LOG.debug(urlParameterStr);
 		if(baseTask.equalsIgnoreCase(SynchronizationAPI.POST_INCIDENT)){
 			urlParameterStr += SynchronizationAPI.getSubmitURLParameters(baseTask);
 			//Fetch all incidents and post them one by one
@@ -271,7 +260,6 @@ public class SynchronizationTask implements Runnable{
 				);
 		//post the incident to the frontend
 		LOG.debug("Posting incident "+parameterStr);
-		//System.out.println(getRequestURL() + parameterStr);
 		try{
 			//Send data
 			URL url = new URL(getRequestURL());			
@@ -291,27 +279,31 @@ public class SynchronizationTask implements Runnable{
 				sb.append(line);
 			}
 
-			//System.out.println(sb.toString());
+			LOG.debug("Response: "  + sb.toString());
 			
 			reader.close();
 			writer.close();
 						
 			//Get the status of the posting and update the sync manager with the list of failed incidents
-			JSONObject payload = new JSONObject(sb.toString());
-			JSONObject status = payload.getJSONObject("error");			
-			if(((String)status.get("code")).equalsIgnoreCase("0")){
-				syncManager.updatePostedIncidents(incident);
-				LOG.debug("Incident post succeeded: " + payload);
+			if(sb.toString().indexOf("{") != -1){
+				JSONObject payload = new JSONObject(sb.toString());
+				JSONObject status = payload.getJSONObject("error");			
+				if(((String)status.get("code")).equalsIgnoreCase("0")){
+					syncManager.updatePostedIncidents(incident);
+					LOG.debug("Incident post succeeded: " + payload);
+				}else{
+					syncManager.updateFailedIncidents(incident);
+					LOG.debug("Incident post failed: "+ payload.toString());
+				}
 			}else{
 				syncManager.updateFailedIncidents(incident);
-				LOG.debug("Incident post failed: "+ payload.toString());
+				LOG.debug("Incident post failed: "+ sb.toString());
 			}
 			
 		}catch(MalformedURLException me){
 			LOG.debug("URL error: ", me);
 		}catch(IOException io){
 			LOG.debug("IO Error: ", io); 
-			//io.printStackTrace();
 		}catch(JSONException jsx){
 			LOG.debug("JSON Error: ", jsx);
 		}
@@ -320,6 +312,14 @@ public class SynchronizationTask implements Runnable{
 	private String getDateTimeComponent(Date date, String part){
 		SimpleDateFormat dateFormat = new SimpleDateFormat(part);
 		return dateFormat.format(date);
+	}
+	
+	/**
+	 * Gets the number of tasks in the task queue
+	 * @return
+	 */
+	public int getTaskCount(){
+		return taskQueue.size();
 	}
 	
 }
