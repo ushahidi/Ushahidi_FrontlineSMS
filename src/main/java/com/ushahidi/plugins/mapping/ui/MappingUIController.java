@@ -55,6 +55,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	private static final String UI_SAVE_DIALOG="/ui/plugins/mapping/mapSaveDialog.xml";
 	private static final String UI_REPORTS_DIALOG = "/ui/plugins/mapping/reportsDialog.xml";
 	private static final String UI_REPORT_DETAILS_DIALOG = "/ui/plugins/mapping/reportDetailsDialog.xml";
+	private static final String UI_SYNCHRONIZATION_DIALOG = "/ui/plugins/mapping/synchronizationDialog.xml";
 	private static final String SETUP_DLG_COMPONENT_SOURCE_TABLE = "locationSources_Table";
 	private static final String SETUP_DLG_COMPONENT_FLD_SOURCE_NAME = "txtSourceName";
 	private static final String SETUP_DLG_COMPONENT_FLD_SOURCE	= "txtLocationSource";
@@ -74,6 +75,9 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	private static final String COMPONENT_REPORT_LOCATION_NAME_FIELD = "txtReportLocation";
 	private static final String COMPONENT_REPORT_LOCATION_COORDS_LABEL = "lbl_ReportLocationCoords";
 	private static final String COMPONENT_LOCATION_NAME_FIELD = "txtLocationName";
+	private static final String COMPONENT_LBL_SYNC_CURRENT_TASK_NO  = "lbl_currentTaskNo";
+	private static final String COMPONENT_LBL_SYNC_TOTAL_TASK_COUNT = "lbl_totalTaskCount";
+	private static final String COMPONENT_SYNC_PROGRESS_BAR = "pbar_Synchronization";
 	
 	private FrontlineSMS frontlineController;
 	private final UiGeneratorController ui;
@@ -85,6 +89,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		
 	private boolean syncStarted = false;
 	private MapBean mapBean;
+	private SynchronizationManager syncManager;
 	
 	/** Thinlet component containing the mapping tab */
 	private Object tabComponent;
@@ -454,11 +459,12 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 			Object table = ui.find(dialog, SETUP_DLG_COMPONENT_SOURCE_TABLE);
 
 			//Update the current default setup if it is different from the new one
-			if(setup.getId() != currentDefault.getId() && setup.isDefaultSetup()){
-				currentDefault.setDefaultSetup(false);
-				mappingSetupDao.updateMappingSetup(currentDefault);
-				LOG.debug("Changed default mapping setup to " + setup.getName());
-			}
+			if(currentDefault != null && Long.toString(setup.getId()) != null)
+				if (setup.getId() != currentDefault.getId() && setup.isDefaultSetup()){
+					currentDefault.setDefaultSetup(false);
+					mappingSetupDao.updateMappingSetup(currentDefault);
+					LOG.debug("Changed default mapping setup to " + setup.getName());
+				}
 			
 			if(item == null){
 				mappingSetupDao.saveMappingSetup(setup);				
@@ -519,19 +525,18 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	 */
 	public void beginSynchronization(){
 		
-		if(syncStarted){
+		/*if(syncStarted){
 			ui.alert("Synchronization has already started!");
 			return;
-		}
-		check_PluginConfiguration();
-		SynchronizationManager syncManager = new SynchronizationManager(this);
+		}*/
 		
+		check_PluginConfiguration();
+
+		syncManager = new SynchronizationManager(this);		
 		//Run a full sync
 		LOG.debug("Starting full synchronization...");
-		syncStarted = true;
 		syncManager.performFullSynchronization();
 		
-		syncStarted = false;
 	}
 	
 	/**
@@ -566,27 +571,26 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	 * @param category Category to be added
 	 */
 	public synchronized void addCategory(Category category){
-		category.setMappingSetup(mappingSetupDao.getDefaultSetup());
-		boolean exists = false;
-		try{
-			categoryDao.saveCategory(category);			
-		}catch(DuplicateKeyException e){
-			exists = true;
-			LOG.debug("Category already exists", e);
-			LOG.trace("EXIT");
-			return;
-		}
-				
-		//Add category to the keyword listing
-		/*if(!exists){
+		if(categoryDao.findCategory(category.getFrontendId(), mappingSetupDao.getDefaultSetup()) == null){
+			category.setMappingSetup(mappingSetupDao.getDefaultSetup());
+			try{
+				categoryDao.saveCategory(category);			
+			}catch(DuplicateKeyException e){
+				LOG.debug("Category already exists", e);
+				LOG.trace("EXIT");
+				syncManager.terminateManagerThread();
+				return;
+			}
+					
+			//Add category to the keyword listing
 			Object row = ui.createTableRow(category);
 			createTableCell(row, "");
 			createTableCell(row, category.getTitle());
 			ui.add(ui.find(getTab(), COMPONENT_KEYWORDS_TABLE), row);
 			ui.repaint();
+			
+			LOG.debug("Category [" + category.getTitle() + "] added!");
 		}
-		*/
-		LOG.debug("Category [" + category.getTitle() + "] added!");
 	}
 	
 	/**
@@ -596,27 +600,26 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	 * @param location Location to be added
 	 */
 	public synchronized void addLocation(Location location){
-		location.setMappingSetup(mappingSetupDao.getDefaultSetup());
-		boolean exists = false;
-		try{
-			locationDao.saveLocation(location);
-		}catch(DuplicateKeyException e){
-			exists = true;
-			LOG.debug("Location already exists", e);
-			LOG.trace("EXIT");
-			return;
-		}
-		
-		//Add location to the keyword listing
-		if(!exists){
+		if(locationDao.findLocation(location.getFrontendId(), mappingSetupDao.getDefaultSetup()) == null){
+			location.setMappingSetup(mappingSetupDao.getDefaultSetup());
+			try{
+				locationDao.saveLocation(location);
+			}catch(DuplicateKeyException e){			
+				LOG.debug("Location already exists", e);
+				LOG.trace("EXIT");
+				syncManager.terminateManagerThread();
+				return;
+			}
+			
+			//Add location to the keyword listing
 			Object row = ui.createTableRow(location);
 			createTableCell(row, "");
 			createTableCell(row, location.getName());
 			ui.add(ui.find(getTab(), COMPONENT_KEYWORDS_TABLE), row);
 			ui.repaint();
+	
+			LOG.debug("Location [" + location.getName() + "] created!");
 		}
-
-		LOG.debug("Location [" + location.getName() + "] created!");
 	}
 	
 	/**
@@ -625,25 +628,28 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	 */
 	public synchronized void addIncident(Incident incident){
 		//Find the location
-		long frontendId = incident.getLocation().getFrontendId();
-		Location location = locationDao.findLocation(frontendId, mappingSetupDao.getDefaultSetup());
-		
-		if(location == null){
-			addLocation(incident.getLocation());
-			location = locationDao.findLocation(frontendId, mappingSetupDao.getDefaultSetup());
+		if(incidentDao.findIncident(incident.getFrontendId(), mappingSetupDao.getDefaultSetup()) == null){
+			long frontendId = incident.getLocation().getFrontendId();
+			Location location = locationDao.findLocation(frontendId, mappingSetupDao.getDefaultSetup());
+			
+			if(location == null){
+				addLocation(incident.getLocation());
+				location = locationDao.findLocation(frontendId, mappingSetupDao.getDefaultSetup());
+			}
+			
+			incident.setLocation(location);
+			
+			incident.setMappingSetup(mappingSetupDao.getDefaultSetup());
+			try {
+				incidentDao.saveIncident(incident);
+			} catch (DuplicateKeyException e) {
+				LOG.debug("Incident already exists", e);
+				LOG.trace("EXIT");
+				syncManager.terminateManagerThread();
+				return;
+			}
+			LOG.debug("Incident [" + incident.getTitle() + "] created!");
 		}
-		
-		incident.setLocation(location);
-		
-		incident.setMappingSetup(mappingSetupDao.getDefaultSetup());
-		try {
-			incidentDao.saveIncident(incident);
-		} catch (DuplicateKeyException e) {
-			LOG.debug("Incident already exists", e);
-			LOG.trace("EXIT");
-			return;
-		}
-		LOG.debug("Incident [" + incident.getTitle() + "] created!");		
 	}
 	
 	/**
@@ -904,6 +910,62 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	
 	public void setTabComponent(Object tabComponent){
 		this.tabComponent = tabComponent;
+	}
+	
+	/**
+	 * Update the posted incident by turning off the "marked" flag
+	 * 
+	 * @param incident
+	 */
+	public synchronized void updatePostedIncident(Incident incident){
+		incident.setMarked(false);
+		try{
+			incidentDao.updateIncident(incident);
+		}catch(DuplicateKeyException dk){
+			LOG.debug("Unable to update incident", dk);
+		}
+	}
+	
+	/**
+	 * Displays the synchronization dialog for the duration of the sync
+	 * 
+	 * @return
+	 */
+	public Object showSynchronizationDialog(){
+		Object dialog = ui.loadComponentFromFile(UI_SYNCHRONIZATION_DIALOG, this);
+		setText(ui.find(dialog, COMPONENT_LBL_SYNC_CURRENT_TASK_NO), "1");
+		ui.add(dialog);
+		return dialog;
+	}
+	
+	public synchronized void setSynchronizationTaskCount(Object dialog, int count){
+		setText(ui.find(dialog, COMPONENT_LBL_SYNC_TOTAL_TASK_COUNT), Integer.toString(count));
+		int currentVal = 100 - (count * (int)100/count);
+		setInteger(ui.find(dialog, COMPONENT_SYNC_PROGRESS_BAR), Thinlet.VALUE, currentVal);
+		ui.repaint();
+	}
+	
+	/**
+	 * Updates the current value of the synchronization progress bar
+	 * @param dialog
+	 * @param taskNo
+	 */
+	public synchronized void updateProgressBar(Object dialog, int taskNo){
+		Object progressBar = ui.find(dialog, COMPONENT_SYNC_PROGRESS_BAR);
+		int taskCount = Integer.parseInt(getText(ui.find(dialog, COMPONENT_LBL_SYNC_TOTAL_TASK_COUNT)));
+		int currentVal = getInteger(progressBar, Thinlet.VALUE);
+		int maxValue = getInteger(progressBar, Thinlet.MAXIMUM);
+		
+		if(taskNo <= taskCount)
+			setText(ui.find(dialog, COMPONENT_LBL_SYNC_CURRENT_TASK_NO), Integer.toString(taskNo));		
+		
+		//Calculate the unit increment and the current value
+		currentVal += (taskNo <= taskCount)? (maxValue - currentVal)/taskCount : (maxValue - currentVal);
+		
+		//Update the progress bar with the current value
+		setInteger(progressBar, Thinlet.VALUE, currentVal);
+		
+		ui.repaint();
 	}
 		
 }
