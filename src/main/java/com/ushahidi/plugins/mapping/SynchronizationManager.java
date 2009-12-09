@@ -4,28 +4,32 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import com.ushahidi.plugins.mapping.ui.MappingUIController;
 import com.ushahidi.plugins.mapping.data.domain.*;
 
-public class SynchronizationManager {	
+import net.frontlinesms.Utils;
 
-	/** Maximum size of the thread pool */
-	private static final int MAX_THREAD_POOL_SIZE  = 10;
+import org.apache.log4j.Logger;
+
+public class SynchronizationManager {	
+	/** Logger */
+	private static final Logger LOG = Utils.getLogger(SynchronizationManager.class);
 	
 	private final MappingUIController mappingController;
 	
-	/** Executor service to handle synchronisation tasks */
-	private static final ExecutorService executorService = Executors.newFixedThreadPool(MAX_THREAD_POOL_SIZE);
-	
-	/** Status of the synchronization*/
-	private boolean complete = false;
-	
 	/** Synchronization primitive that keeps track of the number of failed sync attempts */
 	private Set<Incident> failedIncidents = new HashSet<Incident>();
-		
+	
+	/** Controller thread to manage the synchronization thread */
+	private ManagerThread managerThread;
+	
+	/** Handle for the synchronization dialog */
+	private Object syncDialog;
+	
+	/** Keeps track of the current task no */
+	private int currentTaskNo = 0;
+	
 	/**
 	 * Creates an instance of {@link SynchronizationManager}
 	 * 
@@ -46,36 +50,51 @@ public class SynchronizationManager {
 		if(mappingController.getDefaultSynchronizationURL()== null)
 			return;
 		
-		SynchronizationTask syncTask = new SynchronizationTask(this, 
-				mappingController.getDefaultSynchronizationURL(), task, requestParameter);
-		//Spawn a thread to perform the synchronisation
-		executorService.submit(syncTask);
+		SynchronizationThread syncThread = new SynchronizationThread(this, 
+				mappingController.getDefaultSynchronizationURL());
+		
+		syncThread.addJob(new SynchronizationTask(task, requestParameter));
+		if(managerThread == null){
+			managerThread = new ManagerThread(this, syncThread);
+			managerThread.start();
+			syncDialog = mappingController.showSynchronizationDialog();
+		}
 	}
 	
 	/**
 	 * Performs both a push and pull synchronization. The push is done first followed by the incidents
 	 */
 	public synchronized void performFullSynchronization(){
-		//Push the incidents so that any new locations are added
-		if(getPendingIncidents().size() > 0)
-			runSynchronizationTask(SynchronizationAPI.PUSH_TASK, SynchronizationAPI.POST_INCIDENT);
+		//Instantiate the a synchronization thread
+		SynchronizationThread syncThread = new SynchronizationThread(this, 
+				mappingController.getDefaultSynchronizationURL());
 		
-		//Pull tasks
-		runSynchronizationTask(SynchronizationAPI.PULL_TASK, new String[]{
-				SynchronizationAPI.CATEGORIES, SynchronizationAPI.LOCATIONS
-				});
+		if(getPendingIncidents().size() > 0)
+			syncThread.addJob(new SynchronizationTask(SynchronizationAPI.PUSH_TASK, SynchronizationAPI.POST_INCIDENT));
+		
+		//Fetch categories and locations
+		syncThread.addJob(new SynchronizationTask(SynchronizationAPI.PULL_TASK, SynchronizationAPI.CATEGORIES));
+		syncThread.addJob(new SynchronizationTask(SynchronizationAPI.PULL_TASK, SynchronizationAPI.LOCATIONS));
 		
 		// Fetch all incidents
-		SynchronizationTask incidentTask = new SynchronizationTask(this, 
-				mappingController.getDefaultSynchronizationURL(),
-				SynchronizationAPI.PULL_TASK, SynchronizationAPI.INCIDENTS);
+		SynchronizationTask incidentTask = new SynchronizationTask(SynchronizationAPI.PULL_TASK, 
+				SynchronizationAPI.INCIDENTS);		
+		incidentTask.setRequestParameter(SynchronizationAPI.INCIDENTS_BY_ALL);
+		syncThread.addJob(incidentTask);
 		
-		incidentTask.addRequestParameter(SynchronizationAPI.INCIDENTS_BY_ALL);
-		executorService.submit(incidentTask);
+		int taskCount = syncThread.getTaskCount();
 		
-		//Initiate shutdown of the sync manager
-		executorService.shutdown();
-		
+		//Start the synchronization thread
+		if(managerThread == null){
+			managerThread = new ManagerThread(this, syncThread);
+			managerThread.start();
+
+			//Show the synchronization modal dialog
+			syncDialog = mappingController.showSynchronizationDialog();
+			mappingController.setSynchronizationTaskCount(syncDialog, taskCount);
+			
+		}
+				
 	}
 	
 	/**
@@ -131,8 +150,89 @@ public class SynchronizationManager {
 		return mappingController.getPendingIncidents();
 	}
 	
-	public boolean synchronizationComplete(){
-		return complete;
+	/**
+	 * Terminates the instance of {@link ManagerThread} that is running the synchronization
+	 * @param t Thread to be terminated
+	 */
+	public synchronized void terminateManagerThread(Thread t){
+	
+		try{
+			//Remove the synchronization dialog
+			updateCurrentTaskNo();
+			mappingController.updateProgressBar(syncDialog, currentTaskNo);
+			Thread.sleep(5000);
+			mappingController.removeDialog(syncDialog);
+
+			if(t instanceof ManagerThread)
+				managerThread.join();
+		}catch(InterruptedException e){
+			LOG.debug("Error in terminating synchronization thread manager ", e);
+		}
+
 	}
+	
+	/**
+	 * Terminates the current instance of {@link ManagerThread}
+	 */
+	public synchronized void terminateManagerThread(){
+		mappingController.removeDialog(syncDialog);
 		
+		try{
+			managerThread.shutdown();
+			managerThread.join();
+		}catch(InterruptedException e){
+			LOG.debug("Error in terminating the synchronization thread manager ", e);
+		}
+		
+	}
+	
+	public synchronized void updateCurrentTaskNo(){
+		currentTaskNo++;
+		mappingController.updateProgressBar(syncDialog, currentTaskNo);
+	}
+	
+	
+	/**
+	 * Private inner class that manages the execution of the synchronization jobs
+	 * @author ekala
+	 *
+	 */
+	private final class ManagerThread extends Thread{
+		/** Thread to be run by the manager thread */
+		private Thread task;
+		/** Instance of SynchronizationManager that spawned this thread */
+		private SynchronizationManager manager;
+		
+		/**
+		 * Constructor
+		 * 
+		 * @param manager Reference to {@link SynchronizationManager} instance spawning this thread
+		 * @param task {@link SynchronizationTask} to be run by this thread
+		 */
+		public ManagerThread(SynchronizationManager manager, SynchronizationThread task){
+			this.manager = manager;
+			this.task = task;
+		}
+		
+		public void run(){
+			task.start();
+			
+			shutdown();
+			
+			//Signal {@link SynchronizationManager} to terminate this thread
+			manager.terminateManagerThread(this);
+		}
+		
+		/**
+		 * Shuts down the {@link SynchronizationTask} thread
+		 */
+		public void shutdown(){
+			try{
+				task.join();
+			}catch(InterruptedException e){
+				
+			}
+		}
+		
+	}
 }
