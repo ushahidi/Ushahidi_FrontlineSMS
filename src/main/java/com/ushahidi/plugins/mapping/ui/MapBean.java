@@ -77,16 +77,6 @@ public class MapBean extends CustomComponent implements ImageObserver {
 					Location loc = map.pointLocation(new Point(initialX, initialY));
 					mapListener.pointSelected(loc.lat, loc.lon);					
 				}
-				
-				// Zoom & center on double click
-				/*if(me.getClickCount() == 2) {					
-					LOG.debug("Double Clicked");
-					map.zoomBy(1);
-					//map.panTo(me.getX(), me.getY());
-					map.draw();
-					
-					repaint();
-				}*/
 			}
 
 			public void mouseReleased(MouseEvent me) { 
