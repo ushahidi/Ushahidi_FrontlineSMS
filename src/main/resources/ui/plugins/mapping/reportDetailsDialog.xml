@@ -1,6 +1,6 @@
-<dialog text="" name="reportDetails_Dialog" modal="true" closable="true" close="removeDialog(this)" gap="10" top="3" right="3"
-   bottom="3" left="3">
-   <panel columns="1" gap="5" top="3" right="3" bottom="3" right="3" columns="1">
+<dialog text="" name="reportDetails_Dialog" modal="true" closable="true" close="removeDialog(this)" gap="10" top="3" 
+	right="3" bottom="3" left="3">
+   <panel columns="1" gap="5" top="3" right="3" bottom="3" left="3" columns="1">
        <label text="Item Title" />
        <textfield name="txtReportTitle" columns="60"/>
        <label text="Description" />
