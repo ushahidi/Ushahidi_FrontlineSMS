@@ -78,6 +78,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	private static final String COMPONENT_LBL_SYNC_CURRENT_TASK_NO  = "lbl_currentTaskNo";
 	private static final String COMPONENT_LBL_SYNC_TOTAL_TASK_COUNT = "lbl_totalTaskCount";
 	private static final String COMPONENT_SYNC_PROGRESS_BAR = "pbar_Synchronization";
+	private static final String COMPONENT_SLD_ZOOM_CONTROLLER = "sld_ZoomController";
 	
 	private FrontlineSMS frontlineController;
 	private final UiGeneratorController ui;
@@ -109,6 +110,10 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		//checkPluginConfiguration();
 	}
 	
+	/**
+	 * Initializes the UI
+	 * This method must be called by {@link MappingPluginController}
+	 */
 	public void initUIController(){
 		
 		//update the keyword list
@@ -153,10 +158,17 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 			mapBean.setLocation(longitude, latitude);			
 			mapBean.setIncidents(incidentDao.getAllIncidents(mappingSetupDao.getDefaultSetup()));
 			mapBean.setMappingUIController(this);
-		}		
+		}else{
+			//The mapping plugin has not been configured; therefore disable the zoom controller
+			setEnabled(ui.find(this.tabComponent, COMPONENT_SLD_ZOOM_CONTROLLER), false);
+		}
 	}
 	
-	
+	/**
+	 * Toggle the event filter
+	 * 
+	 * @param pnlSearchParams
+	 */
 	public void messageFilterChanged(Object pnlSearchParams) {
 		/* The rowspan property of the parent object @pnlSearchParams
 		 * needs to be adjusted as the search options are toggled. 
@@ -185,6 +197,9 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	}	
 	
 	
+	/**
+	 * Load all received messages
+	 */
 	public void updateMappingTab() {
 		Object messageTableComponent = ui.find(this.tabComponent, COMPONENT_MESSAGE_TABLE);
 		removeAll(messageTableComponent);
@@ -194,6 +209,11 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		}	
 	}
 	
+	/**
+	 * Displays the date selector
+	 * 
+	 * @param textField
+	 */
 	public void showDateSelector(Object textField) {
 		LOG.trace("ENTER");
 		try {
@@ -206,6 +226,12 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		LOG.trace("EXIT");
 	}	
 	
+	/**
+	 * Displays the incident creation dialog
+	 * This dialog allows the user to create an Ushahidi incident report from a text message
+	 *  
+	 * @param item Selected {@link Message}; the one an incident report shall be created from
+	 */
 	public void showIncidentDialog(Object item) {
 		
 		Message message = (Message) getAttachedObject(item);						
@@ -250,6 +276,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	}
 	
 	/**
+	 * Gets the display name for the sender of of the text message
 	 * @param message
 	 * @return
 	 */
@@ -265,11 +292,13 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		//mapBean.removeMapListener();
 	}
 
-
+	/**
+	 * Fired by {@link MapListener} when a point is selected on the map; the incident creation
+	 * dialog is displayed with the coordinates of the selected location
+	 */
 	public void pointSelected(double lat, double lon) {
 		LOG.debug(lat);
-		Object dialog = ui.find(COMPONENT_INCIDENT_DIALOG);
-		
+		Object dialog = ui.find(COMPONENT_INCIDENT_DIALOG);		
 		
 		//Show the selected point and the text field for the name to be input
 		setBoolean(ui.find(dialog, COMPONENT_LOCATION_NAME_FIELD), Thinlet.ENABLED , true);
@@ -277,13 +306,10 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		setText(ui.find(dialog, COMPONENT_LBL_SELECTED_LONGITUDE), Double.toString(lon));
 
 		setBoolean(ui.find(dialog, COMPONENT_LOCATIONS_COMBO), Thinlet.ENABLED, false);		
-		//setVisible(ui.find(dialog, COMPONENT_LOCATION_BUTTON), false);
 
 		setVisible(dialog, true);
 		setBoolean(dialog, Thinlet.MODAL, true);
 		
-		//incidentDialogEdited(dialog);
-		//Force Thinlet to show the dialog now
 		ui.repaint();		
 	}
 	
@@ -298,6 +324,11 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		}
 	}
 	
+	/**
+	 * Saves an {@link Incident} created from a text message
+	 * 
+	 * @throws DuplicateKeyException
+	 */
 	public void saveIncident() throws DuplicateKeyException {
 		Object dialog = ui.find(COMPONENT_INCIDENT_DIALOG);
 		
@@ -386,6 +417,11 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		}
 	}
 	
+	/**
+	 * Adds a new set of mapping configurations to the database
+	 * 
+	 * @param dialog
+	 */
 	public void addSource(Object dialog){
 		String sourceName = getText(find(dialog, SETUP_DLG_COMPONENT_FLD_SOURCE_NAME));
 		String sourceURL = getText(find(dialog, SETUP_DLG_COMPONENT_FLD_SOURCE));
@@ -438,16 +474,18 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		
 		//Check if the current item is the only one and if its being unset as the default
 		if(currentDefault != null && mappingSetupDao.getCount() == 1 && !active){
-			LOG.debug("There must be a default mapping setup");
-			ui.alert("There is only one setup item for the map ["+setup.getSourceURL()+"] " +
+			LOG.debug("There must be a default configurartion for Mapping");
+			ui.alert("There is only one configuration for Mapping ["+setup.getSourceURL()+"] " +
 					"and it must be set as the default");
 			
 			return;
 		}
 		
-		if(currentDefault != null && mappingSetupDao.getCount() > 1 && setup.getId() == currentDefault.getId() && !active){
+		//Check for attempts to save without specifying a default mapping configuration
+		if( (currentDefault != null && mappingSetupDao.getCount() > 1 && 
+				setup.getId() == currentDefault.getId() && !active) || (currentDefault == null && !active)){
 			LOG.debug("Default mapping setup not specified");
-			ui.alert("A default set of mapping configurations must be selected for Mapping to work");
+			ui.alert("There must be a default configuration for Mapping to work");
 			
 			return;
 		}
@@ -490,6 +528,11 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		clearSourceFields(dialog);
 	}
 	
+	/**
+	 * Gets a table row with {@link MappingSetup} attached
+	 * @param setup
+	 * @return
+	 */
 	private Object getRow(MappingSetup setup){
 		Object row = createTableRow(setup);
 		createTableCell(row, setup.getName());
@@ -502,6 +545,11 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		return row;
 	}
 	
+	/**
+	 * Gets a row with {@link Message} attached
+	 * @param message
+	 * @return
+	 */
 	private Object getRow(Message message){		
 		Object row = createTableRow(message);
 		createTableCell(row, InternationalisationUtils.getDatetimeFormat().format(message.getDate()));
@@ -511,6 +559,10 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		return row;
 	}
 	
+	/**
+	 * Clears the input fields from the mapping setup dialog 
+	 * @param dialog
+	 */
 	public void clearSourceFields(Object dialog){
 		setText(find(dialog, SETUP_DLG_COMPONENT_FLD_SOURCE_NAME), "");
 		setText(find(dialog, SETUP_DLG_COMPONENT_FLD_SOURCE),"");
@@ -524,18 +576,15 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	 * Performs synchronization with an Ushahidi instance
 	 */
 	public void beginSynchronization(){
-		
-		/*if(syncStarted){
-			ui.alert("Synchronization has already started!");
-			return;
-		}*/
-		
-		check_PluginConfiguration();
-
-		syncManager = new SynchronizationManager(this);		
-		//Run a full sync
-		LOG.debug("Starting full synchronization...");
-		syncManager.performFullSynchronization();
+		//Check if the mapping plugin has been configured to synchronize to an Ushahidi instance
+		if(mappingSetupDao.getCount() == 0 || mappingSetupDao.getDefaultSetup() == null){
+			check_PluginConfiguration();
+		}else{
+			syncManager = new SynchronizationManager(this);		
+			//Run a full sync
+			LOG.debug("Starting full synchronization...");
+			syncManager.performFullSynchronization();
+		}
 		
 	}
 	
@@ -664,10 +713,10 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	}
 	
 	/**
-	 * Checks whether the mapping plugin has been configured
+	 * Checks whether the mapping plugin has been configured for purposes of synchronization 
+	 * with an Ushahidi instance
 	 */
 	public void check_PluginConfiguration(){
-		//System.out.println("focus gaiend");
 		if(mappingSetupDao.getCount() == 0){
 			LOG.debug("Mapping plugin has not been configured");
 			showSetupDialog();
@@ -683,6 +732,10 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		}
 	}
 	
+	/**
+	 * Gets the list of incidents to be posted/pushed to the Ushahidi instance
+	 * @return
+	 */
 	public List<Incident> getPendingIncidents(){
 		return incidentDao.getUnMarkedIncidents(mappingSetupDao.getDefaultSetup());
 	}
@@ -938,6 +991,12 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		return dialog;
 	}
 	
+	/**
+	 * Updates the label in synchronization dialog with the total number of tasks to be performed
+	 * 
+	 * @param dialog
+	 * @param count
+	 */
 	public synchronized void setSynchronizationTaskCount(Object dialog, int count){
 		setText(ui.find(dialog, COMPONENT_LBL_SYNC_TOTAL_TASK_COUNT), Integer.toString(count));
 		int currentVal = 100 - (count * (int)100/count);
@@ -947,6 +1006,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	
 	/**
 	 * Updates the current value of the synchronization progress bar
+	 * 
 	 * @param dialog
 	 * @param taskNo
 	 */
