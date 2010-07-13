@@ -1,7 +1,6 @@
-.settings
-.project
-.classpath
-.metadata
-.svn
-target
-resources.zip
+/.settings
+/.project
+/.classpath
+/.metadata
+/.svn
+/target
