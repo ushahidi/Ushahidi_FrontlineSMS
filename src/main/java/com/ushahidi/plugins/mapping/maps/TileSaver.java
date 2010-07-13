@@ -1,5 +1,6 @@
 package com.ushahidi.plugins.mapping.maps;
 
+import java.awt.Point;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -19,7 +20,6 @@ import net.frontlinesms.Utils;
 import org.apache.log4j.Logger;
 
 import com.ushahidi.plugins.mapping.maps.core.Coordinate;
-import com.ushahidi.plugins.mapping.maps.core.Point;
 import com.ushahidi.plugins.mapping.maps.geo.Location;
 import com.ushahidi.plugins.mapping.maps.providers.microsoft.MicrosoftRoadProvider;
 
@@ -45,11 +45,10 @@ public class TileSaver implements TileRequestor {
 	
 	private static final int MAP_HEIGHT = 1440;
 	private static final int MAP_WIDTH = 900;
-	private static final int THREAD_POOL_SIZE = 10;
+	private static final int THREAD_POOL_SIZE = 5;
 	private static final int MAX_TILES = 256;
 
-	private static final ExecutorService e = Executors
-			.newFixedThreadPool(THREAD_POOL_SIZE);
+	private static final ExecutorService e = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
 
 	public static final Logger LOG = Utils.getLogger(TileSaver.class);
 
@@ -63,17 +62,16 @@ public class TileSaver implements TileRequestor {
 	private double maxZoom;
 	private Coordinate topLeft;
 	private Coordinate btmRight;
-	private Map map;
+	private TiledMap map;
 
-	public TileSaver(Map map, Coordinate topLeft, Coordinate btmRight, String targetFile, boolean replace) {
+	public TileSaver(TiledMap map, Coordinate topLeft, Coordinate btmRight, String targetFile, boolean replace) {
 		this.targetFile = targetFile;
 		this.replace = replace;
 		this.topLeft = topLeft;
 		minZoom = topLeft.zoom;
 		this.btmRight = btmRight;
 		this.map = map;
-		tmpDir = new File(System.getProperty("java.io.tmpdir"), UUID
-				.randomUUID().toString());
+		tmpDir = new File(System.getProperty("java.io.tmpdir"), UUID.randomUUID().toString());
 	}
 	
 	public void startSave() {
@@ -97,16 +95,16 @@ public class TileSaver implements TileRequestor {
 	 * @param tileCount
 	 *            total number of tiles saved in previous iterations
 	 */
-	public void save(Map map, Coordinate topLeft, Coordinate btmRight,
+	public void save(TiledMap map, Coordinate topLeft, Coordinate btmRight,
 			int tileCount) {
 
 		Coordinate coord = topLeft.copy();
 
 		// Check if we'll blow our tile count limit
-		int tiles = (int) (btmRight.col - topLeft.col + 1)
-				* (int) (btmRight.row - topLeft.row + 1) + tileCount;
+		int tiles = (int) (btmRight.col - topLeft.col + 1) * (int) (btmRight.row - topLeft.row + 1) + tileCount;
+		
 		// Will we hit our cache limit or reached max zoom?
-		if (tiles > MAX_TILES || coord.zoom > map.provider.getMaxZoom()) {
+		if (tiles > MAX_TILES || coord.zoom > map.getProvider().getMaxZoom()) {
 			// Flag we're done queueing
 			queueing = false;
 			return;
@@ -120,7 +118,7 @@ public class TileSaver implements TileRequestor {
 		queueing = true;
 		while (coord.compareTo(btmRight) <= 0) {
 			LOG.debug("Saving " + coord);
-			TileRequest tile = new TileRequest(map.provider, coord, new Point(
+			TileRequest tile = new TileRequest(map.getProvider(), coord, new Point(
 					x++, y), 0);
 			tile.setRequestor(this);
 			e.submit(tile);
@@ -184,13 +182,13 @@ public class TileSaver implements TileRequestor {
 			manifest.setProperty(BTM_RIGHT_X_PROPERTY, Double.toString(btmRight.col));
 			manifest.setProperty(BTM_RIGHT_Y_PROPERTY, Double.toString(btmRight.row));
 			manifest.setProperty(BTM_RIGHT_ZOOM_PROPERTY, Double.toString(btmRight.zoom));
-			manifest.setProperty(PROJECTION_ZOOM_PROPERTY, Double.toString(map.provider.getProjection().getZoom()));			
-			manifest.setProperty(TRANSFORMATION_AX_PROPERTY, Double.toString(map.provider.getProjection().getTransformation().ax));
-			manifest.setProperty(TRANSFORMATION_BX_PROPERTY, Double.toString(map.provider.getProjection().getTransformation().bx));
-			manifest.setProperty(TRANSFORMATION_CX_PROPERTY, Double.toString(map.provider.getProjection().getTransformation().cx));
-			manifest.setProperty(TRANSFORMATION_AY_PROPERTY, Double.toString(map.provider.getProjection().getTransformation().ay));
-			manifest.setProperty(TRANSFORMATION_BY_PROPERTY, Double.toString(map.provider.getProjection().getTransformation().by));
-			manifest.setProperty(TRANSFORMATION_CY_PROPERTY, Double.toString(map.provider.getProjection().getTransformation().cy));
+			manifest.setProperty(PROJECTION_ZOOM_PROPERTY, Double.toString(map.getProvider().getProjection().getZoom()));			
+			manifest.setProperty(TRANSFORMATION_AX_PROPERTY, Double.toString(map.getProvider().getProjection().getTransformation().ax));
+			manifest.setProperty(TRANSFORMATION_BX_PROPERTY, Double.toString(map.getProvider().getProjection().getTransformation().bx));
+			manifest.setProperty(TRANSFORMATION_CX_PROPERTY, Double.toString(map.getProvider().getProjection().getTransformation().cx));
+			manifest.setProperty(TRANSFORMATION_AY_PROPERTY, Double.toString(map.getProvider().getProjection().getTransformation().ay));
+			manifest.setProperty(TRANSFORMATION_BY_PROPERTY, Double.toString(map.getProvider().getProjection().getTransformation().by));
+			manifest.setProperty(TRANSFORMATION_CY_PROPERTY, Double.toString(map.getProvider().getProjection().getTransformation().cy));
 			FileOutputStream manifestFile = new FileOutputStream(new File(tmpDir, MANIFEST_FILE));
 			manifest.store(manifestFile, "---MAP PROPERTIES---");
 			manifestFile.close();
@@ -236,13 +234,5 @@ public class TileSaver implements TileRequestor {
 				// close the Stream
 				fis.close();
 		}	
-	}
-
-	public static void main(String[] args) {
-		Map m = MapFactory.mapByCenterZoom(new MicrosoftRoadProvider(),
-				new Location(-1.450040, 36.826172), 13, new Point(MAP_WIDTH,
-						MAP_HEIGHT));
-		TileSaver ts = new TileSaver(m, m.topLeftCoord(), m.btmRightCoord(), "/Users/bmuita/tmp/map.zip", true);
-		ts.startSave();
 	}
 }

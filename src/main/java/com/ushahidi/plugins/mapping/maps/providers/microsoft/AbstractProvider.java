@@ -1,6 +1,7 @@
 package com.ushahidi.plugins.mapping.maps.providers.microsoft;
 
 import com.ushahidi.plugins.mapping.maps.core.Coordinate;
+import com.ushahidi.plugins.mapping.maps.geo.Location;
 import com.ushahidi.plugins.mapping.maps.providers.AbstractMapProvider;
 
 public abstract class AbstractProvider extends AbstractMapProvider {

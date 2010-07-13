@@ -48,43 +48,33 @@ public class OfflineProvider extends AbstractMapProvider {
 		Properties manifest = new Properties();
 		manifest.load(new FileInputStream(new File(tmpDir,
 				TileSaver.MANIFEST_FILE)));
-		MIN_ZOOM = Double.parseDouble(manifest
-				.getProperty(TileSaver.MIN_ZOOM_PROPERTY));
-		MAX_ZOOM = Double.parseDouble(manifest
-				.getProperty(TileSaver.MAX_ZOOM_PROPERTY));
+		MIN_ZOOM = Integer.parseInt(manifest.getProperty(TileSaver.MIN_ZOOM_PROPERTY));
+		MAX_ZOOM = Integer.parseInt(manifest.getProperty(TileSaver.MAX_ZOOM_PROPERTY));
 
 		// Projection
-		double zoom = Double.parseDouble(manifest
-				.getProperty(TileSaver.PROJECTION_ZOOM_PROPERTY));
-		double ax = Double.parseDouble(manifest
-				.getProperty(TileSaver.TRANSFORMATION_AX_PROPERTY));
-		double bx = Double.parseDouble(manifest
-				.getProperty(TileSaver.TRANSFORMATION_BX_PROPERTY));
-		double cx = Double.parseDouble(manifest
-				.getProperty(TileSaver.TRANSFORMATION_CX_PROPERTY));
-		double ay = Double.parseDouble(manifest
-				.getProperty(TileSaver.TRANSFORMATION_AY_PROPERTY));
-		double by = Double.parseDouble(manifest
-				.getProperty(TileSaver.TRANSFORMATION_BY_PROPERTY));
-		double cy = Double.parseDouble(manifest
-				.getProperty(TileSaver.TRANSFORMATION_CY_PROPERTY));
+		int zoom = Integer.parseInt(manifest.getProperty(TileSaver.PROJECTION_ZOOM_PROPERTY));
+		
+		double ax = Double.parseDouble(manifest.getProperty(TileSaver.TRANSFORMATION_AX_PROPERTY));
+		double bx = Double.parseDouble(manifest.getProperty(TileSaver.TRANSFORMATION_BX_PROPERTY));
+		double cx = Double.parseDouble(manifest.getProperty(TileSaver.TRANSFORMATION_CX_PROPERTY));
+		double ay = Double.parseDouble(manifest.getProperty(TileSaver.TRANSFORMATION_AY_PROPERTY));
+		double by = Double.parseDouble(manifest.getProperty(TileSaver.TRANSFORMATION_BY_PROPERTY));
+		double cy = Double.parseDouble(manifest.getProperty(TileSaver.TRANSFORMATION_CY_PROPERTY));
+		
 		Transformation t = new Transformation(ax, bx, cx, ay, by, cy);
 		projection = new MercatorProjection(zoom, t);
 
 		// Bounds
-		double row = Double.parseDouble(manifest
-				.getProperty(TileSaver.TOP_LEFT_Y_PROPERTY));
-		double col = Double.parseDouble(manifest
-				.getProperty(TileSaver.TOP_LEFT_X_PROPERTY));
-		zoom = Double.parseDouble(manifest
-				.getProperty(TileSaver.TOP_LEFT_ZOOM_PROPERTY));
+		double row = Double.parseDouble(manifest.getProperty(TileSaver.TOP_LEFT_Y_PROPERTY));
+		double col = Double.parseDouble(manifest.getProperty(TileSaver.TOP_LEFT_X_PROPERTY));
+		zoom = Integer.parseInt(manifest.getProperty(TileSaver.TOP_LEFT_ZOOM_PROPERTY));
+		
 		topLeftOutLimit = new Coordinate(row, col, zoom);
-		row = Double.parseDouble(manifest
-				.getProperty(TileSaver.BTM_RIGHT_Y_PROPERTY));
-		col = Double.parseDouble(manifest
-				.getProperty(TileSaver.BTM_RIGHT_X_PROPERTY));
-		zoom = Double.parseDouble(manifest
-				.getProperty(TileSaver.BTM_RIGHT_ZOOM_PROPERTY));
+		
+		row = Double.parseDouble(manifest.getProperty(TileSaver.BTM_RIGHT_Y_PROPERTY));
+		col = Double.parseDouble(manifest.getProperty(TileSaver.BTM_RIGHT_X_PROPERTY));
+		zoom = Integer.parseInt(manifest.getProperty(TileSaver.BTM_RIGHT_ZOOM_PROPERTY));
+		
 		bottomRightInLimit = new Coordinate(row, col, zoom);
 
 	}

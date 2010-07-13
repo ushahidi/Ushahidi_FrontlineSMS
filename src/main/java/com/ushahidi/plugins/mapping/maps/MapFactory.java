@@ -1,7 +1,9 @@
 package com.ushahidi.plugins.mapping.maps;
 
+import java.awt.Dimension;
+import java.awt.Point;
+
 import com.ushahidi.plugins.mapping.maps.core.Coordinate;
-import com.ushahidi.plugins.mapping.maps.core.Point;
 import com.ushahidi.plugins.mapping.maps.geo.Location;
 import com.ushahidi.plugins.mapping.maps.providers.AbstractMapProvider;
 
@@ -16,11 +18,13 @@ public class MapFactory {
 	 * @param dimensions
 	 * @return
 	 */
-	public static Map mapByCenterZoom(AbstractMapProvider provider, Location center, double zoom, Point dimensions) {
-		Coordinate centerCoord = provider.locationCoordinate(center).zoomTo(zoom);
+	public static TiledMap mapByCenterZoom(AbstractMapProvider provider, Location center, int zoom, Dimension dimensions) {
+		provider.setZoomLevel(zoom);
+
+		Coordinate centerCoord = provider.locationCoordinate(center);
 		Point mapOffset = calculateMapCenter(provider, centerCoord);
-		
-		return new Map(provider, dimensions, centerCoord.container(), mapOffset);
+				
+		return new TiledMap(provider, dimensions, centerCoord, mapOffset);
 	}
 	
 	/**
@@ -36,8 +40,8 @@ public class MapFactory {
 		Coordinate initTileCoord = centerCoord.container();
 		
 		// initial tile position, assuming centered tile well in grid
-		double initX = (initTileCoord.col - centerCoord.col) * provider.tileWidth();
-		double initY = (initTileCoord.row - centerCoord.row) * provider.tileHeight();
+		int initX = (int)((initTileCoord.col - centerCoord.col) * provider.tileWidth());
+		int initY = (int)((initTileCoord.row - centerCoord.row) * provider.tileHeight());
 		Point initPoint = new Point(initX, initY);   
 
 		return initPoint;			

@@ -4,11 +4,11 @@ import com.ushahidi.plugins.mapping.maps.core.Point;
 
 public class LinearProjection extends AbstractProjection {
 
-	public LinearProjection(double zoom) {
+	public LinearProjection(int zoom) {
 		super(zoom);
 	}
 
-	public LinearProjection(double zoom, Transformation transformation) {
+	public LinearProjection(int zoom, Transformation transformation) {
 		super(zoom, transformation);
 	}
 

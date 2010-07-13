@@ -1,5 +1,6 @@
 package com.ushahidi.plugins.mapping.maps;
 
+import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -16,7 +17,6 @@ import net.frontlinesms.Utils;
 import org.apache.log4j.Logger;
 
 import com.ushahidi.plugins.mapping.maps.core.Coordinate;
-import com.ushahidi.plugins.mapping.maps.core.Point;
 import com.ushahidi.plugins.mapping.maps.providers.AbstractMapProvider;
 
 public class TileRequest implements Runnable {
@@ -36,8 +36,7 @@ public class TileRequest implements Runnable {
 	private static final java.util.Map<String, ArrayList<BufferedImage>> tileCache = Collections
 			.synchronizedMap(new HashMap<String, ArrayList<BufferedImage>>());
 
-	public TileRequest(AbstractMapProvider provider, Coordinate coord,
-			Point offset, long updateId) {
+	public TileRequest(AbstractMapProvider provider, Coordinate coord, Point offset, long updateId) {
 		this.done = false;
 		this.provider = provider;
 		this.setCoord(coord);

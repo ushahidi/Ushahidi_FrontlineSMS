@@ -4,11 +4,11 @@ import com.ushahidi.plugins.mapping.maps.core.Point;
 
 public class MercatorProjection extends AbstractProjection {
 
-	public MercatorProjection(double zoom) {
+	public MercatorProjection(int zoom) {
 		super(zoom);
 	}
 
-	public MercatorProjection(double zoom, Transformation transformation) {
+	public MercatorProjection(int zoom, Transformation transformation) {
 		super(zoom, transformation);
 	}
 	

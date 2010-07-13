@@ -23,7 +23,7 @@
 		</panel>
 		<checkbox name="chkSourceStatus" text="Default" />
 		<panel colspan="2" weightx="1" halign="right" gap="5" top="5" right="5" bottom="5" left="5">
-			<button icon="/icons/tick.png" halign="right" text="i18n.action.save" action="addSource(mappingSetup_Dialog)"/>
+			<button icon="/icons/tick.png" halign="right" text="i18n.action.save" action="addMappingSource(mappingSetup_Dialog)"/>
 			<button icon="/icons/clear.png" name="btnClearSource" text="i18n.action.cancel" action="clearSourceFields(mappingSetup_Dialog)"/>
 		</panel>
 	</panel>

@@ -8,7 +8,7 @@ public class Tiles {
 		// Return x, y, z for google road tile column, row, zoom.
 		double x = coordinate.col;
 		double y = coordinate.row;
-		double z = 17 - coordinate.zoom;
+		int z = 17 - coordinate.zoom;
 		return new Coordinate(x, y, z);
 	}
 

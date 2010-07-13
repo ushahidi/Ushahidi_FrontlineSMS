@@ -88,7 +88,7 @@
 		                </popupmenu>					
 					</bean>
 				</panel>
-				<panel weightx="1" top="10">
+				<panel weightx="1" top="9">
 					<panel gap="10">
 						<button icon="/icons/map_setup.png" text="i18n.common.setup" action="showSetupDialog" />
 						<button icon="/icons/map_reports.png" text="i18n.common.reports" action="showReports"/>

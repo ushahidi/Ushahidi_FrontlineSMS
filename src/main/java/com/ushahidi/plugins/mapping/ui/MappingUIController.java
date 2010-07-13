@@ -17,7 +17,7 @@ import com.ushahidi.plugins.mapping.data.repository.CategoryDao;
 import com.ushahidi.plugins.mapping.data.repository.IncidentDao;
 import com.ushahidi.plugins.mapping.data.repository.LocationDao;
 import com.ushahidi.plugins.mapping.data.repository.MappingSetupDao;
-import com.ushahidi.plugins.mapping.maps.Map;
+import com.ushahidi.plugins.mapping.maps.TiledMap;
 import com.ushahidi.plugins.mapping.maps.TileSaver;
 
 import net.frontlinesms.FrontlineSMS;
@@ -132,13 +132,20 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	/** Initializes the location bounds for the map bean */
 	private void initializeMapBean(){
 		if(mappingSetupDao.getDefaultSetup() != null){
-			double latitude = mappingSetupDao.getDefaultSetup().getLatitude();
-			double longitude = mappingSetupDao.getDefaultSetup().getLongitude();
-			mapBean = (MapBean)get(ui.find(this.tabComponent, COMPONENT_MAP_BEAN), BEAN);
+			
+			//Get the default mapping setup
+			MappingSetup defaultSetup = mappingSetupDao.getDefaultSetup();
+			
+			// Get the latitude and longitude
+			double latitude = defaultSetup.getLatitude();
+			double longitude = defaultSetup.getLongitude();
+			
+			mapBean = (MapBean)get(ui.find(this.tabComponent, COMPONENT_MAP_BEAN), BEAN);			
+			
+			LOG.debug("Default Setup: " + defaultSetup.getSourceURL());
 			
 			//Check if offline mode for the default setup is enabled
-			if(mappingSetupDao.getDefaultSetup().isOffline()){
-				MappingSetup defaultSetup = mappingSetupDao.getDefaultSetup();
+			if(mappingSetupDao.getDefaultSetup().isOffline()){				
 				String fileName = defaultSetup.getOfflineMapFile();
 				File f = new File(fileName);
 				if(f.exists())
@@ -155,9 +162,14 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 				}
 			}
 			
+			// Get the current zoom level from the slider
+			int zoomLevel = getInteger(ui.find(this.tabComponent, COMPONENT_SLD_ZOOM_CONTROLLER),ExtendedThinlet.VALUE);
+			
+			//mapBean.setZoomLevel(zoomLevel);
 			mapBean.setLocation(longitude, latitude);			
-			mapBean.setIncidents(incidentDao.getAllIncidents(mappingSetupDao.getDefaultSetup()));
+			mapBean.setIncidents(incidentDao.getAllIncidents(defaultSetup));
 			mapBean.setMappingUIController(this);
+			
 		}else{
 			//The mapping plugin has not been configured; therefore disable the zoom controller
 			setEnabled(ui.find(this.tabComponent, COMPONENT_SLD_ZOOM_CONTROLLER), false);
@@ -422,7 +434,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	 * 
 	 * @param dialog
 	 */
-	public void addSource(Object dialog){
+	public void addMappingSource(Object dialog){
 		String sourceName = getText(find(dialog, SETUP_DLG_COMPONENT_FLD_SOURCE_NAME));
 		String sourceURL = getText(find(dialog, SETUP_DLG_COMPONENT_FLD_SOURCE));
 		String lat = getText(find(dialog, SETUP_DLG_COMPONENT_FLD_LATITUDE));
@@ -501,7 +513,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 				if (setup.getId() != currentDefault.getId() && setup.isDefaultSetup()){
 					currentDefault.setDefaultSetup(false);
 					mappingSetupDao.updateMappingSetup(currentDefault);
-					LOG.debug("Changed default mapping setup to " + setup.getName());
+					LOG.debug("Changed default mapping setup to " + setup.getName());					
 				}
 			
 			if(item == null){
@@ -526,6 +538,17 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 				
 		ui.repaint();
 		clearSourceFields(dialog);
+		
+		// If the default map setup has changed, re-initialize the keywords, incidents and map bean 
+		// so as to reflect the new mapping settings
+		if(currentDefault != null && currentDefault.getId() != setup.getId()){
+			// Update the list of keywords
+			updateKeywordList();
+			
+			// Update the map container with the new map
+			initializeMapBean();
+		}
+
 	}
 	
 	/**
@@ -577,7 +600,8 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	 */
 	public void beginSynchronization(){
 		//Check if the mapping plugin has been configured to synchronize to an Ushahidi instance
-		if(mappingSetupDao.getCount() == 0 || mappingSetupDao.getDefaultSetup() == null){
+		if(mappingSetupDao.getCount() == 0 || mappingSetupDao.getDefaultSetup() == null
+				|| getDefaultSynchronizationURL() == null){
 			check_PluginConfiguration();
 		}else{
 			syncManager = new SynchronizationManager(this);		
@@ -778,7 +802,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	 */
 	public void doMapSave(Object dialog, String mapName) {
 		MapBean mapBean = (MapBean) get(ui.find(COMPONENT_MAP_BEAN), BEAN);
-		Map map = mapBean.getMap();
+		TiledMap map = mapBean.getMap();
 		//Create maps dir in config dir if it doesn't exist
 		File f = new File(ResourceUtils.getConfigDirectoryPath() + "/maps");
 		if(!f.exists()) {
@@ -790,6 +814,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		String filename = ResourceUtils.getConfigDirectoryPath() + "maps/" + mapName + ".zip";
 		TileSaver ts = new TileSaver(map, map.topLeftCoord(), map.btmRightCoord(), filename, true);
 		ts.startSave();
+		ts.done();
 		
 		MappingSetup mappingSetup = mappingSetupDao.getDefaultSetup();
 		mappingSetup.setOfflineMapFile(filename);
@@ -945,8 +970,19 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	 * @param zoomController The Zoom UI control
 	 */
 	public void zoomMap(Object zoomController){
+		int currentZoom = mapBean.getCurrentZoomLevel();		
 		int zoomVal = getInteger(zoomController, ExtendedThinlet.VALUE);
-		mapBean.setZoomValue(zoomVal);
+		
+		// Adjust the zooming bar so that it moves in steps of 1 only
+		if(currentZoom < zoomVal){
+			setInteger(zoomController, ExtendedThinlet.VALUE, zoomVal-1);
+			ui.repaint();
+		}else if (currentZoom > zoomVal){
+			setInteger(zoomController, ExtendedThinlet.VALUE, zoomVal + 1);
+			ui.repaint();
+		}
+		
+		mapBean.zoomMap(zoomVal);
 	}
 
 	/**
@@ -1026,6 +1062,15 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		setInteger(progressBar, Thinlet.VALUE, currentVal);
 		
 		ui.repaint();
+	}
+	
+	/**
+	 * Kills all the mapping and synchronization threads that are still running
+	 */
+	public void shutdownUIController(){
+		if(syncManager != null)
+			syncManager.terminateManagerThread();
+		mapBean.destroyMap();
 	}
 		
 }

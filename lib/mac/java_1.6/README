@@ -1,4 +1,0 @@
-Downloaded from http://iharder.net/current/java/
-"librxtxSerial.jnilib is the RXTX native library compiled with 64-bit Intel support for Java 6 on Mac OS X (also i386, ppc, and ppc64). You're welcome to follow the various instructions online for compiling it yourself, but it gave me a lot of grief, so here is a direct copy (if you trust me!). I finally had to patch SerialImpl.c and SerialImpl.h (manually) based on the patch instructions here and blog posting here. I also discuss this on my blog."
-
-courtesy of David Kobia from Ushahidi

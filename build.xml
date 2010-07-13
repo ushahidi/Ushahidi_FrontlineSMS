@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project name="FrontlineSMS_Spring" basedir=".">
-	<property file="build.properties"/>
-
-	<target name="zipResources">
-		<delete file="${src.res.dir}/resources.zip"/>
-		<zip destfile="${src.res.dir}/resources.zip" basedir="${src.res.dir}/resources" compress="${jar.compress}"/>
-	</target>
-</project>
