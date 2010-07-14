@@ -3,7 +3,6 @@ package com.ushahidi.plugins.mapping.data.repository;
 import java.util.List;
 
 import net.frontlinesms.data.DuplicateKeyException;
-import net.frontlinesms.data.domain.Message;
 
 import com.ushahidi.plugins.mapping.data.domain.Incident;
 import com.ushahidi.plugins.mapping.data.domain.Location;
