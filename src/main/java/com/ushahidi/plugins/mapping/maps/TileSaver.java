@@ -15,7 +15,7 @@ import java.util.zip.ZipOutputStream;
 
 import javax.imageio.ImageIO;
 
-import net.frontlinesms.Utils;
+import net.frontlinesms.FrontlineUtils;
 
 import org.apache.log4j.Logger;
 
@@ -50,7 +50,7 @@ public class TileSaver implements TileRequestor {
 
 	private static final ExecutorService e = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
 
-	public static final Logger LOG = Utils.getLogger(TileSaver.class);
+	public static final Logger LOG = FrontlineUtils.getLogger(TileSaver.class);
 
 	private File tmpDir;
 	private String targetFile;

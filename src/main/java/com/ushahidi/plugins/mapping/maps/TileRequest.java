@@ -12,7 +12,7 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
-import net.frontlinesms.Utils;
+import net.frontlinesms.FrontlineUtils;
 
 import org.apache.log4j.Logger;
 
@@ -31,7 +31,7 @@ public class TileRequest implements Runnable {
 	private Coordinate coord;
 	private TileRequestor requestor;
 
-	public static Logger LOG = Utils.getLogger(TileRequest.class);
+	public static Logger LOG = FrontlineUtils.getLogger(TileRequest.class);
 
 	private static final java.util.Map<String, ArrayList<BufferedImage>> tileCache = Collections
 			.synchronizedMap(new HashMap<String, ArrayList<BufferedImage>>());
