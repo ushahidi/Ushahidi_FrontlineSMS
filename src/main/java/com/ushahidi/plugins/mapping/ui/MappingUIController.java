@@ -1,7 +1,5 @@
 package com.ushahidi.plugins.mapping.ui;
 
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
@@ -11,7 +9,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import com.ushahidi.plugins.mapping.MappingPluginController;
-import com.ushahidi.plugins.mapping.SynchronizationManager;
+import com.ushahidi.plugins.mapping.sync.SynchronizationManager;
 import com.ushahidi.plugins.mapping.data.domain.*;
 import com.ushahidi.plugins.mapping.data.repository.CategoryDao;
 import com.ushahidi.plugins.mapping.data.repository.IncidentDao;
@@ -21,10 +19,10 @@ import com.ushahidi.plugins.mapping.maps.TiledMap;
 import com.ushahidi.plugins.mapping.maps.TileSaver;
 
 import net.frontlinesms.FrontlineSMS;
-import net.frontlinesms.Utils;
+import net.frontlinesms.FrontlineUtils;
 import net.frontlinesms.data.DuplicateKeyException;
 import net.frontlinesms.data.domain.Contact;
-import net.frontlinesms.data.domain.Message;
+import net.frontlinesms.data.domain.FrontlineMessage;
 import net.frontlinesms.resources.ResourceUtils;
 import net.frontlinesms.ui.i18n.InternationalisationUtils;
 import net.frontlinesms.ui.DateSelecter;
@@ -95,7 +93,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	/** Thinlet component containing the mapping tab */
 	private Object tabComponent;
 	
-	public static Logger LOG = Utils.getLogger(MappingUIController.class);	
+	public static Logger LOG = FrontlineUtils.getLogger(MappingUIController.class);	
 	
 	public MappingUIController(MappingPluginController pluginController, FrontlineSMS frontlineController, 
 			UiGeneratorController uiController) {
@@ -214,9 +212,8 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	 */
 	public void updateMappingTab() {
 		Object messageTableComponent = ui.find(this.tabComponent, COMPONENT_MESSAGE_TABLE);
-		removeAll(messageTableComponent);
-		Integer[] status = {Message.STATUS_RECEIVED};
-		for (Message m : frontlineController.getMessageDao().getMessages(Message.TYPE_RECEIVED, status)) {
+		removeAll(messageTableComponent);		
+		for (FrontlineMessage m : frontlineController.getMessageDao().getMessages(FrontlineMessage.Type.RECEIVED, FrontlineMessage.Status.RECEIVED)) {
 			ui.add(messageTableComponent, getRow(m));
 		}	
 	}
@@ -246,7 +243,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	 */
 	public void showIncidentDialog(Object item) {
 		
-		Message message = (Message) getAttachedObject(item);						
+		FrontlineMessage message = (FrontlineMessage) getAttachedObject(item);						
 		if(message != null) {
 			Object dialog = ui.loadComponentFromFile(UI_FILE_INCIDENT_DIALOG, this);
 			ui.setAttachedObject(dialog, message);
@@ -292,7 +289,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	 * @param message
 	 * @return
 	 */
-	private String getSenderDisplayValue(Message message) {
+	private String getSenderDisplayValue(FrontlineMessage message) {
 		Contact sender = frontlineController.getContactDao().getFromMsisdn(message.getSenderMsisdn());
 		String senderDisplayName = sender != null ? sender.getDisplayName() + "(" + message.getSenderMsisdn() + ")" : message.getSenderMsisdn();
 		return senderDisplayName;
@@ -344,7 +341,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	public void saveIncident() throws DuplicateKeyException {
 		Object dialog = ui.find(COMPONENT_INCIDENT_DIALOG);
 		
-		Message message = (Message)getAttachedObject(dialog);
+		FrontlineMessage message = (FrontlineMessage)getAttachedObject(dialog);
 		if(message != null){
 			Incident incident = new Incident();
 			String dateStr = getText(ui.find(dialog, "txtIncidentDate"));
@@ -573,7 +570,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	 * @param message
 	 * @return
 	 */
-	private Object getRow(Message message){		
+	private Object getRow(FrontlineMessage message){		
 		Object row = createTableRow(message);
 		createTableCell(row, InternationalisationUtils.getDatetimeFormat().format(message.getDate()));
 		createTableCell(row, getSenderDisplayValue(message));
@@ -991,7 +988,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	 * 
 	 * @param message The received message
 	 */
-	public void handleIncomingMessage(Message message) {
+	public void handleIncomingMessage(FrontlineMessage message) {
 		Object messageTableComponent = ui.find(this.tabComponent, COMPONENT_MESSAGE_TABLE);
 		ui.add(messageTableComponent, getRow(message));
 		ui.repaint();
