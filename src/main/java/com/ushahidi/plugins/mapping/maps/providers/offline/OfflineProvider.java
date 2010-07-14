@@ -15,7 +15,7 @@ import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import net.frontlinesms.Utils;
+import net.frontlinesms.FrontlineUtils;
 
 import org.apache.log4j.Logger;
 
@@ -27,110 +27,110 @@ import com.ushahidi.plugins.mapping.maps.providers.AbstractMapProvider;
 
 public class OfflineProvider extends AbstractMapProvider {
 
-	public static final Logger LOG = Utils.getLogger(OfflineProvider.class);
+    public static final Logger LOG = FrontlineUtils.getLogger(OfflineProvider.class);
 
-	private File tmpDir;
+    private File tmpDir;
 
-	/**
-	 * @param archive
-	 *            Filename of the map archive
-	 * @throws IOException
-	 */
-	public OfflineProvider(String archive) throws IOException {
-		super(MIN_ZOOM, MAX_ZOOM);
+    /**
+     * @param archive
+     *            Filename of the map archive
+     * @throws IOException
+     */
+    public OfflineProvider(String archive) throws IOException {
+        super(MIN_ZOOM, MAX_ZOOM);
 
-		// Unzip archive to temp dir
-		tmpDir = new File(System.getProperty("java.io.tmpdir"), UUID
-				.randomUUID().toString());
-		unzipArchive(archive);
+        // Unzip archive to temp dir
+        tmpDir = new File(System.getProperty("java.io.tmpdir"), UUID
+                .randomUUID().toString());
+        unzipArchive(archive);
 
-		// Get the map's properties from MANIFEST
-		Properties manifest = new Properties();
-		manifest.load(new FileInputStream(new File(tmpDir,
-				TileSaver.MANIFEST_FILE)));
-		MIN_ZOOM = Integer.parseInt(manifest.getProperty(TileSaver.MIN_ZOOM_PROPERTY));
-		MAX_ZOOM = Integer.parseInt(manifest.getProperty(TileSaver.MAX_ZOOM_PROPERTY));
+        // Get the map's properties from MANIFEST
+        Properties manifest = new Properties();
+        manifest.load(new FileInputStream(new File(tmpDir,
+                TileSaver.MANIFEST_FILE)));
+        MIN_ZOOM = Integer.parseInt(manifest.getProperty(TileSaver.MIN_ZOOM_PROPERTY));
+        MAX_ZOOM = Integer.parseInt(manifest.getProperty(TileSaver.MAX_ZOOM_PROPERTY));
 
-		// Projection
-		int zoom = Integer.parseInt(manifest.getProperty(TileSaver.PROJECTION_ZOOM_PROPERTY));
-		
-		double ax = Double.parseDouble(manifest.getProperty(TileSaver.TRANSFORMATION_AX_PROPERTY));
-		double bx = Double.parseDouble(manifest.getProperty(TileSaver.TRANSFORMATION_BX_PROPERTY));
-		double cx = Double.parseDouble(manifest.getProperty(TileSaver.TRANSFORMATION_CX_PROPERTY));
-		double ay = Double.parseDouble(manifest.getProperty(TileSaver.TRANSFORMATION_AY_PROPERTY));
-		double by = Double.parseDouble(manifest.getProperty(TileSaver.TRANSFORMATION_BY_PROPERTY));
-		double cy = Double.parseDouble(manifest.getProperty(TileSaver.TRANSFORMATION_CY_PROPERTY));
-		
-		Transformation t = new Transformation(ax, bx, cx, ay, by, cy);
-		projection = new MercatorProjection(zoom, t);
+        // Projection
+        int zoom = Integer.parseInt(manifest.getProperty(TileSaver.PROJECTION_ZOOM_PROPERTY));
 
-		// Bounds
-		double row = Double.parseDouble(manifest.getProperty(TileSaver.TOP_LEFT_Y_PROPERTY));
-		double col = Double.parseDouble(manifest.getProperty(TileSaver.TOP_LEFT_X_PROPERTY));
-		zoom = Integer.parseInt(manifest.getProperty(TileSaver.TOP_LEFT_ZOOM_PROPERTY));
-		
-		topLeftOutLimit = new Coordinate(row, col, zoom);
-		
-		row = Double.parseDouble(manifest.getProperty(TileSaver.BTM_RIGHT_Y_PROPERTY));
-		col = Double.parseDouble(manifest.getProperty(TileSaver.BTM_RIGHT_X_PROPERTY));
-		zoom = Integer.parseInt(manifest.getProperty(TileSaver.BTM_RIGHT_ZOOM_PROPERTY));
-		
-		bottomRightInLimit = new Coordinate(row, col, zoom);
+        double ax = Double.parseDouble(manifest.getProperty(TileSaver.TRANSFORMATION_AX_PROPERTY));
+        double bx = Double.parseDouble(manifest.getProperty(TileSaver.TRANSFORMATION_BX_PROPERTY));
+        double cx = Double.parseDouble(manifest.getProperty(TileSaver.TRANSFORMATION_CX_PROPERTY));
+        double ay = Double.parseDouble(manifest.getProperty(TileSaver.TRANSFORMATION_AY_PROPERTY));
+        double by = Double.parseDouble(manifest.getProperty(TileSaver.TRANSFORMATION_BY_PROPERTY));
+        double cy = Double.parseDouble(manifest.getProperty(TileSaver.TRANSFORMATION_CY_PROPERTY));
 
-	}
+        Transformation t = new Transformation(ax, bx, cx, ay, by, cy);
+        projection = new MercatorProjection(zoom, t);
 
-	private void unzipArchive(String archive) throws IOException {
-		Enumeration<? extends ZipEntry> entries;
-		ZipFile zipFile = new ZipFile(archive);
-		;
+        // Bounds
+        double row = Double.parseDouble(manifest.getProperty(TileSaver.TOP_LEFT_Y_PROPERTY));
+        double col = Double.parseDouble(manifest.getProperty(TileSaver.TOP_LEFT_X_PROPERTY));
+        zoom = Integer.parseInt(manifest.getProperty(TileSaver.TOP_LEFT_ZOOM_PROPERTY));
 
-		entries = zipFile.entries();
-		while (entries.hasMoreElements()) {
-			ZipEntry entry = (ZipEntry) entries.nextElement();
+        topLeftOutLimit = new Coordinate(row, col, zoom);
 
-			File targetFile = new File(tmpDir, entry.getName());
-			if (!targetFile.getParentFile().exists()) {
-				targetFile.getParentFile().mkdirs();
-			}
+        row = Double.parseDouble(manifest.getProperty(TileSaver.BTM_RIGHT_Y_PROPERTY));
+        col = Double.parseDouble(manifest.getProperty(TileSaver.BTM_RIGHT_X_PROPERTY));
+        zoom = Integer.parseInt(manifest.getProperty(TileSaver.BTM_RIGHT_ZOOM_PROPERTY));
 
-			LOG.debug("Extracting file: " + targetFile.getAbsolutePath());
-			copyInputStream(zipFile.getInputStream(entry),
-					new BufferedOutputStream(new FileOutputStream(targetFile)));
-		}
+        bottomRightInLimit = new Coordinate(row, col, zoom);
 
-		zipFile.close();
-	}
+    }
 
-	private void copyInputStream(InputStream in, OutputStream out)
-			throws IOException {
-		byte[] buffer = new byte[1024];
-		int len;
+    private void unzipArchive(String archive) throws IOException {
+        Enumeration<? extends ZipEntry> entries;
+        ZipFile zipFile = new ZipFile(archive);
+        ;
 
-		while ((len = in.read(buffer)) >= 0)
-			out.write(buffer, 0, len);
+        entries = zipFile.entries();
+        while (entries.hasMoreElements()) {
+            ZipEntry entry = (ZipEntry) entries.nextElement();
 
-		in.close();
-		out.close();
-	}
+            File targetFile = new File(tmpDir, entry.getName());
+            if (!targetFile.getParentFile().exists()) {
+                targetFile.getParentFile().mkdirs();
+            }
 
-	public int tileWidth() {
-		return 256;
-	}
+            LOG.debug("Extracting file: " + targetFile.getAbsolutePath());
+            copyInputStream(zipFile.getInputStream(entry),
+                    new BufferedOutputStream(new FileOutputStream(targetFile)));
+        }
 
-	public int tileHeight() {
-		return 256;
-	}
+        zipFile.close();
+    }
 
-	@Override
-	public String getTileId(Coordinate coordinate) {		
-		return tmpDir.getName() + coordinate;
-	}
+    private void copyInputStream(InputStream in, OutputStream out)
+    throws IOException {
+        byte[] buffer = new byte[1024];
+        int len;
 
-	@Override
-	public List<String> getTileUrls(Coordinate coordinate) {	
-		ArrayList<String> ret = new ArrayList<String>();		
-		ret.add("file://" + tmpDir.getAbsolutePath() + File.separator + (int)coordinate.zoom + File.separator + (int)coordinate.row + "-" + (int)coordinate.col + ".png");
-		return ret;
-	}
+        while ((len = in.read(buffer)) >= 0)
+            out.write(buffer, 0, len);
+
+        in.close();
+        out.close();
+    }
+
+    public int tileWidth() {
+        return 256;
+    }
+
+    public int tileHeight() {
+        return 256;
+    }
+
+    @Override
+    public String getTileId(Coordinate coordinate) {		
+        return tmpDir.getName() + coordinate;
+    }
+
+    @Override
+    public List<String> getTileUrls(Coordinate coordinate) {	
+        ArrayList<String> ret = new ArrayList<String>();		
+        ret.add("file://" + tmpDir.getAbsolutePath() + File.separator + (int)coordinate.zoom + File.separator + (int)coordinate.row + "-" + (int)coordinate.col + ".png");
+        return ret;
+    }
 
 }
