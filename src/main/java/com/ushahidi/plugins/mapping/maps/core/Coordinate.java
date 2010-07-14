@@ -6,22 +6,20 @@ public class Coordinate implements Comparable<Coordinate> {
 
 	public double row;
 	public double col;
-	public double zoom;
+	public int zoom;
 
-	public Coordinate(double row, double col, double zoom) {
+	public Coordinate(double row, double col, int zoom) {
 		this.row = row;
 		this.col = col;
 		this.zoom = zoom;
 	}
 
-	public Coordinate zoomTo(double destination) {
-		return new Coordinate(row * Math.pow(2, destination - zoom), col
-				* Math.pow(2, destination - zoom), destination);
+	public Coordinate zoomTo(int destination) {
+		return new Coordinate(row * Math.pow(2, destination - zoom), col * Math.pow(2, destination - zoom), destination);
 	}
 
-	public Coordinate zoomBy(double distance) {
-		return new Coordinate(row * Math.pow(2, distance), col
-				* Math.pow(2, distance), zoom + distance);
+	public Coordinate zoomBy(int distance) {
+		return new Coordinate(row * Math.pow(2, distance), col * Math.pow(2, distance), zoom + distance);
 	}
 
 	public Coordinate copy() {
@@ -66,8 +64,7 @@ public class Coordinate implements Comparable<Coordinate> {
 
 	@Override
 	public String toString() {
-		return String.format("Coordinate (%d, %d, %d)", (int) row, (int) col,
-				(int) zoom);
+		return String.format("Coordinate (%d, %d, %d)", (int) row, (int) col, zoom);
 	}
 
 	@Override
