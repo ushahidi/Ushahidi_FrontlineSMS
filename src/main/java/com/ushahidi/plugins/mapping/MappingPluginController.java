@@ -1,5 +1,8 @@
 package com.ushahidi.plugins.mapping;
 
+import java.util.Locale;
+import java.util.Map;
+
 import com.ushahidi.plugins.mapping.data.repository.CategoryDao;
 import com.ushahidi.plugins.mapping.data.repository.LocationDao;
 import com.ushahidi.plugins.mapping.data.repository.IncidentDao;
@@ -7,8 +10,8 @@ import com.ushahidi.plugins.mapping.data.repository.MappingSetupDao;
 import com.ushahidi.plugins.mapping.ui.MappingUIController;
 
 import net.frontlinesms.FrontlineSMS;
-import net.frontlinesms.Utils;
-import net.frontlinesms.data.domain.Message;
+import net.frontlinesms.FrontlineUtils;
+import net.frontlinesms.data.domain.FrontlineMessage;
 import net.frontlinesms.listener.IncomingMessageListener;
 import net.frontlinesms.plugins.PluginController;
 import net.frontlinesms.plugins.PluginInitialisationException;
@@ -21,7 +24,7 @@ public class MappingPluginController implements PluginController, IncomingMessag
 	/** Filename and path of the XML containing the mapping tab */
 	private static final String XML_MAPPING_TAB = "/ui/plugins/mapping/mappingTab.xml";
 	/** Logger */
-	private static final Logger LOG = Utils.getLogger(MappingPluginController.class);
+	private static final Logger LOG = FrontlineUtils.getLogger(MappingPluginController.class);
 	
 //>	INSTANCE variables
 	private FrontlineSMS frontlineController;
@@ -80,7 +83,7 @@ public class MappingPluginController implements PluginController, IncomingMessag
 		return mappingTab;
 	}
 	
-	public void incomingMessageEvent(Message message) {
+	public void incomingMessageEvent(FrontlineMessage message) {
 		LOG.debug("Incident report received");
 		mappingUIController.handleIncomingMessage(message);
 	}
@@ -100,6 +103,21 @@ public class MappingPluginController implements PluginController, IncomingMessag
 	
 	public MappingSetupDao getMappingSetupDao(){
 		return mappingSetupDao;
+	}
+
+	public void deinit() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public Map<String, String> getDefaultTextResource() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public Map<String, String> getTextResource(Locale locale) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 }
