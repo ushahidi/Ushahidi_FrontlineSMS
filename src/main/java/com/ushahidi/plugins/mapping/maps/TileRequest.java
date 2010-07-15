@@ -7,6 +7,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 
@@ -33,7 +34,7 @@ public class TileRequest implements Runnable {
 
 	public static Logger LOG = FrontlineUtils.getLogger(TileRequest.class);
 
-	private static final java.util.Map<String, ArrayList<BufferedImage>> tileCache = Collections
+	private static final Map<String, ArrayList<BufferedImage>> tileCache = Collections
 			.synchronizedMap(new HashMap<String, ArrayList<BufferedImage>>());
 
 	public TileRequest(AbstractMapProvider provider, Coordinate coord, Point offset, long updateId) {
