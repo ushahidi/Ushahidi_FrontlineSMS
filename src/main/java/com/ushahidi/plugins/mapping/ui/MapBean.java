@@ -59,7 +59,7 @@ public class MapBean extends CustomComponent implements ImageObserver {
 
         //Trap for mouse motion on the map
         addMouseListener(mouseListener);
-        addMouseMotionListener(mouseListener);		
+        addMouseMotionListener(mouseListener);
         addMouseWheelListener(mouseListener);
     }
 
@@ -241,13 +241,17 @@ public class MapBean extends CustomComponent implements ImageObserver {
         }
 
         public void mouseClicked(MouseEvent e){
-            System.out.println("click");
-            if(e.getClickCount() >= 2){
-                zoomMap(map.getZoom() + 1);
-            }
+            LOG.info("Zooming map");
+            zoomMap(map.getZoom() + 1);
         }
 
         public void mousePressed(MouseEvent e){
+            // If the click count >= 2, zoom the map
+            if(e.getClickCount() >= 2){
+                mouseClicked(e);
+                return;
+            }
+            
             downCoords = e.getPoint();
 
             if(mapListener != null){
@@ -268,6 +272,7 @@ public class MapBean extends CustomComponent implements ImageObserver {
 
         public void mouseDragged(MouseEvent e){
             handlePosition(e);
+            //TODO: Drag the map in a smooth scroll fashion
         }
 
         public void mouseExited(MouseEvent e){
@@ -279,7 +284,7 @@ public class MapBean extends CustomComponent implements ImageObserver {
         }
 
         public void mouseWheelMoved(MouseWheelEvent e){
-
+            LOG.debug("Mouse wheel moved");
         }
 
         private void handlePosition(MouseEvent e){
@@ -290,8 +295,13 @@ public class MapBean extends CustomComponent implements ImageObserver {
             if(downCoords != null){
                 int tx = downCoords.x  - e.getX();
                 int ty = downCoords.y - e.getY();
-                map.panBy(tx, ty);
-                repaint();
+                
+                // Only pan the map if tx and ty are non zero
+                if(tx != 0 && ty != 0){
+                    LOG.debug("Panning map");
+                    map.panBy(tx, ty);
+                    repaint();
+                }
             }
         }
     }
