@@ -161,17 +161,22 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 			}
 			
 			// Get the current zoom level from the slider
-			int zoomLevel = getInteger(ui.find(this.tabComponent, COMPONENT_SLD_ZOOM_CONTROLLER),ExtendedThinlet.VALUE);
+			//int zoomLevel = getInteger(getZoomController(), ExtendedThinlet.VALUE);
 			
 			//mapBean.setZoomLevel(zoomLevel);
 			mapBean.setLocation(longitude, latitude);			
 			mapBean.setIncidents(incidentDao.getAllIncidents(defaultSetup));
+			mapBean.addMapListener(this);
 			mapBean.setMappingUIController(this);
 			
 		}else{
 			//The mapping plugin has not been configured; therefore disable the zoom controller
 			setEnabled(ui.find(this.tabComponent, COMPONENT_SLD_ZOOM_CONTROLLER), false);
 		}
+	}
+	
+	private Object getZoomController(){
+	    return ui.find(this.tabComponent, COMPONENT_SLD_ZOOM_CONTROLLER);
 	}
 	
 	/**
@@ -320,6 +325,15 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		setBoolean(dialog, Thinlet.MODAL, true);
 		
 		ui.repaint();		
+	}
+	
+	/** @see {@link MapListener#mapZoomed(int)} */
+	public void mapZoomed(int zoom){
+	    LOG.info("Updating zoom controller to level " + zoom);
+	    
+	    // Update the zoom slider to reflect the current zoom level
+	    setInteger(getZoomController(), VALUE, zoom);
+	    ui.repaint();
 	}
 	
 	public void incidentDialogEdited(Object dialog) {
