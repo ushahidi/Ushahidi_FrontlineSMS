@@ -232,10 +232,13 @@ public class MapBean extends CustomComponent implements ImageObserver {
      * Credit To: http://mappanel.sourceforge.net 
      */
     private class MapDragListener extends MouseAdapter implements MouseMotionListener, MouseWheelListener{
-
+    //> PROPERTIES
+        /** Saves the current screen coordinates when the mouse is moved or dragged */
         private Point mouseCoords;
+        /** Saves the current screen coordinates when the mouse is clicked or pressed */
         private Point downCoords;
-
+        
+    //> CONSTRUCTOR
         public MapDragListener(){
             mouseCoords = new Point();
         }
@@ -251,7 +254,7 @@ public class MapBean extends CustomComponent implements ImageObserver {
                 mouseClicked(e);
                 return;
             }
-            
+            // Save the screen coordinates of the clicked location
             downCoords = e.getPoint();
 
             if(mapListener != null){
@@ -260,19 +263,20 @@ public class MapBean extends CustomComponent implements ImageObserver {
             }
         }
 
-        public void mouseReleased(MouseEvent e){
-            handleDrag(e);
+        public void mouseReleased(MouseEvent e){            
             downCoords = null;
         }
 
         public void mouseMoved(MouseEvent e){
             handlePosition(e);
+            
+            // Update display of the current map coordinates on the UI
             updateCoordinateDisplay();
         }
 
         public void mouseDragged(MouseEvent e){
             handlePosition(e);
-            //TODO: Drag the map in a smooth scroll fashion
+            handleDrag(e);
         }
 
         public void mouseExited(MouseEvent e){
@@ -287,16 +291,32 @@ public class MapBean extends CustomComponent implements ImageObserver {
             LOG.debug("Mouse wheel moved");
         }
 
+        /**
+         * Saves the current position of the mouse on the map canvas for purposes
+         * of updating the coordinate display on the UI
+         * 
+         * @param e
+         */
         private void handlePosition(MouseEvent e){
             mouseCoords = e.getPoint();
         }
 
+        /**
+         * Drags the map across the canvas
+         * A drag is only initiated if the (x,y) values in @param e are different
+         * from the ones in {@link #downCoords}
+         * 
+         * @param e {@link java.awt.event.MouseEvent} reference
+         */
         private void handleDrag(MouseEvent e){
             if(downCoords != null){
                 int tx = downCoords.x  - e.getX();
                 int ty = downCoords.y - e.getY();
                 
-                // Only pan the map if tx and ty are non zero
+                // Save the current position to prevent extra dragging
+                downCoords = e.getPoint();
+                
+                // Only pan the map if the change is non-zero
                 if(tx != 0 && ty != 0){
                     LOG.debug("Panning map");
                     map.panBy(tx, ty);
