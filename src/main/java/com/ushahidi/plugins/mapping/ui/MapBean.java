@@ -245,7 +245,12 @@ public class MapBean extends CustomComponent implements ImageObserver {
 
         public void mouseClicked(MouseEvent e){
             LOG.info("Zooming map");
-            zoomMap(map.getZoom() + 1);
+            // Increase the current zoom level by 1
+            int zoom = map.getZoom() + 1;
+            
+            // Initiate zoom
+            zoomMap(zoom);
+            mapListener.mapZoomed(zoom);
         }
 
         public void mousePressed(MouseEvent e){
