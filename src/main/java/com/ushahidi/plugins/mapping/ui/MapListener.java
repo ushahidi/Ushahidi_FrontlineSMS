@@ -9,4 +9,11 @@ public interface MapListener {
 	 */
 	public void pointSelected(double lat, double lon);
 	
+	/** 
+	 * This method should be called when the map is zoomed; in or out
+	 * 
+	 * @param zoom The new zoom level of the map
+	 */
+	public void mapZoomed(int zoom);
+	
 }
