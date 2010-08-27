@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.HashSet;
 
 import com.ushahidi.plugins.mapping.ui.MappingUIController;
+import com.ushahidi.plugins.mapping.ui.SyncDialogHandler;
 import com.ushahidi.plugins.mapping.data.domain.*;
 
 import net.frontlinesms.FrontlineUtils;
@@ -25,7 +26,7 @@ public class SynchronizationManager {
 	private ManagerThread managerThread;
 	
 	/** Handle for the synchronization dialog */
-	private Object syncDialog;
+	private SyncDialogHandler syncDialog;
 	
 	/** Keeps track of the current task no */
 	private int currentTaskNo = 0;
@@ -47,17 +48,17 @@ public class SynchronizationManager {
 	 * @param requestParameter Parameter(s) to be passed along together with the task
 	 */
 	public synchronized void runSynchronizationTask(String task, String requestParameter){
-		if(mappingController.getDefaultSynchronizationURL()== null)
+		if (mappingController.getDefaultSynchronizationURL()== null) {
 			return;
+		}
 		
-		SynchronizationThread syncThread = new SynchronizationThread(this, 
-				mappingController.getDefaultSynchronizationURL());
+		SynchronizationThread syncThread = new SynchronizationThread(this, mappingController.getDefaultSynchronizationURL());
 		
 		syncThread.addJob(new SynchronizationTask(task, requestParameter));
-		if(managerThread == null){
+		if (managerThread == null) {
 			managerThread = new ManagerThread(this, syncThread);
 			managerThread.start();
-			syncDialog = mappingController.showSynchronizationDialog();
+			syncDialog = mappingController.showSyncDialog();
 		}
 	}
 	
@@ -66,35 +67,31 @@ public class SynchronizationManager {
 	 */
 	public synchronized void performFullSynchronization(){
 		//Instantiate the a synchronization thread
-		SynchronizationThread syncThread = new SynchronizationThread(this, 
-				mappingController.getDefaultSynchronizationURL());
+		SynchronizationThread syncThread = new SynchronizationThread(this, mappingController.getDefaultSynchronizationURL());
 		
-		if(getPendingIncidents().size() > 0)
+		if (getPendingIncidents().size() > 0) {
 			syncThread.addJob(new SynchronizationTask(SynchronizationAPI.PUSH_TASK, SynchronizationAPI.POST_INCIDENT));
-		
+		}
 		//Fetch categories and locations
 		syncThread.addJob(new SynchronizationTask(SynchronizationAPI.PULL_TASK, SynchronizationAPI.CATEGORIES));
 		syncThread.addJob(new SynchronizationTask(SynchronizationAPI.PULL_TASK, SynchronizationAPI.LOCATIONS));
 		
 		// Fetch all incidents
-		SynchronizationTask incidentTask = new SynchronizationTask(SynchronizationAPI.PULL_TASK, 
-				SynchronizationAPI.INCIDENTS);		
+		SynchronizationTask incidentTask = new SynchronizationTask(SynchronizationAPI.PULL_TASK, SynchronizationAPI.INCIDENTS);		
 		incidentTask.setRequestParameter(SynchronizationAPI.INCIDENTS_BY_ALL);
 		syncThread.addJob(incidentTask);
 		
 		int taskCount = syncThread.getTaskCount();
 		
 		//Start the synchronization thread
-		if(managerThread == null){
+		if (managerThread == null) {
 			managerThread = new ManagerThread(this, syncThread);
 			managerThread.start();
 
 			//Show the synchronization modal dialog
-			syncDialog = mappingController.showSynchronizationDialog();
-			mappingController.setSynchronizationTaskCount(syncDialog, taskCount);
-			
+			syncDialog = mappingController.showSyncDialog();
+			syncDialog.setSynchronizationTaskCount(taskCount);
 		}
-				
 	}
 	
 	/**
@@ -103,7 +100,7 @@ public class SynchronizationManager {
 	 * @param requestParameters
 	 */
 	public void runSynchronizationTask(String task, String[] requestParameters){
-		for(int i=0; i<requestParameters.length; i++){
+		for(int i=0; i<requestParameters.length; i++) {
 			runSynchronizationTask(task, requestParameters[i]);
 		}
 	}
@@ -154,21 +151,22 @@ public class SynchronizationManager {
 	 * Terminates the instance of {@link ManagerThread} that is running the synchronization
 	 * @param t Thread to be terminated
 	 */
-	public synchronized void terminateManagerThread(Thread t){
-	
+	public synchronized void terminateManagerThread(Thread thread){
 		try{
 			//Remove the synchronization dialog
 			updateCurrentTaskNo();
-			mappingController.updateProgressBar(syncDialog, currentTaskNo);
+			syncDialog.updateProgressBar(currentTaskNo);
 			Thread.sleep(5000);
-			mappingController.removeDialog(syncDialog);
-
-			if(t instanceof ManagerThread)
+			
+			syncDialog.removeDialog();
+			
+			if (thread instanceof ManagerThread) {
 				managerThread.join();
-		}catch(InterruptedException e){
+			}
+		}
+		catch(InterruptedException e){
 			LOG.debug("Error in terminating synchronization thread manager ", e);
 		}
-
 	}
 	
 	/**
@@ -176,21 +174,19 @@ public class SynchronizationManager {
 	 */
 	public synchronized void terminateManagerThread(){
 		mappingController.removeDialog(syncDialog);
-		
 		try{
 			managerThread.shutdown();
 			managerThread.join();
-		}catch(InterruptedException e){
+		}
+		catch(InterruptedException e){
 			LOG.debug("Error in terminating the synchronization thread manager ", e);
 		}
-		
 	}
 	
 	public synchronized void updateCurrentTaskNo(){
 		currentTaskNo++;
-		mappingController.updateProgressBar(syncDialog, currentTaskNo);
+		syncDialog.updateProgressBar(currentTaskNo);
 	}
-	
 	
 	/**
 	 * Private inner class that manages the execution of the synchronization jobs
@@ -229,7 +225,8 @@ public class SynchronizationManager {
 		public void shutdown(){
 			try{
 				task.join();
-			}catch(InterruptedException e){
+			}
+			catch(InterruptedException e){
 				
 			}
 		}

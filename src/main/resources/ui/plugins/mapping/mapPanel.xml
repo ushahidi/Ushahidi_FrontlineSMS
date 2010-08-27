@@ -1,0 +1,37 @@
+<panel name="pnlMap" columns="1" weightx="1" weighty="1">
+	<panel weightx="1" weighty="1" border="true">
+		<bean name="mapBean" bean="com.ushahidi.plugins.mapping.ui.MapBean" weightx="1" weighty="1">
+			<popupmenu name="menu">
+			    <menu name="onlineMapsMenu" text="i18n.action.add.to.group"/>
+			    <separator name="sp1"/>
+			    <menuitem icon="/icons/tick.png" name="saveMap" text="i18n.action.save" action="saveMap" />		                    		                    
+			</popupmenu>					
+		</bean>
+	</panel>
+	<panel weightx="1" columns="3" gap="5" top="10" bottom="10">
+		<checkbox text="i18n.plugins.ushahidi.point.data" icon="/icons/point_data.png" group="datatype" selected="true" action="showPointData" />
+		<checkbox text="i18n.plugins.ushahidi.clustered.data" icon="/icons/clustered_data.png" group="datatype" action="showClusteredData" />
+		<panel weightx="1" halign="right" gap="10">
+			<label icon="/icons/date_start.png" text="i18n.plugins.ushahidi.date.from" />
+			<panel>
+				<textfield action="incidentFilterDateChanged" columns="10" name="tfStartDate" action="fromDateChanged(tfStartDate)" />
+				<button action="showDateSelector(tfStartDate)" icon="/icons/date.png" />
+			</panel>
+			<label icon="/icons/date_end.png" text="i18n.plugins.ushahidi.date.to" />
+			<panel>
+				<textfield action="incidentFilterDateChanged" columns="10" name="tfEndDate" action="toDateChanged(tfEndDate)" />
+				<button action="showDateSelector(tfEndDate)" icon="/icons/date.png" />
+			</panel>
+		</panel>
+	</panel>
+	<panel weightx="1" gap="20" columns="2" bottom="10">
+		<panel gap="5">
+			<label text="i18n.plugins.ushahidi.map.zoom"/>
+			<slider height="2" width="130" minimum="1" unit="1" block="1" maximum="25" value="7" orientation="horizontal" name="sld_ZoomController" action="zoomMap(this)"/>		
+		</panel>
+		<panel gap="5">
+			<label text="i18n.plugins.ushahidi.map.location"/>	
+			<label name="lblCoordinates" text="0.00000, 0.00000"/>		
+		</panel>
+	</panel>
+</panel>

@@ -23,12 +23,10 @@ import org.springframework.context.ApplicationContext;
  * @author ekala
  *
  */
-@PluginControllerProperties(name="Mapping", iconPath="/icons/map.png",
+@PluginControllerProperties(name="Mapping", iconPath="/icons/map.png", i18nKey = "plugins.ushahidi",
         springConfigLocation="classpath:com/ushahidi/plugins/mapping/mapping-spring-hibernate.xml",
         hibernateConfigPath="classpath:com/ushahidi/plugins/mapping/mapping.hibernate.cfg.xml")
 public class MappingPluginController extends BasePluginController implements IncomingMessageListener {
-    /** Filename and path of the XML containing the mapping tab */
-    private static final String XML_MAPPING_TAB = "/ui/plugins/mapping/mappingTab.xml";
     /** Logger */
     private static final Logger LOG = FrontlineUtils.getLogger(MappingPluginController.class);
 
@@ -74,27 +72,25 @@ public class MappingPluginController extends BasePluginController implements Inc
         this.frontlineController = frontlineController;
     }
 
-
     public void deinit() {
-        this.frontlineController.removeIncomingMessageListener(this);
-        this.mappingUIController.shutdownUIController();
+    	if (this.frontlineController != null) {
+            this.frontlineController.removeIncomingMessageListener(this);
+    	}
+    	if (this.mappingUIController != null) {
+            this.mappingUIController.shutdownUIController();
+    	}
     }
 
     public Object initThinletTab(UiGeneratorController uiController) {
         mappingUIController = new MappingUIController(this, frontlineController, uiController);         
-        Object mappingTab =  uiController.loadComponentFromFile(XML_MAPPING_TAB, mappingUIController);
-
-        mappingUIController.setTabComponent(mappingTab);
         mappingUIController.initUIController();
-
-        return mappingTab;
+        return mappingUIController.getTab();
     }
 
     public void incomingMessageEvent(FrontlineMessage message) {
         LOG.debug("Incident report received");
         mappingUIController.handleIncomingMessage(message);
     }
-
 
     public LocationDao getLocationDao(){
         return locationDao;

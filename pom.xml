@@ -111,7 +111,7 @@
 		<dependency>
 			<groupId>net.frontlinesms.core</groupId>
 			<artifactId>frontlinesms</artifactId>
-			<version>1.6.15-SNAPSHOT</version>
+			<version>1.6.16.2-SNAPSHOT</version>
 			<type>jar</type>
 		</dependency>
 	</dependencies>

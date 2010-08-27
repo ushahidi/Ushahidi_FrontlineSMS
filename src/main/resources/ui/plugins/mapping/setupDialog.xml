@@ -3,11 +3,11 @@
 	modal="true" columns="1" resizable="true" gap="15" top="9" left="9" bottom="9" right="9" width="610" height="470">
 	<table weightx="1" weighty="1" name="locationSources_Table" action="edit_MappingSource(mappingSetup_Dialog, locationSources_Table)">
 		<header>
-			<column text="i18n.common.setup.sourcename" width="100" />
-			<column text="i18n.common.setup.source" width="240" />
-			<column text="i18n.common.setup.latitude" width="100" />
-			<column text="i18n.common.setup.longitude" width="100" />
-			<column text="i18n.common.setup.active" width="20"/>
+			<column text="i18n.plugins.ushahidi.setup.sourcename" width="100" />
+			<column text="i18n.plugins.ushahidi.setup.source" width="240" />
+			<column text="i18n.plugins.ushahidi.setup.latitude" width="100" />
+			<column text="i18n.plugins.ushahidi.setup.longitude" width="100" />
+			<column text="i18n.plugins.ushahidi.setup.active" width="20"/>
 		</header>
 	</table>
 	<panel border="true" columns="3" weightx="1" gap="8" top="5" right="5" bottom="5" left="5">

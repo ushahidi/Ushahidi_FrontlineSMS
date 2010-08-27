@@ -46,7 +46,7 @@ public class MapBean extends CustomComponent implements ImageObserver {
     /** Incidents to be plotted on the map */
     private List<Incident> incidents;
     /** Instance of the UI controller for the mapping plugin */
-    private MappingUIController mappingUIController;
+    private MapPanelHandler mapPanelHandler;
     /** Name of the file containing the offline maps*/
     private String offlineMapFile;
 
@@ -97,8 +97,8 @@ public class MapBean extends CustomComponent implements ImageObserver {
      * 
      * @param controller
      */
-    public synchronized void setMappingUIController(MappingUIController controller){
-        this.mappingUIController = controller;
+    public synchronized void setMapPanelHandler(MapPanelHandler mapPanelHandler){
+        this.mapPanelHandler = mapPanelHandler;
     }
 
     public Dimension getPreferredSize() {
@@ -193,9 +193,9 @@ public class MapBean extends CustomComponent implements ImageObserver {
      * @param y Current y position of the mouse
      */
     public void updateCoordinateDisplay(){
-        if(mappingUIController != null && map != null){			
+        if (mapPanelHandler != null && map != null){			
             Location location = map.pointLocation(getCursorPosition());
-            mappingUIController.updateCoordinateLabel(location.lat, location.lon);
+            mapPanelHandler.updateCoordinateLabel(location.lat, location.lon);
         }
     }
 
