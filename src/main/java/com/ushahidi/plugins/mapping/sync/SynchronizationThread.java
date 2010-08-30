@@ -81,11 +81,13 @@ public class SynchronizationThread extends Thread{
 
 				if(task.getTaskType().equalsIgnoreCase(SynchronizationAPI.PULL_TASK)){
 					if(task.getTaskValues().size() == 0) performPullTask(); else multiplePullTask(task.getTaskValues());
-				}else if(task.getTaskType().equalsIgnoreCase(SynchronizationAPI.PUSH_TASK)){
+				}
+				else if(task.getTaskType().equalsIgnoreCase(SynchronizationAPI.PUSH_TASK)){
 					performPushTask();
 				}
 				syncManager.updateCurrentTaskNo();
-			}catch(InterruptedException e){
+			}
+			catch(InterruptedException e){
 				LOG.debug("Interruppted synchronization task while waiting ", e);
 			}
 		}
@@ -112,11 +114,14 @@ public class SynchronizationThread extends Thread{
 			LOG.debug("Payload :" + buffer.toString());			
 			processPayload(buffer.toString());
 			reader.close();
-		}catch(MalformedURLException mex){
+		}
+		catch(MalformedURLException mex){
 			LOG.debug("Invalid url ", mex);
-		}catch(IOException iox){
+		}
+		catch(IOException iox){
 			LOG.debug("Error in fetching response data", iox);
-		}catch(JSONException jsx){
+		}
+		catch(JSONException jsx){
 			LOG.debug("JSON Error ", jsx);
 		}
 	}
@@ -140,10 +145,11 @@ public class SynchronizationThread extends Thread{
 		if(baseTask.equalsIgnoreCase(SynchronizationAPI.POST_INCIDENT)){
 			urlParameterStr += SynchronizationAPI.getSubmitURLParameters(baseTask);
 			//Fetch all incidents and post them one by one
-			for(Incident incident: syncManager.getPendingIncidents())
+			for(Incident incident: syncManager.getPendingIncidents()) {
 				postIncident(incident, urlParameterStr);
-			
-		}else if(baseTask.equalsIgnoreCase(SynchronizationAPI.TAG_NEWS)){
+			}
+		}
+		else if(baseTask.equalsIgnoreCase(SynchronizationAPI.TAG_NEWS)){
 			urlParameterStr += SynchronizationAPI.getSubmitURLParameters(baseTask);
 		}
 	}
@@ -181,9 +187,11 @@ public class SynchronizationThread extends Thread{
 			JSONObject item = (JSONObject)items.getJSONObject(i).get(key);
 			if(baseTask.equals(SynchronizationAPI.CATEGORIES)){
 				fetchCategory(item);
-			}else if(baseTask.equals(SynchronizationAPI.INCIDENTS)){
+			}
+			else if(baseTask.equals(SynchronizationAPI.INCIDENTS)){
 				fetchIncident(item);
-			}else if(baseTask.equals(SynchronizationAPI.LOCATIONS)){
+			}
+			else if(baseTask.equals(SynchronizationAPI.LOCATIONS)){
 				fetchLocation(item);
 			}
 		}
@@ -207,6 +215,9 @@ public class SynchronizationThread extends Thread{
 		incident.setFrontendId(item.getLong("incidentid"));
 		incident.setTitle(item.getString("incidenttitle"));
 		incident.setDescription(item.getString("incidentdescription"));
+		incident.setVerified(item.getInt("incidentverified") == 1);
+		incident.setActive(item.getInt("incidentactive") == 1);
+		incident.setMarked(false);
 		
 		//Fetch the location info
 		Location location = new Location();
@@ -215,14 +226,14 @@ public class SynchronizationThread extends Thread{
 		location.setLatitude(item.getDouble("locationlatitude"));
 		location.setLongitude(item.getDouble("locationlongitude"));
 		incident.setLocation(location);
-		incident.setMarked(false);
 		
 		String dateStr = item.getString("incidentdate");;
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		try{
 			Date date = dateFormat.parse(dateStr);
 			incident.setIncidentDate(date);
-		}catch(ParseException e){
+		}
+		catch(ParseException e){
 			LOG.debug("Error in parsing the date",e);
 		}
 		syncManager.addIncident(incident);
@@ -235,7 +246,6 @@ public class SynchronizationThread extends Thread{
 		location.setLatitude(item.getDouble("latitude"));
 		location.setLongitude(item.getDouble("longitude"));
 		syncManager.addLocation(location);
-
 	}
 	
 	/**
@@ -290,20 +300,25 @@ public class SynchronizationThread extends Thread{
 				if(((String)status.get("code")).equalsIgnoreCase("0")){
 					syncManager.updatePostedIncidents(incident);
 					LOG.debug("Incident post succeeded: " + payload);
-				}else{
+				}
+				else{
 					syncManager.updateFailedIncidents(incident);
 					LOG.debug("Incident post failed: "+ payload.toString());
 				}
-			}else{
+			}
+			else{
 				syncManager.updateFailedIncidents(incident);
 				LOG.debug("Incident post failed: "+ sb.toString());
 			}
 			
-		}catch(MalformedURLException me){
+		}
+		catch(MalformedURLException me){
 			LOG.debug("URL error: ", me);
-		}catch(IOException io){
+		}
+		catch(IOException io){
 			LOG.debug("IO Error: ", io); 
-		}catch(JSONException jsx){
+		}
+		catch(JSONException jsx){
 			LOG.debug("JSON Error: ", jsx);
 		}
 	}

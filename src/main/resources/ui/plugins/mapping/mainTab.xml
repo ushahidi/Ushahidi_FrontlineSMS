@@ -42,18 +42,13 @@
 						</header>
 					</table>
 				</panel>
-				<panel top="9" gap="5" valign="bottom" height="50">
-					<label text="Page 1 of 1" />
-					<button icon="/icons/left.png" />
-					<button icon="/icons/right.png" />
-				</panel>
 				<panel weightx="1" top="9" gap="10" columns="2">
 					<button icon="/icons/map_setup.png" text="i18n.plugins.ushahidi.setup" action="showSetupDialog" weightx="1" />
 					<button icon="/icons/map_sync.png" text="i18n.plugins.ushahidi.synchronize" action="beginSynchronization" weightx="1"/>
 				</panel>
 			</panel>
 			<panel columns="1" weightx="1" weighty="1" text="i18n.plugins.ushahidi.incidents" border="true" gap="5" top="9" bottom="9" left="9" right="9">
-				<panel weightx="1" gap="10">
+				<panel weightx="1" gap="10" columns="2">
 					<checkbox text="i18n.plugins.ushahidi.view.map" icon="/icons/ushahidi_map.png"  group="viewtype" selected="true" action="showIncidentMap" />
 					<checkbox text="i18n.plugins.ushahidi.view.reports" icon="/icons/ushahidi_reports.png"  group="viewtype" action="showIncidentReports" />
 				</panel>

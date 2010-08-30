@@ -16,10 +16,10 @@
 		<label colspan="2" weightx="1" text="Source URL(e.g. http://demo.ushahidi.com)" />
 		<textfield name="txtLocationSource" columns="35"/>
 		<panel text="Location Bounds" border="true" columns="2" colspan="3" gap="5" top="5" right="5" bottom="5" left="5">
-			<label width="40" text="Longitude" />
-			<textfield name="txtLongitude" columns="25" />
 			<label width="40" text="Latitude" />
 			<textfield name="txtLatitude" columns="25" />
+			<label width="40" text="Longitude" />
+			<textfield name="txtLongitude" columns="25" />
 		</panel>
 		<checkbox name="chkSourceStatus" text="Default" />
 		<panel colspan="2" weightx="1" halign="right" gap="5" top="5" right="5" bottom="5" left="5">

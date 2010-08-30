@@ -49,6 +49,10 @@ public class Incident {
 		INCIDENT_DATE(FIELD_INCIDENT_DATE),
 		/** Field mapping for {@link Incident#marked} */
 		MARKED(FIELD_MARKED),
+		/** Field mapping for {@link Incident#verified} */
+		VERIFIED(FIELD_VERIFIED),
+		/** Field mapping for {@link Incident#active} */
+		ACTIVE(FIELD_ACTIVE),
 		/** Field mapping for {@link Incident#mappingSetup} */
 		MAPPING_SETUP("mappingSetup");
 		
@@ -84,6 +88,14 @@ public class Incident {
 	/** Flag to denote if the incident has been posted */
 	@Column(name=FIELD_MARKED)
 	private boolean marked;
+	
+	/** Flag to denote if the incident has been verified */
+	@Column(name=FIELD_VERIFIED)
+	private boolean verified;
+	
+	/** Flag to denote if the incident is active */
+	@Column(name=FIELD_ACTIVE)
+	private boolean active;
 	
 	/** Date when incident took place */
 	@Column(name=FIELD_INCIDENT_DATE)
@@ -228,6 +240,38 @@ public class Incident {
 	 */
 	public boolean isMarked(){
 		return marked;
+	}
+	
+	/**
+	 * Set is verified
+	 * @param verified
+	 */
+	public void setVerified(boolean verified){
+		this.verified = verified;
+	}
+	
+	/**
+	 * Checks whether the incident has been verified
+	 * @return {@link #verified}
+	 */
+	public boolean isVerified(){
+		return this.verified;
+	}
+	
+	/**
+	 * Set is active
+	 * @param active
+	 */
+	public void setActive(boolean active){
+		this.active = active;
+	}
+	
+	/**
+	 * Checks whether the incident is active
+	 * @return {@link #verified}
+	 */
+	public boolean isActive(){
+		return this.active;
 	}
 	
 	/**

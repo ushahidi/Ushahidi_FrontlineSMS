@@ -42,16 +42,18 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 	private final IncidentDao incidentDao;
 	private final MappingSetupDao mappingSetupDao;
 	
-	private static final String COMPONENT_REPORT_TITLE_FIELD = "txtReportTitle";
-	private static final String COMPONENT_REPORT_DESC_FIELD = "txtReportDescription";
-	private static final String COMPONENT_REPORT_DATE_FIELD = "txtReportDate";
-	private static final String COMPONENT_REPORT_LOCATION_NAME_FIELD = "txtReportLocation";
-	private static final String COMPONENT_REPORT_LOCATION_COORDS_LABEL = "lbl_ReportLocationCoords";
+	private final Object txtReportTitle;
+	private final Object txtReportDescription;
+	private final Object txtReportCategories;
+	private final Object txtReportDate;
+	private final Object txtReportLocation;
+	private final Object txtReportCoordinates;
+	private final Object cbxVerified;
+	
 	private static final String COMPONENT_INCIDENT_DIALOG = "incident_Dialog";
 	private static final String COMPONENT_LOCATIONS_COMBO = "cboLocations";
 	private static final String COMPONENT_CATEGORIES_COMBO = "cboCategories";
 	private static final String COMPONENT_ADDITIONAL_INFO_TEXTFIELD = "txtAdditionalInfo";
-	private static final String UI_FILE_INCIDENT_DIALOG = "/ui/plugins/mapping/incidentDialog.xml";
 	private static final String COMPONENT_LBL_SELECTED_LATITUDE = "lbl_Latitude";
 	private static final String COMPONENT_LBL_SELECTED_LONGITUDE = "lbl_Longitude";
 	private static final String COMPONENT_LOCATION_NAME_FIELD = "txtLocationName";
@@ -66,20 +68,75 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 		this.mappingSetupDao = pluginController.getMappingSetupDao();
 		
 		this.mainDialog = this.ui.loadComponentFromFile(UI_DIALOG_XML, this);
+		
+		this.txtReportTitle = this.ui.find(this.mainDialog, "txtReportTitle");
+		this.txtReportDescription = this.ui.find(this.mainDialog, "txtReportDescription");
+		this.txtReportCategories = this.ui.find(this.mainDialog, "txtReportCategories");
+		this.txtReportDate = this.ui.find(this.mainDialog, "txtReportDate");
+		this.txtReportLocation = this.ui.find(this.mainDialog, "txtReportLocation");
+		this.txtReportCoordinates = this.ui.find(this.mainDialog, "txtReportCoordinates");
+		this.cbxVerified = this.ui.find(this.mainDialog, "cbxVerified");
 	}
 	
 	public void showDialog(Incident incident) {
+		this.ui.setAttachedObject(this.mainDialog, incident);
 		if (incident != null) {
-			setText(ui.find(this.mainDialog, COMPONENT_REPORT_TITLE_FIELD), incident.getTitle());
-			setText(ui.find(this.mainDialog, COMPONENT_REPORT_DESC_FIELD), incident.getDescription());
-			setText(ui.find(this.mainDialog, COMPONENT_REPORT_DATE_FIELD), 
-					InternationalisationUtils.getDatetimeFormat().format(incident.getIncidentDate()));
-			setText(ui.find(this.mainDialog, COMPONENT_REPORT_LOCATION_NAME_FIELD), incident.getLocation().getName());
-			setText(ui.find(this.mainDialog, COMPONENT_REPORT_LOCATION_COORDS_LABEL), 
-					Double.toString(incident.getLocation().getLongitude()) +"," +
-					Double.toString(incident.getLocation().getLatitude()));	
+			setText(this.txtReportTitle, incident.getTitle());
+			setText(this.txtReportDescription, incident.getDescription());
+			StringBuilder categories = new StringBuilder();
+			for(Category category: categoryDao.getAllCategories(mappingSetupDao.getDefaultSetup())) {
+				if (categories.length() > 0) {
+					categories.append(", ");
+				}
+				categories.append(category.getTitle());
+			}
+			setText(this.txtReportCategories, categories.toString());
+			setText(this.txtReportDate, InternationalisationUtils.getDatetimeFormat().format(incident.getIncidentDate()));
+			setText(this.txtReportLocation, incident.getLocation().getName());
+			setText(this.txtReportCoordinates, Double.toString(incident.getLocation().getLatitude()) + ", " + 
+											   Double.toString(incident.getLocation().getLongitude()));
+			setSelected(this.cbxVerified, incident.isVerified());
 		}
+		else {
+			setText(this.txtReportTitle, "");
+			setText(this.txtReportDescription, "");
+			setText(this.txtReportCategories, "");
+			setText(this.txtReportDate, "");
+			setText(this.txtReportLocation, "");
+			setText(this.txtReportCoordinates, "");
+			setSelected(this.cbxVerified, false);
+		}
+		setEditable(this.txtReportTitle, incident == null);
+		setEditable(this.txtReportDescription, incident == null);
+		setEditable(this.txtReportTitle, incident == null);
+		setEditable(this.txtReportLocation, incident == null);
+		setEditable(this.txtReportCoordinates, incident == null);
+		setEnabled(this.cbxVerified, false);
 		this.ui.add(this.mainDialog);
+	}
+	
+	public void showDialog(FrontlineMessage message) {
+		this.ui.setAttachedObject(this.mainDialog, message);
+		
+		//Populate the locations combo
+		Object cbLocation = find(this.mainDialog, COMPONENT_LOCATIONS_COMBO);
+		for(Location  l: locationDao.getAllLocations(mappingSetupDao.getDefaultSetup())) {				
+			Object choice = createComboboxChoice(l.getName(), l);
+			ui.add(cbLocation, choice);
+		}
+		
+		Object cbCategory = find(this.mainDialog, COMPONENT_CATEGORIES_COMBO);
+		for(Category c: categoryDao.getAllCategories(mappingSetupDao.getDefaultSetup())){
+			Object choice = createComboboxChoice(c.getTitle(), c);
+			ui.add(cbCategory, choice);
+		}
+			
+		//Load Message Details			
+		setText(this.txtReportDate, InternationalisationUtils.getDatetimeFormat().format(message.getDate()));
+		setText(find(this.mainDialog, "txtIncidentSender"), getSenderDisplayValue(message));
+		setText(find(this.mainDialog, "txtMessage"), message.getTextContent());
+		
+		ui.add(this.mainDialog);	
 	}
 	
 	/**
@@ -91,31 +148,6 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 		for(Category category: categoryDao.getAllCategories(mappingSetupDao.getDefaultSetup()))
 			items.add(category.getTitle().toLowerCase());
 		return items;
-	}
-	
-	public void showDialog(FrontlineMessage message) {
-		Object dialog = ui.loadComponentFromFile(UI_FILE_INCIDENT_DIALOG, this);
-		ui.setAttachedObject(dialog, message);
-		
-		//Populate the locations combo
-		Object cbLocation = find(dialog, COMPONENT_LOCATIONS_COMBO);
-		for(Location  l: locationDao.getAllLocations(mappingSetupDao.getDefaultSetup())) {				
-			Object choice = createComboboxChoice(l.getName(), l);
-			ui.add(cbLocation, choice);
-		}
-		
-		Object cbCategory = find(dialog, COMPONENT_CATEGORIES_COMBO);
-		for(Category c: categoryDao.getAllCategories(mappingSetupDao.getDefaultSetup())){
-			Object choice = createComboboxChoice(c.getTitle(), c);
-			ui.add(cbCategory, choice);
-		}
-			
-		//Load Message Details			
-		setText(find(dialog, "txtIncidentDate"), InternationalisationUtils.getDatetimeFormat().format(message.getDate()));
-		setText(find(dialog, "txtIncidentSender"), getSenderDisplayValue(message));
-		setText(find(dialog, "txtMessage"), message.getTextContent());
-		
-		ui.add(dialog);	
 	}
 	
 	/**
@@ -135,17 +167,17 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 	public void saveReport(Object dialog){
 		Incident incident = (Incident)getAttachedObject(dialog);
 		if(incident != null){
-			incident.setTitle(getText(ui.find(dialog, COMPONENT_REPORT_TITLE_FIELD)));
-			incident.setDescription(getText(ui.find(dialog, COMPONENT_REPORT_DESC_FIELD)));
+			incident.setTitle(getText(this.txtReportTitle));
+			incident.setDescription(getText(this.txtReportDescription));
 			//Only locally created incidents should be marked for posting to the frontend
 			//TODO: Accomodate editing and posting of incidents fetched from the frontend; API feature request
-			if(Long.toString(incident.getFrontendId()).equals(null))
+			if (Long.toString(incident.getFrontendId()).equals(null)) {
 				incident.setMarked(true);
-			
-			//
+			}
 			try{
 				incidentDao.updateIncident(incident);
-			}catch(DuplicateKeyException e){
+			}
+			catch(DuplicateKeyException e){
 				LOG.debug("Unable to update incident", e);
 			}
 		}
@@ -173,7 +205,8 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 			if(getBoolean(cboLocations, ENABLED)){
 				location = (Location)getAttachedObject(getSelectedItem(cboLocations));
 				incident.setLocation(location);
-			}else{
+			}
+			else {
 				double lat = Double.parseDouble(getText(ui.find(dialog, COMPONENT_LBL_SELECTED_LATITUDE)));
 				double lon = Double.parseDouble(getText(ui.find(dialog, COMPONENT_LBL_SELECTED_LONGITUDE)));
 				
@@ -181,19 +214,17 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 				location = new Location(lat, lon);
 				location.setName(name);
 				location.setMappingSetup(mappingSetupDao.getDefaultSetup());
-				
 				try{
 					locationDao.saveLocation(location);					
-				}catch(DuplicateKeyException de){
+				}
+				catch(DuplicateKeyException de){
 					LOG.debug(de);
 					//de.printStackTrace();
 					ui.alert("The location ["+name+"] could not be saved.");
 					return;
 				}
-				
 				//Reload the list of keywords
 				//updateKeywordList();
-				
 			}			
 			
 			incident.setTitle(title);

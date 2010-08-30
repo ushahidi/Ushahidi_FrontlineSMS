@@ -2,6 +2,8 @@ package com.ushahidi.plugins.mapping.ui;
 
 import org.apache.log4j.Logger;
 
+import thinlet.ThinletText;
+
 import com.ushahidi.plugins.mapping.MappingPluginController;
 import com.ushahidi.plugins.mapping.data.domain.Incident;
 import com.ushahidi.plugins.mapping.data.repository.IncidentDao;
@@ -10,6 +12,7 @@ import com.ushahidi.plugins.mapping.data.repository.MappingSetupDao;
 import net.frontlinesms.FrontlineSMS;
 import net.frontlinesms.FrontlineUtils;
 import net.frontlinesms.ui.ExtendedThinlet;
+import net.frontlinesms.ui.Icon;
 import net.frontlinesms.ui.ThinletUiEventHandler;
 import net.frontlinesms.ui.UiGeneratorController;
 import net.frontlinesms.ui.i18n.InternationalisationUtils;
@@ -77,6 +80,15 @@ public class ReportsPanelHandler extends ExtendedThinlet implements ThinletUiEve
 	 */
 	public Object getRow(Incident incident){
 		Object row = createTableRow(incident);
+		if (incident.isMarked()) {
+			this.ui.add(row, this.ui.createTableCell(""));
+		}
+		else {
+			Object cell = this.ui.createTableCell("");
+			this.ui.setIcon(cell, Icon.TICK);
+			this.ui.setChoice(cell, ThinletText.ALIGNMENT, ThinletText.CENTER);
+			this.ui.add(row, cell);
+		}
 		createTableCell(row, incident.getTitle());
 		createTableCell(row, incident.getLocation().getName());
 		createTableCell(row, InternationalisationUtils.getDateFormat().format(incident.getIncidentDate()));
