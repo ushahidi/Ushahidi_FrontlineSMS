@@ -1,5 +1,5 @@
 <panel name="panelReports" gap="10" top="3" right="3" bottom="3" left="3" columns="1" weightx="1" weighty="1">
-	<table name="tbl_IncidentReports" weightx="1" weighty="1" perform="showReportDetails(item)">
+	<table name="tblReports" weightx="1" weighty="1" perform="showReportDetails(item)">
 		<header>
 			<column text="i18n.plugins.ushahidi.incident.online" width="40"/>
 			<column text="i18n.plugins.ushahidi.incident.verified" width="50"/>
@@ -10,4 +10,11 @@
 			<column text="i18n.plugins.ushahidi.incident.description" />
 		</header>
 	</table>
+	<panel gap="5" columns="5" weightx="1">
+		<label text="i18n.plugins.ushahidi.search" icon="/icons/search.png" for="txtSearch"/>
+		<textfield name="txtSearch" columns="30" action="search(this, cbxCategories)" focusgained="focusGained(this)" focuslost="focusLost(this)"/>
+		<label text=""/>
+		<label text="i18n.plugins.ushahidi.categories" for="cbxCategories" />
+		<combobox name="cbxCategories" action="search(txtSearch, this)" editable="false" weightx="1"/>
+	</panel>
 </panel>

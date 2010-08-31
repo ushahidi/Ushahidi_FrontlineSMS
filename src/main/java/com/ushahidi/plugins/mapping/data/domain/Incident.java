@@ -239,6 +239,15 @@ public class Incident {
 		this.categories.add(category);
 	}
 	
+	public boolean hasCategory(Category category) {
+		for (Category c : this.categories) {
+			if (c.getFrontendId() == category.getFrontendId()) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	public String getCategoryNames() {
 		StringBuilder sb = new StringBuilder();
 		for(Category category: this.categories) {
