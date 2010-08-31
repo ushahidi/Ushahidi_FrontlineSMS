@@ -264,8 +264,6 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 			}
 			catch(DuplicateKeyException e){
 				LOG.debug("Category already exists", e);
-				LOG.trace("EXIT");
-				syncManager.terminateManagerThread();
 				return;
 			}
 					
@@ -294,8 +292,6 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 			}
 			catch(DuplicateKeyException e){			
 				LOG.debug("Location already exists", e);
-				LOG.trace("EXIT");
-				syncManager.terminateManagerThread();
 				return;
 			}
 			
@@ -331,8 +327,6 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 				incidentDao.saveIncident(incident);
 			} catch (DuplicateKeyException e) {
 				LOG.debug("Incident already exists", e);
-				LOG.trace("EXIT");
-				syncManager.terminateManagerThread();
 				return;
 			}
 			LOG.debug("Incident [" + incident.getTitle() + "] created!");

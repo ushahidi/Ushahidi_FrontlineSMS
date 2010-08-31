@@ -1,6 +1,8 @@
 package com.ushahidi.plugins.mapping.data.domain;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.*;
 
@@ -26,6 +28,9 @@ public class Incident {
 	private static final String FIELD_ACTIVE = "active";
 	/** Column name for {@link #verified} */
 	private static final String FIELD_VERIFIED  = "verified";
+	/** Column name for {@link #categories} */
+	private static final String FIELD_CATEGORIES  = "categories";
+	
 	/** Column name for {@link #firstName} */
 	private static final String FIELD_FIRST_NAME = "firstName";
 	/** Column name for {@link #lastName} */
@@ -53,6 +58,8 @@ public class Incident {
 		VERIFIED(FIELD_VERIFIED),
 		/** Field mapping for {@link Incident#active} */
 		ACTIVE(FIELD_ACTIVE),
+		/** Field mapping for {@link Incident#catergories} */
+		CATEGORIES(FIELD_CATEGORIES),
 		/** Field mapping for {@link Incident#mappingSetup} */
 		MAPPING_SETUP("mappingSetup");
 		
@@ -99,11 +106,11 @@ public class Incident {
 	
 	/** Date when incident took place */
 	@Column(name=FIELD_INCIDENT_DATE)
-	private Date  incidentDate;
+	private Date incidentDate;
 	
-	/** Category of this incident */
-	@ManyToOne
-	private Category category;
+	/** Categories of this incident */
+	@OneToMany(cascade=CascadeType.ALL, fetch=FetchType.EAGER)
+	private final List<Category> categories = new ArrayList<Category>();
 	
 	/** Location of this incident */
 	@ManyToOne
@@ -211,19 +218,47 @@ public class Incident {
 	}
 	
 	/**
-	 * Sets the category of this incident
-	 * @param category
+	 * Gets the categories of the incident
 	 */
-	public void setCategory(Category category){
-		this.category = category;
+	public List<Category> getCategories() {
+		return this.categories;
 	}
 	
 	/**
-	 * Gets the category of the incident
-	 * @return {@link #category}
+	 * Sets the categories of this incident
+	 * @param c
 	 */
-	public Category getCategory(){
-		return category;
+	public void setCategories(List<Category> c) {
+		this.categories.clear();
+		if (c != null) {
+			this.categories.addAll(c);	
+		}
+	}
+	
+	public void addCategory(Category category) {
+		this.categories.add(category);
+	}
+	
+	public String getCategoryNames() {
+		StringBuilder sb = new StringBuilder();
+		for(Category category: this.categories) {
+			if (sb.length() > 0) {
+				sb.append(",");
+			}
+			sb.append(category.getTitle());
+		}
+		return sb.toString();
+	}
+	
+	public String getCategoryIDs() {
+		StringBuilder sb = new StringBuilder();
+		for(Category category: this.categories) {
+			if (sb.length() > 0) {
+				sb.append(",");
+			}
+			sb.append(category.getFrontendId());
+		}
+		return sb.toString();
 	}
 	
 	/**

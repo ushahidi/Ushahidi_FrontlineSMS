@@ -5,6 +5,7 @@ import org.apache.log4j.Logger;
 import thinlet.ThinletText;
 
 import com.ushahidi.plugins.mapping.MappingPluginController;
+import com.ushahidi.plugins.mapping.data.domain.Category;
 import com.ushahidi.plugins.mapping.data.domain.Incident;
 import com.ushahidi.plugins.mapping.data.repository.IncidentDao;
 import com.ushahidi.plugins.mapping.data.repository.MappingSetupDao;
@@ -80,18 +81,25 @@ public class ReportsPanelHandler extends ExtendedThinlet implements ThinletUiEve
 	 */
 	public Object getRow(Incident incident){
 		Object row = createTableRow(incident);
-		if (incident.isMarked()) {
-			this.ui.add(row, this.ui.createTableCell(""));
-		}
-		else {
+		createTableCell(row, incident.isMarked() == false);
+		createTableCell(row, incident.isVerified());
+		createTableCell(row, incident.getTitle());
+		createTableCell(row, incident.getLocation().getName());
+		createTableCell(row, InternationalisationUtils.getDateFormat().format(incident.getIncidentDate()));
+		createTableCell(row, incident.getCategoryNames());
+		createTableCell(row, incident.getDescription());
+		return row;
+	}
+	
+	private void createTableCell(Object row, boolean checked) {
+		if (checked) {
 			Object cell = this.ui.createTableCell("");
 			this.ui.setIcon(cell, Icon.TICK);
 			this.ui.setChoice(cell, ThinletText.ALIGNMENT, ThinletText.CENTER);
 			this.ui.add(row, cell);
 		}
-		createTableCell(row, incident.getTitle());
-		createTableCell(row, incident.getLocation().getName());
-		createTableCell(row, InternationalisationUtils.getDateFormat().format(incident.getIncidentDate()));
-		return row;
+		else {
+			this.ui.add(row, this.ui.createTableCell(""));
+		}
 	}
 }

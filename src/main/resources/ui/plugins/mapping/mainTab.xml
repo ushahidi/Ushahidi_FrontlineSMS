@@ -1,4 +1,4 @@
-<tab icon="/icons/big_map.png" text="i18n.plugins.ushahidi.mapping" name=":mapping">
+<tab icon="/icons/big_map.png" text="i18n.plugins.ushahidi.title" name=":mapping">
 	<panel bottom="9" columns="2" gap="9" left="9" right="9" top="9" weightx="1" weighty="1">
 		<label icon="/icons/header/mapManager.png" valign="top" />
 		<splitpane divider="350" weightx="1" weighty="1" rowspan="2">

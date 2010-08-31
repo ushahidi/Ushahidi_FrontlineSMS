@@ -83,14 +83,7 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 		if (incident != null) {
 			setText(this.txtReportTitle, incident.getTitle());
 			setText(this.txtReportDescription, incident.getDescription());
-			StringBuilder categories = new StringBuilder();
-			for(Category category: categoryDao.getAllCategories(mappingSetupDao.getDefaultSetup())) {
-				if (categories.length() > 0) {
-					categories.append(", ");
-				}
-				categories.append(category.getTitle());
-			}
-			setText(this.txtReportCategories, categories.toString());
+			setText(this.txtReportCategories, incident.getCategoryNames());
 			setText(this.txtReportDate, InternationalisationUtils.getDatetimeFormat().format(incident.getIncidentDate()));
 			setText(this.txtReportLocation, incident.getLocation().getName());
 			setText(this.txtReportCoordinates, Double.toString(incident.getLocation().getLatitude()) + ", " + 
@@ -233,8 +226,8 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 			incident.setMappingSetup(mappingSetupDao.getDefaultSetup());
 			
 			Object cboCategories = ui.find(dialog, COMPONENT_CATEGORIES_COMBO);
-			Category category = (Category)getAttachedObject(getSelectedItem(cboCategories));
-			incident.setCategory(category);
+//			Category category = (Category)getAttachedObject(getSelectedItem(cboCategories));
+//			incident.setCategory(category);
 			incident.setMarked(true);
 			
 			try{

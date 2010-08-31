@@ -76,9 +76,9 @@ public class SynchronizationThread extends Thread{
 				this.baseTask = task.getTaskName();
 				taskBuffer = new StringBuffer();
 				taskBuffer.append(this.baseTask);
-				if(task.getRequestParameter() != null)
+				if(task.getRequestParameter() != null) {
 					taskBuffer.append(task.getRequestParameter());
-
+				}
 				if(task.getTaskType().equalsIgnoreCase(SynchronizationAPI.PULL_TASK)){
 					if(task.getTaskValues().size() == 0) performPullTask(); else multiplePullTask(task.getTaskValues());
 				}
@@ -108,12 +108,16 @@ public class SynchronizationThread extends Thread{
 			String line = null;
 			URL url = new URL(urlStr);			
 			BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
-			while((line = reader.readLine()) != null){
-				buffer.append(line);
+			try {
+				while((line = reader.readLine()) != null){
+					buffer.append(line);
+				}
+				LOG.debug("Payload :" + buffer.toString());			
+				processPayload(buffer.toString());	
 			}
-			LOG.debug("Payload :" + buffer.toString());			
-			processPayload(buffer.toString());
-			reader.close();
+			finally {
+				reader.close();
+			}
 		}
 		catch(MalformedURLException mex){
 			LOG.debug("Invalid url ", mex);
@@ -180,19 +184,35 @@ public class SynchronizationThread extends Thread{
 	private void processPayload(String payload) throws JSONException{
 		JSONObject jsonPayload = new JSONObject(payload);
 		JSONObject data = jsonPayload.getJSONObject(SynchronizationAPI.PAYLOAD);
-		
-		String key = getPayloadKey();
 		JSONArray items = data.getJSONArray(baseTask);
-		for(int i=0; i<items.length(); i++){
-			JSONObject item = (JSONObject)items.getJSONObject(i).get(key);
+		for(int i=0; i < items.length(); i++){
+			JSONObject item = (JSONObject)items.getJSONObject(i);
 			if(baseTask.equals(SynchronizationAPI.CATEGORIES)){
-				fetchCategory(item);
+				Category category = fetchCategory((JSONObject)item.get(SynchronizationAPI.CATEGORY_KEY));
+				syncManager.addCategory(category);
 			}
 			else if(baseTask.equals(SynchronizationAPI.INCIDENTS)){
-				fetchIncident(item);
+				Incident incident = fetchIncident((JSONObject)item.get(SynchronizationAPI.INCIDENT_KEY));
+				if (item.has(SynchronizationAPI.CATEGORIES)) {
+					JSONArray categories = (JSONArray)item.getJSONArray(SynchronizationAPI.CATEGORIES);
+					if (categories != null) {
+						for(int j=0; j < categories.length(); j++){
+							JSONObject categoryItem = (JSONObject)categories.getJSONObject(j);
+							if (categoryItem.has(SynchronizationAPI.CATEGORY_KEY)) {
+								Category category = fetchCategory((JSONObject)categoryItem.get(SynchronizationAPI.CATEGORY_KEY));
+								if (category != null) {
+									incident.addCategory(category);		
+								}		
+							}
+						}
+					}		
+				}
+				//TODO load media
+				syncManager.addIncident(incident);
 			}
 			else if(baseTask.equals(SynchronizationAPI.LOCATIONS)){
-				fetchLocation(item);
+				Location location = fetchLocation((JSONObject)item.get(SynchronizationAPI.LOCATION_KEY));
+				syncManager.addLocation(location);
 			}
 		}
 	}
@@ -202,15 +222,21 @@ public class SynchronizationThread extends Thread{
 	 * @param categories
 	 * @throws JSONException
 	 */
-	private void fetchCategory(JSONObject item) throws JSONException{
+	private Category fetchCategory(JSONObject item) throws JSONException{
+		System.out.println("fetchCategory: " + item.toString());
 		Category category = new Category();
 		category.setFrontendId(item.getLong("id"));
-		category.setTitle(item.getString("title"));
-		category.setDescription(item.getString("description"));
-		syncManager.addCategory(category);
+		if (item.has("title")) {
+			category.setTitle(item.getString("title"));
+		}
+		if (item.has("description")) {
+			category.setDescription(item.getString("description"));
+		}
+		return category;
 	}
 	
-	private void fetchIncident(JSONObject item) throws JSONException{
+	private Incident fetchIncident(JSONObject item) throws JSONException{
+		System.out.println("fetchIncident: " + item.toString());
 		Incident incident = new Incident();
 		incident.setFrontendId(item.getLong("incidentid"));
 		incident.setTitle(item.getString("incidenttitle"));
@@ -236,16 +262,17 @@ public class SynchronizationThread extends Thread{
 		catch(ParseException e){
 			LOG.debug("Error in parsing the date",e);
 		}
-		syncManager.addIncident(incident);
+		return incident;
 	}
 	
-	private void fetchLocation(JSONObject item) throws JSONException{
+	private Location fetchLocation(JSONObject item) throws JSONException{
+		System.out.println("fetchLocation: " + item.toString());
 		Location location = new Location();
 		location.setFrontendId(item.getInt("id"));
 		location.setName(item.getString("name"));
 		location.setLatitude(item.getDouble("latitude"));
 		location.setLongitude(item.getDouble("longitude"));
-		syncManager.addLocation(location);
+		return location;
 	}
 	
 	/**
@@ -262,40 +289,45 @@ public class SynchronizationThread extends Thread{
 				getDateTimeComponent(date, "MM/dd/yyyy"), 
 				getDateTimeComponent(date, "HH"), getDateTimeComponent(date, "mm"),
 				getDateTimeComponent(date, "a").toLowerCase(),
-				incident.getCategory().getFrontendId(),
+				incident.getCategoryIDs(),
 				Double.toString(incident.getLocation().getLatitude()), 
 				Double.toString(incident.getLocation().getLongitude()),
 				incident.getLocation().getName()
 				);
 		//post the incident to the frontend
-		LOG.debug("Posting incident "+parameterStr);
+		LOG.debug("Posting incident " + parameterStr);
 		try{
 			//Send data
 			URL url = new URL(getRequestURL());			
 			URLConnection conn = url.openConnection();
 			conn.setDoOutput(true);
+			StringBuffer response = new StringBuffer();
 			OutputStreamWriter writer = new OutputStreamWriter(conn.getOutputStream());
-		
-			//write parameters
-			writer.write(parameterStr);
-			writer.flush();
-			
-			//Get the response
-			BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-			String line = null;
-			StringBuffer sb = new StringBuffer();
-			while((line = reader.readLine()) != null){
-				sb.append(line);
-			}
+			try {
+				//write parameters
+				writer.write(parameterStr);
+				writer.flush();
+				
+				//Get the response
+				BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+				try {
+					String line = null;
+					while((line = reader.readLine()) != null){
+						response.append(line);
+					}
 
-			LOG.debug("Response: "  + sb.toString());
-			
-			reader.close();
-			writer.close();
-						
+					LOG.debug("Response: "  + response.toString());	
+				}
+				finally {
+					reader.close();
+				}	
+			}
+			finally {
+				writer.close();
+			}			
 			//Get the status of the posting and update the sync manager with the list of failed incidents
-			if(sb.toString().indexOf("{") != -1){
-				JSONObject payload = new JSONObject(sb.toString());
+			if(response.toString().indexOf("{") != -1){
+				JSONObject payload = new JSONObject(response.toString());
 				JSONObject status = payload.getJSONObject("error");			
 				if(((String)status.get("code")).equalsIgnoreCase("0")){
 					syncManager.updatePostedIncidents(incident);
@@ -308,7 +340,7 @@ public class SynchronizationThread extends Thread{
 			}
 			else{
 				syncManager.updateFailedIncidents(incident);
-				LOG.debug("Incident post failed: "+ sb.toString());
+				LOG.debug("Incident post failed: "+ response.toString());
 			}
 			
 		}

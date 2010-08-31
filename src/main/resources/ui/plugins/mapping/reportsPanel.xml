@@ -1,10 +1,13 @@
 <panel name="panelReports" gap="10" top="3" right="3" bottom="3" left="3" columns="1" weightx="1" weighty="1">
 	<table name="tbl_IncidentReports" weightx="1" weighty="1" perform="showReportDetails(item)">
 		<header>
-			<column text="i18n.plugins.ushahidi.incident.online" width="45"/>
+			<column text="i18n.plugins.ushahidi.incident.online" width="40"/>
+			<column text="i18n.plugins.ushahidi.incident.verified" width="50"/>
 			<column text="i18n.plugins.ushahidi.incident.title" width="300"/>
 			<column text="i18n.plugins.ushahidi.incident.location" width="130"/>
-			<column text="i18n.plugins.ushahidi.incident.date" width="50"/>
+			<column text="i18n.plugins.ushahidi.incident.date" width="100"/>
+			<column text="i18n.plugins.ushahidi.incident.categories" width="200"/>
+			<column text="i18n.plugins.ushahidi.incident.description" />
 		</header>
 	</table>
 </panel>
