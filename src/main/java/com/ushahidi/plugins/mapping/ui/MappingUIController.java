@@ -55,6 +55,8 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		
 	private MapBean mapBean;
 	private SynchronizationManager syncManager;
+	private MapPanelHandler mapPanelHandler;
+	private ReportsPanelHandler reportsPanelHandler;
 	
 	public static Logger LOG = FrontlineUtils.getLogger(MappingUIController.class);	
 	
@@ -398,7 +400,8 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 			Location location = (Location)item;
 			location.setMappingSetup(mappingSetupDao.getDefaultSetup());
 			List<Incident> incidents = incidentDao.getIncidentsByLocation(location);
-			mapBean.setIncidents(incidents);
+			//TODO update
+//			mapBean.setIncidents(incidents);
 		}
 		else {
 			throw new RuntimeException();
@@ -455,18 +458,26 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		}
 	}
 	
-	public MapPanelHandler showIncidentMap() {
+	public void showIncidentMap() {
 		System.out.println("showIncidentMap");
-		MapPanelHandler mapPanel = new MapPanelHandler(this.pluginController, this.frontlineController, this.ui);
-		mapPanel.showPanel(this.pnlViewIncidents);
-		return mapPanel;
+		if (this.mapPanelHandler == null) {
+			this.mapPanelHandler = new MapPanelHandler(this.pluginController, this.frontlineController, this.ui);
+		}
+		this.mapPanelHandler.init();
+		this.removeAll(this.pnlViewIncidents);
+		this.add(this.pnlViewIncidents, this.mapPanelHandler.getMainPanel());
+		this.repaint(this.pnlViewIncidents);
 	}
 	
-	public ReportsPanelHandler showIncidentReports() {
+	public void showIncidentReports() {
 		System.out.println("showIncidentReports");
-		ReportsPanelHandler reportsPanel = new ReportsPanelHandler(this.pluginController, this.frontlineController, this.ui);
-		reportsPanel.showPanel(this.pnlViewIncidents);
-		return reportsPanel;
+		if (this.reportsPanelHandler == null) {
+			this.reportsPanelHandler = new ReportsPanelHandler(this.pluginController, this.frontlineController, this.ui);
+		}
+		this.reportsPanelHandler.init();
+		this.removeAll(this.pnlViewIncidents);
+		this.add(this.pnlViewIncidents, this.reportsPanelHandler.getMainPanel());
+		this.repaint(this.pnlViewIncidents);
 	}
 		
 }

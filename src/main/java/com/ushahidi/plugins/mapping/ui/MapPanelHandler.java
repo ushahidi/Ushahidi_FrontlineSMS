@@ -38,11 +38,10 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 	
 	private final IncidentDao incidentDao;
 	private final MappingSetupDao mappingSetupDao;
-	private final MapBean mapBean;
 	
-	private static final String COMPONENT_MAP_BEAN = "mapBean";
-	private static final String COMPONENT_COORDINATE_LABEL = "lblCoordinates";
-	private static final String COMPONENT_SLD_ZOOM_CONTROLLER = "sld_ZoomController";
+	private final MapBean mapBean;
+	private final Object lblCoordinates;
+	private final Object sldZoomController;
 	
 	public MapPanelHandler(MappingPluginController pluginController, FrontlineSMS frontlineController, UiGeneratorController uiController) {
 		this.pluginController = pluginController;
@@ -53,15 +52,16 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 		this.mappingSetupDao = pluginController.getMappingSetupDao();
 		
 		this.mainPanel = this.ui.loadComponentFromFile(UI_PANEL_XML, this);
-		this.mapBean = (MapBean)get(ui.find(this.mainPanel, COMPONENT_MAP_BEAN), BEAN);
+		this.mapBean = (MapBean)get(this.find(this.mainPanel, "mapBean"), BEAN);
+		this.lblCoordinates = this.find(this.mainPanel, "lblCoordinates");
+		this.sldZoomController = this.find(this.mainPanel, "sldZoomController");
 	}
 	
 	public Object getMainPanel() {
 		return this.mainPanel;
 	}
 	
-	/** Initializes the location bounds for the map bean */
-	private void initializeMapBean() {
+	public void init() {
 		if(mappingSetupDao.getDefaultSetup() != null) {
 			//Get the default mapping setup
 			MappingSetup defaultSetup = mappingSetupDao.getDefaultSetup();
@@ -102,18 +102,8 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 		} 
 		else {
 			//The mapping plugin has not been configured; therefore disable the zoom controller
-			setEnabled(ui.find(this.mainPanel, COMPONENT_SLD_ZOOM_CONTROLLER), false);
+			setEnabled(this.sldZoomController, false);
 		}
-	}
-	
-	public void showPanel(Object container) {
-		this.ui.removeAll(container);
-		this.initializeMapBean();
-		this.ui.add(container, this.mainPanel);
-	}
-	
-	private Object getZoomController(){
-	    return ui.find(this.mainPanel, COMPONENT_SLD_ZOOM_CONTROLLER);
 	}
 	
 	/**
@@ -136,9 +126,8 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 	/** @see {@link MapListener#mapZoomed(int)} */
 	public void mapZoomed(int zoom){
 	    LOG.info("Updating zoom controller to level " + zoom);
-	    
 	    // Update the zoom slider to reflect the current zoom level
-	    setInteger(getZoomController(), VALUE, zoom);
+	    setInteger(this.sldZoomController, VALUE, zoom);
 	    ui.repaint();
 	}
 	
@@ -164,40 +153,6 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 	}
 	
 	/**
-	 * Saves the map tiles to a file on the disk
-	 * 
-	 * @param dialog Map Save dialog
-	 * @param mapName Name of the file to save the map to
-	 */
-	public void doMapSave(Object dialog, String mapName) {
-		MapBean mapBean = (MapBean) get(ui.find(COMPONENT_MAP_BEAN), BEAN);
-		TiledMap map = mapBean.getMap();
-		//Create maps dir in config dir if it doesn't exist
-		File f = new File(ResourceUtils.getConfigDirectoryPath() + "/maps");
-		if(!f.exists()) {
-			if(!f.mkdir()) {
-				ui.alert("Unable to create maps dir!");
-				return;
-			}
-		}
-		String filename = ResourceUtils.getConfigDirectoryPath() + "maps/" + mapName + ".zip";
-		TileSaver ts = new TileSaver(map, map.topLeftCoord(), map.btmRightCoord(), filename, true);
-		ts.startSave();
-		ts.done();
-		
-		MappingSetup mappingSetup = mappingSetupDao.getDefaultSetup();
-		mappingSetup.setOfflineMapFile(filename);
-		mappingSetup.setOffline(true);
-		
-		try{
-			mappingSetupDao.updateMappingSetup(mappingSetup);
-		}catch(DuplicateKeyException de){
-			LOG.debug("Could not update map setup", de);
-			ui.alert("Update of map setup failed");
-		}
-	}
-	
-	/**
 	 * Updates the screen with the current geographical coordinates based on the current
 	 * position of the mouse. A mouse motion listener is used to track mouse movement on
 	 * the map
@@ -208,9 +163,8 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 	public void updateCoordinateLabel(double lat, double lon){
 		String latStr = Double.toString(lat).substring(0,8);
 		String lonStr = Double.toString(lon).substring(0,8);
-		Object label = ui.find(this.mainPanel, COMPONENT_COORDINATE_LABEL);
-		setText(label, lonStr+", "+latStr);
-		ui.repaint(label);
+		setText(this.lblCoordinates, lonStr+", "+latStr);
+		ui.repaint(this.lblCoordinates);
 	}
 	
 	/**
@@ -231,8 +185,7 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 	}	
 	
 	public void startPointSelection(Object dialog) {
-		MapBean mapBean = (MapBean) get(ui.find(this.mainPanel, COMPONENT_MAP_BEAN), BEAN);
-		mapBean.addMapListener(this);		
+		this.mapBean.addMapListener(this);		
 		setBoolean(dialog, Thinlet.MODAL, false);
 		setVisible(dialog, false);
 		
@@ -244,8 +197,8 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 	 * Show the map save dialog
 	 */
 	public void saveMap() {
-//		Object saveDialog = ui.loadComponentFromFile(UI_SAVE_DIALOG, this);
-//		ui.add(saveDialog);
+		MapSaveDialogHandler mapSaveDialog = new MapSaveDialogHandler(this.pluginController, this.frontlineController, this.ui);
+		mapSaveDialog.showDialog(this.mapBean);
 	}
 	
 	public void incidentFilterDateChanged() {		

@@ -4,16 +4,16 @@
 			<popupmenu name="menu">
 			    <menu name="onlineMapsMenu" text="i18n.action.add.to.group"/>
 			    <separator name="sp1"/>
-			    <menuitem icon="/icons/tick.png" name="saveMap" text="i18n.action.save" action="saveMap" />		                    		                    
+			    <menuitem icon="/icons/tick.png" name="saveMap" text="i18n.plugins.ushahidi.map.save" action="saveMap" />		                    		                    
 			</popupmenu>					
 		</bean>
 	</panel>
 	<panel weightx="1" columns="4" gap="15" top="10">
-		<checkbox text="i18n.plugins.ushahidi.point.data" icon="/icons/point_data.png" group="datatype" selected="true" action="showPointData" valign="center"/>
-		<checkbox text="i18n.plugins.ushahidi.clustered.data" icon="/icons/clustered_data.png" group="datatype" action="showClusteredData" valign="center"/>
+		<checkbox text="i18n.plugins.ushahidi.point.data" icon="/icons/point_data.png" group="mapType" selected="true" action="showPointData" valign="center"/>
+		<checkbox text="i18n.plugins.ushahidi.clustered.data" icon="/icons/clustered_data.png" group="mapType" action="showClusteredData" valign="center"/>
 		<panel gap="5" valign="fill">
 			<label text="i18n.plugins.ushahidi.map.zoom" valign="center"/>
-			<slider height="2" width="80" minimum="1" unit="1" block="1" maximum="25" value="7" orientation="horizontal" name="sld_ZoomController" action="zoomMap(this)"/>		
+			<slider height="2" width="80" minimum="1" unit="1" block="1" maximum="25" value="7" orientation="horizontal" name="sldZoomController" action="zoomMap(this)"/>		
 		</panel>
 		<panel gap="5" valign="fill">
 			<label text="i18n.plugins.ushahidi.map.location" valign="center"/>	

@@ -16,6 +16,7 @@ import java.util.zip.ZipOutputStream;
 import javax.imageio.ImageIO;
 
 import net.frontlinesms.FrontlineUtils;
+import net.frontlinesms.resources.ResourceUtils;
 
 import org.apache.log4j.Logger;
 
@@ -95,8 +96,7 @@ public class TileSaver implements TileRequestor {
 	 * @param tileCount
 	 *            total number of tiles saved in previous iterations
 	 */
-	public void save(TiledMap map, Coordinate topLeft, Coordinate btmRight,
-			int tileCount) {
+	public void save(TiledMap map, Coordinate topLeft, Coordinate btmRight, int tileCount) {
 
 		Coordinate coord = topLeft.copy();
 
@@ -189,17 +189,29 @@ public class TileSaver implements TileRequestor {
 			manifest.setProperty(TRANSFORMATION_AY_PROPERTY, Double.toString(map.getProvider().getProjection().getTransformation().ay));
 			manifest.setProperty(TRANSFORMATION_BY_PROPERTY, Double.toString(map.getProvider().getProjection().getTransformation().by));
 			manifest.setProperty(TRANSFORMATION_CY_PROPERTY, Double.toString(map.getProvider().getProjection().getTransformation().cy));
-			FileOutputStream manifestFile = new FileOutputStream(new File(tmpDir, MANIFEST_FILE));
+			if(!tmpDir.exists()) {
+				tmpDir.mkdir();
+			}
+			File file = new File(tmpDir, MANIFEST_FILE);
+			FileOutputStream manifestFile = new FileOutputStream(file);
 			manifest.store(manifestFile, "---MAP PROPERTIES---");
 			manifestFile.close();
 			LOG.debug("Creating archive at: " + targetFile);
 			ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(targetFile));
-			zipDir(tmpDir, zos);
-			zos.close();
+			try {
+				zipDir(tmpDir, zos);
+			}
+			finally {
+				zos.close();
+			}
 			LOG.debug("Done creating archive at: " + targetFile);
-		} catch (FileNotFoundException ex) {
+		} 
+		catch (FileNotFoundException ex) {
+			ex.printStackTrace();
 			LOG.debug("File not found exception " + e);
-		} catch (IOException e) {
+		} 
+		catch (IOException ex) {
+			ex.printStackTrace();
 			LOG.debug("IOException while saving archive " + e);
 		}
 		LOG.debug("Done downloading tiles!");
@@ -220,9 +232,10 @@ public class TileSaver implements TileRequestor {
 				// then loop again
 				continue;
 			}
-				// if we reached here, the File object f was not a directory
-				// create a FileInputStream on top of f
-				FileInputStream fis = new FileInputStream(f);
+			// if we reached here, the File object f was not a directory
+			// create a FileInputStream on top of f
+			FileInputStream fis = new FileInputStream(f);
+			try {
 				// create a new zip entry
 				ZipEntry anEntry = new ZipEntry(f.getPath().substring(tmpDir.getPath().length()));
 				// place the zip entry in the ZipOutputStream object
@@ -231,8 +244,11 @@ public class TileSaver implements TileRequestor {
 				while ((bytesIn = fis.read(readBuffer)) != -1) {
 					zos.write(readBuffer, 0, bytesIn);
 				}
-				// close the Stream
+			}
+			finally {
+				// close the Stream	
 				fis.close();
+			}
 		}	
 	}
 }

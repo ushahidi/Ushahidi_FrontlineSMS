@@ -63,11 +63,10 @@ public class ReportsPanelHandler extends ExtendedThinlet implements ThinletUiEve
 		return this.mainPanel;
 	}
 	
-	public void showPanel(Object container) {
-		this.removeAll(container);
+	public void init() {
 		if (this.incidentDao.getCount() > 0) {
 			this.removeAll(this.tblReports);
-			for(Incident incident: incidentDao.getAllIncidents(mappingSetupDao.getDefaultSetup())){
+			for(Incident incident: this.incidentDao.getAllIncidents(mappingSetupDao.getDefaultSetup())){
 				add(this.tblReports, getRow(incident));
 			}
 		}
@@ -78,7 +77,6 @@ public class ReportsPanelHandler extends ExtendedThinlet implements ThinletUiEve
 		}
 		this.setSelectedIndex(this.cbxCategories, 0);
 		this.setText(this.txtSearch, SEARCH_PLACEHOLDER);
-		this.add(container, this.mainPanel);
 	}
 	
 	public void search(Object textField, Object comboBox) {
@@ -93,7 +91,7 @@ public class ReportsPanelHandler extends ExtendedThinlet implements ThinletUiEve
 				}
 			}
 		}
-		this.repaint();
+		this.repaint(this.tblReports);
 	}
 	
 	public void focusGained(Object textfield) {
