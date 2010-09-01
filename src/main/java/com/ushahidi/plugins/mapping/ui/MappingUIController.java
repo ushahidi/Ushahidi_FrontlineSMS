@@ -4,18 +4,18 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
-
 import com.ushahidi.plugins.mapping.MappingPluginController;
+import com.ushahidi.plugins.mapping.operator.OperatorManager;
 import com.ushahidi.plugins.mapping.sync.SynchronizationManager;
+import com.ushahidi.plugins.mapping.utils.MappingLogger;
 import com.ushahidi.plugins.mapping.data.domain.*;
 import com.ushahidi.plugins.mapping.data.repository.CategoryDao;
 import com.ushahidi.plugins.mapping.data.repository.IncidentDao;
 import com.ushahidi.plugins.mapping.data.repository.LocationDao;
 import com.ushahidi.plugins.mapping.data.repository.MappingSetupDao;
+import com.ushahidi.plugins.mapping.forms.FormsManager;
 
 import net.frontlinesms.FrontlineSMS;
-import net.frontlinesms.FrontlineUtils;
 import net.frontlinesms.data.DuplicateKeyException;
 import net.frontlinesms.data.domain.Contact;
 import net.frontlinesms.data.domain.FrontlineMessage;
@@ -28,6 +28,8 @@ import net.frontlinesms.ui.UiGeneratorController;
 @SuppressWarnings("serial")
 public class MappingUIController extends ExtendedThinlet implements ThinletUiEventHandler {
 
+	public static MappingLogger LOG = MappingLogger.getLogger(MappingUIController.class);
+	
     /** Filename and path of the XML containing the mapping tab */
     private static final String XML_MAIN_TAB = "/ui/plugins/mapping/mainTab.xml";
 	
@@ -58,8 +60,6 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	private MapPanelHandler mapPanelHandler;
 	private ReportsPanelHandler reportsPanelHandler;
 	
-	public static Logger LOG = FrontlineUtils.getLogger(MappingUIController.class);	
-	
 	public MappingUIController(MappingPluginController pluginController, FrontlineSMS frontlineController, UiGeneratorController uiController) {
 		this.pluginController = pluginController;
 		this.ui = uiController;
@@ -82,6 +82,12 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		updateKeywordList();
 		updateMappingTab();
 		showIncidentMap();
+		
+		OperatorManager operatorManager = new OperatorManager(this.frontlineController, this.pluginController);
+        operatorManager.addUshahidiFields();
+        
+        FormsManager formsManager = new FormsManager(this.frontlineController, this.pluginController);
+        formsManager.addUshahidiForms();
 	}
 	
 	public Object getTab() {

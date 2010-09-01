@@ -1,5 +1,7 @@
 package com.ushahidi.plugins.mapping.data.domain;
 
+import java.awt.Color;
+
 import javax.persistence.*;
 
 import net.frontlinesms.data.EntityField;
@@ -20,6 +22,8 @@ public class Category {
 	private static final String FIELD_TITLE = "title";
 	/** Column name for {@link #description} */
 	private static final String FIELD_DESCRIPTION = "description";
+	/** Column name for {@link #color} */
+	private static final String FIELD_COLOR = "color";
 	
 //>	ENTITY FIELDS
 	/** Details of the fields that this class has*/
@@ -30,6 +34,8 @@ public class Category {
 		TITLE(FIELD_TITLE),
 		/** Field mapping for {@link Category#description} */
 		DESCRIPTION(FIELD_DESCRIPTION),
+		/** Field mapping for {@link Category#color} */
+		COLOR(FIELD_COLOR),
 		/** Field mapping for {@link Category#mappingSetup} */
 		MAPPING_SETUP("mappingSetup");
 		/** name of a field */
@@ -62,6 +68,8 @@ public class Category {
 	
 	@ManyToOne
 	private MappingSetup mappingSetup;
+	
+	private Color color;
 	
 	/**
 	 * Sets the category id
@@ -134,4 +142,12 @@ public class Category {
 	public MappingSetup getMappingSetup(){
 		return this.mappingSetup;
 	}
-}
+	
+	public Color getColor() {
+		return this.color;
+	}
+	
+	public void setColor(Color color) { 
+		this.color = color;
+	}
+ }

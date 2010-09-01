@@ -1,5 +1,6 @@
 package com.ushahidi.plugins.mapping.sync;
 
+import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.IOException;
@@ -231,6 +232,18 @@ public class SynchronizationThread extends Thread{
 		}
 		if (item.has("description")) {
 			category.setDescription(item.getString("description"));
+		}
+		if (item.has("color")) {
+			try {
+				String color = "#" + item.getString("color");
+				category.setColor(Color.decode(color));	
+			}
+			catch (NumberFormatException ex) {
+				category.setColor(Color.RED);
+			}
+		}
+		else {
+			category.setColor(Color.RED);
 		}
 		return category;
 	}

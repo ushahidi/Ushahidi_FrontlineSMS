@@ -2,22 +2,16 @@ package com.ushahidi.plugins.mapping.ui;
 
 import java.io.File;
 import java.io.IOException;
-
-import org.apache.log4j.Logger;
-
 import thinlet.Thinlet;
 
 import com.ushahidi.plugins.mapping.MappingPluginController;
 import com.ushahidi.plugins.mapping.data.domain.MappingSetup;
 import com.ushahidi.plugins.mapping.data.repository.IncidentDao;
 import com.ushahidi.plugins.mapping.data.repository.MappingSetupDao;
-import com.ushahidi.plugins.mapping.maps.TileSaver;
-import com.ushahidi.plugins.mapping.maps.TiledMap;
+import com.ushahidi.plugins.mapping.utils.MappingLogger;
 
 import net.frontlinesms.FrontlineSMS;
-import net.frontlinesms.FrontlineUtils;
 import net.frontlinesms.data.DuplicateKeyException;
-import net.frontlinesms.resources.ResourceUtils;
 import net.frontlinesms.ui.DateSelecter;
 import net.frontlinesms.ui.ExtendedThinlet;
 import net.frontlinesms.ui.ThinletUiEventHandler;
@@ -28,7 +22,7 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 
 	private static final String UI_PANEL_XML = "/ui/plugins/mapping/mapPanel.xml";
 	
-	public static Logger LOG = FrontlineUtils.getLogger(MapPanelHandler.class);	
+	public static MappingLogger LOG = MappingLogger.getLogger(MapPanelHandler.class);	
 	
 	private final MappingPluginController pluginController;
 	private final FrontlineSMS frontlineController;
@@ -161,9 +155,15 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 	 * @param lon Longitude location
 	 */
 	public void updateCoordinateLabel(double lat, double lon){
-		String latStr = Double.toString(lat).substring(0,8);
-		String lonStr = Double.toString(lon).substring(0,8);
-		setText(this.lblCoordinates, lonStr+", "+latStr);
+		String latString = Double.toString(lat);
+		if (latString.length() > 8) {
+			latString = latString.substring(0,8);
+		}
+		String lonString = Double.toString(lon);
+		if (lonString.length() > 8) {
+			lonString = lonString.substring(0,8);
+		}
+		setText(this.lblCoordinates, latString + ", " + lonString);
 		ui.repaint(this.lblCoordinates);
 	}
 	

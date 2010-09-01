@@ -4,7 +4,6 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
 
 import com.ushahidi.plugins.mapping.MappingPluginController;
 import com.ushahidi.plugins.mapping.data.domain.Category;
@@ -14,9 +13,9 @@ import com.ushahidi.plugins.mapping.data.repository.CategoryDao;
 import com.ushahidi.plugins.mapping.data.repository.IncidentDao;
 import com.ushahidi.plugins.mapping.data.repository.LocationDao;
 import com.ushahidi.plugins.mapping.data.repository.MappingSetupDao;
+import com.ushahidi.plugins.mapping.utils.MappingLogger;
 
 import net.frontlinesms.FrontlineSMS;
-import net.frontlinesms.FrontlineUtils;
 import net.frontlinesms.data.DuplicateKeyException;
 import net.frontlinesms.data.domain.Contact;
 import net.frontlinesms.data.domain.FrontlineMessage;
@@ -28,10 +27,10 @@ import net.frontlinesms.ui.i18n.InternationalisationUtils;
 @SuppressWarnings("serial")
 public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEventHandler {
 
+	public static MappingLogger LOG = MappingLogger.getLogger(ReportDialogHandler.class);
+	
 	private static final String UI_DIALOG_XML = "/ui/plugins/mapping/reportDialog.xml";
-	
-	public static Logger LOG = FrontlineUtils.getLogger(ReportDialogHandler.class);	
-	
+
 	private final FrontlineSMS frontlineController;
 	private final UiGeneratorController ui;
 	

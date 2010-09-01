@@ -1,7 +1,6 @@
 /* Copyright 2008 Robert Bajzat. All rights reserved. GPL v3. Use is subject to license terms. */
 package com.ushahidi.plugins.mapping.ui;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
@@ -15,10 +14,6 @@ import java.awt.image.ImageObserver;
 import java.io.IOException;
 import java.util.List;
 
-import net.frontlinesms.FrontlineUtils;
-
-import org.apache.log4j.Logger;
-
 import thinlet.CustomComponent;
 
 import com.ushahidi.plugins.mapping.data.domain.Incident;
@@ -27,12 +22,13 @@ import com.ushahidi.plugins.mapping.maps.MapFactory;
 import com.ushahidi.plugins.mapping.maps.geo.Location;
 import com.ushahidi.plugins.mapping.maps.providers.openstreetmap.OpenStreetMapProvider;
 import com.ushahidi.plugins.mapping.maps.providers.offline.OfflineProvider;
+import com.ushahidi.plugins.mapping.utils.MappingLogger;
 
 @SuppressWarnings("serial")
 public class MapBean extends CustomComponent implements ImageObserver {
 
-    private static final Logger LOG = FrontlineUtils.getLogger(MapBean.class);
-
+	public static MappingLogger LOG = MappingLogger.getLogger(MapBean.class);
+	
     private TiledMap map = null;
 
     private Image img = null;
@@ -162,8 +158,8 @@ public class MapBean extends CustomComponent implements ImageObserver {
 
     public void plotIncidents(Graphics g){
         if(location != null && map != null && incidents!=null){			
-            g.setColor(Color.RED);
             for(Incident incident: incidents){
+            	g.setColor(incident.getCategoryColor());
                 double lat = incident.getLocation().getLatitude();
                 double lon = incident.getLocation().getLongitude();
                 Point incidentPoint = map.locationPoint(new Location(lat, lon));

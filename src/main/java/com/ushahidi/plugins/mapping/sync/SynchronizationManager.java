@@ -7,15 +7,12 @@ import java.util.HashSet;
 
 import com.ushahidi.plugins.mapping.ui.MappingUIController;
 import com.ushahidi.plugins.mapping.ui.SyncDialogHandler;
+import com.ushahidi.plugins.mapping.utils.MappingLogger;
 import com.ushahidi.plugins.mapping.data.domain.*;
-
-import net.frontlinesms.FrontlineUtils;
-
-import org.apache.log4j.Logger;
 
 public class SynchronizationManager {	
 	/** Logger */
-	private static final Logger LOG = FrontlineUtils.getLogger(SynchronizationManager.class);
+	public static MappingLogger LOG = MappingLogger.getLogger(SynchronizationManager.class);
 	
 	private final MappingUIController mappingController;
 	

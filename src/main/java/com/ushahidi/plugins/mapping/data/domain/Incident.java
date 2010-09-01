@@ -1,5 +1,6 @@
 package com.ushahidi.plugins.mapping.data.domain;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -268,6 +269,15 @@ public class Incident {
 			sb.append(category.getFrontendId());
 		}
 		return sb.toString();
+	}
+	
+	public Color getCategoryColor() {
+		for(Category category: this.categories) {
+			if (category.getColor() != null) {
+				return category.getColor();
+			}
+		}
+		return Color.RED;
 	}
 	
 	/**

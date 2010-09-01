@@ -1,13 +1,11 @@
 package com.ushahidi.plugins.mapping.ui;
 
-import org.apache.log4j.Logger;
-
 import thinlet.Thinlet;
 
 import com.ushahidi.plugins.mapping.MappingPluginController;
+import com.ushahidi.plugins.mapping.utils.MappingLogger;
 
 import net.frontlinesms.FrontlineSMS;
-import net.frontlinesms.FrontlineUtils;
 import net.frontlinesms.ui.ExtendedThinlet;
 import net.frontlinesms.ui.ThinletUiEventHandler;
 import net.frontlinesms.ui.UiGeneratorController;
@@ -15,9 +13,9 @@ import net.frontlinesms.ui.UiGeneratorController;
 @SuppressWarnings("serial")
 public class SyncDialogHandler extends ExtendedThinlet implements ThinletUiEventHandler {
 
-	private static final String UI_SYNCHRONIZATION_DIALOG = "/ui/plugins/mapping/syncDialog.xml";
+	public static MappingLogger LOG = MappingLogger.getLogger(SyncDialogHandler.class);
 	
-	public static Logger LOG = FrontlineUtils.getLogger(SyncDialogHandler.class);	
+	private static final String UI_SYNCHRONIZATION_DIALOG = "/ui/plugins/mapping/syncDialog.xml";
 	
 	private final MappingPluginController pluginController;
 	private final FrontlineSMS frontlineController;

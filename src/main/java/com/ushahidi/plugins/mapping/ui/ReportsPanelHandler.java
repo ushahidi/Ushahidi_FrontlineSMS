@@ -1,10 +1,5 @@
 package com.ushahidi.plugins.mapping.ui;
 
-import java.awt.Color;
-import java.awt.Component;
-
-import org.apache.log4j.Logger;
-
 import thinlet.ThinletText;
 
 import com.ushahidi.plugins.mapping.MappingPluginController;
@@ -13,9 +8,9 @@ import com.ushahidi.plugins.mapping.data.domain.Incident;
 import com.ushahidi.plugins.mapping.data.repository.CategoryDao;
 import com.ushahidi.plugins.mapping.data.repository.IncidentDao;
 import com.ushahidi.plugins.mapping.data.repository.MappingSetupDao;
+import com.ushahidi.plugins.mapping.utils.MappingLogger;
 
 import net.frontlinesms.FrontlineSMS;
-import net.frontlinesms.FrontlineUtils;
 import net.frontlinesms.ui.ExtendedThinlet;
 import net.frontlinesms.ui.Icon;
 import net.frontlinesms.ui.ThinletUiEventHandler;
@@ -25,9 +20,9 @@ import net.frontlinesms.ui.i18n.InternationalisationUtils;
 @SuppressWarnings("serial")
 public class ReportsPanelHandler extends ExtendedThinlet implements ThinletUiEventHandler {
 
-	private static final String UI_PANEL_XML = "/ui/plugins/mapping/reportsPanel.xml";
+	public static MappingLogger LOG = MappingLogger.getLogger(ReportsPanelHandler.class);
 	
-	public static Logger LOG = FrontlineUtils.getLogger(ReportsPanelHandler.class);	
+	private static final String UI_PANEL_XML = "/ui/plugins/mapping/reportsPanel.xml";
 	
 	private final MappingPluginController pluginController;
 	private final FrontlineSMS frontlineController;
@@ -49,6 +44,7 @@ public class ReportsPanelHandler extends ExtendedThinlet implements ThinletUiEve
 		this.pluginController = pluginController;
 		this.ui = uiController;
 		this.frontlineController = frontlineController;
+		
 		this.incidentDao = pluginController.getIncidentDao();
 		this.categoryDao = pluginController.getCategoryDao();
 		this.mappingSetupDao = pluginController.getMappingSetupDao();

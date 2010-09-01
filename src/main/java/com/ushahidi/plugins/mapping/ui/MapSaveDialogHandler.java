@@ -3,27 +3,25 @@ package com.ushahidi.plugins.mapping.ui;
 import java.io.File;
 
 import net.frontlinesms.FrontlineSMS;
-import net.frontlinesms.FrontlineUtils;
 import net.frontlinesms.data.DuplicateKeyException;
 import net.frontlinesms.resources.ResourceUtils;
 import net.frontlinesms.ui.ExtendedThinlet;
 import net.frontlinesms.ui.ThinletUiEventHandler;
 import net.frontlinesms.ui.UiGeneratorController;
 
-import org.apache.log4j.Logger;
-
 import com.ushahidi.plugins.mapping.MappingPluginController;
 import com.ushahidi.plugins.mapping.data.domain.MappingSetup;
 import com.ushahidi.plugins.mapping.data.repository.MappingSetupDao;
 import com.ushahidi.plugins.mapping.maps.TileSaver;
 import com.ushahidi.plugins.mapping.maps.TiledMap;
+import com.ushahidi.plugins.mapping.utils.MappingLogger;
 
 @SuppressWarnings("serial")
 public class MapSaveDialogHandler extends ExtendedThinlet implements ThinletUiEventHandler {
 
 	private static final String UI_DIALOG_XML = "/ui/plugins/mapping/mapSaveDialog.xml";
 	
-	public static Logger LOG = FrontlineUtils.getLogger(ReportDialogHandler.class);	
+	public static MappingLogger LOG = MappingLogger.getLogger(MapSaveDialogHandler.class);
 	
 	private final MappingPluginController pluginController;
 	private final FrontlineSMS frontlineController;

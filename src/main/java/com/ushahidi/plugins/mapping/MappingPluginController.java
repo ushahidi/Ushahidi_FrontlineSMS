@@ -5,9 +5,9 @@ import com.ushahidi.plugins.mapping.data.repository.LocationDao;
 import com.ushahidi.plugins.mapping.data.repository.IncidentDao;
 import com.ushahidi.plugins.mapping.data.repository.MappingSetupDao;
 import com.ushahidi.plugins.mapping.ui.MappingUIController;
+import com.ushahidi.plugins.mapping.utils.MappingLogger;
 
 import net.frontlinesms.FrontlineSMS;
-import net.frontlinesms.FrontlineUtils;
 import net.frontlinesms.data.domain.FrontlineMessage;
 import net.frontlinesms.listener.IncomingMessageListener;
 import net.frontlinesms.plugins.BasePluginController;
@@ -15,7 +15,6 @@ import net.frontlinesms.plugins.PluginControllerProperties;
 import net.frontlinesms.plugins.PluginInitialisationException;
 import net.frontlinesms.ui.UiGeneratorController;
 
-import org.apache.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -28,7 +27,7 @@ import org.springframework.context.ApplicationContext;
         hibernateConfigPath="classpath:com/ushahidi/plugins/mapping/mapping.hibernate.cfg.xml")
 public class MappingPluginController extends BasePluginController implements IncomingMessageListener {
     /** Logger */
-    private static final Logger LOG = FrontlineUtils.getLogger(MappingPluginController.class);
+	public static MappingLogger LOG = MappingLogger.getLogger(MappingPluginController.class);	
 
     //> INSTANCE variables
     private FrontlineSMS frontlineController;
@@ -42,7 +41,7 @@ public class MappingPluginController extends BasePluginController implements Inc
     private IncidentDao incidentDao;
     /** DAO for mapping setup */
     private MappingSetupDao mappingSetupDao;
-
+    
     public String getHibernateConfigPath() {
         return "classpath:com/ushahidi/plugins/mapping/mapping.hibernate.cfg.xml";
     }
@@ -61,11 +60,11 @@ public class MappingPluginController extends BasePluginController implements Inc
             incidentDao = (IncidentDao)applicationContext.getBean("incidentDao");
             mappingSetupDao = (MappingSetupDao)applicationContext.getBean("mappingSetupDao");
             categoryDao = (CategoryDao)applicationContext.getBean("categoryDao");
-        }catch(Throwable t){
+        }
+        catch(Throwable t){
             LOG.warn("Unable to initialize mapping plugin");
             throw new PluginInitialisationException(t);
         }
-
     }
 
     public void init(FrontlineSMS frontlineController) {

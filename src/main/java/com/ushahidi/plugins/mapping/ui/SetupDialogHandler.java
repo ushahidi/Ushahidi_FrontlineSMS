@@ -1,15 +1,13 @@
 package com.ushahidi.plugins.mapping.ui;
 
-import org.apache.log4j.Logger;
-
 import thinlet.Thinlet;
 
 import com.ushahidi.plugins.mapping.MappingPluginController;
 import com.ushahidi.plugins.mapping.data.domain.MappingSetup;
 import com.ushahidi.plugins.mapping.data.repository.MappingSetupDao;
+import com.ushahidi.plugins.mapping.utils.MappingLogger;
 
 import net.frontlinesms.FrontlineSMS;
-import net.frontlinesms.FrontlineUtils;
 import net.frontlinesms.data.DuplicateKeyException;
 import net.frontlinesms.ui.ExtendedThinlet;
 import net.frontlinesms.ui.ThinletUiEventHandler;
@@ -18,9 +16,9 @@ import net.frontlinesms.ui.UiGeneratorController;
 @SuppressWarnings("serial")
 public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEventHandler {
 
-	private static final String UI_SETUP_DIALOG = "/ui/plugins/mapping/setupDialog.xml";
+	public static MappingLogger LOG = MappingLogger.getLogger(SetupDialogHandler.class);
 	
-	public static Logger LOG = FrontlineUtils.getLogger(SetupDialogHandler.class);	
+	private static final String UI_SETUP_DIALOG = "/ui/plugins/mapping/setupDialog.xml";
 	
 	private final FrontlineSMS frontlineController;
 	private final UiGeneratorController ui;

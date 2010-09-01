@@ -114,6 +114,18 @@
 			<version>1.6.16.2-SNAPSHOT</version>
 			<type>jar</type>
 		</dependency>
+		<dependency>
+			<groupId>net.frontlinesms.plugins</groupId>
+			<artifactId>frontlinesms-plugin-forms</artifactId>
+			<version>0.02.26-SNAPSHOT</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>net.frontlinesms.plugins</groupId>
+			<artifactId>frontlinesms-plugin-resource-mapper</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+			<scope>compile</scope>
+		</dependency>
 	</dependencies>
 	
 
