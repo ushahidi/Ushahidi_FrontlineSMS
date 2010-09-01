@@ -144,7 +144,7 @@ public class MapBean extends CustomComponent implements ImageObserver {
         }
         //Have we been resized?
         if(isResized()) {
-            LOG.debug("Resized");
+            //LOG.debug("Resized");
             dimensions = getSize();
             map.resize(dimensions.width, dimensions.height);
             img = map.draw();
@@ -177,7 +177,7 @@ public class MapBean extends CustomComponent implements ImageObserver {
     }
 
     public boolean imageUpdate(Image img, int infoflags, int x, int y, int width, int height) {
-        LOG.debug("Image Update");
+       // LOG.debug("Image Update");
         repaint();
         return true;
     }
@@ -240,7 +240,7 @@ public class MapBean extends CustomComponent implements ImageObserver {
         }
 
         public void mouseClicked(MouseEvent e){
-            LOG.info("Zooming map");
+            //LOG.info("Zooming map");
             // Increase the current zoom level by 1
             int zoom = map.getZoom() + 1;
             
@@ -319,7 +319,7 @@ public class MapBean extends CustomComponent implements ImageObserver {
                 
                 // Only pan the map if the change is non-zero
                 if(tx != 0 && ty != 0){
-                    LOG.debug("Panning map");
+                    //LOG.debug("Panning map");
                     map.panBy(tx, ty);
                     repaint();
                 }

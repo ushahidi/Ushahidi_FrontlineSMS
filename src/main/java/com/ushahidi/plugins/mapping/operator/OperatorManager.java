@@ -77,10 +77,6 @@ public class OperatorManager implements EventObserver {
 		//DETAILS
 		addOperatorField(MappingMessages.getTitle(), MappingMessages.getTitleKeyword(), MappingMessages.getTitleInfo(), FieldType.PLAINTEXT);
 		addOperatorField(MappingMessages.getDescription(), MappingMessages.getDescriptionKeyword(), MappingMessages.getDescriptionInfo(), FieldType.PLAINTEXT);
-		//CONTACT
-		addOperatorField(MappingMessages.getFirstName(), MappingMessages.getFirstNameKeyword(), MappingMessages.getFirstNameInfo(), FieldType.PLAINTEXT);
-		addOperatorField(MappingMessages.getLastName(), MappingMessages.getLastNameKeyword(), MappingMessages.getLastNameInfo(), FieldType.PLAINTEXT);
-		addOperatorField(MappingMessages.getEmail(), MappingMessages.getEmailKeyword(), MappingMessages.getEmailInfo(), FieldType.PLAINTEXT);
 		//DATE
 		addOperatorField(MappingMessages.getDateNow(), MappingMessages.getDateNowKeyword(), MappingMessages.getDateNowInfo(), FieldType.BOOLEAN);
 		addOperatorField(MappingMessages.getDate(), MappingMessages.getDateKeyword(), MappingMessages.getDateInfo(), FieldType.DATE);
@@ -105,6 +101,10 @@ public class OperatorManager implements EventObserver {
 		addOperatorField(MappingMessages.getNews(), MappingMessages.getNewsKeyword(), MappingMessages.getNewsInfo(), FieldType.PLAINTEXT);
 		//VIDEO
 		addOperatorField(MappingMessages.getVideo(), MappingMessages.getVideoKeyword(), MappingMessages.getVideoInfo(), FieldType.PLAINTEXT);
+		//CONTACT
+		addOperatorField(MappingMessages.getFirstName(), MappingMessages.getFirstNameKeyword(), MappingMessages.getFirstNameInfo(), FieldType.PLAINTEXT);
+		addOperatorField(MappingMessages.getLastName(), MappingMessages.getLastNameKeyword(), MappingMessages.getLastNameInfo(), FieldType.PLAINTEXT);
+		addOperatorField(MappingMessages.getEmail(), MappingMessages.getEmailKeyword(), MappingMessages.getEmailInfo(), FieldType.PLAINTEXT);
 	}
 	
 	/**
