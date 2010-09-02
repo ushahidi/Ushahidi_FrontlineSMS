@@ -128,7 +128,12 @@ public class ReportsPanelHandler extends ExtendedThinlet implements ThinletUiEve
 		createTableCell(row, incident.isMarked() == false);
 		createTableCell(row, incident.isVerified());
 		createTableCell(row, incident.getTitle());
-		createTableCell(row, incident.getLocation().getName());
+		if (incident.getLocation() != null) {
+			createTableCell(row, incident.getLocation().getName());
+		}
+		else {
+			createTableCell(row, "");
+		}
 		createTableCell(row, InternationalisationUtils.getDateFormat().format(incident.getIncidentDate()));
 		createTableCell(row, incident.getCategoryNames());
 		createTableCell(row, incident.getDescription());

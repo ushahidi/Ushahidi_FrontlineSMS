@@ -1,4 +1,4 @@
-package com.ushahidi.plugins.mapping.operator;
+package com.ushahidi.plugins.mapping.managers;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,8 +17,7 @@ import com.ushahidi.plugins.mapping.utils.MappingMessages;
 
 import net.frontlinesms.FrontlineSMS;
 import net.frontlinesms.data.DuplicateKeyException;
-import net.frontlinesms.data.events.DatabaseEntityNotification;
-import net.frontlinesms.events.EventObserver;
+import net.frontlinesms.data.events.EntitySavedNotification;
 import net.frontlinesms.events.FrontlineEventNotification;
 
 import net.frontlinesms.plugins.PluginController;
@@ -34,7 +33,7 @@ import net.frontlinesms.plugins.resourcemapper.data.repository.FieldMappingFacto
  * @author dalezak
  *
  */
-public class OperatorManager implements EventObserver {
+public class OperatorManager extends Manager {
 
 	public static MappingLogger LOG = MappingLogger.getLogger(OperatorManager.class);	
 	
@@ -60,7 +59,7 @@ public class OperatorManager implements EventObserver {
 	public OperatorManager(FrontlineSMS frontlineController, MappingPluginController pluginController) {
 		frontlineController.getEventBus().registerObserver(this);
 		
-		this.resourceMapperPluginController = getPluginController(frontlineController);
+		this.resourceMapperPluginController = getPluginController(frontlineController, ResourceMapperPluginController.class);
 		
 		this.categoryDao = pluginController.getCategoryDao();
 		this.locationDao = pluginController.getLocationDao();
@@ -112,14 +111,16 @@ public class OperatorManager implements EventObserver {
 	 */
 	@SuppressWarnings("unchecked")
 	public void notify(FrontlineEventNotification notification) {
-		if (notification instanceof DatabaseEntityNotification) {
-			DatabaseEntityNotification databaseEntityNotification = (DatabaseEntityNotification)notification;
-			if (databaseEntityNotification.getDatabaseEntity() instanceof FieldResponse) {
-				FieldResponse fieldResponse = (FieldResponse)databaseEntityNotification.getDatabaseEntity();
-				if (fieldDictionary.containsKey(fieldResponse.getMappingKeyword())) {
-					Field field = fieldResponse.getMapping();
-					LOG.debug("Ushahidi Field Received [%s, %s, %s]", field.getName(), field.getKeyword(), field.getType());
-				}
+		if (notification instanceof EntitySavedNotification) {
+			EntitySavedNotification entitySavedNotification = (EntitySavedNotification)notification;
+			if (entitySavedNotification != null) {
+				if (entitySavedNotification.getDatabaseEntity() instanceof FieldResponse) {
+					FieldResponse fieldResponse = (FieldResponse)entitySavedNotification.getDatabaseEntity();
+					if (fieldDictionary.containsKey(fieldResponse.getMappingKeyword())) {
+						Field field = fieldResponse.getMapping();
+						LOG.error("Ushahidi Field Received [%s, %s, %s, %s]", field.getName(), field.getKeyword(), field.getType(), fieldResponse.getResponseValue());
+					}
+				}	
 			}
 		}
 	}
@@ -163,19 +164,5 @@ public class OperatorManager implements EventObserver {
 			LOG.error("Field Loaded [%s, %s, %s]", name, keyword, type);
 			this.fieldDictionary.put(keyword, field);
 		}
-	}
-	
-	/**
-	 * Get ResourceMapperPluginController
-	 * @param frontlineController ResourceMapperPluginController
-	 * @return ResourceMapperPluginController
-	 */
-	private ResourceMapperPluginController getPluginController(FrontlineSMS frontlineController) {
-		for (PluginController pluginController : frontlineController.getPluginManager().getPluginControllers()) {
-			if (pluginController instanceof ResourceMapperPluginController) {
-				return (ResourceMapperPluginController)pluginController;
-			}
-		}
-		return null;
 	}
 }

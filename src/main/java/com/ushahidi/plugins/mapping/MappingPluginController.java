@@ -22,7 +22,7 @@ import org.springframework.context.ApplicationContext;
  * @author ekala
  *
  */
-@PluginControllerProperties(name="Mapping", iconPath="/icons/map.png", i18nKey = "plugins.ushahidi",
+@PluginControllerProperties(name="Mapping (Beta)", iconPath="/icons/map.png", i18nKey = "plugins.ushahidi",
         springConfigLocation="classpath:com/ushahidi/plugins/mapping/mapping-spring-hibernate.xml",
         hibernateConfigPath="classpath:com/ushahidi/plugins/mapping/mapping.hibernate.cfg.xml")
 public class MappingPluginController extends BasePluginController implements IncomingMessageListener {
@@ -106,5 +106,4 @@ public class MappingPluginController extends BasePluginController implements Inc
     public MappingSetupDao getMappingSetupDao(){
         return mappingSetupDao;
     }
-
 }

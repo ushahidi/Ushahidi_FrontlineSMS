@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.ushahidi.plugins.mapping.MappingPluginController;
-import com.ushahidi.plugins.mapping.operator.OperatorManager;
+import com.ushahidi.plugins.mapping.managers.OperatorManager;
 import com.ushahidi.plugins.mapping.sync.SynchronizationManager;
 import com.ushahidi.plugins.mapping.utils.MappingLogger;
 import com.ushahidi.plugins.mapping.data.domain.*;
@@ -13,7 +13,7 @@ import com.ushahidi.plugins.mapping.data.repository.CategoryDao;
 import com.ushahidi.plugins.mapping.data.repository.IncidentDao;
 import com.ushahidi.plugins.mapping.data.repository.LocationDao;
 import com.ushahidi.plugins.mapping.data.repository.MappingSetupDao;
-import com.ushahidi.plugins.mapping.forms.FormsManager;
+import com.ushahidi.plugins.mapping.managers.FormsManager;
 
 import net.frontlinesms.FrontlineSMS;
 import net.frontlinesms.data.DuplicateKeyException;
@@ -34,12 +34,9 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
     private static final String XML_MAIN_TAB = "/ui/plugins/mapping/mainTab.xml";
 	
 	private static final String COMPONENT_MESSAGE_TABLE = "messageTable";
-	private static final String COMPONENT_LOCATIONS_COMBO = "cboLocations";
 	private static final String COMPONENT_ALL_CB = "cbMfAll";
 	private static final String COMPONENT_KEYWORDS_CM = "cbMfKeywords";
 	private static final String COMPONENT_DATE_CB = "cbMfDate";
-	private static final String COMPONENT_LOCATION_LABEL = "lblLoction";
-	private static final String COMPONENT_SAVE_BUTTON = "btSave";
 	private static final String COMPONENT_KEYWORDS_TABLE = "tblKeywords";
 	private static final String COMPONENT_MF_DATE_PANEL = "pblMfDate";
 	
@@ -55,7 +52,6 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	private final IncidentDao incidentDao;
 	private final MappingSetupDao mappingSetupDao;
 		
-	private MapBean mapBean;
 	private SynchronizationManager syncManager;
 	private MapPanelHandler mapPanelHandler;
 	private ReportsPanelHandler reportsPanelHandler;
@@ -108,10 +104,8 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 			setVisible(ui.find(getTab(), COMPONENT_KEYWORDS_TABLE), false);
 			ui.setInteger(pnlSearchParams, "rowspan", 1);
 			if (incidentDao.getCount() > 0) {
-				//TODO update map or reports
-				//mapBean.setIncidents(incidentDao.getAllIncidents());
+				//mapBean.setIncidents(incidentDao.getAllIncidents(mappingSetupDao.getDefaultSetup()));
 			}
-			
 		} 
 		else if(isSelected(find(getTab(), COMPONENT_KEYWORDS_CM))) {
 			setVisible(ui.find(getTab(), COMPONENT_MF_DATE_PANEL), false);
@@ -146,15 +140,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	 * @param textField
 	 */
 	public void showDateSelector(Object textField) {
-		LOG.trace("ENTER");
-		try {
-			new DateSelecter(ui, textField).showSelecter();
-		} catch (IOException e) {
-			LOG.error("Error parsing file for dateSelecter", e);
-			LOG.trace("EXIT");
-			throw new RuntimeException(e);
-		}
-		LOG.trace("EXIT");
+		ui.showDateSelecter(textField);
 	}	
 	
 	/**
@@ -167,6 +153,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		FrontlineMessage message = (FrontlineMessage) getAttachedObject(item);						
 		if (message != null) {
 			ReportDialogHandler dialog = new ReportDialogHandler(this.pluginController, this.frontlineController, this.ui);
+			this.mapPanelHandler.addMapListener(dialog);
 			dialog.showDialog(message);	
 			return dialog;
 		}
@@ -175,17 +162,6 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	
 	public void removeDialog(Object dialog) {
 		ui.remove(dialog);
-	}
-
-	public void incidentDialogEdited(Object dialog) {
-		//Category && Map point must be selected for save button to be enabled
-		Object button = ui.find(dialog, COMPONENT_SAVE_BUTTON);
-		if(ui.getText(ui.find(dialog,COMPONENT_LOCATION_LABEL)) != null
-				&& ui.getSelectedItem(ui.find(dialog,COMPONENT_LOCATIONS_COMBO)) != null
-				&& !ui.getBoolean(button, ENABLED)) {			
-			setEnabled(button, true);
-			ui.repaint();
-		}
 	}
 	
 	/**
@@ -458,9 +434,6 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	public void shutdownUIController(){
 		if (syncManager != null) {
 			syncManager.terminateManagerThread();
-		}
-		if (mapBean != null) {
-			mapBean.destroyMap();
 		}
 	}
 	

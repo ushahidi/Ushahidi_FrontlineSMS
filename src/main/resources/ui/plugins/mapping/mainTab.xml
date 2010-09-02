@@ -1,4 +1,4 @@
-<tab icon="/icons/big_map.png" text="i18n.plugins.ushahidi.title" name=":mapping">
+<tab icon="/icons/big_map.png" text="i18n.plugins.ushahidi" name=":mapping">
 	<panel bottom="9" columns="2" gap="9" left="9" right="9" top="9" weightx="1" weighty="1">
 		<label icon="/icons/header/mapManager.png" valign="top" />
 		<splitpane divider="350" weightx="1" weighty="1" rowspan="2">
@@ -20,13 +20,12 @@
 						</table>
 						<panel name="pblMfDate" weightx="1" visible="false" gap="5" halign="center">
 							<label icon="/icons/date_start.png" text="i18n.plugins.ushahidi.date.from" />
-							<panel>
-								<textfield action="messageFilterDateChanged" columns="10"
-									name="tfMfStartDate" />
+							<panel gap="5">
+								<textfield action="messageFilterDateChanged" columns="10" name="tfMfStartDate" />
 								<button action="showDateSelector(tfMfStartDate)" icon="/icons/date.png" />
 							</panel>
 							<label icon="/icons/date_end.png" text="i18n.plugins.ushahidi.date.to" />
-							<panel>
+							<panel gap="5">
 								<textfield action="messageFilterDateChanged" columns="10" name="tfMfEndDate" />
 								<button action="showDateSelector(tfMfEndDate)" icon="/icons/date.png" />
 							</panel>

@@ -100,21 +100,17 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 		}
 	}
 	
+	public void addMapListener(MapListener listener) {
+		this.mapBean.addMapListener(listener);
+	}
+	
 	/**
 	 * Fired by {@link MapListener} when a point is selected on the map; the incident creation
 	 * dialog is displayed with the coordinates of the selected location
 	 */
 	public void pointSelected(double lat, double lon) {
-		//Show the selected point and the text field for the name to be input
-		//setBoolean(ui.find(dialog, COMPONENT_LOCATION_NAME_FIELD), Thinlet.ENABLED , true);
-//		setText(ui.find(this.mainPanel, COMPONENT_LBL_SELECTED_LATITUDE), Double.toString(lat));
-//		setText(ui.find(this.mainPanel, COMPONENT_LBL_SELECTED_LONGITUDE), Double.toString(lon));
-//		setBoolean(ui.find(this.mainPanel, COMPONENT_LOCATIONS_COMBO), Thinlet.ENABLED, false);		
-
-//		setVisible(this.mainPanel, true);
-//		setBoolean(this.mainPanel, Thinlet.MODAL, true);
-		
-		ui.repaint();		
+		LOG.debug("%f, %f", lat, lon);
+//		ui.repaint();			
 	}
 	
 	/** @see {@link MapListener#mapZoomed(int)} */

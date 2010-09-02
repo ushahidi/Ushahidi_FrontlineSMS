@@ -4,12 +4,10 @@ import com.ushahidi.plugins.mapping.data.domain.Incident;
 
 import java.awt.AlphaComposite;
 import java.awt.Graphics2D;
-import java.awt.Color;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
-
 
 public class IncidentMarker extends BufferedImage implements MouseListener{
 
@@ -26,7 +24,7 @@ public class IncidentMarker extends BufferedImage implements MouseListener{
 		
 		Graphics2D graphics = createGraphics();
 		graphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.45f));
-		graphics.setColor(Color.RED);
+		graphics.setColor(incident.getCategoryColor());
 		graphics.fillOval(0, 0, markerSize, markerSize);
 		
 		observer.imageUpdate(this, 0, 0, 0, 0, 0);
@@ -43,27 +41,22 @@ public class IncidentMarker extends BufferedImage implements MouseListener{
 
 	public void mouseClicked(MouseEvent e) {
 		// TODO Auto-generated method stub
-		
 	}
 
 	public void mouseEntered(MouseEvent e) {
 		// TODO Auto-generated method stub
-		
 	}
 
 	public void mouseExited(MouseEvent e) {
 		// TODO Auto-generated method stub
-		
 	}
 
 	public void mousePressed(MouseEvent e) {
 		System.out.println("clicked");
-		
 	}
 
 	public void mouseReleased(MouseEvent e) {
 		// TODO Auto-generated method stub
-		
 	}
 	
 }

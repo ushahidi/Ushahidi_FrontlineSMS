@@ -1,11 +1,10 @@
-package com.ushahidi.plugins.mapping.forms;
+package com.ushahidi.plugins.mapping.managers;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import net.frontlinesms.FrontlineSMS;
 import net.frontlinesms.data.events.DatabaseEntityNotification;
-import net.frontlinesms.events.EventObserver;
 import net.frontlinesms.events.FrontlineEventNotification;
 import net.frontlinesms.plugins.PluginController;
 import net.frontlinesms.plugins.forms.FormsPluginController;
@@ -28,7 +27,7 @@ import com.ushahidi.plugins.mapping.utils.MappingMessages;
  * @author dalezak
  *
  */
-public class FormsManager implements EventObserver {
+public class FormsManager extends Manager {
 
 	public static MappingLogger LOG = MappingLogger.getLogger(FormsManager.class);	
 	
@@ -48,7 +47,7 @@ public class FormsManager implements EventObserver {
 	public FormsManager(FrontlineSMS frontlineController, MappingPluginController pluginController) {
 		frontlineController.getEventBus().registerObserver(this);
 		
-		this.formsPluginController = getPluginController(frontlineController);
+		this.formsPluginController = getPluginController(frontlineController, FormsPluginController.class);
 		
 		this.categoryDao = pluginController.getCategoryDao();
 		this.mappingSetupDao = pluginController.getMappingSetupDao();
@@ -143,20 +142,6 @@ public class FormsManager implements EventObserver {
 		catch(Exception ex) {
 			ex.printStackTrace();
 		}
-	}
-	
-	/**
-	 * Get FormsPluginController
-	 * @param frontlineController FrontlineSMS
-	 * @return FormsPluginController
-	 */
-	private FormsPluginController getPluginController(FrontlineSMS frontlineController) {
-		for (PluginController pluginController : frontlineController.getPluginManager().getPluginControllers()) {
-			if (pluginController instanceof FormsPluginController) {
-				return (FormsPluginController)pluginController;
-			}
-		}
-		return null;
 	}
 
 }
