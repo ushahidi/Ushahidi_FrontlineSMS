@@ -3,7 +3,7 @@ package com.ushahidi.plugins.mapping.utils;
 import static net.frontlinesms.ui.i18n.InternationalisationUtils.getI18NString;
 
 /**
- * 
+ * MappingMessages
  * @author dalezak
  *
  */

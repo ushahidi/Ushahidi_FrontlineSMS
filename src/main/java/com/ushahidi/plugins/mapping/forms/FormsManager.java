@@ -94,7 +94,10 @@ public class FormsManager implements EventObserver {
 			//MEDIA
 			addFormField(form, FormFieldType.TEXT_FIELD, MappingMessages.getNews());
 			addFormField(form, FormFieldType.TEXT_FIELD, MappingMessages.getVideo());
-			
+			//CONTACT
+			addFormField(form, FormFieldType.TEXT_FIELD, MappingMessages.getFirstName());
+			addFormField(form, FormFieldType.TEXT_FIELD, MappingMessages.getLastName());
+			addFormField(form, FormFieldType.EMAIL_FIELD, MappingMessages.getEmail());
 			this.formDao.saveForm(form);	
 		}
 		catch(Exception ex) {
