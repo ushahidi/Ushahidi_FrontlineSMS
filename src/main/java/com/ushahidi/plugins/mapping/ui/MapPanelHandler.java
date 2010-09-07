@@ -2,7 +2,6 @@ package com.ushahidi.plugins.mapping.ui;
 
 import java.io.File;
 import java.io.IOException;
-import thinlet.Thinlet;
 
 import com.ushahidi.plugins.mapping.MappingPluginController;
 import com.ushahidi.plugins.mapping.data.domain.MappingSetup;
@@ -100,6 +99,12 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 		}
 	}
 	
+	public void destroyMap() {
+		if (this.mapBean != null) {
+			this.mapBean.destroyMap();
+		}
+	}
+	
 	public void addMapListener(MapListener listener) {
 		this.mapBean.addMapListener(listener);
 	}
@@ -129,16 +134,15 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 	public void zoomMap(Object zoomController){
 		int currentZoom = mapBean.getCurrentZoomLevel();		
 		int zoomVal = getInteger(zoomController, ExtendedThinlet.VALUE);
-		
 		// Adjust the zooming bar so that it moves in steps of 1 only
 		if(currentZoom < zoomVal){
 			setInteger(zoomController, ExtendedThinlet.VALUE, zoomVal-1);
 			ui.repaint();
-		}else if (currentZoom > zoomVal){
+		}
+		else if (currentZoom > zoomVal){
 			setInteger(zoomController, ExtendedThinlet.VALUE, zoomVal + 1);
 			ui.repaint();
 		}
-		
 		mapBean.zoomMap(zoomVal);
 	}
 	
@@ -172,22 +176,14 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 		LOG.trace("ENTER");
 		try {
 			new DateSelecter(ui, textField).showSelecter();
-		} catch (IOException e) {
+		} 
+		catch (IOException e) {
 			LOG.error("Error parsing file for dateSelecter", e);
 			LOG.trace("EXIT");
 			throw new RuntimeException(e);
 		}
 		LOG.trace("EXIT");
 	}	
-	
-	public void startPointSelection(Object dialog) {
-		this.mapBean.addMapListener(this);		
-		setBoolean(dialog, Thinlet.MODAL, false);
-		setVisible(dialog, false);
-		
-		//Force Thinlet to hide the dialog now
-		ui.repaint();
-	}
 	
 	/**
 	 * Show the map save dialog

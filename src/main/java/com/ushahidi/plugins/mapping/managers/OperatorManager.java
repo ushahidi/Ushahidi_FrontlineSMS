@@ -20,7 +20,6 @@ import net.frontlinesms.data.DuplicateKeyException;
 import net.frontlinesms.data.events.EntitySavedNotification;
 import net.frontlinesms.events.FrontlineEventNotification;
 
-import net.frontlinesms.plugins.PluginController;
 import net.frontlinesms.plugins.resourcemapper.ResourceMapperPluginController;
 import net.frontlinesms.plugins.resourcemapper.data.domain.mapping.Field;
 import net.frontlinesms.plugins.resourcemapper.data.domain.mapping.FieldType;
@@ -71,39 +70,47 @@ public class OperatorManager extends Manager {
 	/**
 	 * Create Ushahidi-friendly Operator fields
 	 */
-	public void addUshahidiFields() {
+	public boolean addUshahidiFields() {
 		LOG.debug("createUshahidiFields");
-		//DETAILS
-		addOperatorField(MappingMessages.getTitle(), MappingMessages.getTitleKeyword(), MappingMessages.getTitleInfo(), FieldType.PLAINTEXT);
-		addOperatorField(MappingMessages.getDescription(), MappingMessages.getDescriptionKeyword(), MappingMessages.getDescriptionInfo(), FieldType.PLAINTEXT);
-		//DATE
-		addOperatorField(MappingMessages.getDateNow(), MappingMessages.getDateNowKeyword(), MappingMessages.getDateNowInfo(), FieldType.BOOLEAN);
-		addOperatorField(MappingMessages.getDate(), MappingMessages.getDateKeyword(), MappingMessages.getDateInfo(), FieldType.DATE);
-		//CATEGORIES
-		List<String> categories = new ArrayList<String>();
-		for(Category category: this.categoryDao.getAllCategories(this.mappingSetupDao.getDefaultSetup())){
-			categories.add(category.getTitle());
-		}
-		addOperatorField(MappingMessages.getCategories(), MappingMessages.getCategoriesKeyword(), MappingMessages.getCategoriesInfo(), FieldType.CHECKLIST, 
-							categories.toArray(new String[categories.size()]));
-		//LOCATION
-		addOperatorField(MappingMessages.getDefaultLocation(), MappingMessages.getDefaultLocationKeyword(), MappingMessages.getDefaultLocationInfo(), FieldType.BOOLEAN);
-		List<String> locations = new ArrayList<String>();
-		for(Location location: this.locationDao.getAllLocations(this.mappingSetupDao.getDefaultSetup())) {
-			if (location.getName() != null && location.getName().length() > 0 && location.getName().equalsIgnoreCase("unknown") == false) {
-				locations.add(location.getName());
+		try {
+			//DETAILS
+			addOperatorField(MappingMessages.getTitle(), MappingMessages.getTitleKeyword(), MappingMessages.getTitleInfo(), FieldType.PLAINTEXT);
+			addOperatorField(MappingMessages.getDescription(), MappingMessages.getDescriptionKeyword(), MappingMessages.getDescriptionInfo(), FieldType.PLAINTEXT);
+			//DATE
+			addOperatorField(MappingMessages.getDateNow(), MappingMessages.getDateNowKeyword(), MappingMessages.getDateNowInfo(), FieldType.BOOLEAN);
+			addOperatorField(MappingMessages.getDate(), MappingMessages.getDateKeyword(), MappingMessages.getDateInfo(), FieldType.DATE);
+			//CATEGORIES
+			List<String> categories = new ArrayList<String>();
+			for(Category category: this.categoryDao.getAllCategories(this.mappingSetupDao.getDefaultSetup())){
+				categories.add(category.getTitle());
 			}
+			addOperatorField(MappingMessages.getCategories(), MappingMessages.getCategoriesKeyword(), MappingMessages.getCategoriesInfo(), FieldType.CHECKLIST, 
+								categories.toArray(new String[categories.size()]));
+			//LOCATION
+			addOperatorField(MappingMessages.getDefaultLocation(), MappingMessages.getDefaultLocationKeyword(), MappingMessages.getDefaultLocationInfo(), FieldType.BOOLEAN);
+			List<String> locations = new ArrayList<String>();
+			for(Location location: this.locationDao.getAllLocations(this.mappingSetupDao.getDefaultSetup())) {
+				if (location.getName() != null && location.getName().length() > 0 && location.getName().equalsIgnoreCase("unknown") == false) {
+					locations.add(location.getName());
+				}
+			}
+			addOperatorField(MappingMessages.getLocation(), MappingMessages.getLocationKeyword(), MappingMessages.getLocationInfo(), FieldType.MULTICHOICE, 
+								locations.toArray(new String[locations.size()]));
+			//NEWS
+			addOperatorField(MappingMessages.getNews(), MappingMessages.getNewsKeyword(), MappingMessages.getNewsInfo(), FieldType.PLAINTEXT);
+			//VIDEO
+			addOperatorField(MappingMessages.getVideo(), MappingMessages.getVideoKeyword(), MappingMessages.getVideoInfo(), FieldType.PLAINTEXT);
+			//CONTACT
+			addOperatorField(MappingMessages.getFirstName(), MappingMessages.getFirstNameKeyword(), MappingMessages.getFirstNameInfo(), FieldType.PLAINTEXT);
+			addOperatorField(MappingMessages.getLastName(), MappingMessages.getLastNameKeyword(), MappingMessages.getLastNameInfo(), FieldType.PLAINTEXT);
+			addOperatorField(MappingMessages.getEmail(), MappingMessages.getEmailKeyword(), MappingMessages.getEmailInfo(), FieldType.PLAINTEXT);
+			
+			return true;	
 		}
-		addOperatorField(MappingMessages.getLocation(), MappingMessages.getLocationKeyword(), MappingMessages.getLocationInfo(), FieldType.MULTICHOICE, 
-							locations.toArray(new String[locations.size()]));
-		//NEWS
-		addOperatorField(MappingMessages.getNews(), MappingMessages.getNewsKeyword(), MappingMessages.getNewsInfo(), FieldType.PLAINTEXT);
-		//VIDEO
-		addOperatorField(MappingMessages.getVideo(), MappingMessages.getVideoKeyword(), MappingMessages.getVideoInfo(), FieldType.PLAINTEXT);
-		//CONTACT
-		addOperatorField(MappingMessages.getFirstName(), MappingMessages.getFirstNameKeyword(), MappingMessages.getFirstNameInfo(), FieldType.PLAINTEXT);
-		addOperatorField(MappingMessages.getLastName(), MappingMessages.getLastNameKeyword(), MappingMessages.getLastNameInfo(), FieldType.PLAINTEXT);
-		addOperatorField(MappingMessages.getEmail(), MappingMessages.getEmailKeyword(), MappingMessages.getEmailInfo(), FieldType.PLAINTEXT);
+		catch(Exception ex){
+			
+		}
+		return false;
 	}
 	
 	/**
@@ -119,6 +126,8 @@ public class OperatorManager extends Manager {
 					if (fieldDictionary.containsKey(fieldResponse.getMappingKeyword())) {
 						Field field = fieldResponse.getMapping();
 						LOG.error("Ushahidi Field Received [%s, %s, %s, %s]", field.getName(), field.getKeyword(), field.getType(), fieldResponse.getResponseValue());
+						
+						
 					}
 				}	
 			}

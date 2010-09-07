@@ -10,6 +10,7 @@ import java.net.MalformedURLException;
 import java.net.URLConnection;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -18,17 +19,15 @@ import org.json.JSONObject;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import org.apache.log4j.Logger;
-
 import com.ushahidi.plugins.mapping.data.domain.Category;
 import com.ushahidi.plugins.mapping.data.domain.Location;
 import com.ushahidi.plugins.mapping.data.domain.Incident;
-
-import net.frontlinesms.FrontlineUtils;
+import com.ushahidi.plugins.mapping.maps.core.Point;
+import com.ushahidi.plugins.mapping.utils.MappingLogger;
 
 public class SynchronizationThread extends Thread{
 //>	STATIC	
-	private static Logger LOG = FrontlineUtils.getLogger(SynchronizationThread.class);
+	public static MappingLogger LOG = MappingLogger.getLogger(SynchronizationThread.class);	
 	
 //>	INSTANCE VARIABLES
 	/** The base task to be performed by the API; that which requires no extra parameters*/
@@ -49,6 +48,8 @@ public class SynchronizationThread extends Thread{
 	/** Tasks queue for processing the sync jobs in  a FIFO fashion */
 	private ArrayBlockingQueue<SynchronizationTask> taskQueue = new ArrayBlockingQueue<SynchronizationTask>(10);
 	
+	private final List<Incident> pendingIncidents = new ArrayList<Incident>();
+	
 	/**
 	 * Creates an instance of SynchronizationThread
 	 * 
@@ -61,13 +62,26 @@ public class SynchronizationThread extends Thread{
 	}
 	
 	/**
+	 * Creates an instance of SynchronizationThread
+	 * 
+	 * @param syncManager SynchronizationManager spawning this thread
+	 * @param syncURL The URL to be used for synchronization
+	 * @param pending collection of pending incidents to upload
+	 */
+	public SynchronizationThread(SynchronizationManager syncManager, String syncURL, List<Incident> pending){
+		this.syncManager = syncManager;
+		this.baseURL = syncURL;
+		this.pendingIncidents.clear();
+		this.pendingIncidents.addAll(pending);
+	}
+	
+	/**
 	 * Adds a {@link SynchronizationTask} to the task queue
 	 * @param task
 	 */
 	public void addJob(SynchronizationTask task){
 		taskQueue.add(task);
 	}
-	
 	
 	public void run(){
 		//Process the items in the task queue in a FIFO fashion
@@ -150,7 +164,7 @@ public class SynchronizationThread extends Thread{
 		if(baseTask.equalsIgnoreCase(SynchronizationAPI.POST_INCIDENT)){
 			urlParameterStr += SynchronizationAPI.getSubmitURLParameters(baseTask);
 			//Fetch all incidents and post them one by one
-			for(Incident incident: syncManager.getPendingIncidents()) {
+			for(Incident incident : this.pendingIncidents) {
 				postIncident(incident, urlParameterStr);
 			}
 		}
@@ -215,7 +229,33 @@ public class SynchronizationThread extends Thread{
 				Location location = fetchLocation((JSONObject)item.get(SynchronizationAPI.LOCATION_KEY));
 				syncManager.addLocation(location);
 			}
+			else if(baseTask.equals(SynchronizationAPI.GEOMIDPOINT)){
+				String domain = (String)item.get(SynchronizationAPI.GEOMIDPOINT_DOMAIN_KEY);
+				JSONObject location = (JSONObject)item.get(SynchronizationAPI.GEOMIDPOINT_LOCATION_KEY);
+				Point point = fetchMidPoint(location);
+				syncManager.addPoint(domain, point);
+			}
 		}
+	}
+	
+	private Point fetchMidPoint(JSONObject location) throws JSONException{
+		LOG.debug("location: %s", location);
+		double latitude = 0, longitude = 0;
+		if (location.has("latitude")) {
+			String latitudeString = location.getString("latitude");
+			LOG.debug("latitude: %s", latitudeString);
+			if (latitudeString != null) {
+				latitude = Double.parseDouble(latitudeString);
+			}
+		}
+		if (location.has("longitude")) {
+			String longitudeString = location.getString("longitude");
+			LOG.debug("longitude: %s", longitudeString);
+			if (longitudeString != null) {
+				longitude = Double.parseDouble(longitudeString);
+			}
+		}
+		return new Point(latitude, longitude);
 	}
 	
 	/**

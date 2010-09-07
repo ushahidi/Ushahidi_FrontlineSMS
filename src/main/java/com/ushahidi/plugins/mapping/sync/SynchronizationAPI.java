@@ -23,6 +23,12 @@ public final class SynchronizationAPI {
 	/* Adds an incident */
 	public static final String POST_INCIDENT = "report";
 		
+	/* Geographic Midpoint of Incidents */
+	public static final String GEOMIDPOINT = "geographicmidpoint";
+	
+	public static final String GEOMIDPOINT_DOMAIN_KEY = "domain";
+	
+	public static final String GEOMIDPOINT_LOCATION_KEY = "geographic_midpoint";
 	
 	/* All incidents */
 	public static final String INCIDENTS_BY_ALL	= "&by=all";
@@ -38,7 +44,6 @@ public final class SynchronizationAPI {
 	
 	/* Incidents by location id */
 	public static final String INCIDENTS_BY_LOCATION_ID = "&by=locid&id=";
-	
 	
 	/* Parent object for the JSON response */
 	public static final String PAYLOAD	= "payload";

@@ -1,11 +1,10 @@
 package com.ushahidi.plugins.mapping.ui;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.ushahidi.plugins.mapping.MappingPluginController;
-import com.ushahidi.plugins.mapping.managers.OperatorManager;
+import com.ushahidi.plugins.mapping.sync.SynchronizationCallback;
 import com.ushahidi.plugins.mapping.sync.SynchronizationManager;
 import com.ushahidi.plugins.mapping.utils.MappingLogger;
 import com.ushahidi.plugins.mapping.data.domain.*;
@@ -13,20 +12,18 @@ import com.ushahidi.plugins.mapping.data.repository.CategoryDao;
 import com.ushahidi.plugins.mapping.data.repository.IncidentDao;
 import com.ushahidi.plugins.mapping.data.repository.LocationDao;
 import com.ushahidi.plugins.mapping.data.repository.MappingSetupDao;
-import com.ushahidi.plugins.mapping.managers.FormsManager;
 
 import net.frontlinesms.FrontlineSMS;
 import net.frontlinesms.data.DuplicateKeyException;
 import net.frontlinesms.data.domain.Contact;
 import net.frontlinesms.data.domain.FrontlineMessage;
 import net.frontlinesms.ui.i18n.InternationalisationUtils;
-import net.frontlinesms.ui.DateSelecter;
 import net.frontlinesms.ui.ExtendedThinlet;
 import net.frontlinesms.ui.ThinletUiEventHandler;
 import net.frontlinesms.ui.UiGeneratorController;
 
 @SuppressWarnings("serial")
-public class MappingUIController extends ExtendedThinlet implements ThinletUiEventHandler {
+public class MappingUIController extends ExtendedThinlet implements ThinletUiEventHandler, SynchronizationCallback {
 
 	public static MappingLogger LOG = MappingLogger.getLogger(MappingUIController.class);
 	
@@ -46,6 +43,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	
 	private Object mainTab;
 	private Object pnlViewIncidents;
+	private SyncDialogHandler syncDialog;
 	
 	private final LocationDao locationDao;
 	private final CategoryDao categoryDao;
@@ -55,6 +53,9 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	private SynchronizationManager syncManager;
 	private MapPanelHandler mapPanelHandler;
 	private ReportsPanelHandler reportsPanelHandler;
+	
+	private final Object cbxIncidentMap;
+	private final Object cbxIncidentList;
 	
 	public MappingUIController(MappingPluginController pluginController, FrontlineSMS frontlineController, UiGeneratorController uiController) {
 		this.pluginController = pluginController;
@@ -68,6 +69,8 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		
 		this.mainTab = this.ui.loadComponentFromFile(XML_MAIN_TAB, this);
 		this.pnlViewIncidents = this.ui.find(this.mainTab, "pnlViewIncidents");
+		this.cbxIncidentMap = this.ui.find(this.mainTab, "cbxIncidentMap");
+		this.cbxIncidentList = this.ui.find(this.mainTab, "cbxIncidentList");
 	}
 	
 	/**
@@ -78,12 +81,6 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		updateKeywordList();
 		updateMappingTab();
 		showIncidentMap();
-		
-		OperatorManager operatorManager = new OperatorManager(this.frontlineController, this.pluginController);
-        operatorManager.addUshahidiFields();
-        
-        FormsManager formsManager = new FormsManager(this.frontlineController, this.pluginController);
-        formsManager.addUshahidiForms();
 	}
 	
 	public Object getTab() {
@@ -129,8 +126,8 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	public void updateMappingTab() {
 		Object messageTableComponent = ui.find(this.mainTab, COMPONENT_MESSAGE_TABLE);
 		removeAll(messageTableComponent);		
-		for (FrontlineMessage m : frontlineController.getMessageDao().getMessages(FrontlineMessage.Type.RECEIVED, FrontlineMessage.Status.RECEIVED)) {
-			ui.add(messageTableComponent, getRow(m));
+		for (FrontlineMessage message : frontlineController.getMessageDao().getMessages(FrontlineMessage.Type.RECEIVED, FrontlineMessage.Status.RECEIVED)) {
+			ui.add(messageTableComponent, getRow(message));
 		}	
 	}
 	
@@ -201,14 +198,21 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	 */
 	public void beginSynchronization(){
 		//Check if the mapping plugin has been configured to synchronize to an Ushahidi instance
-		if (mappingSetupDao.getCount() == 0 || mappingSetupDao.getDefaultSetup() == null || getDefaultSynchronizationURL() == null){
-			check_PluginConfiguration();
+		if (mappingSetupDao.getCount() == 0 || mappingSetupDao.getDefaultSetup() == null){
+			LOG.debug("Mapping plugin has not been configured");
+			showSetupDialog();
+			ui.alert("The mapping plugin has not been configured!");
+		}
+		else if(mappingSetupDao.getCount() > 0 && mappingSetupDao.getDefaultSetup() == null){
+			LOG.debug("Default mapping setup not set");
+			showSetupDialog();
+			ui.alert("Please select the default mapping setup");
 		}
 		else{
-			syncManager = new SynchronizationManager(this);		
-			//Run a full sync
+			syncManager = new SynchronizationManager(this, this.mappingSetupDao.getDefaultSetup().getSourceURL());		
 			LOG.debug("Starting full synchronization...");
-			syncManager.performFullSynchronization();
+			List<Incident> pendingIncidents = incidentDao.getUnMarkedIncidents(mappingSetupDao.getDefaultSetup());
+			syncManager.performFullSynchronization(pendingIncidents);
 		}
 	}
 	
@@ -216,16 +220,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	 * Updates the keyword list with the new items 
 	 */
 	private void updateKeywordList(){
-		//Clear the contents of the keyword list
 		removeAll(ui.find(this.mainTab, COMPONENT_KEYWORDS_TABLE));
-		/*
-		for(Category category: categoryDao.getAllCategories(mappingSetupDao.getDefaultSetup())){
-			Object row = createTableRow(category);
-			createTableCell(row,"");
-			createTableCell(row, category.getTitle());			
-			add(ui.find(COMPONENT_KEYWORDS_TABLE), row);
-		}
-		*/
 		for(Location location: locationDao.getAllLocations(mappingSetupDao.getDefaultSetup())){
 			Object row = createTableRow(location);
 			createTableCell(row, "");
@@ -233,128 +228,6 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 			add(ui.find(this.mainTab, COMPONENT_KEYWORDS_TABLE), row);
 		}
 		ui.repaint(ui.find(this.mainTab, COMPONENT_KEYWORDS_TABLE));
-	}
-	
-	/**
-	 * Adds a new category. Any exceptions are trapped and logged
-	 * 
-	 * @param category Category to be added
-	 */
-	public synchronized void addCategory(Category category){
-		if(categoryDao.findCategory(category.getFrontendId(), mappingSetupDao.getDefaultSetup()) == null){
-			category.setMappingSetup(mappingSetupDao.getDefaultSetup());
-			try{
-				categoryDao.saveCategory(category);			
-			}
-			catch(DuplicateKeyException e){
-				LOG.debug("Category already exists", e);
-				return;
-			}
-					
-			//Add category to the keyword listing
-			Object row = ui.createTableRow(category);
-			createTableCell(row, "");
-			createTableCell(row, category.getTitle());
-			ui.add(ui.find(getTab(), COMPONENT_KEYWORDS_TABLE), row);
-			ui.repaint();
-			
-			LOG.debug("Category [" + category.getTitle() + "] added!");
-		}
-	}
-	
-	/**
-	 * Adds a new location. The location is added both to the in memory database
-	 * and to the DB used by hibernate
-	 * 
-	 * @param location Location to be added
-	 */
-	public synchronized void addLocation(Location location){
-		if (locationDao.findLocation(location.getFrontendId(), mappingSetupDao.getDefaultSetup()) == null){
-			location.setMappingSetup(mappingSetupDao.getDefaultSetup());
-			try{
-				locationDao.saveLocation(location);
-			}
-			catch(DuplicateKeyException e){			
-				LOG.debug("Location already exists", e);
-				return;
-			}
-			
-			//Add location to the keyword listing
-			Object row = ui.createTableRow(location);
-			createTableCell(row, "");
-			createTableCell(row, location.getName());
-			ui.add(ui.find(getTab(), COMPONENT_KEYWORDS_TABLE), row);
-			ui.repaint();
-	
-			LOG.debug("Location [" + location.getName() + "] created!");
-		}
-	}
-	
-	/**
-	 * Adds a new incident
-	 * @param incident Incident to be added
-	 */
-	public synchronized void addIncident(Incident incident){
-		if(incidentDao.findIncident(incident.getFrontendId(), mappingSetupDao.getDefaultSetup()) == null){
-			long frontendId = incident.getLocation().getFrontendId();
-			Location location = locationDao.findLocation(frontendId, mappingSetupDao.getDefaultSetup());
-			
-			if(location == null){
-				addLocation(incident.getLocation());
-				location = locationDao.findLocation(frontendId, mappingSetupDao.getDefaultSetup());
-			}
-			
-			incident.setLocation(location);
-			
-			incident.setMappingSetup(mappingSetupDao.getDefaultSetup());
-			try {
-				incidentDao.saveIncident(incident);
-			} catch (DuplicateKeyException e) {
-				LOG.debug("Incident already exists", e);
-				return;
-			}
-			LOG.debug("Incident [" + incident.getTitle() + "] created!");
-		}
-	}
-	
-	/**
-	 * Gets the default URL to be used for the synchronisation. The default URL is specified in the 
-	 * default mapping setup
-	 * 
-	 * @return
-	 */
-	public String getDefaultSynchronizationURL(){
-		return (mappingSetupDao.getDefaultSetup() == null) ? null : 
-			mappingSetupDao.getDefaultSetup().getSourceURL();
-	}
-	
-	/**
-	 * Checks whether the mapping plugin has been configured for purposes of synchronization 
-	 * with an Ushahidi instance
-	 */
-	public void check_PluginConfiguration(){
-		if(mappingSetupDao.getCount() == 0){
-			LOG.debug("Mapping plugin has not been configured");
-			showSetupDialog();
-			ui.alert("The mapping plugin has not been configured!");
-			LOG.trace("EXIT");
-			return;
-		}
-		else if(mappingSetupDao.getCount() > 0 && mappingSetupDao.getDefaultSetup() == null){
-			LOG.debug("Default mapping setup not set");
-			showSetupDialog();
-			ui.alert("Please select the default mapping setup");
-			LOG.trace("EXIT");
-			return;
-		}
-	}
-	
-	/**
-	 * Gets the list of incidents to be posted/pushed to the Ushahidi instance
-	 * @return
-	 */
-	public List<Incident> getPendingIncidents(){
-		return incidentDao.getUnMarkedIncidents(mappingSetupDao.getDefaultSetup());
 	}
 	
 	/**
@@ -402,31 +275,62 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		ui.repaint();
 	}
 	
-	/**
-	 * Update the posted incident by turning off the "marked" flag
-	 * 
-	 * @param incident
-	 */
-	public synchronized void updatePostedIncident(Incident incident){
-		incident.setMarked(false);
-		try{
-			incidentDao.updateIncident(incident);
+	public void showIncidentMap() {
+		System.out.println("showIncidentMap");
+		if (this.mapPanelHandler == null) {
+			this.mapPanelHandler = new MapPanelHandler(this.pluginController, this.frontlineController, this.ui);
 		}
-		catch(DuplicateKeyException dk){
-			LOG.debug("Unable to update incident", dk);
-		}
+		this.setSelected(this.cbxIncidentMap, true);
+		this.setSelected(this.cbxIncidentList, false);
+		this.mapPanelHandler.init();
+		this.removeAll(this.pnlViewIncidents);
+		this.repaint(this.pnlViewIncidents);
+		this.add(this.pnlViewIncidents, this.mapPanelHandler.getMainPanel());
+		this.repaint(this.pnlViewIncidents);
 	}
 	
-	/**
-	 * Displays the synchronization dialog for the duration of the sync
-	 * 
-	 * @return
-	 */
-	public SyncDialogHandler showSyncDialog() {
-		SyncDialogHandler syncDialog = new SyncDialogHandler(this.pluginController, this.frontlineController, this.ui);
-		syncDialog.showDialog();
-		return syncDialog;
+	public void showIncidentReports() {
+		System.out.println("showIncidentReports");
+		if (this.reportsPanelHandler == null) {
+			this.reportsPanelHandler = new ReportsPanelHandler(this.pluginController, this.frontlineController, this.ui);
+		}
+		if (this.mapPanelHandler == null) {
+			this.mapPanelHandler.destroyMap();
+		}
+		this.setSelected(this.cbxIncidentMap, false);
+		this.setSelected(this.cbxIncidentList, true);
+		this.reportsPanelHandler.init();
+		this.removeAll(this.pnlViewIncidents);
+		this.repaint(this.pnlViewIncidents);
+		this.add(this.pnlViewIncidents, this.reportsPanelHandler.getMainPanel());
+		this.repaint(this.pnlViewIncidents);
 	}
+
+	//SYNCHRONIZATION
+	
+	public void downloadedCategory(Category category) {
+		if(categoryDao.findCategory(category.getFrontendId(), mappingSetupDao.getDefaultSetup()) == null){
+			category.setMappingSetup(mappingSetupDao.getDefaultSetup());
+			try{
+				categoryDao.saveCategory(category);			
+			}
+			catch(DuplicateKeyException e){
+				LOG.debug("Category already exists", e);
+				return;
+			}
+					
+			//Add category to the keyword listing
+			Object row = ui.createTableRow(category);
+			createTableCell(row, "");
+			createTableCell(row, category.getTitle());
+			ui.add(ui.find(getTab(), COMPONENT_KEYWORDS_TABLE), row);
+			ui.repaint();
+			
+			LOG.debug("Category [" + category.getTitle() + "] added!");
+		}
+	}
+
+	//################# SynchronizationCallback #################
 	
 	/**
 	 * Kills all the mapping and synchronization threads that are still running
@@ -437,26 +341,87 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		}
 	}
 	
-	public void showIncidentMap() {
-		System.out.println("showIncidentMap");
-		if (this.mapPanelHandler == null) {
-			this.mapPanelHandler = new MapPanelHandler(this.pluginController, this.frontlineController, this.ui);
-		}
-		this.mapPanelHandler.init();
-		this.removeAll(this.pnlViewIncidents);
-		this.add(this.pnlViewIncidents, this.mapPanelHandler.getMainPanel());
-		this.repaint(this.pnlViewIncidents);
+	public void downloadedGeoMidpoint(String domain, String latitude, String longitude) {
+		LOG.debug("downloadedGeoMidpoint: %s (%s,%s)", domain, latitude, longitude);
 	}
-	
-	public void showIncidentReports() {
-		System.out.println("showIncidentReports");
-		if (this.reportsPanelHandler == null) {
-			this.reportsPanelHandler = new ReportsPanelHandler(this.pluginController, this.frontlineController, this.ui);
+
+	public void downloadedIncident(Incident incident) {
+		if(incidentDao.findIncident(incident.getFrontendId(), mappingSetupDao.getDefaultSetup()) == null){
+			long frontendId = incident.getLocation().getFrontendId();
+			Location location = locationDao.findLocation(frontendId, mappingSetupDao.getDefaultSetup());
+			
+			if(location == null){
+				downloadedLocation(incident.getLocation());
+				location = locationDao.findLocation(frontendId, mappingSetupDao.getDefaultSetup());
+			}
+			
+			incident.setLocation(location);
+			incident.setMappingSetup(mappingSetupDao.getDefaultSetup());
+			try {
+				incidentDao.saveIncident(incident);
+			} catch (DuplicateKeyException e) {
+				LOG.debug("Incident already exists", e);
+				return;
+			}
+			LOG.debug("Incident [" + incident.getTitle() + "] created!");
 		}
-		this.reportsPanelHandler.init();
-		this.removeAll(this.pnlViewIncidents);
-		this.add(this.pnlViewIncidents, this.reportsPanelHandler.getMainPanel());
-		this.repaint(this.pnlViewIncidents);
+	}
+
+	public void downloadedLocation(Location location) {
+		if (locationDao.findLocation(location.getFrontendId(), mappingSetupDao.getDefaultSetup()) == null){
+			location.setMappingSetup(mappingSetupDao.getDefaultSetup());
+			try{
+				locationDao.saveLocation(location);
+			}
+			catch(DuplicateKeyException e){			
+				LOG.debug("Location already exists", e);
+				return;
+			}
+			
+			//Add location to the keyword listing
+			Object row = ui.createTableRow(location);
+			createTableCell(row, "");
+			createTableCell(row, location.getName());
+			ui.add(ui.find(getTab(), COMPONENT_KEYWORDS_TABLE), row);
+			ui.repaint();
+	
+			LOG.debug("Location [" + location.getName() + "] created!");
+		}
+	}
+
+	public void synchronizationFailed(String error) {
+		LOG.debug("synchronizationFailed:%s", error);
+		syncDialog.hideDialog();
+		this.ui.alert(error);
+	}
+
+	public void synchronizationFinished() {
+		LOG.debug("synchronizationFinished");
+		syncDialog.hideDialog();
+	}
+
+	public void synchronizationStarted(int tasks) {
+		LOG.debug("synchronizationStarted:%d", tasks);
+		if (syncDialog == null) {
+			syncDialog = new SyncDialogHandler(this.pluginController, this.frontlineController, this.ui);	
+		}
+		syncDialog.setProgress(tasks, 1);
+		syncDialog.showDialog();
+	}
+
+	public void synchronizationUpdated(int tasks, int completed) {
+		LOG.debug("synchronizationUpdated: %d/%d", completed, tasks);
+		syncDialog.setProgress(tasks, completed);	
+	}
+
+	public void uploadedIncident(Incident incident) {
+		incident.setMarked(false);
+		try{
+			incidentDao.updateIncident(incident);
+		}
+		catch(DuplicateKeyException dk){
+			LOG.debug("Unable to update incident", dk);
+		}
 	}
 		
 }

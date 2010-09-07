@@ -6,7 +6,6 @@ import java.util.Map;
 import net.frontlinesms.FrontlineSMS;
 import net.frontlinesms.data.events.DatabaseEntityNotification;
 import net.frontlinesms.events.FrontlineEventNotification;
-import net.frontlinesms.plugins.PluginController;
 import net.frontlinesms.plugins.forms.FormsPluginController;
 import net.frontlinesms.plugins.forms.data.domain.Form;
 import net.frontlinesms.plugins.forms.data.domain.FormField;
@@ -58,7 +57,7 @@ public class FormsManager extends Manager {
 	/**
 	 * Create Ushahidi-specific form
 	 */
-	public void addUshahidiForms() {
+	public boolean addUshahidiForms() {
 		LOG.debug("createUshahidiForms");
 		try {
 			String formName = MappingMessages.getIncidentReport();
@@ -72,7 +71,7 @@ public class FormsManager extends Manager {
 						this.fieldDictionary.put(formField.getLabel(), formField);
 					}
 					LOG.debug("Ushahidi Form alerady exists, exiting.");
-					return;
+					return true;
 				}
 			}
 			Form form = new Form(formName);
@@ -98,10 +97,12 @@ public class FormsManager extends Manager {
 			addFormField(form, FormFieldType.TEXT_FIELD, MappingMessages.getLastName());
 			addFormField(form, FormFieldType.EMAIL_FIELD, MappingMessages.getEmail());
 			this.formDao.saveForm(form);	
+			return true;
 		}
 		catch(Exception ex) {
 			ex.printStackTrace();
 		}
+		return false;
 	}
 	
 	/**

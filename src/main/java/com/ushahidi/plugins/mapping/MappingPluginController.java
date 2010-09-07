@@ -106,4 +106,12 @@ public class MappingPluginController extends BasePluginController implements Inc
     public MappingSetupDao getMappingSetupDao(){
         return mappingSetupDao;
     }
+    
+    public void showIncidentMap() {
+    	this.mappingUIController.showIncidentMap();
+    }
+    
+    public void showIncidentReports() {
+    	this.mappingUIController.showIncidentReports();
+    }
 }

@@ -48,8 +48,8 @@
 			</panel>
 			<panel columns="1" weightx="1" weighty="1" text="i18n.plugins.ushahidi.incidents" border="true" gap="5" top="9" bottom="9" left="9" right="9">
 				<panel weightx="1" gap="10" columns="2">
-					<checkbox text="i18n.plugins.ushahidi.view.map" icon="/icons/ushahidi_map.png"  group="viewtype" selected="true" action="showIncidentMap" />
-					<checkbox text="i18n.plugins.ushahidi.view.reports" icon="/icons/ushahidi_reports.png"  group="viewtype" action="showIncidentReports" />
+					<checkbox name="cbxIncidentMap" text="i18n.plugins.ushahidi.view.map" icon="/icons/map.png" group="view" selected="true" action="showIncidentMap" />
+					<checkbox name="cbxIncidentList" text="i18n.plugins.ushahidi.view.reports" icon="/icons/report.png" group="view" action="showIncidentReports" />
 				</panel>
 				<panel name="pnlViewIncidents" columns="1" weightx="1" weighty="1">
 					

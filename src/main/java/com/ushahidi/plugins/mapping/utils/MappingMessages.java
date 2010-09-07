@@ -160,4 +160,28 @@ public final class MappingMessages {
 	public static String getVideoKeyword() {
 		return getI18NString("plugins.ushahidi.incident.video.keyword");
 	}
+	
+	public static String getFormCreated() {
+		return getI18NString("plugins.ushahidi.setup.forms.created");
+	}
+	
+	public static String getFormFailed() {
+		return getI18NString("plugins.ushahidi.setup.forms.failed");
+	}
+	
+	public static String getSurveyCreated() {
+		return getI18NString("plugins.ushahidi.setup.surveys.created");
+	}
+	
+	public static String getSurveyFailed() {
+		return getI18NString("plugins.ushahidi.setup.surveys.failed");
+	}
+	
+	public static String getSourceNameMissing() {
+		return getI18NString("plugins.ushahidi.setup.sourcename.missing");
+	}
+	
+	public static String getSourceUrlMissing() {
+		return getI18NString("plugins.ushahidi.setup.source.missing");
+	}
 }

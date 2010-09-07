@@ -63,12 +63,14 @@ public class ReportsPanelHandler extends ExtendedThinlet implements ThinletUiEve
 		if (this.incidentDao.getCount() > 0) {
 			this.removeAll(this.tblReports);
 			for(Incident incident: this.incidentDao.getAllIncidents(mappingSetupDao.getDefaultSetup())){
+				LOG.debug("Loading incident %s", incident.getTitle());
 				add(this.tblReports, getRow(incident));
 			}
 		}
 		this.removeAll(this.cbxCategories);
 		this.add(this.cbxCategories, this.createComboboxChoice(SHOW_ALL_CATEGORIES, null));
-		for(Category category: categoryDao.getAllCategories(mappingSetupDao.getDefaultSetup())){
+		for(Category category : categoryDao.getAllCategories(mappingSetupDao.getDefaultSetup())){
+			LOG.debug("Loading category %s", category.getTitle());
 			this.add(this.cbxCategories, this.createComboboxChoice(category.getTitle(), category));
 		}
 		this.setSelectedIndex(this.cbxCategories, 0);
@@ -79,6 +81,7 @@ public class ReportsPanelHandler extends ExtendedThinlet implements ThinletUiEve
 		Object selectedItem =  this.getSelectedItem(comboBox);
 		Category category = selectedItem != null ? this.getAttachedObject(selectedItem, Category.class) : null;
 		String searchText = this.getText(textField).toLowerCase();
+		LOG.debug("searchText=%s", searchText);
 		this.removeAll(this.tblReports);
 		for(Incident incident: this.incidentDao.getAllIncidents(mappingSetupDao.getDefaultSetup())){
 			if (category == null || incident.hasCategory(category)) {

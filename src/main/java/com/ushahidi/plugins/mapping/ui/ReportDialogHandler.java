@@ -1,6 +1,5 @@
 package com.ushahidi.plugins.mapping.ui;
 
-import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +21,6 @@ import net.frontlinesms.FrontlineSMS;
 import net.frontlinesms.data.DuplicateKeyException;
 import net.frontlinesms.data.domain.Contact;
 import net.frontlinesms.data.domain.FrontlineMessage;
-import net.frontlinesms.ui.DateSelecter;
 import net.frontlinesms.ui.ExtendedThinlet;
 import net.frontlinesms.ui.ThinletUiEventHandler;
 import net.frontlinesms.ui.UiGeneratorController;
@@ -35,6 +33,7 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 	
 	private static final String UI_DIALOG_XML = "/ui/plugins/mapping/reportDialog.xml";
 
+	private final MappingPluginController pluginController;
 	private final FrontlineSMS frontlineController;
 	private final UiGeneratorController ui;
 	
@@ -60,8 +59,14 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 	private final Object btnCancel;
 	private final Object btnClose;
 	private final Object btnReportDate;
-
+	private final Object cbxExistingLocation;
+	private final Object cbxNewLocation;
+	private final Object pnlExistingLocation;
+	private final Object pnlNewLocation;
+	private final Object txtNewLocation;
+	
 	public ReportDialogHandler(MappingPluginController pluginController, FrontlineSMS frontlineController, UiGeneratorController uiController) {
+		this.pluginController = pluginController;
 		this.ui = uiController;
 		this.frontlineController = frontlineController;
 		
@@ -88,6 +93,13 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 		this.txtReportLocation = this.ui.find(this.mainDialog, "txtReportLocation");
 		this.pnlReportLocation = this.ui.find(this.mainDialog, "pnlReportLocation");
 		this.cboReportLocations = this.ui.find(this.mainDialog, "cboReportLocations");
+		
+		this.cbxExistingLocation = this.ui.find(this.mainDialog, "cboReportLocations");
+		this.pnlExistingLocation = this.ui.find(this.mainDialog, "pnlExistingLocation");
+		
+		this.cbxNewLocation = this.ui.find(this.mainDialog, "cbxNewLocation");
+		this.pnlNewLocation = this.ui.find(this.mainDialog, "pnlNewLocation");
+		this.txtNewLocation =  this.ui.find(this.mainDialog, "txtNewLocation");
 		
 		this.btnSave = this.ui.find(this.mainDialog, "btnSave");
 		this.btnCancel = this.ui.find(this.mainDialog, "btnCancel");
@@ -281,17 +293,19 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 	
 	public void selectLocationFromMap(Object dialog) {
 		this.setEnabled(this.cboReportLocations, false);
+		this.pluginController.showIncidentMap();
 		setBoolean(dialog, Thinlet.MODAL, false);
 		setVisible(dialog, false);
 		ui.repaint();
 	}
 
-	@Override
+	//@Override
 	public void mapZoomed(int zoom) {}
 
-	@Override
+	//@Override
 	public void pointSelected(double lat, double lon) {
 		setText(this.txtReportCoordinates, String.format("%f, %f", lat, lon));
+		setText(this.txtNewLocation, String.format("%f, %f", lat, lon));
 		setBoolean(this.mainDialog, Thinlet.MODAL, true);
 		setVisible(this.mainDialog, true);
 		ui.repaint();
@@ -299,5 +313,19 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 	
 	public void showDateSelecter(Object textField) {
 		this.ui.showDateSelecter(textField);
+	}
+	
+	public void showExistingLocations() {
+		LOG.debug("showExistingLocations");
+		this.setVisible(this.pnlExistingLocation, true);
+		this.setVisible(this.pnlNewLocation, false);
+		ui.repaint();
+	}
+	
+	public void showNewLocation() {
+		LOG.debug("showNewLocation");
+		this.setVisible(this.pnlExistingLocation, false);
+		this.setVisible(this.pnlNewLocation, true);
+		ui.repaint();
 	}
 }

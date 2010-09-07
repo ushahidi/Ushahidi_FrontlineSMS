@@ -17,13 +17,20 @@
 		</panel>
 		
 		<label text="i18n.plugins.ushahidi.incident.location" valign="top" />
-		<textfield name="txtReportLocation" columns="50" weightx="1" editable="false"/>
-		<panel name="pnlReportLocation" columns="3" weightx="1">
-			<combobox name="cboReportLocations" columns="25" editable="false" action="locationChanged(this,txtReportCoordinates)"></combobox>
-			<label text=" or "/>
-			<button name="btnSelectPoint" text="i18n.plugins.ushahidi.map.select.point" type="link" action="selectLocationFromMap(dialogReportDetails)"/>
+		<textfield name="txtReportLocation" weightx="1" editable="false" weightx="1"/>
+		<panel name="pnlReportLocation" columns="2" weightx="1" visible="false" gap="5">
+			<checkbox name="cbxExistingLocation" text="i18n.plugins.ushahidi.location.existing" group="location" selected="true" action="showExistingLocations"/>
+			<checkbox name="cbxNewLocation" text="i18n.plugins.ushahidi.location.new" group="location" action="showNewLocation"/>
+			
+			<panel name="pnlExistingLocation" colspan="2" columns="1" weightx="1" visible="true">
+				<combobox name="cboReportLocations" columns="25" editable="false" weightx="1" action="locationChanged(this,txtReportCoordinates)"></combobox>
+			</panel>
+			<panel name="pnlNewLocation" colspan="2" columns="2" weightx="1" gap="5" visible="false">
+				<textfield name="txtNewLocation" weightx="1" editable="true" weightx="1"/>
+				<button name="btnSelectPoint" text="i18n.plugins.ushahidi.map.select.point" type="link" action="selectLocationFromMap(dialogReportDetails)"/>
+			</panel>
 		</panel>
-       
+		
 		<label text="i18n.plugins.ushahidi.incident.coordinates" valign="top" />
 		<textfield name="txtReportCoordinates" columns="50" weightx="1" editable="false"/>
        

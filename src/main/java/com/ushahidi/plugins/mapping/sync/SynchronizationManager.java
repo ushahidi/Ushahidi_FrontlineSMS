@@ -5,16 +5,22 @@ import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
 
-import com.ushahidi.plugins.mapping.ui.MappingUIController;
-import com.ushahidi.plugins.mapping.ui.SyncDialogHandler;
+import com.ushahidi.plugins.mapping.maps.core.Point;
 import com.ushahidi.plugins.mapping.utils.MappingLogger;
 import com.ushahidi.plugins.mapping.data.domain.*;
 
+/**
+ * Synchronization Manager
+ * @author dalezak
+ *
+ */
 public class SynchronizationManager {	
 	/** Logger */
 	public static MappingLogger LOG = MappingLogger.getLogger(SynchronizationManager.class);
 	
-	private final MappingUIController mappingController;
+	private final SynchronizationCallback callback;
+	
+	private final String url;
 	
 	/** Synchronization primitive that keeps track of the number of failed sync attempts */
 	private Set<Incident> failedIncidents = new HashSet<Incident>();
@@ -22,19 +28,20 @@ public class SynchronizationManager {
 	/** Controller thread to manage the synchronization thread */
 	private ManagerThread managerThread;
 	
-	/** Handle for the synchronization dialog */
-	private SyncDialogHandler syncDialog;
+	/** The total number of tasks */
+	private int totalTasks = 0;
 	
 	/** Keeps track of the current task no */
-	private int currentTaskNo = 0;
+	private int currentTask = 0;
 	
 	/**
 	 * Creates an instance of {@link SynchronizationManager}
 	 * 
 	 * @param mappingController MappingUIController instance that started up the synchronisation manager
 	 */
-	public SynchronizationManager(MappingUIController mappingController){
-		this.mappingController = mappingController;
+	public SynchronizationManager(SynchronizationCallback callback, String url){
+		this.callback = callback;
+		this.url = url;
 	}
 	
 	/**
@@ -45,28 +52,30 @@ public class SynchronizationManager {
 	 * @param requestParameter Parameter(s) to be passed along together with the task
 	 */
 	public synchronized void runSynchronizationTask(String task, String requestParameter){
-		if (mappingController.getDefaultSynchronizationURL()== null) {
+		if (this.url == null) {
 			return;
 		}
-		
-		SynchronizationThread syncThread = new SynchronizationThread(this, mappingController.getDefaultSynchronizationURL());
-		
+		SynchronizationThread syncThread = new SynchronizationThread(this, this.url);
 		syncThread.addJob(new SynchronizationTask(task, requestParameter));
+		this.totalTasks = syncThread.getTaskCount();
 		if (managerThread == null) {
 			managerThread = new ManagerThread(this, syncThread);
 			managerThread.start();
-			syncDialog = mappingController.showSyncDialog();
 		}
+		this.callback.synchronizationStarted(this.totalTasks);
 	}
 	
 	/**
 	 * Performs both a push and pull synchronization. The push is done first followed by the incidents
 	 */
-	public synchronized void performFullSynchronization(){
+	public synchronized void performFullSynchronization(List<Incident> pendingIncidents){
+		if (this.url == null) {
+			return;
+		}
 		//Instantiate the a synchronization thread
-		SynchronizationThread syncThread = new SynchronizationThread(this, mappingController.getDefaultSynchronizationURL());
+		SynchronizationThread syncThread = new SynchronizationThread(this, this.url, pendingIncidents);
 		
-		if (getPendingIncidents().size() > 0) {
+		if (pendingIncidents != null && pendingIncidents.size() > 0) {
 			syncThread.addJob(new SynchronizationTask(SynchronizationAPI.PUSH_TASK, SynchronizationAPI.POST_INCIDENT));
 		}
 		//Fetch categories and locations
@@ -77,18 +86,26 @@ public class SynchronizationManager {
 		SynchronizationTask incidentTask = new SynchronizationTask(SynchronizationAPI.PULL_TASK, SynchronizationAPI.INCIDENTS);		
 		incidentTask.setRequestParameter(SynchronizationAPI.INCIDENTS_BY_ALL);
 		syncThread.addJob(incidentTask);
-		
-		int taskCount = syncThread.getTaskCount();
-		
-		//Start the synchronization thread
+		this.totalTasks = syncThread.getTaskCount();
 		if (managerThread == null) {
 			managerThread = new ManagerThread(this, syncThread);
 			managerThread.start();
-
-			//Show the synchronization modal dialog
-			syncDialog = mappingController.showSyncDialog();
-			syncDialog.setSynchronizationTaskCount(taskCount);
 		}
+		this.callback.synchronizationStarted(this.totalTasks);
+	}
+	
+	public synchronized void downloadGeoMidpoint() {
+		if (this.url == null) {
+			return;
+		}
+		SynchronizationThread syncThread = new SynchronizationThread(this, this.url);
+		syncThread.addJob(new SynchronizationTask(SynchronizationAPI.PULL_TASK, SynchronizationAPI.GEOMIDPOINT));
+		this.totalTasks = syncThread.getTaskCount();
+		if (managerThread == null) {
+			managerThread = new ManagerThread(this, syncThread);
+			managerThread.start();
+		}
+		this.callback.synchronizationStarted(this.totalTasks);
 	}
 	
 	/**
@@ -114,7 +131,7 @@ public class SynchronizationManager {
 	 * @return
 	 */
 	public synchronized List<Incident> getFailedIncidents(){
-		ArrayList<Incident> list = new ArrayList<Incident>();
+		List<Incident> list = new ArrayList<Incident>();
 		list.addAll(failedIncidents);
 		return list;
 	}
@@ -125,23 +142,23 @@ public class SynchronizationManager {
 	 * @param incident
 	 */
 	public synchronized void updatePostedIncidents(Incident incident){
-		mappingController.updatePostedIncident(incident);
+		this.callback.uploadedIncident(incident);
 	}
 		
 	public void addCategory(Category category){
-		mappingController.addCategory(category);
+		this.callback.downloadedCategory(category);
 	}
 	
 	public void addIncident(Incident incident){
-		mappingController.addIncident(incident);
+		this.callback.downloadedIncident(incident);
 	}
 	
 	public void addLocation(Location location){
-		mappingController.addLocation(location);
+		this.callback.downloadedLocation(location);
 	}
 	
-	public synchronized List<Incident> getPendingIncidents(){
-		return mappingController.getPendingIncidents();
+	public void addPoint(String domain, Point point) {
+		LOG.debug("domain:%s point:%s", domain, point.toString());
 	}
 	
 	/**
@@ -150,13 +167,9 @@ public class SynchronizationManager {
 	 */
 	public synchronized void terminateManagerThread(Thread thread){
 		try{
-			//Remove the synchronization dialog
-			updateCurrentTaskNo();
-			syncDialog.updateProgressBar(currentTaskNo);
+			this.callback.synchronizationUpdated(totalTasks, currentTask);
 			Thread.sleep(5000);
-			
-			syncDialog.removeDialog();
-			
+			this.callback.synchronizationFinished();
 			if (thread instanceof ManagerThread) {
 				managerThread.join();
 			}
@@ -170,7 +183,7 @@ public class SynchronizationManager {
 	 * Terminates the current instance of {@link ManagerThread}
 	 */
 	public synchronized void terminateManagerThread(){
-		mappingController.removeDialog(syncDialog);
+		this.callback.synchronizationFinished();
 		try{
 			managerThread.shutdown();
 			managerThread.join();
@@ -181,8 +194,8 @@ public class SynchronizationManager {
 	}
 	
 	public synchronized void updateCurrentTaskNo(){
-		currentTaskNo++;
-		syncDialog.updateProgressBar(currentTaskNo);
+		currentTask++;
+		this.callback.synchronizationUpdated(totalTasks, currentTask);
 	}
 	
 	/**
