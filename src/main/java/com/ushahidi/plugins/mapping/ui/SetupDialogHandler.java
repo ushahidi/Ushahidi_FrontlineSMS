@@ -1,5 +1,10 @@
 package com.ushahidi.plugins.mapping.ui;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
+
 import thinlet.Thinlet;
 import thinlet.ThinletText;
 
@@ -8,6 +13,9 @@ import com.ushahidi.plugins.mapping.data.domain.Category;
 import com.ushahidi.plugins.mapping.data.domain.Incident;
 import com.ushahidi.plugins.mapping.data.domain.Location;
 import com.ushahidi.plugins.mapping.data.domain.MappingSetup;
+import com.ushahidi.plugins.mapping.data.repository.CategoryDao;
+import com.ushahidi.plugins.mapping.data.repository.IncidentDao;
+import com.ushahidi.plugins.mapping.data.repository.LocationDao;
 import com.ushahidi.plugins.mapping.data.repository.MappingSetupDao;
 import com.ushahidi.plugins.mapping.managers.FormsManager;
 import com.ushahidi.plugins.mapping.managers.OperatorManager;
@@ -30,10 +38,16 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
 	
 	private static final String UI_SETUP_DIALOG = "/ui/plugins/mapping/setupDialog.xml";
 	
+	private static final String CONFIRM_DELETE_KEY = "plugins.ushahidi.setup.confirm.delete";
+	private static final String CONFIRM_SYNCHRONIZE_KEY = "plugins.ushahidi.setup.synchronize";
+	
 	private final MappingPluginController pluginController;
 	private final FrontlineSMS frontlineController;
 	private final UiGeneratorController ui;
 	
+	private final LocationDao locationDao;
+	private final CategoryDao categoryDao;
+	private final IncidentDao incidentDao;
 	private final MappingSetupDao mappingSetupDao;
 	
 	private final Object mainDialog;
@@ -45,33 +59,55 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
 	private final Object btnDelete;
 	private final Object btnCancel;
 	
-	private SyncDialogHandler syncDialog;
+	private boolean shouldSynchronize;
 	
 	public SetupDialogHandler(MappingPluginController pluginController, FrontlineSMS frontlineController, UiGeneratorController uiController) {
 		this.pluginController = pluginController;
 		this.ui = uiController;
 		this.frontlineController = frontlineController;
+		
+		this.locationDao = pluginController.getLocationDao();
+		this.categoryDao = pluginController.getCategoryDao();
+		this.incidentDao = pluginController.getIncidentDao();
 		this.mappingSetupDao = pluginController.getMappingSetupDao();
-		this.mainDialog = this.ui.loadComponentFromFile(UI_SETUP_DIALOG, this);
 		
-		this.tblSources = this.find(this.mainDialog, "tblSources");
-		this.txtSourceName = this.find(this.mainDialog, "txtSourceName");
-		this.txtSourceURL = this.find(this.mainDialog, "txtSourceURL");
-		this.chkSourceDefault = this.find(this.mainDialog, "chkSourceDefault");
+		this.mainDialog = ui.loadComponentFromFile(UI_SETUP_DIALOG, this);
 		
-		this.btnSave = this.find(this.mainDialog, "btnSave");
-		this.btnDelete = this.find(this.mainDialog, "btnDelete");
-		this.btnCancel = this.find(this.mainDialog, "btnCancel");
+		this.tblSources = ui.find(this.mainDialog, "tblSources");
+		this.txtSourceName = ui.find(this.mainDialog, "txtSourceName");
+		this.txtSourceURL = ui.find(this.mainDialog, "txtSourceURL");
+		this.chkSourceDefault = ui.find(this.mainDialog, "chkSourceDefault");
+		
+		this.btnSave = ui.find(this.mainDialog, "btnSave");
+		this.btnDelete = ui.find(this.mainDialog, "btnDelete");
+		this.btnCancel = ui.find(this.mainDialog, "btnCancel");
 	}
 	
 	public void showDialog() {
 		if (mappingSetupDao.getCount() > 0){
-			this.removeAll(tblSources);
+			ui.removeAll(tblSources);
 			for(MappingSetup setup: mappingSetupDao.getAllSetupItems()) {
 				add(tblSources, getRow(setup));
 			}
 		}
+		shouldSynchronize = false;
 		ui.add(this.mainDialog);	
+	}
+	
+	public void removeDialog(Object dialog) {
+		ui.remove(dialog);
+		if (shouldSynchronize) {
+			ui.showConfirmationDialog("beginSynchronization", this, CONFIRM_SYNCHRONIZE_KEY);
+		}
+	}
+	
+	public void beginSynchronization() {
+		ui.removeConfirmationDialog();
+		pluginController.beginSynchronization();
+	}
+	
+	public void showConfirmationDialog(String methodToBeCalled) {
+		ui.showConfirmationDialog(methodToBeCalled, this, CONFIRM_DELETE_KEY);
 	}
 	
 	/**
@@ -83,9 +119,9 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
 		Object row = createTableRow(setup);
 		if (setup.isDefaultSetup()) {
 			Object cell = this.createTableCell("");
-			this.setIcon(cell, Icon.TICK);
-			this.setChoice(cell, ThinletText.ALIGNMENT, ThinletText.CENTER);
-			this.add(row, cell);
+			ui.setIcon(cell, Icon.TICK);
+			ui.setChoice(cell, ThinletText.ALIGNMENT, ThinletText.CENTER);
+			ui.add(row, cell);
 		}
 		else {
 			createTableCell(row, "");
@@ -102,40 +138,78 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
 	 * @param tblLocationSource Table containing the list of the mapping sources
 	 */
 	public void editMappingSource(Object setupDialog, Object tblLocationSource){
-		Object item = getAttachedObject(getSelectedItem(tblLocationSource));
-		if(item instanceof MappingSetup){
-			MappingSetup setup = (MappingSetup)item;
+		Object selectedItem = getSelectedItem(tblLocationSource);
+		Object attachedObject = getAttachedObject(selectedItem, MappingSetup.class);
+		if(attachedObject instanceof MappingSetup){
+			MappingSetup setup = (MappingSetup)attachedObject;
+			ui.setAttachedObject(setupDialog, setup);
 			
-			//Attach the setup item to the dialog
-			setAttachedObject(setupDialog, setup);
+			ui.setText(txtSourceName, setup.getName());
+			ui.setText(txtSourceURL, setup.getSourceURL());
+			ui.setSelected(chkSourceDefault, setup.isDefaultSetup());
 			
-			setText(this.txtSourceName, setup.getName());
-			setText(this.txtSourceURL, setup.getSourceURL());
-			setSelected(this.chkSourceDefault, setup.isDefaultSetup());
-			
-			setEnabled(this.btnSave, true);
-			setEnabled(this.btnDelete, true);
-			setEnabled(this.btnCancel, true);
-			
-			ui.repaint();
+			ui.setEnabled(btnSave, true);
+			ui.setEnabled(btnDelete, true);
+			ui.setEnabled(btnCancel, true);
 		}
 	}
 	
 	public void deleteMappingSource() {
-		Object item = getAttachedObject(getSelectedItem(this.tblSources));
-		if(item instanceof MappingSetup){
-			
+		Object selectedItem = getSelectedItem(tblSources);
+		Object attachedObject = getAttachedObject(selectedItem, MappingSetup.class);
+		if(attachedObject instanceof MappingSetup){
+			MappingSetup mappingSetup = (MappingSetup)attachedObject;
+			if (mappingSetup.isDefaultSetup()) {
+				incidentDao.deleteIncidentsWithMapping(mappingSetup);
+				locationDao.deleteLocationsWithMapping(mappingSetup);
+				categoryDao.deleteCategoriesWithMapping(mappingSetup);
+			}
+			mappingSetupDao.deleteMappingSetup(mappingSetup);
 		}
-	}
-	
-	public void saveMappingSource() {
+		ui.remove(selectedItem);
 		
+		ui.setSelectedItem(tblSources, null);
+		ui.setText(txtSourceName, "");
+		ui.setText(txtSourceURL,"");
+		ui.setSelected(chkSourceDefault, false);
+		
+		ui.setEnabled(btnSave, false);
+		ui.setEnabled(btnDelete, false);
+		ui.setEnabled(btnCancel, false);
+		
+		ui.removeConfirmationDialog();
 	}
 	
-	private void obtainSourceMidPoint(String url) {
-		LOG.debug("obtainSourceMidPoint:%s", url);
-		SynchronizationManager syncManager = new SynchronizationManager(this, url);	
-		syncManager.downloadGeoMidpoint();
+	public void sourceChanged(Object txtSourceName, Object txtSourceURL) {
+		String sourceName = getText(txtSourceName);
+		String sourceUrl = getText(txtSourceURL);
+		if (sourceName != null && sourceName.length() > 0 && 
+			sourceUrl != null && sourceUrl.length() > 0 && isValidUrl(sourceUrl, true)) {
+			ui.setEnabled(btnSave, true);
+		}
+		else {
+			ui.setEnabled(btnSave, false);
+		}
+		ui.setEnabled(btnCancel, true);
+	}
+	
+	private boolean isValidUrl(String urlString, boolean regex) {
+		if (regex) {
+			return urlString.matches("^(ht|f)tp(s?)://([\\w-]+\\.)+[\\w-]+(/[\\w-./?%&=]*)?$");
+		}
+		else {
+			try {
+			    URL url = new URL(urlString);
+			    URLConnection connection = url.openConnection();
+			    connection.connect();
+			    return true;
+			} 
+			catch(MalformedURLException e) {} 
+			catch(NullPointerException e) {}
+			catch(IOException e) {}
+			catch(Exception e) {}
+			return false;
+		}
 	}
 	
 	/**
@@ -144,90 +218,77 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
 	 * @param dialog
 	 */
 	public void addMappingSource(Object dialog){
-		String sourceName = getText(this.txtSourceName);
-		String sourceURL = getText(this.txtSourceURL);
-		
+		String sourceName = getText(txtSourceName);
 		if(sourceName == null || sourceName.length() == 0) {
 			ui.alert(MappingMessages.getSourceNameMissing());
 			LOG.debug("Invalid or empty source name");
 			return;
 		}
-		
+		String sourceURL = getText(txtSourceURL);
 		if(sourceURL == null || sourceURL.length() == 0) {
 			ui.alert(MappingMessages.getSourceUrlMissing());
 			LOG.debug("Invalid or empty source url");
 			return;
 		}
-		
-		MappingSetup setup = null;
-		Object attachedObject = getAttachedObject(dialog);
+		MappingSetup mappingSetup = null;
+		Object attachedObject = getAttachedObject(dialog, MappingSetup.class);
 		
 		if(attachedObject instanceof MappingSetup) {
-			setup = (MappingSetup)attachedObject;
+			mappingSetup = (MappingSetup)attachedObject;
 			setAttachedObject(dialog,  null);
 		}
 		else{
-			setup = new MappingSetup();
-			obtainSourceMidPoint(sourceURL);
+			mappingSetup = new MappingSetup();
 		}
 		
 		//Get the current default setup
 		MappingSetup currentDefault = (mappingSetupDao.getDefaultSetup() != null) ? mappingSetupDao.getDefaultSetup() : null;
+		mappingSetup.setName(sourceName);
+		mappingSetup.setSourceURL(sourceURL);
 		
-		//Set the properties for the mapping setup
-		setup.setName(sourceName);
-		setup.setSourceURL(sourceURL);
-		
-		boolean sourceDefault = getBoolean(this.chkSourceDefault, Thinlet.SELECTED);
-		if(currentDefault != null && mappingSetupDao.getCount() == 1 && !sourceDefault){
-			LOG.debug("There must be a default configurartion for Mapping");
-			ui.alert("There is only one configuration for Mapping ["+setup.getSourceURL()+"] " + "and it must be set as the default");	
-			return;
+		boolean sourceDefault = getBoolean(chkSourceDefault, Thinlet.SELECTED);
+		if (sourceDefault) {
+			shouldSynchronize = true;
+			SynchronizationManager syncManager = new SynchronizationManager(this, sourceURL);	
+			syncManager.downloadGeoMidpoint();
 		}
-		//Check for attempts to save without specifying a default mapping configuration
-		if( (currentDefault != null && mappingSetupDao.getCount() > 1 && 
-				setup.getId() == currentDefault.getId() && !sourceDefault) || (currentDefault == null && !sourceDefault)){
+		if(currentDefault == null && sourceDefault == false){
 			LOG.debug("Default mapping setup not specified");
-			ui.alert("There must be a default configuration for Mapping to work");
+			ui.alert(MappingMessages.getSetupDefaultRequired());
 			return;
 		}
-		//Set the active flag for the mapping setup 
-		setup.setDefaultSetup(sourceDefault);
+		mappingSetup.setDefaultSetup(sourceDefault);
 		try{
-			if(currentDefault != null && Long.toString(setup.getId()) != null) {
-				if (setup.getId() != currentDefault.getId() && setup.isDefaultSetup()){
+			if(currentDefault != null && Long.toString(mappingSetup.getId()) != null) {
+				if (mappingSetup.getId() != currentDefault.getId() && mappingSetup.isDefaultSetup()){
 					currentDefault.setDefaultSetup(false);
 					mappingSetupDao.updateMappingSetup(currentDefault);
-					LOG.debug("Changed default mapping setup to " + setup.getName());					
+					LOG.debug("Changed default mapping setup to " + mappingSetup.getName());					
 				}
 			}
 			if(attachedObject == null){
-				mappingSetupDao.saveMappingSetup(setup);				
-				add(this.tblSources, getRow(setup));
+				mappingSetupDao.saveMappingSetup(mappingSetup);				
 			}
 			else{
-				mappingSetupDao.updateMappingSetup(setup);
+				mappingSetupDao.updateMappingSetup(mappingSetup);
 			}
-			removeAll(this.tblSources);
-			for(MappingSetup s: mappingSetupDao.getAllSetupItems()) {
-				add(this.tblSources, getRow(s));
+			ui.removeAll(tblSources);
+			for(MappingSetup m : mappingSetupDao.getAllSetupItems()) {
+				ui.add(tblSources, getRow(m));
 			}
 		}
 		catch(DuplicateKeyException e){
 			LOG.debug("Mapping setup parameter already exists", e);
-			ui.alert("Mapping setup parameter already exists");
-			LOG.trace("EXIT");
+			ui.alert(MappingMessages.getSetupMappingExists());
 			return;
 		}
-		LOG.debug("Mapping setup parameter for [" + setup.getSourceURL() +"] created!");
+		LOG.debug("Mapping setup parameter for [" + mappingSetup.getSourceURL() +"] created!");
 				
-		ui.repaint();
 		clearSourceFields(dialog);
 		
-		// If the default map setup has changed, re-initialize the keywords, incidents and map bean 
-		// so as to reflect the new mapping settings
-		if(currentDefault != null && currentDefault.getId() != setup.getId()){
-			this.pluginController.showIncidentMap();
+		// If the default map setup has changed, re-initialize the keywords, incidents and map bean so as to reflect the new mapping settings
+		if(currentDefault != null && currentDefault.getId() != mappingSetup.getId()){
+			pluginController.showIncidentMap();
 		}
 	}
 	
@@ -236,41 +297,35 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
 	 * @param dialog
 	 */
 	public void clearSourceFields(Object dialog){
-		setSelectedItem(this.tblSources, null);
-		setText(this.txtSourceName, "");
-		setText(this.txtSourceURL,"");
-		setBoolean(this.chkSourceDefault, Thinlet.SELECTED, false);
+		ui.setSelectedItem(tblSources, null);
+		ui.setText(txtSourceName, "");
+		ui.setText(txtSourceURL,"");
+		ui.setSelected(chkSourceDefault, false);
 		
-		setEnabled(this.btnSave, false);
-		setEnabled(this.btnDelete, false);
-		setEnabled(this.btnCancel, false);
-		
-		ui.repaint();
-	}
-	
-	public void removeDialog(Object dialog) {
-		ui.remove(dialog);
+		ui.setEnabled(btnSave, false);
+		ui.setEnabled(btnDelete, false);
+		ui.setEnabled(btnCancel, false);
 	}
 	
 	public void createSurveyQuestions() {
 		LOG.debug("createSurveyQuestions");
-		OperatorManager operatorManager = new OperatorManager(this.frontlineController, this.pluginController);
+		OperatorManager operatorManager = new OperatorManager(frontlineController, pluginController);
         if(operatorManager.addUshahidiFields()) {
-        	this.ui.alert(MappingMessages.getSurveyCreated());
+        	ui.alert(MappingMessages.getSurveyCreated());
         }
         else {
-        	this.ui.alert(MappingMessages.getSurveyFailed());
+        	ui.alert(MappingMessages.getSurveyFailed());
         }
 	}
 	
 	public void createFormFields() {
 		LOG.debug("createFormFields");
-        FormsManager formsManager = new FormsManager(this.frontlineController, this.pluginController);
+        FormsManager formsManager = new FormsManager(frontlineController, pluginController);
         if(formsManager.addUshahidiForms()) {
-        	this.ui.alert(MappingMessages.getFormCreated());
+        	ui.alert(MappingMessages.getFormCreated());
         }
         else {
-        	this.ui.alert(MappingMessages.getFormFailed());
+        	ui.alert(MappingMessages.getFormFailed());
         }
 	}
 
@@ -278,47 +333,30 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
 	
 	public void downloadedGeoMidpoint(String domain, String latitude, String longitude) {
 		LOG.debug("downloadedGeoMidpoint: %s (%s,%s)", domain, latitude, longitude);
-		syncDialog.hideDialog();
-		removeAll(this.tblSources);
-		for(MappingSetup setup : mappingSetupDao.getAllSetupItems()) {
-			if (setup.getSourceURL().equalsIgnoreCase(domain)) {
-				setup.setLatitude(Double.parseDouble(latitude));
-				setup.setLongitude(Double.parseDouble(longitude));
+		ui.removeAll(tblSources);
+		for(MappingSetup mappingSetup : mappingSetupDao.getAllSetupItems()) {
+			if (mappingSetup.isSourceURL(domain)) {
+				mappingSetup.setLatitude(Double.parseDouble(latitude));
+				mappingSetup.setLongitude(Double.parseDouble(longitude));
 				try {
-					mappingSetupDao.updateMappingSetup(setup);
+					mappingSetupDao.updateMappingSetup(mappingSetup);
 				} 
-				catch (DuplicateKeyException e) {
-					e.printStackTrace();
+				catch(DuplicateKeyException ex) {
+					ex.printStackTrace();
 				}
 			}
-			add(this.tblSources, getRow(setup));
+			ui.add(tblSources, getRow(mappingSetup));
 		}
+		pluginController.showIncidentMap();
 	}
 
-	public void synchronizationFinished() { 
-		LOG.debug("synchronizationFinished");
-		syncDialog.hideDialog();
-	}
+	public void synchronizationFinished() {}
 
-	public void synchronizationStarted(int tasks) {
-		LOG.debug("synchronizationStarted");
-		if (syncDialog == null) {
-			syncDialog = new SyncDialogHandler(this.pluginController, this.frontlineController, this.ui);	
-		}
-		syncDialog.setProgress(tasks, 1);
-		syncDialog.showDialog();
-	}
+	public void synchronizationStarted(int tasks) {}
 
-	public void synchronizationUpdated(int tasks, int completed) { 
-		LOG.debug("synchronizationUpdated: %d/%d", completed, tasks);
-		syncDialog.setProgress(tasks, completed);	
-	}
+	public void synchronizationUpdated(int tasks, int completed) {}
 	
-	public void synchronizationFailed(String error) { 
-		LOG.debug("synchronizationFailed:%s", error);
-		syncDialog.hideDialog();
-		this.ui.alert(error);
-	}
+	public void synchronizationFailed(String error) {}
 	
 	public void downloadedCategory(Category category) {}
 

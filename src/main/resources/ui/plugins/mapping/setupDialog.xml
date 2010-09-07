@@ -10,15 +10,15 @@
 			</header>
 		</table>
 		<label text="i18n.plugins.ushahidi.setup.sourcename"/>
-		<textfield name="txtSourceName" weightx="1" columns="50"/>
+		<textfield name="txtSourceName" weightx="1" columns="50" action="sourceChanged(this, txtSourceURL)"/>
 			
 		<label text="i18n.plugins.ushahidi.setup.source" />
-		<textfield name="txtSourceURL" weightx="1" columns="50"/>
+		<textfield name="txtSourceURL" weightx="1" columns="50" action="sourceChanged(txtSourceName, this)"/>
 			
 		<checkbox name="chkSourceDefault" text="i18n.plugins.ushahidi.setup.default" />
 		<panel weightx="1" gap="5" columns="3">
+			<button name="btnDelete" icon="/icons/delete.png" text="i18n.action.delete" action="showConfirmationDialog('deleteMappingSource')" weightx="1" enabled="false"/>
 			<button name="btnSave" icon="/icons/tick.png" text="i18n.action.save" action="addMappingSource(dlgSetup)" weightx="1" enabled="false"/>
-			<button name="btnDelete" icon="/icons/delete.png" text="i18n.action.delete" action="deleteMappingSource()" weightx="1" enabled="false"/>
 			<button name="btnCancel" icon="/icons/clear.png" text="i18n.action.cancel" action="clearSourceFields(dlgSetup)" weightx="1" enabled="false"/>
 		</panel>
 	</panel>

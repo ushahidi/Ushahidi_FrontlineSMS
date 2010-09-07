@@ -4,6 +4,8 @@ import java.awt.Color;
 
 import javax.persistence.*;
 
+import org.hibernate.annotations.Cascade;
+
 import net.frontlinesms.data.EntityField;
 
 /**
@@ -66,7 +68,7 @@ public class Category {
 	@Column(name=FIELD_DESCRIPTION)
 	private String description;
 	
-	@ManyToOne
+	@ManyToOne(cascade=CascadeType.ALL)
 	private MappingSetup mappingSetup;
 	
 	private Color color;

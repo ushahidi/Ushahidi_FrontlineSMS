@@ -22,7 +22,6 @@ import org.json.JSONException;
 import com.ushahidi.plugins.mapping.data.domain.Category;
 import com.ushahidi.plugins.mapping.data.domain.Location;
 import com.ushahidi.plugins.mapping.data.domain.Incident;
-import com.ushahidi.plugins.mapping.maps.core.Point;
 import com.ushahidi.plugins.mapping.utils.MappingLogger;
 
 public class SynchronizationThread extends Thread{
@@ -178,7 +177,7 @@ public class SynchronizationThread extends Thread{
 	 * @return 
 	 */
 	public String getRequestURL(){
-		String extra = (baseURL.charAt(baseURL.length()-1) == '/')? "" : "/";
+		String extra = (baseURL.charAt(baseURL.length()-1) == '/') ? "" : "/";
 		return (baseTask == SynchronizationAPI.POST_INCIDENT)? baseURL + extra : 
 			baseURL + extra + SynchronizationAPI.REQUEST_URL_PREFIX + taskBuffer.toString();
 	}
@@ -199,63 +198,59 @@ public class SynchronizationThread extends Thread{
 	private void processPayload(String payload) throws JSONException{
 		JSONObject jsonPayload = new JSONObject(payload);
 		JSONObject data = jsonPayload.getJSONObject(SynchronizationAPI.PAYLOAD);
-		JSONArray items = data.getJSONArray(baseTask);
-		for(int i=0; i < items.length(); i++){
-			JSONObject item = (JSONObject)items.getJSONObject(i);
-			if(baseTask.equals(SynchronizationAPI.CATEGORIES)){
-				Category category = fetchCategory((JSONObject)item.get(SynchronizationAPI.CATEGORY_KEY));
-				syncManager.addCategory(category);
-			}
-			else if(baseTask.equals(SynchronizationAPI.INCIDENTS)){
-				Incident incident = fetchIncident((JSONObject)item.get(SynchronizationAPI.INCIDENT_KEY));
-				if (item.has(SynchronizationAPI.CATEGORIES)) {
-					JSONArray categories = (JSONArray)item.getJSONArray(SynchronizationAPI.CATEGORIES);
-					if (categories != null) {
-						for(int j=0; j < categories.length(); j++){
-							JSONObject categoryItem = (JSONObject)categories.getJSONObject(j);
-							if (categoryItem.has(SynchronizationAPI.CATEGORY_KEY)) {
-								Category category = fetchCategory((JSONObject)categoryItem.get(SynchronizationAPI.CATEGORY_KEY));
-								if (category != null) {
-									incident.addCategory(category);		
-								}		
-							}
-						}
-					}		
+		if(baseTask.equals(SynchronizationAPI.GEOMIDPOINT)){
+			try {
+				String domain = data.getString(SynchronizationAPI.GEOMIDPOINT_DOMAIN_KEY);
+				JSONArray locations = data.getJSONArray(SynchronizationAPI.GEOMIDPOINT_LOCATION_KEY);
+				if (locations != null && locations.length() > 0) {
+					JSONObject location = locations.getJSONObject(0);
+					String latitude = location.has("latitude") ? location.getString("latitude") : "0.0";
+					String longitude = location.has("longitude") ? location.getString("longitude") : "0.0";
+					syncManager.downloadedGeoMidpoint(domain, latitude, longitude);	
 				}
-				//TODO load media
-				syncManager.addIncident(incident);
 			}
-			else if(baseTask.equals(SynchronizationAPI.LOCATIONS)){
-				Location location = fetchLocation((JSONObject)item.get(SynchronizationAPI.LOCATION_KEY));
-				syncManager.addLocation(location);
-			}
-			else if(baseTask.equals(SynchronizationAPI.GEOMIDPOINT)){
-				String domain = (String)item.get(SynchronizationAPI.GEOMIDPOINT_DOMAIN_KEY);
-				JSONObject location = (JSONObject)item.get(SynchronizationAPI.GEOMIDPOINT_LOCATION_KEY);
-				Point point = fetchMidPoint(location);
-				syncManager.addPoint(domain, point);
+			catch(Exception ex) {
+				syncManager.synchronizationError(ex.getLocalizedMessage());
 			}
 		}
-	}
-	
-	private Point fetchMidPoint(JSONObject location) throws JSONException{
-		LOG.debug("location: %s", location);
-		double latitude = 0, longitude = 0;
-		if (location.has("latitude")) {
-			String latitudeString = location.getString("latitude");
-			LOG.debug("latitude: %s", latitudeString);
-			if (latitudeString != null) {
-				latitude = Double.parseDouble(latitudeString);
+		else {
+			JSONArray items = data.getJSONArray(baseTask);
+			LOG.debug("items: %s", items);
+			for(int i=0; i < items.length(); i++){
+				JSONObject item = (JSONObject)items.getJSONObject(i);
+				if(baseTask.equals(SynchronizationAPI.CATEGORIES)){
+					JSONObject categoryJSON = item.getJSONObject(SynchronizationAPI.CATEGORY_KEY);
+					Category category = parseCategory(categoryJSON);
+					syncManager.downloadedCategory(category);
+				}
+				else if(baseTask.equals(SynchronizationAPI.INCIDENTS)){
+					JSONObject incidentJSON = item.getJSONObject(SynchronizationAPI.INCIDENT_KEY);
+					Incident incident = parseIncident(incidentJSON);
+					if (item.has(SynchronizationAPI.CATEGORIES)) {
+						JSONArray categories = (JSONArray)item.getJSONArray(SynchronizationAPI.CATEGORIES);
+						if (categories != null) {
+							for(int j=0; j < categories.length(); j++){
+								JSONObject categoryItem = categories.getJSONObject(j);
+								if (categoryItem.has(SynchronizationAPI.CATEGORY_KEY)) {
+									JSONObject categoryJSON = categoryItem.getJSONObject(SynchronizationAPI.CATEGORY_KEY);
+									Category category = parseCategory(categoryJSON);
+									if (category != null) {
+										incident.addCategory(category);		
+									}		
+								}
+							}
+						}		
+					}
+					//TODO load media
+					syncManager.downloadedIncident(incident);
+				}
+				else if(baseTask.equals(SynchronizationAPI.LOCATIONS)){
+					JSONObject locationJSON = item.getJSONObject(SynchronizationAPI.LOCATION_KEY);
+					Location location = parseLocation(locationJSON);
+					syncManager.downloadedLocation(location);
+				}
 			}
 		}
-		if (location.has("longitude")) {
-			String longitudeString = location.getString("longitude");
-			LOG.debug("longitude: %s", longitudeString);
-			if (longitudeString != null) {
-				longitude = Double.parseDouble(longitudeString);
-			}
-		}
-		return new Point(latitude, longitude);
 	}
 	
 	/**
@@ -263,7 +258,7 @@ public class SynchronizationThread extends Thread{
 	 * @param categories
 	 * @throws JSONException
 	 */
-	private Category fetchCategory(JSONObject item) throws JSONException{
+	private Category parseCategory(JSONObject item) throws JSONException{
 		System.out.println("fetchCategory: " + item.toString());
 		Category category = new Category();
 		category.setFrontendId(item.getLong("id"));
@@ -288,7 +283,7 @@ public class SynchronizationThread extends Thread{
 		return category;
 	}
 	
-	private Incident fetchIncident(JSONObject item) throws JSONException{
+	private Incident parseIncident(JSONObject item) throws JSONException{
 		System.out.println("fetchIncident: " + item.toString());
 		Incident incident = new Incident();
 		incident.setFrontendId(item.getLong("incidentid"));
@@ -318,7 +313,7 @@ public class SynchronizationThread extends Thread{
 		return incident;
 	}
 	
-	private Location fetchLocation(JSONObject item) throws JSONException{
+	private Location parseLocation(JSONObject item) throws JSONException{
 		System.out.println("fetchLocation: " + item.toString());
 		Location location = new Location();
 		location.setFrontendId(item.getInt("id"));
@@ -383,7 +378,7 @@ public class SynchronizationThread extends Thread{
 				JSONObject payload = new JSONObject(response.toString());
 				JSONObject status = payload.getJSONObject("error");			
 				if(((String)status.get("code")).equalsIgnoreCase("0")){
-					syncManager.updatePostedIncidents(incident);
+					syncManager.uploadedIncident(incident);
 					LOG.debug("Incident post succeeded: " + payload);
 				}
 				else{

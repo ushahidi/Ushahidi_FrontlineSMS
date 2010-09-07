@@ -67,7 +67,7 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 	
 	public ReportDialogHandler(MappingPluginController pluginController, FrontlineSMS frontlineController, UiGeneratorController uiController) {
 		this.pluginController = pluginController;
-		this.ui = uiController;
+		ui = uiController;
 		this.frontlineController = frontlineController;
 		
 		this.locationDao = pluginController.getLocationDao();
@@ -75,118 +75,118 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 		this.incidentDao = pluginController.getIncidentDao();
 		this.mappingSetupDao = pluginController.getMappingSetupDao();
 		
-		this.mainDialog = this.ui.loadComponentFromFile(UI_DIALOG_XML, this);
+		this.mainDialog = ui.loadComponentFromFile(UI_DIALOG_XML, this);
 		
-		this.txtReportTitle = this.ui.find(this.mainDialog, "txtReportTitle");
-		this.txtReportDescription = this.ui.find(this.mainDialog, "txtReportDescription");
-		this.txtReportCoordinates = this.ui.find(this.mainDialog, "txtReportCoordinates");
+		this.txtReportTitle = ui.find(this.mainDialog, "txtReportTitle");
+		this.txtReportDescription = ui.find(this.mainDialog, "txtReportDescription");
+		this.txtReportCoordinates = ui.find(this.mainDialog, "txtReportCoordinates");
 	
-		this.txtReportDate = this.ui.find(this.mainDialog, "txtReportDate");
-		this.btnReportDate = this.ui.find(this.mainDialog, "btnReportDate");
+		this.txtReportDate = ui.find(this.mainDialog, "txtReportDate");
+		this.btnReportDate = ui.find(this.mainDialog, "btnReportDate");
 		
-		this.txtSender = this.ui.find(this.mainDialog, "txtSender");
-		this.lblSender = this.ui.find(this.mainDialog, "lblSender");
+		this.txtSender = ui.find(this.mainDialog, "txtSender");
+		this.lblSender = ui.find(this.mainDialog, "lblSender");
 		
-		this.txtReportCategories = this.ui.find(this.mainDialog, "txtReportCategories");
-		this.lstReportCategories = this.ui.find(this.mainDialog, "lstReportCategories");
+		this.txtReportCategories = ui.find(this.mainDialog, "txtReportCategories");
+		this.lstReportCategories = ui.find(this.mainDialog, "lstReportCategories");
 		
-		this.txtReportLocation = this.ui.find(this.mainDialog, "txtReportLocation");
-		this.pnlReportLocation = this.ui.find(this.mainDialog, "pnlReportLocation");
-		this.cboReportLocations = this.ui.find(this.mainDialog, "cboReportLocations");
+		this.txtReportLocation = ui.find(this.mainDialog, "txtReportLocation");
+		this.pnlReportLocation = ui.find(this.mainDialog, "pnlReportLocation");
+		this.cboReportLocations = ui.find(this.mainDialog, "cboReportLocations");
 		
-		this.cbxExistingLocation = this.ui.find(this.mainDialog, "cboReportLocations");
-		this.pnlExistingLocation = this.ui.find(this.mainDialog, "pnlExistingLocation");
+		this.cbxExistingLocation = ui.find(this.mainDialog, "cboReportLocations");
+		this.pnlExistingLocation = ui.find(this.mainDialog, "pnlExistingLocation");
 		
-		this.cbxNewLocation = this.ui.find(this.mainDialog, "cbxNewLocation");
-		this.pnlNewLocation = this.ui.find(this.mainDialog, "pnlNewLocation");
-		this.txtNewLocation =  this.ui.find(this.mainDialog, "txtNewLocation");
+		this.cbxNewLocation = ui.find(this.mainDialog, "cbxNewLocation");
+		this.pnlNewLocation = ui.find(this.mainDialog, "pnlNewLocation");
+		this.txtNewLocation =  ui.find(this.mainDialog, "txtNewLocation");
 		
-		this.btnSave = this.ui.find(this.mainDialog, "btnSave");
-		this.btnCancel = this.ui.find(this.mainDialog, "btnCancel");
-		this.btnClose = this.ui.find(this.mainDialog, "btnClose");
+		this.btnSave = ui.find(this.mainDialog, "btnSave");
+		this.btnCancel = ui.find(this.mainDialog, "btnCancel");
+		this.btnClose = ui.find(this.mainDialog, "btnClose");
 	}
 	
 	public void showDialog(Incident incident) {
-		this.ui.setAttachedObject(this.mainDialog, incident);
+		ui.setAttachedObject(mainDialog, incident);
 		
-		setVisible(this.txtReportLocation, true);
-		setVisible(this.pnlReportLocation, false);
+		ui.setVisible(txtReportLocation, true);
+		ui.setVisible(pnlReportLocation, false);
 		
-		setVisible(this.txtReportCategories, true);
-		setVisible(this.lstReportCategories, false);
+		ui.setVisible(txtReportCategories, true);
+		ui.setVisible(lstReportCategories, false);
 
-		setVisible(this.btnSave, false);
-		setVisible(this.btnCancel, false);
-		setVisible(this.btnClose, true);
+		ui.setVisible(btnSave, false);
+		ui.setVisible(btnCancel, false);
+		ui.setVisible(btnClose, true);
 		
-		setVisible(this.lblSender, false);
-		setVisible(this.txtSender, false);
+		ui.setVisible(lblSender, false);
+		ui.setVisible(txtSender, false);
 		
 		if (incident != null) {
-			setText(this.txtReportTitle, incident.getTitle());
-			setText(this.txtReportDescription, incident.getDescription());
-			setText(this.txtReportCategories, incident.getCategoryNames());
-			setText(this.txtReportDate, InternationalisationUtils.getDatetimeFormat().format(incident.getIncidentDate()));
+			ui.setText(txtReportTitle, incident.getTitle());
+			ui.setText(txtReportDescription, incident.getDescription());
+			ui.setText(txtReportCategories, incident.getCategoryNames());
+			ui.setText(txtReportDate, InternationalisationUtils.getDatetimeFormat().format(incident.getIncidentDate()));
 			if (incident.getLocation() != null) {
-				setText(this.txtReportLocation, incident.getLocation().getName());
-				setText(this.txtReportCoordinates, String.format("%f, %f", incident.getLocation().getLatitude(), incident.getLocation().getLongitude()));
+				ui.setText(txtReportLocation, incident.getLocation().getName());
+				ui.setText(txtReportCoordinates, String.format("%f, %f", incident.getLocation().getLatitude(), incident.getLocation().getLongitude()));
 			}
 			else {
-				setText(this.txtReportLocation, "");
-				setText(this.txtReportCoordinates, "");
+				ui.setText(txtReportLocation, "");
+				ui.setText(txtReportCoordinates, "");
 			}
 		}
 		else {
-			setText(this.txtReportTitle, "");
-			setText(this.txtReportDescription, "");
-			setText(this.txtReportCategories, "");
-			setText(this.txtReportDate, "");
-			setText(this.txtReportLocation, "");
-			setText(this.txtReportCoordinates, "");
+			ui.setText(txtReportTitle, "");
+			ui.setText(txtReportDescription, "");
+			ui.setText(txtReportCategories, "");
+			ui.setText(txtReportDate, "");
+			ui.setText(txtReportLocation, "");
+			ui.setText(txtReportCoordinates, "");
 		}
-		setEditable(this.txtReportTitle, incident == null);
-		setEditable(this.txtReportDescription, incident == null);
-		setEditable(this.txtReportLocation, incident == null);
-		setVisible(this.btnReportDate, incident == null);
-		this.ui.add(this.mainDialog);
+		ui.setEditable(txtReportTitle, incident == null);
+		ui.setEditable(txtReportDescription, incident == null);
+		ui.setEditable(txtReportLocation, incident == null);
+		ui.setVisible(btnReportDate, incident == null);
+		ui.add(mainDialog);
 	}
 	
 	public void showDialog(FrontlineMessage message) {
-		this.ui.setAttachedObject(this.mainDialog, message);
+		ui.setAttachedObject(mainDialog, message);
 		
-		setVisible(this.txtReportLocation, false);
-		setVisible(this.pnlReportLocation, true);
+		ui.setVisible(txtReportLocation, false);
+		ui.setVisible(pnlReportLocation, true);
 		
-		setVisible(this.txtReportCategories, false);
-		setVisible(this.lstReportCategories, true);
+		ui.setVisible(txtReportCategories, false);
+		ui.setVisible(lstReportCategories, true);
 		
-		setVisible(this.btnSave, true);
-		setVisible(this.btnCancel, true);
-		setVisible(this.btnClose, false);
+		ui.setVisible(btnSave, true);
+		ui.setVisible(btnCancel, true);
+		ui.setVisible(btnClose, false);
 		
-		setVisible(this.lblSender, true);
-		setVisible(this.txtSender, true);
+		ui.setVisible(lblSender, true);
+		ui.setVisible(txtSender, true);
 		
-		setVisible(this.btnReportDate, true);
+		ui.setVisible(btnReportDate, true);
 		
-		setEditable(this.txtReportTitle, true);
-		setEditable(this.txtReportDescription, true);
+		ui.setEditable(txtReportTitle, true);
+		ui.setEditable(txtReportDescription, true);
 		
-		removeAll(this.cboReportLocations);
+		removeAll(cboReportLocations);
 		for(Location location: locationDao.getAllLocations(mappingSetupDao.getDefaultSetup())) {				
-			ui.add(this.cboReportLocations, createComboboxChoice(location.getName(), location));
+			ui.add(cboReportLocations, createComboboxChoice(location.getName(), location));
 		}
 		
-		removeAll(this.lstReportCategories);
+		removeAll(lstReportCategories);
 		for(Category category: categoryDao.getAllCategories(mappingSetupDao.getDefaultSetup())){
-			ui.add(this.lstReportCategories, this.createListItem(category.getTitle(), category));
+			ui.add(lstReportCategories, createListItem(category.getTitle(), category));
 		}
 			
-		setText(this.txtReportDate, InternationalisationUtils.getDatetimeFormat().format(message.getDate()));
-		setText(this.txtSender, getSenderDisplayValue(message));
-		setText(this.txtReportTitle, message.getTextContent());
+		ui.setText(txtReportDate, InternationalisationUtils.getDatetimeFormat().format(message.getDate()));
+		ui.setText(txtSender, getSenderDisplayValue(message));
+		ui.setText(txtReportTitle, message.getTextContent());
 		
-		this.ui.add(this.mainDialog);	
+		ui.add(mainDialog);	
 	}
 	
 	/**
@@ -203,12 +203,12 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 		else if (attachedObject instanceof Incident) {
 			incident = (Incident)attachedObject;
 		}
-		if (getBoolean(this.cboReportLocations, ENABLED)){
-			Location location = (Location)getAttachedObject(getSelectedItem(this.cboReportLocations));
+		if (ui.getBoolean(cboReportLocations, ENABLED)){
+			Location location = (Location)getAttachedObject(getSelectedItem(cboReportLocations));
 			incident.setLocation(location);
 		}
 		else {
-			String coordinatesText = getText(this.txtReportCoordinates);
+			String coordinatesText = ui.getText(txtReportCoordinates);
 			String[] coordinates = coordinatesText.split(", ");
 			
 			double latitude = Double.parseDouble(coordinates[0]);
@@ -228,17 +228,17 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 			incident.setLocation(location);
 		}			
 		
-		incident.setTitle(getText(this.txtReportTitle));
-		incident.setDescription(getText(this.txtReportDescription));
+		incident.setTitle(getText(txtReportTitle));
+		incident.setDescription(getText(txtReportDescription));
 		incident.setMappingSetup(mappingSetupDao.getDefaultSetup());
 		
-		for(Object selectedItem : ui.getSelectedItems(this.lstReportCategories)) {
+		for(Object selectedItem : ui.getSelectedItems(lstReportCategories)) {
 			Category category = (Category)getAttachedObject(selectedItem);
 			incident.addCategory(category);
 		}
 		incident.setMarked(true);
 		
-		String dateString = getText(this.txtReportDate);
+		String dateString = getText(txtReportDate);
 		try{
 			incident.setIncidentDate(InternationalisationUtils.getDatetimeFormat().parse(dateString));
 		}
@@ -255,7 +255,7 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 			ui.alert("ERROR: Unable to create an incident from the text message");
 			return;
 		}
-		ui.remove(this.mainDialog);
+		ui.remove(mainDialog);
 	}
 	
 	/**
@@ -264,8 +264,9 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 	 */
 	public List<String> getCategoryNames(){
 		ArrayList<String> items = new ArrayList<String>();
-		for(Category category: categoryDao.getAllCategories(mappingSetupDao.getDefaultSetup()))
+		for(Category category: categoryDao.getAllCategories(mappingSetupDao.getDefaultSetup())) {
 			items.add(category.getTitle().toLowerCase());
+		}
 		return items;
 	}
 	
@@ -283,8 +284,7 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 		Object selectedItem = getSelectedItem(comboBox);
 		Location location = (Location)getAttachedObject(selectedItem);
 		String coordinates = Double.toString(location.getLatitude()) + ", " + Double.toString(location.getLongitude());
-		setText(textField, coordinates);
-		this.ui.repaint(textField);
+		ui.setText(textField, coordinates);
 	}
 	
 	public void removeDialog(Object dialog) {
@@ -292,11 +292,10 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 	}
 	
 	public void selectLocationFromMap(Object dialog) {
-		this.setEnabled(this.cboReportLocations, false);
-		this.pluginController.showIncidentMap();
+		setEnabled(cboReportLocations, false);
+		pluginController.showIncidentMap();
 		setBoolean(dialog, Thinlet.MODAL, false);
-		setVisible(dialog, false);
-		ui.repaint();
+		ui.setVisible(dialog, false);
 	}
 
 	//@Override
@@ -304,28 +303,25 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 
 	//@Override
 	public void pointSelected(double lat, double lon) {
-		setText(this.txtReportCoordinates, String.format("%f, %f", lat, lon));
-		setText(this.txtNewLocation, String.format("%f, %f", lat, lon));
-		setBoolean(this.mainDialog, Thinlet.MODAL, true);
-		setVisible(this.mainDialog, true);
-		ui.repaint();
+		ui.setText(txtReportCoordinates, String.format("%f, %f", lat, lon));
+		ui.setText(txtNewLocation, String.format("%f, %f", lat, lon));
+		setBoolean(mainDialog, Thinlet.MODAL, true);
+		ui.setVisible(mainDialog, true);
 	}
 	
 	public void showDateSelecter(Object textField) {
-		this.ui.showDateSelecter(textField);
+		ui.showDateSelecter(textField);
 	}
 	
 	public void showExistingLocations() {
 		LOG.debug("showExistingLocations");
-		this.setVisible(this.pnlExistingLocation, true);
-		this.setVisible(this.pnlNewLocation, false);
-		ui.repaint();
+		ui.setVisible(pnlExistingLocation, true);
+		ui.setVisible(pnlNewLocation, false);
 	}
 	
 	public void showNewLocation() {
 		LOG.debug("showNewLocation");
-		this.setVisible(this.pnlExistingLocation, false);
-		this.setVisible(this.pnlNewLocation, true);
-		ui.repaint();
+		ui.setVisible(pnlExistingLocation, false);
+		ui.setVisible(pnlNewLocation, true);
 	}
 }

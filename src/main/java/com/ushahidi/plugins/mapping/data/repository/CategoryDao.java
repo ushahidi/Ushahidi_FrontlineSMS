@@ -27,4 +27,5 @@ public interface CategoryDao {
 	
 	public Category getCategory(long id);
 
+	public void deleteCategoriesWithMapping(MappingSetup setup);
 }

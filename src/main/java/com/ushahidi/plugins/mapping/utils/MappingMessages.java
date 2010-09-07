@@ -184,4 +184,21 @@ public final class MappingMessages {
 	public static String getSourceUrlMissing() {
 		return getI18NString("plugins.ushahidi.setup.source.missing");
 	}
+	
+	public static String getSetupDefaultMissing() {
+		return getI18NString("plugins.ushahidi.setup.default.missing");
+	}
+	
+	public static String getSetupDefaultRequired() {
+		return getI18NString("plugins.ushahidi.setup.default.required");
+	}
+	
+	public static String getSetupMappingExists() {
+		return getI18NString("plugins.ushahidi.setup.mapping.exists");
+	}
+	
+	public static String getSetupSynchronize() {
+		return getI18NString("plugins.ushahidi.setup.synchronize");
+	}
+	
 }

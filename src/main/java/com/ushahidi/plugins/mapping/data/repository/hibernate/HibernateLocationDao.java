@@ -9,6 +9,7 @@ import org.hibernate.criterion.Restrictions;
 import net.frontlinesms.data.repository.hibernate.BaseHibernateDao;
 import net.frontlinesms.data.DuplicateKeyException;
 
+import com.ushahidi.plugins.mapping.data.domain.Category;
 import com.ushahidi.plugins.mapping.data.domain.Location;
 import com.ushahidi.plugins.mapping.data.domain.MappingSetup;
 import com.ushahidi.plugins.mapping.data.repository.LocationDao;
@@ -77,5 +78,9 @@ public class HibernateLocationDao extends BaseHibernateDao<Location> implements
 		return super.getUnique(criteria);
 	}
 	
-
+	public void deleteLocationsWithMapping(MappingSetup setup) {
+		for(Location location : getAllLocations(setup)) {
+			super.delete(location);
+		}
+	}
 }

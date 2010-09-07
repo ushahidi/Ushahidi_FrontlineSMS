@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
 
-import com.ushahidi.plugins.mapping.maps.core.Point;
 import com.ushahidi.plugins.mapping.utils.MappingLogger;
 import com.ushahidi.plugins.mapping.data.domain.*;
 
@@ -31,7 +30,7 @@ public class SynchronizationManager {
 	/** The total number of tasks */
 	private int totalTasks = 0;
 	
-	/** Keeps track of the current task no */
+	/** Keeps track of the current task */
 	private int currentTask = 0;
 	
 	/**
@@ -52,24 +51,27 @@ public class SynchronizationManager {
 	 * @param requestParameter Parameter(s) to be passed along together with the task
 	 */
 	public synchronized void runSynchronizationTask(String task, String requestParameter){
-		if (this.url == null) {
+		if (url == null) {
 			return;
 		}
 		SynchronizationThread syncThread = new SynchronizationThread(this, this.url);
 		syncThread.addJob(new SynchronizationTask(task, requestParameter));
-		this.totalTasks = syncThread.getTaskCount();
+		
+		totalTasks = syncThread.getTaskCount();
 		if (managerThread == null) {
 			managerThread = new ManagerThread(this, syncThread);
 			managerThread.start();
 		}
-		this.callback.synchronizationStarted(this.totalTasks);
+		if (callback != null) {
+			callback.synchronizationStarted(totalTasks);
+		}
 	}
 	
 	/**
 	 * Performs both a push and pull synchronization. The push is done first followed by the incidents
 	 */
 	public synchronized void performFullSynchronization(List<Incident> pendingIncidents){
-		if (this.url == null) {
+		if (url == null) {
 			return;
 		}
 		//Instantiate the a synchronization thread
@@ -86,26 +88,32 @@ public class SynchronizationManager {
 		SynchronizationTask incidentTask = new SynchronizationTask(SynchronizationAPI.PULL_TASK, SynchronizationAPI.INCIDENTS);		
 		incidentTask.setRequestParameter(SynchronizationAPI.INCIDENTS_BY_ALL);
 		syncThread.addJob(incidentTask);
-		this.totalTasks = syncThread.getTaskCount();
+		
+		totalTasks = syncThread.getTaskCount();
 		if (managerThread == null) {
 			managerThread = new ManagerThread(this, syncThread);
 			managerThread.start();
 		}
-		this.callback.synchronizationStarted(this.totalTasks);
+		if (callback != null) {
+			callback.synchronizationStarted(totalTasks);
+		}
 	}
 	
 	public synchronized void downloadGeoMidpoint() {
-		if (this.url == null) {
+		if (url == null) {
 			return;
 		}
 		SynchronizationThread syncThread = new SynchronizationThread(this, this.url);
 		syncThread.addJob(new SynchronizationTask(SynchronizationAPI.PULL_TASK, SynchronizationAPI.GEOMIDPOINT));
-		this.totalTasks = syncThread.getTaskCount();
+		
+		totalTasks = syncThread.getTaskCount();
 		if (managerThread == null) {
 			managerThread = new ManagerThread(this, syncThread);
 			managerThread.start();
 		}
-		this.callback.synchronizationStarted(this.totalTasks);
+		if (callback != null) {
+			callback.synchronizationStarted(totalTasks);
+		}
 	}
 	
 	/**
@@ -141,24 +149,41 @@ public class SynchronizationManager {
 	 * 
 	 * @param incident
 	 */
-	public synchronized void updatePostedIncidents(Incident incident){
-		this.callback.uploadedIncident(incident);
+	public synchronized void uploadedIncident(Incident incident){
+		if (callback != null) {
+			callback.uploadedIncident(incident);
+		}
 	}
 		
-	public void addCategory(Category category){
-		this.callback.downloadedCategory(category);
+	public void downloadedCategory(Category category){
+		if (callback != null) {
+			callback.downloadedCategory(category);
+		}
 	}
 	
-	public void addIncident(Incident incident){
-		this.callback.downloadedIncident(incident);
+	public void downloadedIncident(Incident incident){
+		if (callback != null) {
+			callback.downloadedIncident(incident);
+		}
 	}
 	
-	public void addLocation(Location location){
-		this.callback.downloadedLocation(location);
+	public void downloadedLocation(Location location){
+		if (callback != null) {
+			callback.downloadedLocation(location);
+		}
 	}
 	
-	public void addPoint(String domain, Point point) {
-		LOG.debug("domain:%s point:%s", domain, point.toString());
+	public void synchronizationError(String error) {
+		if (callback != null) {
+			callback.synchronizationFailed(error);
+		}
+	}
+	
+	public void downloadedGeoMidpoint(String domain, String latitude, String longitude) {
+		LOG.debug("domain:%s latitude:%s longitude:%s", domain, latitude, longitude);
+		if (callback != null) {
+			callback.downloadedGeoMidpoint(domain, latitude, longitude);
+		}
 	}
 	
 	/**
@@ -167,9 +192,13 @@ public class SynchronizationManager {
 	 */
 	public synchronized void terminateManagerThread(Thread thread){
 		try{
-			this.callback.synchronizationUpdated(totalTasks, currentTask);
+			if (callback != null) {
+				callback.synchronizationUpdated(totalTasks, currentTask);
+			}
 			Thread.sleep(5000);
-			this.callback.synchronizationFinished();
+			if (callback != null) {
+				callback.synchronizationFinished();
+			}
 			if (thread instanceof ManagerThread) {
 				managerThread.join();
 			}
@@ -183,7 +212,9 @@ public class SynchronizationManager {
 	 * Terminates the current instance of {@link ManagerThread}
 	 */
 	public synchronized void terminateManagerThread(){
-		this.callback.synchronizationFinished();
+		if (callback != null) {
+			callback.synchronizationFinished();
+		}
 		try{
 			managerThread.shutdown();
 			managerThread.join();
@@ -195,7 +226,9 @@ public class SynchronizationManager {
 	
 	public synchronized void updateCurrentTaskNo(){
 		currentTask++;
-		this.callback.synchronizationUpdated(totalTasks, currentTask);
+		if (callback != null) {
+			callback.synchronizationUpdated(totalTasks, currentTask);
+		}
 	}
 	
 	/**
@@ -206,6 +239,7 @@ public class SynchronizationManager {
 	private final class ManagerThread extends Thread{
 		/** Thread to be run by the manager thread */
 		private Thread task;
+		
 		/** Instance of SynchronizationManager that spawned this thread */
 		private SynchronizationManager manager;
 		

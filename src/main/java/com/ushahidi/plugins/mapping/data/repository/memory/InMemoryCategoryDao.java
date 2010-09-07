@@ -60,4 +60,8 @@ public class InMemoryCategoryDao implements CategoryDao {
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	public void deleteCategoriesWithMapping(MappingSetup setup) {
+	
+	}
 }

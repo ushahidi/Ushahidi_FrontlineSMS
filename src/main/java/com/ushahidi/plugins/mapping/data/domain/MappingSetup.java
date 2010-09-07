@@ -141,6 +141,28 @@ public class MappingSetup {
 		return sourceURL;
 	}
 	
+	public boolean isSourceURL(String url) {
+		if (sourceURL == null && url == null) {
+			return true;
+		}
+		if (sourceURL == null && url != null) {
+			return false;
+		}
+		if (sourceURL != null && url == null) {
+			return false;
+		}
+		if (sourceURL.equalsIgnoreCase(url)) {
+			return true;
+		}
+		if (sourceURL.toUpperCase().indexOf(url.toLowerCase()) > -1) {
+			return true;
+		}
+		if (url.toLowerCase().indexOf(sourceURL.toLowerCase()) > -1) {
+			return true;
+		}
+		return false;
+	}
+	
 	/**
 	 * Sets the latitude for the area from which the map is to be pulled
 	 * @param latitude

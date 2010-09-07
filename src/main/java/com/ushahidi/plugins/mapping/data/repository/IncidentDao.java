@@ -34,4 +34,5 @@ public interface IncidentDao {
 	
 	public void updateIncident(Incident incident) throws DuplicateKeyException;
 	
+	public void deleteIncidentsWithMapping(MappingSetup setup);
 }

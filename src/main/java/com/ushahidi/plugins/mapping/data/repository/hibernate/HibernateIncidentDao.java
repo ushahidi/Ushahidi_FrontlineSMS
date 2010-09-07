@@ -140,4 +140,9 @@ public class HibernateIncidentDao extends BaseHibernateDao<Incident> implements
 	}
 	
 
+	public void deleteIncidentsWithMapping(MappingSetup setup) {
+		for(Incident incident : getAllIncidents(setup)) {
+			super.delete(incident);
+		}
+	}
 }

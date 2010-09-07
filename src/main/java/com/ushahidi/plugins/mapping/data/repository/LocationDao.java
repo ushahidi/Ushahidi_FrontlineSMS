@@ -28,4 +28,6 @@ public interface LocationDao {
 	public Location findLocation(long frontedId, MappingSetup setup);
 	
 	public Location getLocation(long id);
+	
+	public void deleteLocationsWithMapping(MappingSetup setup);
 }

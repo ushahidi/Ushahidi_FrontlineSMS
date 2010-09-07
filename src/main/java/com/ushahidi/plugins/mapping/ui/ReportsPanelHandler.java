@@ -32,7 +32,7 @@ public class ReportsPanelHandler extends ExtendedThinlet implements ThinletUiEve
 	private final CategoryDao categoryDao;
 	private final MappingSetupDao mappingSetupDao;
 	
-	private Object mainPanel;
+	private final Object mainPanel;
 	private final Object tblReports;
 	private final Object cbxCategories;
 	private final Object txtSearch;
@@ -50,9 +50,9 @@ public class ReportsPanelHandler extends ExtendedThinlet implements ThinletUiEve
 		this.mappingSetupDao = pluginController.getMappingSetupDao();
 		this.mainPanel = this.ui.loadComponentFromFile(UI_PANEL_XML, this);
 		
-		this.tblReports = this.find(this.mainPanel, "tblReports");
-		this.cbxCategories = this.find(this.mainPanel, "cbxCategories");
-		this.txtSearch = this.find(this.mainPanel, "txtSearch");
+		this.tblReports = this.ui.find(this.mainPanel, "tblReports");
+		this.cbxCategories = this.ui.find(this.mainPanel, "cbxCategories");
+		this.txtSearch = this.ui.find(this.mainPanel, "txtSearch");
 	}
 	
 	public Object getMainPanel() {
@@ -60,50 +60,49 @@ public class ReportsPanelHandler extends ExtendedThinlet implements ThinletUiEve
 	}
 	
 	public void init() {
-		if (this.incidentDao.getCount() > 0) {
-			this.removeAll(this.tblReports);
-			for(Incident incident: this.incidentDao.getAllIncidents(mappingSetupDao.getDefaultSetup())){
+		if (incidentDao.getCount() > 0) {
+			ui.removeAll(tblReports);
+			for(Incident incident: incidentDao.getAllIncidents(mappingSetupDao.getDefaultSetup())){
 				LOG.debug("Loading incident %s", incident.getTitle());
-				add(this.tblReports, getRow(incident));
+				ui.add(tblReports, getRow(incident));
 			}
 		}
-		this.removeAll(this.cbxCategories);
-		this.add(this.cbxCategories, this.createComboboxChoice(SHOW_ALL_CATEGORIES, null));
+		ui.removeAll(cbxCategories);
+		ui.add(cbxCategories, createComboboxChoice(SHOW_ALL_CATEGORIES, null));
 		for(Category category : categoryDao.getAllCategories(mappingSetupDao.getDefaultSetup())){
 			LOG.debug("Loading category %s", category.getTitle());
-			this.add(this.cbxCategories, this.createComboboxChoice(category.getTitle(), category));
+			ui.add(cbxCategories, createComboboxChoice(category.getTitle(), category));
 		}
-		this.setSelectedIndex(this.cbxCategories, 0);
-		this.setText(this.txtSearch, SEARCH_PLACEHOLDER);
+		ui.setSelectedIndex(cbxCategories, 0);
+		ui.setText(txtSearch, SEARCH_PLACEHOLDER);
 	}
 	
 	public void search(Object textField, Object comboBox) {
-		Object selectedItem =  this.getSelectedItem(comboBox);
-		Category category = selectedItem != null ? this.getAttachedObject(selectedItem, Category.class) : null;
-		String searchText = this.getText(textField).toLowerCase();
+		Object selectedItem =  getSelectedItem(comboBox);
+		Category category = selectedItem != null ? getAttachedObject(selectedItem, Category.class) : null;
+		String searchText = ui.getText(textField).toLowerCase();
 		LOG.debug("searchText=%s", searchText);
-		this.removeAll(this.tblReports);
-		for(Incident incident: this.incidentDao.getAllIncidents(mappingSetupDao.getDefaultSetup())){
+		ui.removeAll(tblReports);
+		for(Incident incident: incidentDao.getAllIncidents(mappingSetupDao.getDefaultSetup())){
 			if (category == null || incident.hasCategory(category)) {
 				if ("".equalsIgnoreCase(searchText) || SEARCH_PLACEHOLDER.equalsIgnoreCase(searchText) || incident.getTitle().toLowerCase().indexOf(searchText) > -1) {
-					this.add(this.tblReports, getRow(incident));
+					ui.add(tblReports, getRow(incident));
 				}
 			}
 		}
-		this.repaint(this.tblReports);
 	}
 	
 	public void focusGained(Object textfield) {
-		String searchText = this.ui.getText(textfield);
+		String searchText = ui.getText(textfield);
 		if (searchText.equalsIgnoreCase(SEARCH_PLACEHOLDER)) {
-			this.setText(textfield, "");
+			ui.setText(textfield, "");
 		}
 	}
 	
 	public void focusLost(Object textfield) {
-		String searchText = this.ui.getText(textfield);
+		String searchText = ui.getText(textfield);
 		if (searchText == null || searchText.length() == 0) {
-			this.setText(textfield, SEARCH_PLACEHOLDER);
+			ui.setText(textfield, SEARCH_PLACEHOLDER);
 		}
 	}
 	
@@ -114,7 +113,7 @@ public class ReportsPanelHandler extends ExtendedThinlet implements ThinletUiEve
 	public void showReportDetails(Object item){
 		Incident incident = (Incident)getAttachedObject(item);
 		if (incident != null) {
-			ReportDialogHandler reportDialog = new ReportDialogHandler(this.pluginController, this.frontlineController, this.ui);
+			ReportDialogHandler reportDialog = new ReportDialogHandler(pluginController, frontlineController, ui);
 			reportDialog.showDialog(incident);
 		}
 	}
@@ -146,12 +145,12 @@ public class ReportsPanelHandler extends ExtendedThinlet implements ThinletUiEve
 	private void createTableCell(Object row, boolean checked) {
 		if (checked) {
 			Object cell = this.createTableCell("");
-			this.setIcon(cell, Icon.TICK);
-			this.setChoice(cell, ThinletText.ALIGNMENT, ThinletText.CENTER);
-			this.add(row, cell);
+			ui.setIcon(cell, Icon.TICK);
+			ui.setChoice(cell, ThinletText.ALIGNMENT, ThinletText.CENTER);
+			ui.add(row, cell);
 		}
 		else {
-			this.add(row, this.ui.createTableCell(""));
+			ui.add(row, ui.createTableCell(""));
 		}
 	}
 	

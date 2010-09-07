@@ -78,4 +78,7 @@ public class InMemoryIncidentDao implements IncidentDao {
 		
 	}
 
+	public void deleteIncidentsWithMapping(MappingSetup setup) {
+		
+	}
 }

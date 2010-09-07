@@ -118,7 +118,7 @@ public class Incident {
 	private Location location;
 	
 	/** MappingSetup associated with this incident */
-	@ManyToOne
+	@ManyToOne(cascade=CascadeType.ALL)
 	private MappingSetup mappingSetup;
 		
 	/**

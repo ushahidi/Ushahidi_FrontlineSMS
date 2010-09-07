@@ -69,7 +69,7 @@ public class Location {
 	@Column(name=FIELD_LATITUDE, nullable=false)
 	private double latitude;
 	
-	@ManyToOne
+	@ManyToOne(cascade=CascadeType.ALL)
 	private MappingSetup mappingSetup;
 	
 	/**

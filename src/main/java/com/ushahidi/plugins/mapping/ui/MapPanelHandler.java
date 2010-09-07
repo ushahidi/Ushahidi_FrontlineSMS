@@ -46,8 +46,8 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 		
 		this.mainPanel = this.ui.loadComponentFromFile(UI_PANEL_XML, this);
 		this.mapBean = (MapBean)get(this.find(this.mainPanel, "mapBean"), BEAN);
-		this.lblCoordinates = this.find(this.mainPanel, "lblCoordinates");
-		this.sldZoomController = this.find(this.mainPanel, "sldZoomController");
+		this.lblCoordinates = this.ui.find(this.mainPanel, "lblCoordinates");
+		this.sldZoomController = this.ui.find(this.mainPanel, "sldZoomController");
 	}
 	
 	public Object getMainPanel() {
@@ -56,16 +56,10 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 	
 	public void init() {
 		if(mappingSetupDao.getDefaultSetup() != null) {
-			//Get the default mapping setup
 			MappingSetup defaultSetup = mappingSetupDao.getDefaultSetup();
-			
-			// Get the latitude and longitude
 			double latitude = defaultSetup.getLatitude();
 			double longitude = defaultSetup.getLongitude();
-			
 			LOG.debug("Default Setup: " + defaultSetup.getSourceURL());
-			
-			//Check if offline mode for the default setup is enabled
 			if(mappingSetupDao.getDefaultSetup().isOffline()){				
 				String fileName = defaultSetup.getOfflineMapFile();
 				File file = new File(fileName);
@@ -85,9 +79,8 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 				}
 			}
 			// Get the current zoom level from the slider
-			//int zoomLevel = getInteger(getZoomController(), ExtendedThinlet.VALUE);
-			
-			//mapBean.setZoomLevel(zoomLevel);
+//			int zoomLevel = getInteger(getZoomController(), ExtendedThinlet.VALUE);
+//			mapBean.setZoomLevel(zoomLevel);
 			mapBean.setLocation(longitude, latitude);			
 			mapBean.setIncidents(incidentDao.getAllIncidents(defaultSetup));
 			mapBean.addMapListener(this);
@@ -95,7 +88,7 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 		} 
 		else {
 			//The mapping plugin has not been configured; therefore disable the zoom controller
-			setEnabled(this.sldZoomController, false);
+			ui.setEnabled(sldZoomController, false);
 		}
 	}
 	
@@ -114,16 +107,14 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 	 * dialog is displayed with the coordinates of the selected location
 	 */
 	public void pointSelected(double lat, double lon) {
-		LOG.debug("%f, %f", lat, lon);
-//		ui.repaint();			
+		LOG.debug("%f, %f", lat, lon);		
 	}
 	
 	/** @see {@link MapListener#mapZoomed(int)} */
 	public void mapZoomed(int zoom){
 	    LOG.info("Updating zoom controller to level " + zoom);
 	    // Update the zoom slider to reflect the current zoom level
-	    setInteger(this.sldZoomController, VALUE, zoom);
-	    ui.repaint();
+	    ui.setInteger(sldZoomController, VALUE, zoom);
 	}
 	
 	/**
@@ -136,12 +127,10 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 		int zoomVal = getInteger(zoomController, ExtendedThinlet.VALUE);
 		// Adjust the zooming bar so that it moves in steps of 1 only
 		if(currentZoom < zoomVal){
-			setInteger(zoomController, ExtendedThinlet.VALUE, zoomVal-1);
-			ui.repaint();
+			ui.setInteger(zoomController, ExtendedThinlet.VALUE, zoomVal-1);
 		}
 		else if (currentZoom > zoomVal){
-			setInteger(zoomController, ExtendedThinlet.VALUE, zoomVal + 1);
-			ui.repaint();
+			ui.setInteger(zoomController, ExtendedThinlet.VALUE, zoomVal + 1);
 		}
 		mapBean.zoomMap(zoomVal);
 	}
@@ -163,8 +152,7 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 		if (lonString.length() > 8) {
 			lonString = lonString.substring(0,8);
 		}
-		setText(this.lblCoordinates, latString + ", " + lonString);
-		ui.repaint(this.lblCoordinates);
+		ui.setText(lblCoordinates, latString + ", " + lonString);
 	}
 	
 	/**
@@ -179,7 +167,6 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 		} 
 		catch (IOException e) {
 			LOG.error("Error parsing file for dateSelecter", e);
-			LOG.trace("EXIT");
 			throw new RuntimeException(e);
 		}
 		LOG.trace("EXIT");
@@ -189,7 +176,7 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 	 * Show the map save dialog
 	 */
 	public void saveMap() {
-		MapSaveDialogHandler mapSaveDialog = new MapSaveDialogHandler(this.pluginController, this.frontlineController, this.ui);
+		MapSaveDialogHandler mapSaveDialog = new MapSaveDialogHandler(pluginController, frontlineController, ui);
 		mapSaveDialog.showDialog(this.mapBean);
 	}
 	
@@ -197,18 +184,18 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 	}
 	
 	public void showClusteredData () {
-		System.out.println("showClusteredData");
+		LOG.debug("showClusteredData");
 	}
 	
 	public void showPointData() {
-		System.out.println("showPointData");
+		LOG.debug("showPointData");
 	}
 	
 	public void fromDateChanged(Object textField) {
-		System.out.println("fromDateChanged: " + this.ui.getText(textField));
+		LOG.debug("fromDateChanged: " + this.ui.getText(textField));
 	}
 	
 	public void toDateChanged(Object textField) {
-		System.out.println("toDateChanged: " + this.ui.getText(textField));
+		LOG.debug("toDateChanged: " + this.ui.getText(textField));
 	}
 }

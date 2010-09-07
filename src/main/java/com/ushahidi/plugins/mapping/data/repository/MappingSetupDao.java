@@ -38,5 +38,11 @@ public interface MappingSetupDao {
 	 * @return
 	 */
 	public int getCount();
+	
+	/**
+	 * Delete a mapping setup
+	 * @param setup MappingSetup
+	 */
+	public void deleteMappingSetup(MappingSetup setup);
 
 }

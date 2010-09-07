@@ -53,4 +53,7 @@ public class InMemoryLocationDao implements LocationDao{
 		return null;
 	}
 
+	public void deleteLocationsWithMapping(MappingSetup setup) {
+		
+	}
 }

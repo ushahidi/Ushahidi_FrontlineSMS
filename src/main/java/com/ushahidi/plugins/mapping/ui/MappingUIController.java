@@ -7,6 +7,7 @@ import com.ushahidi.plugins.mapping.MappingPluginController;
 import com.ushahidi.plugins.mapping.sync.SynchronizationCallback;
 import com.ushahidi.plugins.mapping.sync.SynchronizationManager;
 import com.ushahidi.plugins.mapping.utils.MappingLogger;
+import com.ushahidi.plugins.mapping.utils.MappingMessages;
 import com.ushahidi.plugins.mapping.data.domain.*;
 import com.ushahidi.plugins.mapping.data.repository.CategoryDao;
 import com.ushahidi.plugins.mapping.data.repository.IncidentDao;
@@ -97,22 +98,22 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		 * needs to be adjusted as the search options are toggled. 
 		 */
 		if (isSelected(find(getTab(), COMPONENT_ALL_CB))) {
-			setVisible(ui.find(getTab(), COMPONENT_MF_DATE_PANEL), false);
-			setVisible(ui.find(getTab(), COMPONENT_KEYWORDS_TABLE), false);
+			ui.setVisible(ui.find(getTab(), COMPONENT_MF_DATE_PANEL), false);
+			ui.setVisible(ui.find(getTab(), COMPONENT_KEYWORDS_TABLE), false);
 			ui.setInteger(pnlSearchParams, "rowspan", 1);
 			if (incidentDao.getCount() > 0) {
 				//mapBean.setIncidents(incidentDao.getAllIncidents(mappingSetupDao.getDefaultSetup()));
 			}
 		} 
 		else if(isSelected(find(getTab(), COMPONENT_KEYWORDS_CM))) {
-			setVisible(ui.find(getTab(), COMPONENT_MF_DATE_PANEL), false);
-			setVisible(ui.find(getTab(), COMPONENT_KEYWORDS_TABLE), true);
+			ui.setVisible(ui.find(getTab(), COMPONENT_MF_DATE_PANEL), false);
+			ui.setVisible(ui.find(getTab(), COMPONENT_KEYWORDS_TABLE), true);
 			ui.setInteger(pnlSearchParams, "rowspan", 4);
 			
 		} 
 		else if(isSelected(find(getTab(), COMPONENT_DATE_CB))) {
-			setVisible(ui.find(getTab(), COMPONENT_MF_DATE_PANEL), true);
-			setVisible(ui.find(getTab(), COMPONENT_KEYWORDS_TABLE), false);
+			ui.setVisible(ui.find(getTab(), COMPONENT_MF_DATE_PANEL), true);
+			ui.setVisible(ui.find(getTab(), COMPONENT_KEYWORDS_TABLE), false);
 			ui.setInteger(pnlSearchParams, "rowspan", 2);
 		}		
 	}	
@@ -125,7 +126,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	 */
 	public void updateMappingTab() {
 		Object messageTableComponent = ui.find(this.mainTab, COMPONENT_MESSAGE_TABLE);
-		removeAll(messageTableComponent);		
+		ui.removeAll(messageTableComponent);		
 		for (FrontlineMessage message : frontlineController.getMessageDao().getMessages(FrontlineMessage.Type.RECEIVED, FrontlineMessage.Status.RECEIVED)) {
 			ui.add(messageTableComponent, getRow(message));
 		}	
@@ -201,12 +202,12 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		if (mappingSetupDao.getCount() == 0 || mappingSetupDao.getDefaultSetup() == null){
 			LOG.debug("Mapping plugin has not been configured");
 			showSetupDialog();
-			ui.alert("The mapping plugin has not been configured!");
+			ui.alert(MappingMessages.getSetupDefaultMissing());
 		}
 		else if(mappingSetupDao.getCount() > 0 && mappingSetupDao.getDefaultSetup() == null){
 			LOG.debug("Default mapping setup not set");
 			showSetupDialog();
-			ui.alert("Please select the default mapping setup");
+			ui.alert(MappingMessages.getSetupDefaultRequired());
 		}
 		else{
 			syncManager = new SynchronizationManager(this, this.mappingSetupDao.getDefaultSetup().getSourceURL());		
@@ -220,14 +221,13 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	 * Updates the keyword list with the new items 
 	 */
 	private void updateKeywordList(){
-		removeAll(ui.find(this.mainTab, COMPONENT_KEYWORDS_TABLE));
+		ui.removeAll(ui.find(this.mainTab, COMPONENT_KEYWORDS_TABLE));
 		for(Location location: locationDao.getAllLocations(mappingSetupDao.getDefaultSetup())){
 			Object row = createTableRow(location);
 			createTableCell(row, "");
 			createTableCell(row, location.getName());
-			add(ui.find(this.mainTab, COMPONENT_KEYWORDS_TABLE), row);
+			ui.add(ui.find(this.mainTab, COMPONENT_KEYWORDS_TABLE), row);
 		}
-		ui.repaint(ui.find(this.mainTab, COMPONENT_KEYWORDS_TABLE));
 	}
 	
 	/**
@@ -235,11 +235,11 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	 * @return
 	 */
 	public List<String> getLocationIds(){
-		ArrayList<String> items = new ArrayList<String>();
-		for(Location location: locationDao.getAllLocations(mappingSetupDao.getDefaultSetup())) {
-			items.add(Long.toString(location.getFrontendId()));
+		ArrayList<String> locations = new ArrayList<String>();
+		for(Location location : locationDao.getAllLocations(mappingSetupDao.getDefaultSetup())) {
+			locations.add(Long.toString(location.getFrontendId()));
 		}
-		return items;
+		return locations;
 	}
 	
 	/**
@@ -254,7 +254,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		else if(item instanceof Location){
 			Location location = (Location)item;
 			location.setMappingSetup(mappingSetupDao.getDefaultSetup());
-			List<Incident> incidents = incidentDao.getIncidentsByLocation(location);
+			//List<Incident> incidents = incidentDao.getIncidentsByLocation(location);
 			//TODO update
 //			mapBean.setIncidents(incidents);
 		}
@@ -272,7 +272,6 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	public void handleIncomingMessage(FrontlineMessage message) {
 		Object messageTableComponent = ui.find(this.mainTab, COMPONENT_MESSAGE_TABLE);
 		ui.add(messageTableComponent, getRow(message));
-		ui.repaint();
 	}
 	
 	public void showIncidentMap() {
@@ -280,13 +279,11 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		if (this.mapPanelHandler == null) {
 			this.mapPanelHandler = new MapPanelHandler(this.pluginController, this.frontlineController, this.ui);
 		}
-		this.setSelected(this.cbxIncidentMap, true);
-		this.setSelected(this.cbxIncidentList, false);
+		this.ui.setSelected(this.cbxIncidentMap, true);
+		this.ui.setSelected(this.cbxIncidentList, false);
 		this.mapPanelHandler.init();
-		this.removeAll(this.pnlViewIncidents);
-		this.repaint(this.pnlViewIncidents);
-		this.add(this.pnlViewIncidents, this.mapPanelHandler.getMainPanel());
-		this.repaint(this.pnlViewIncidents);
+		this.ui.removeAll(this.pnlViewIncidents);
+		this.ui.add(this.pnlViewIncidents, this.mapPanelHandler.getMainPanel());
 	}
 	
 	public void showIncidentReports() {
@@ -297,37 +294,11 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		if (this.mapPanelHandler == null) {
 			this.mapPanelHandler.destroyMap();
 		}
-		this.setSelected(this.cbxIncidentMap, false);
-		this.setSelected(this.cbxIncidentList, true);
+		this.ui.setSelected(this.cbxIncidentMap, false);
+		this.ui.setSelected(this.cbxIncidentList, true);
 		this.reportsPanelHandler.init();
-		this.removeAll(this.pnlViewIncidents);
-		this.repaint(this.pnlViewIncidents);
-		this.add(this.pnlViewIncidents, this.reportsPanelHandler.getMainPanel());
-		this.repaint(this.pnlViewIncidents);
-	}
-
-	//SYNCHRONIZATION
-	
-	public void downloadedCategory(Category category) {
-		if(categoryDao.findCategory(category.getFrontendId(), mappingSetupDao.getDefaultSetup()) == null){
-			category.setMappingSetup(mappingSetupDao.getDefaultSetup());
-			try{
-				categoryDao.saveCategory(category);			
-			}
-			catch(DuplicateKeyException e){
-				LOG.debug("Category already exists", e);
-				return;
-			}
-					
-			//Add category to the keyword listing
-			Object row = ui.createTableRow(category);
-			createTableCell(row, "");
-			createTableCell(row, category.getTitle());
-			ui.add(ui.find(getTab(), COMPONENT_KEYWORDS_TABLE), row);
-			ui.repaint();
-			
-			LOG.debug("Category [" + category.getTitle() + "] added!");
-		}
+		this.ui.removeAll(this.pnlViewIncidents);
+		this.ui.add(this.pnlViewIncidents, this.reportsPanelHandler.getMainPanel());
 	}
 
 	//################# SynchronizationCallback #################
@@ -345,6 +316,27 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		LOG.debug("downloadedGeoMidpoint: %s (%s,%s)", domain, latitude, longitude);
 	}
 
+	public void downloadedCategory(Category category) {
+		if(categoryDao.findCategory(category.getFrontendId(), mappingSetupDao.getDefaultSetup()) == null){
+			category.setMappingSetup(mappingSetupDao.getDefaultSetup());
+			try{
+				categoryDao.saveCategory(category);			
+			}
+			catch(DuplicateKeyException e){
+				LOG.debug("Category already exists", e);
+				return;
+			}
+					
+			//Add category to the keyword listing
+			Object row = ui.createTableRow(category);
+			createTableCell(row, "");
+			createTableCell(row, category.getTitle());
+			ui.add(ui.find(getTab(), COMPONENT_KEYWORDS_TABLE), row);
+			
+			LOG.debug("Category [" + category.getTitle() + "] added!");
+		}
+	}
+	
 	public void downloadedIncident(Incident incident) {
 		if(incidentDao.findIncident(incident.getFrontendId(), mappingSetupDao.getDefaultSetup()) == null){
 			long frontendId = incident.getLocation().getFrontendId();
@@ -383,8 +375,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 			createTableCell(row, "");
 			createTableCell(row, location.getName());
 			ui.add(ui.find(getTab(), COMPONENT_KEYWORDS_TABLE), row);
-			ui.repaint();
-	
+			
 			LOG.debug("Location [" + location.getName() + "] created!");
 		}
 	}

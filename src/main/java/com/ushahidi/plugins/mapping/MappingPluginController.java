@@ -72,11 +72,11 @@ public class MappingPluginController extends BasePluginController implements Inc
     }
 
     public void deinit() {
-    	if (this.frontlineController != null) {
-            this.frontlineController.removeIncomingMessageListener(this);
+    	if (frontlineController != null) {
+            frontlineController.removeIncomingMessageListener(this);
     	}
-    	if (this.mappingUIController != null) {
-            this.mappingUIController.shutdownUIController();
+    	if (mappingUIController != null) {
+            mappingUIController.shutdownUIController();
     	}
     }
 
@@ -108,10 +108,14 @@ public class MappingPluginController extends BasePluginController implements Inc
     }
     
     public void showIncidentMap() {
-    	this.mappingUIController.showIncidentMap();
+    	mappingUIController.showIncidentMap();
     }
     
     public void showIncidentReports() {
-    	this.mappingUIController.showIncidentReports();
+    	mappingUIController.showIncidentReports();
+    }
+    
+    public void beginSynchronization() {
+    	mappingUIController.beginSynchronization();
     }
 }

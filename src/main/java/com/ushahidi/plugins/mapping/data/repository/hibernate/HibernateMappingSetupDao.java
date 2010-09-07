@@ -89,4 +89,11 @@ public class HibernateMappingSetupDao extends BaseHibernateDao<MappingSetup> imp
 		return super.getUnique(criteria);
 	}
 
+	/**
+	 * Delete a mapping setup
+	 * @param setup MappingSetup
+	 */
+	public void deleteMappingSetup(MappingSetup setup) {
+		super.delete(setup);
+	}
 }

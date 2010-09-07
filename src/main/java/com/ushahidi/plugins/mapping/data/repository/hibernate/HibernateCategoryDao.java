@@ -81,5 +81,11 @@ public class HibernateCategoryDao extends BaseHibernateDao<Category> implements
 		criteria.add(Restrictions.idEq(new Long(id)));
 		return super.getUnique(criteria);
 	}
+	
+	public void deleteCategoriesWithMapping(MappingSetup setup) {
+		for(Category category : getAllCategories(setup)) {
+			super.delete(category);
+		}
+	}
 
 }
