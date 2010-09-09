@@ -118,7 +118,7 @@ public class Incident {
 	private Location location;
 	
 	/** MappingSetup associated with this incident */
-	@ManyToOne(cascade=CascadeType.ALL)
+	@ManyToOne
 	private MappingSetup mappingSetup;
 		
 	/**
@@ -200,6 +200,13 @@ public class Incident {
 	 */
 	public Location getLocation(){
 		return location;
+	}
+	
+	public boolean isLocation(Location location) {
+		if (this.location != null && location != null) {
+			return this.location.getId() == location.getId();
+		}
+		return false;
 	}
 	
 	/**

@@ -16,6 +16,7 @@ import com.ushahidi.plugins.mapping.data.repository.IncidentDao;
 import com.ushahidi.plugins.mapping.data.repository.LocationDao;
 import com.ushahidi.plugins.mapping.data.repository.MappingSetupDao;
 import com.ushahidi.plugins.mapping.utils.MappingLogger;
+import com.ushahidi.plugins.mapping.utils.MappingMessages;
 
 import net.frontlinesms.FrontlineSMS;
 import net.frontlinesms.data.DuplicateKeyException;
@@ -29,7 +30,7 @@ import net.frontlinesms.ui.i18n.InternationalisationUtils;
 @SuppressWarnings("serial")
 public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEventHandler, MapListener {
 
-	public static MappingLogger LOG = MappingLogger.getLogger(ReportDialogHandler.class);
+	private static MappingLogger LOG = MappingLogger.getLogger(ReportDialogHandler.class);
 	
 	private static final String UI_DIALOG_XML = "/ui/plugins/mapping/reportDialog.xml";
 
@@ -37,7 +38,7 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 	private final FrontlineSMS frontlineController;
 	private final UiGeneratorController ui;
 	
-	private Object mainDialog;
+	private final Object mainDialog;
 	
 	private final LocationDao locationDao;
 	private final CategoryDao categoryDao;
@@ -60,7 +61,6 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 	private final Object btnClose;
 	private final Object btnReportDate;
 	private final Object cbxExistingLocation;
-	private final Object cbxNewLocation;
 	private final Object pnlExistingLocation;
 	private final Object pnlNewLocation;
 	private final Object txtNewLocation;
@@ -97,7 +97,6 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 		this.cbxExistingLocation = ui.find(this.mainDialog, "cboReportLocations");
 		this.pnlExistingLocation = ui.find(this.mainDialog, "pnlExistingLocation");
 		
-		this.cbxNewLocation = ui.find(this.mainDialog, "cbxNewLocation");
 		this.pnlNewLocation = ui.find(this.mainDialog, "pnlNewLocation");
 		this.txtNewLocation =  ui.find(this.mainDialog, "txtNewLocation");
 		
@@ -109,30 +108,41 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 	public void showDialog(Incident incident) {
 		ui.setAttachedObject(mainDialog, incident);
 		
-		ui.setVisible(txtReportLocation, true);
-		ui.setVisible(pnlReportLocation, false);
+		removeAll(cboReportLocations);
+		for(Location location: locationDao.getAllLocations(mappingSetupDao.getDefaultSetup())) {				
+			ui.add(cboReportLocations, createComboboxChoice(location.getName(), location));
+		}
 		
-		ui.setVisible(txtReportCategories, true);
-		ui.setVisible(lstReportCategories, false);
-
-		ui.setVisible(btnSave, false);
-		ui.setVisible(btnCancel, false);
-		ui.setVisible(btnClose, true);
-		
-		ui.setVisible(lblSender, false);
-		ui.setVisible(txtSender, false);
+		removeAll(lstReportCategories);
+		for(Category category: categoryDao.getAllCategories(mappingSetupDao.getDefaultSetup())){
+			ui.add(lstReportCategories, createListItem(category.getTitle(), category));
+		}
 		
 		if (incident != null) {
 			ui.setText(txtReportTitle, incident.getTitle());
 			ui.setText(txtReportDescription, incident.getDescription());
 			ui.setText(txtReportCategories, incident.getCategoryNames());
+			for(Object item : ui.getItems(lstReportCategories)) {
+				Category category = ui.getAttachedObject(item, Category.class);
+				ui.setSelected(item, incident.hasCategory(category));
+			}
 			ui.setText(txtReportDate, InternationalisationUtils.getDatetimeFormat().format(incident.getIncidentDate()));
 			if (incident.getLocation() != null) {
 				ui.setText(txtReportLocation, incident.getLocation().getName());
+				int index = 0;
+				for(Object item : ui.getItems(cboReportLocations)) {
+					Location location = ui.getAttachedObject(item, Location.class);
+					if (incident.isLocation(location)) {
+						ui.setSelectedIndex(cboReportLocations, index);
+						break;
+					}
+					index++;
+				}
 				ui.setText(txtReportCoordinates, String.format("%f, %f", incident.getLocation().getLatitude(), incident.getLocation().getLongitude()));
 			}
 			else {
 				ui.setText(txtReportLocation, "");
+				ui.setSelectedIndex(cboReportLocations, -1);
 				ui.setText(txtReportCoordinates, "");
 			}
 		}
@@ -142,12 +152,27 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 			ui.setText(txtReportCategories, "");
 			ui.setText(txtReportDate, "");
 			ui.setText(txtReportLocation, "");
-			ui.setText(txtReportCoordinates, "");
+			ui.setText(txtReportCoordinates, "");	
 		}
-		ui.setEditable(txtReportTitle, incident == null);
-		ui.setEditable(txtReportDescription, incident == null);
-		ui.setEditable(txtReportLocation, incident == null);
-		ui.setVisible(btnReportDate, incident == null);
+		boolean editMode = incident == null || incident.isMarked();
+		ui.setVisible(txtReportLocation, !editMode);
+		ui.setVisible(pnlReportLocation, editMode);
+		
+		ui.setVisible(txtReportCategories, !editMode);
+		ui.setVisible(lstReportCategories, editMode);
+
+		ui.setVisible(btnSave, editMode);
+		ui.setVisible(btnCancel, editMode);
+		ui.setVisible(btnClose, !editMode);
+		
+		ui.setVisible(lblSender, editMode);
+		ui.setVisible(txtSender, editMode);
+		
+		ui.setEditable(txtReportTitle, editMode);
+		ui.setEditable(txtReportDescription, editMode);
+		ui.setEditable(txtReportLocation, editMode);
+		ui.setVisible(btnReportDate, editMode);
+		
 		ui.add(mainDialog);
 	}
 	
@@ -203,7 +228,7 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 		else if (attachedObject instanceof Incident) {
 			incident = (Incident)attachedObject;
 		}
-		if (ui.getBoolean(cboReportLocations, ENABLED)){
+		if (ui.getSelectedItem(cbxExistingLocation) != null){
 			Location location = (Location)getAttachedObject(getSelectedItem(cboReportLocations));
 			incident.setLocation(location);
 		}
@@ -222,7 +247,7 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 			}
 			catch(DuplicateKeyException de){
 				LOG.debug(de);
-				ui.alert("The location [" + coordinatesText + "] could not be saved.");
+				ui.alert(MappingMessages.getErrorInvalidLocation());
 				return;
 			}
 			incident.setLocation(location);
@@ -244,18 +269,23 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 		}
 		catch(ParseException pe){
 			LOG.debug("Invalid date string", pe);
-			ui.alert("The incident date [" + dateString + "] is invalid");
+			ui.alert(MappingMessages.getDateInvalid());
 			return;
 		}			
 		try{
-			incidentDao.saveIncident(incident);
+			if (incident.getId() > 0) {
+				incidentDao.updateIncident(incident);
+			}
+			else {
+				incidentDao.saveIncident(incident);
+			}
+			ui.remove(mainDialog);
+			pluginController.showIncidentReports();
 		}
 		catch(DuplicateKeyException de) {
 			LOG.debug(de);
-			ui.alert("ERROR: Unable to create an incident from the text message");
-			return;
+			ui.alert(MappingMessages.getErrorCreateFromTextMessage());
 		}
-		ui.remove(mainDialog);
 	}
 	
 	/**

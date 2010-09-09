@@ -48,6 +48,10 @@ public final class MappingMessages {
 	public static String getDateKeyword() {
 		return getI18NString("plugins.ushahidi.incident.date.keyword");
 	}
+	
+	public static String getDateInvalid() {
+		return getI18NString("plugins.ushahidi.incident.date.invalid");
+	}
 
 	public static String getDateNow() {
 		return getI18NString("plugins.ushahidi.incident.datenow");
@@ -199,6 +203,26 @@ public final class MappingMessages {
 	
 	public static String getSetupSynchronize() {
 		return getI18NString("plugins.ushahidi.setup.synchronize");
+	}
+	
+	public static String getAllCategories() {
+		return getI18NString("plugins.ushahidi.categories.all");
+	}
+	
+	public static String getErrorCreateFromTextMessage() {
+		return getI18NString("plugins.ushahidi.incident.error.txt");
+	}
+	
+	public static String getErrorInvalidLocation() {
+		return getI18NString("plugins.ushahidi.incident.error.location");
+	}
+	
+	public static String getSearchMessages() {
+		return getI18NString("plugins.ushahidi.search.messages");
+	}
+	
+	public static String getSearchIncidents() {
+		return getI18NString("plugins.ushahidi.search.incidents");
 	}
 	
 }

@@ -89,6 +89,9 @@ public class SynchronizationManager {
 		incidentTask.setRequestParameter(SynchronizationAPI.INCIDENTS_BY_ALL);
 		syncThread.addJob(incidentTask);
 		
+		//fetch geo midpoint
+		syncThread.addJob(new SynchronizationTask(SynchronizationAPI.PULL_TASK, SynchronizationAPI.GEOMIDPOINT));
+		
 		totalTasks = syncThread.getTaskCount();
 		if (managerThread == null) {
 			managerThread = new ManagerThread(this, syncThread);

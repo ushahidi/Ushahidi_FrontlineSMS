@@ -339,7 +339,6 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
 	
 	public void downloadedGeoMidpoint(String domain, String latitude, String longitude) {
 		LOG.debug("downloadedGeoMidpoint: %s (%s,%s)", domain, latitude, longitude);
-		ui.removeAll(tblSources);
 		for(MappingSetup mappingSetup : mappingSetupDao.getAllSetupItems()) {
 			if (mappingSetup.isSourceURL(domain)) {
 				mappingSetup.setLatitude(Double.parseDouble(latitude));
@@ -351,9 +350,7 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
 					ex.printStackTrace();
 				}
 			}
-			ui.add(tblSources, getRow(mappingSetup));
 		}
-		pluginController.showIncidentMap();
 	}
 
 	public void synchronizationFinished() {
@@ -361,6 +358,7 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
 		ui.setEnabled(this.btnCreateForm, hasMappingSetup);
 		ui.setEnabled(this.btnCreateSurvey, hasMappingSetup);
 		syncDialog.hideDialog();
+		pluginController.showIncidentMap();
 	}
 
 	public void synchronizationStarted(int tasks) {

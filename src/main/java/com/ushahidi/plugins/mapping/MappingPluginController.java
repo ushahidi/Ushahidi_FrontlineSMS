@@ -26,20 +26,14 @@ import org.springframework.context.ApplicationContext;
         springConfigLocation="classpath:com/ushahidi/plugins/mapping/mapping-spring-hibernate.xml",
         hibernateConfigPath="classpath:com/ushahidi/plugins/mapping/mapping.hibernate.cfg.xml")
 public class MappingPluginController extends BasePluginController implements IncomingMessageListener {
-    /** Logger */
-	public static MappingLogger LOG = MappingLogger.getLogger(MappingPluginController.class);	
+    private static MappingLogger LOG = MappingLogger.getLogger(MappingPluginController.class);	
 
-    //> INSTANCE variables
     private FrontlineSMS frontlineController;
-
     private MappingUIController mappingUIController;
-    /** DAO for categories */
+
     private CategoryDao categoryDao;
-    /** DAO for locations */
     private LocationDao locationDao;
-    /** DAO for incidents */
     private IncidentDao incidentDao;
-    /** DAO for mapping setup */
     private MappingSetupDao mappingSetupDao;
     
     public String getHibernateConfigPath() {
@@ -111,8 +105,16 @@ public class MappingPluginController extends BasePluginController implements Inc
     	mappingUIController.showIncidentMap();
     }
     
+    public void refreshIncidentMap() {
+    	mappingUIController.refreshIncidentMap();
+    }
+    
     public void showIncidentReports() {
     	mappingUIController.showIncidentReports();
+    }
+    
+    public void refreshIncidentReports() {
+    	mappingUIController.refreshIncidentReports();
     }
     
     public void beginSynchronization() {

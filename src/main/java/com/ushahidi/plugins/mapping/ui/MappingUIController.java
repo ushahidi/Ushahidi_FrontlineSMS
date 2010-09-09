@@ -1,5 +1,6 @@
 package com.ushahidi.plugins.mapping.ui;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,24 +27,17 @@ import net.frontlinesms.ui.UiGeneratorController;
 @SuppressWarnings("serial")
 public class MappingUIController extends ExtendedThinlet implements ThinletUiEventHandler, SynchronizationCallback {
 
-	public static MappingLogger LOG = MappingLogger.getLogger(MappingUIController.class);
+	private static MappingLogger LOG = MappingLogger.getLogger(MappingUIController.class);
 	
     /** Filename and path of the XML containing the mapping tab */
     private static final String XML_MAIN_TAB = "/ui/plugins/mapping/mainTab.xml";
-	
-	private static final String COMPONENT_MESSAGE_TABLE = "messageTable";
-	private static final String COMPONENT_ALL_CB = "cbMfAll";
-	private static final String COMPONENT_KEYWORDS_CM = "cbMfKeywords";
-	private static final String COMPONENT_DATE_CB = "cbMfDate";
-	private static final String COMPONENT_KEYWORDS_TABLE = "tblKeywords";
-	private static final String COMPONENT_MF_DATE_PANEL = "pblMfDate";
 	
 	private final MappingPluginController pluginController;
 	private final FrontlineSMS frontlineController;
 	private final UiGeneratorController ui;
 	
-	private Object mainTab;
-	private Object pnlViewIncidents;
+	private final Object mainTab;
+	private final Object pnlViewIncidents;
 	private SyncDialogHandler syncDialog;
 	
 	private final LocationDao locationDao;
@@ -57,6 +51,8 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	
 	private final Object cbxIncidentMap;
 	private final Object cbxIncidentList;
+	private final Object tblMessages;
+	private final Object txtSearch;
 	
 	public MappingUIController(MappingPluginController pluginController, FrontlineSMS frontlineController, UiGeneratorController uiController) {
 		this.pluginController = pluginController;
@@ -72,6 +68,8 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		this.pnlViewIncidents = this.ui.find(this.mainTab, "pnlViewIncidents");
 		this.cbxIncidentMap = this.ui.find(this.mainTab, "cbxIncidentMap");
 		this.cbxIncidentList = this.ui.find(this.mainTab, "cbxIncidentList");
+		this.tblMessages = this.ui.find(this.mainTab, "tblMessages");
+		this.txtSearch = this.ui.find(this.mainTab, "txtSearch");
 	}
 	
 	/**
@@ -79,67 +77,27 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	 * This method must be called by {@link MappingPluginController}
 	 */
 	public void initUIController(){
-		updateKeywordList();
-		updateMappingTab();
+		search(this.txtSearch);
 		showIncidentMap();
 	}
 	
 	public Object getTab() {
-		return this.mainTab;
+		return mainTab;
 	}
 	
-	/**
-	 * Toggle the event filter
-	 * 
-	 * @param pnlSearchParams
-	 */
-	public void messageFilterChanged(Object pnlSearchParams) {
-		/* The rowspan property of the parent object @pnlSearchParams
-		 * needs to be adjusted as the search options are toggled. 
-		 */
-		if (isSelected(find(getTab(), COMPONENT_ALL_CB))) {
-			ui.setVisible(ui.find(getTab(), COMPONENT_MF_DATE_PANEL), false);
-			ui.setVisible(ui.find(getTab(), COMPONENT_KEYWORDS_TABLE), false);
-			ui.setInteger(pnlSearchParams, "rowspan", 1);
-			if (incidentDao.getCount() > 0) {
-				//mapBean.setIncidents(incidentDao.getAllIncidents(mappingSetupDao.getDefaultSetup()));
-			}
-		} 
-		else if(isSelected(find(getTab(), COMPONENT_KEYWORDS_CM))) {
-			ui.setVisible(ui.find(getTab(), COMPONENT_MF_DATE_PANEL), false);
-			ui.setVisible(ui.find(getTab(), COMPONENT_KEYWORDS_TABLE), true);
-			ui.setInteger(pnlSearchParams, "rowspan", 4);
-			
-		} 
-		else if(isSelected(find(getTab(), COMPONENT_DATE_CB))) {
-			ui.setVisible(ui.find(getTab(), COMPONENT_MF_DATE_PANEL), true);
-			ui.setVisible(ui.find(getTab(), COMPONENT_KEYWORDS_TABLE), false);
-			ui.setInteger(pnlSearchParams, "rowspan", 2);
-		}		
-	}	
-	
-	public void messageFilterDateChanged() {		
-	}	
-	
-	/**
-	 * Load all received messages
-	 */
-	public void updateMappingTab() {
-		Object messageTableComponent = ui.find(this.mainTab, COMPONENT_MESSAGE_TABLE);
-		ui.removeAll(messageTableComponent);		
+	public void search(Object textField) {
+		String searchText = ui.getText(textField).trim().toLowerCase();
+		ui.removeAll(tblMessages);		
 		for (FrontlineMessage message : frontlineController.getMessageDao().getMessages(FrontlineMessage.Type.RECEIVED, FrontlineMessage.Status.RECEIVED)) {
-			ui.add(messageTableComponent, getRow(message));
-		}	
+			String sender = getSenderDisplayName(message);
+			if (searchText.length() == 0 || 
+				searchText.equalsIgnoreCase(MappingMessages.getSearchMessages()) ||
+				message.getTextContent().toLowerCase().indexOf(searchText) > -1 ||
+				sender.toLowerCase().indexOf(searchText) > -1) {
+				ui.add(tblMessages, getRow(message));
+			}
+		}
 	}
-	
-	/**
-	 * Displays the date selector
-	 * 
-	 * @param textField
-	 */
-	public void showDateSelector(Object textField) {
-		ui.showDateSelecter(textField);
-	}	
 	
 	/**
 	 * Displays the incident creation dialog
@@ -147,11 +105,11 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	 *  
 	 * @param item Selected {@link Message}; the one an incident report shall be created from
 	 */
-	public ReportDialogHandler showIncidentDialog(Object item) {
+	public ReportDialogHandler showIncidentDialog(Object table, Object item) {
 		FrontlineMessage message = (FrontlineMessage) getAttachedObject(item);						
 		if (message != null) {
-			ReportDialogHandler dialog = new ReportDialogHandler(this.pluginController, this.frontlineController, this.ui);
-			this.mapPanelHandler.addMapListener(dialog);
+			ReportDialogHandler dialog = new ReportDialogHandler(pluginController, frontlineController, ui);
+			mapPanelHandler.addMapListener(dialog);
 			dialog.showDialog(message);	
 			return dialog;
 		}
@@ -166,7 +124,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	 * Displays the mapping setup dialog
 	 */
 	public SetupDialogHandler showSetupDialog(){
-		SetupDialogHandler dialog = new SetupDialogHandler(this.pluginController, this.frontlineController, this.ui);
+		SetupDialogHandler dialog = new SetupDialogHandler(pluginController, frontlineController, ui);
 		dialog.showDialog();
 		return dialog;
 	}
@@ -179,7 +137,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	private Object getRow(FrontlineMessage message){		
 		Object row = createTableRow(message);
 		createTableCell(row, InternationalisationUtils.getDatetimeFormat().format(message.getDate()));
-		createTableCell(row, getSenderDisplayValue(message));
+		createTableCell(row, getSenderDisplayName(message));
 		createTableCell(row, message.getTextContent());
 		return row;
 	}
@@ -189,9 +147,15 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	 * @param message
 	 * @return
 	 */
-	private String getSenderDisplayValue(FrontlineMessage message) {
+	private String getSenderDisplayName(FrontlineMessage message) {
 		Contact sender = frontlineController.getContactDao().getFromMsisdn(message.getSenderMsisdn());
-		return sender != null ? sender.getDisplayName() + "(" + message.getSenderMsisdn() + ")" : message.getSenderMsisdn();
+		if (sender != null) {
+			if (sender.getDisplayName() != null) {
+				return String.format("%s (%s)", sender.getDisplayName(), message.getSenderMsisdn()) ;
+			}
+			return String.format("%s", message.getSenderMsisdn());
+		}
+		return "";
 	}
 	
 	/**
@@ -210,58 +174,24 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 			ui.alert(MappingMessages.getSetupDefaultRequired());
 		}
 		else{
-			syncManager = new SynchronizationManager(this, this.mappingSetupDao.getDefaultSetup().getSourceURL());		
+			syncManager = new SynchronizationManager(this, mappingSetupDao.getDefaultSetup().getSourceURL());		
 			LOG.debug("Starting full synchronization...");
 			List<Incident> pendingIncidents = incidentDao.getUnMarkedIncidents(mappingSetupDao.getDefaultSetup());
 			syncManager.performFullSynchronization(pendingIncidents);
 		}
 	}
 	
-	/**
-	 * Updates the keyword list with the new items 
-	 */
-	private void updateKeywordList(){
-		ui.removeAll(ui.find(this.mainTab, COMPONENT_KEYWORDS_TABLE));
-		for(Location location: locationDao.getAllLocations(mappingSetupDao.getDefaultSetup())){
-			Object row = createTableRow(location);
-			createTableCell(row, "");
-			createTableCell(row, location.getName());
-			ui.add(ui.find(this.mainTab, COMPONENT_KEYWORDS_TABLE), row);
-		}
-	}
-	
-	/**
-	 * Gets all the frontend ids of the locations
-	 * @return
-	 */
-	public List<String> getLocationIds(){
-		ArrayList<String> locations = new ArrayList<String>();
-		for(Location location : locationDao.getAllLocations(mappingSetupDao.getDefaultSetup())) {
-			locations.add(Long.toString(location.getFrontendId()));
-		}
-		return locations;
-	}
-	
-	/**
-	 * Updates the UI when the keyword selection changes
-	 * @param tblKeywords
-	 */
-	public void mappingTab_keywordSelectionChanged(Object tblKeywords){
-		Object item = getAttachedObject(getSelectedItem(tblKeywords));
-		if(item instanceof Category) {
-			
-		}
-		else if(item instanceof Location){
-			Location location = (Location)item;
-			location.setMappingSetup(mappingSetupDao.getDefaultSetup());
-			//List<Incident> incidents = incidentDao.getIncidentsByLocation(location);
-			//TODO update
-//			mapBean.setIncidents(incidents);
-		}
-		else {
-			throw new RuntimeException();
-		}
-	}
+//	/**
+//	 * Gets all the frontend ids of the locations
+//	 * @return
+//	 */
+//	public List<String> getLocationIds(){
+//		ArrayList<String> locations = new ArrayList<String>();
+//		for(Location location : locationDao.getAllLocations(mappingSetupDao.getDefaultSetup())) {
+//			locations.add(Long.toString(location.getFrontendId()));
+//		}
+//		return locations;
+//	}
 	
 	/**
 	 * Adds an incoming message (received via the connected mobile phone) to the list of
@@ -270,37 +200,68 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	 * @param message The received message
 	 */
 	public void handleIncomingMessage(FrontlineMessage message) {
-		Object messageTableComponent = ui.find(this.mainTab, COMPONENT_MESSAGE_TABLE);
-		ui.add(messageTableComponent, getRow(message));
+		ui.add(tblMessages, getRow(message));
 	}
 	
 	public void showIncidentMap() {
-		System.out.println("showIncidentMap");
-		if (this.mapPanelHandler == null) {
-			this.mapPanelHandler = new MapPanelHandler(this.pluginController, this.frontlineController, this.ui);
+		LOG.debug("showIncidentMap");
+		if (mapPanelHandler == null) {
+			mapPanelHandler = new MapPanelHandler(pluginController, frontlineController, ui);
 		}
-		this.ui.setSelected(this.cbxIncidentMap, true);
-		this.ui.setSelected(this.cbxIncidentList, false);
-		this.mapPanelHandler.init();
-		this.ui.removeAll(this.pnlViewIncidents);
-		this.ui.add(this.pnlViewIncidents, this.mapPanelHandler.getMainPanel());
+		ui.setSelected(cbxIncidentMap, true);
+		ui.setSelected(cbxIncidentList, false);
+		mapPanelHandler.init();
+		ui.removeAll(pnlViewIncidents);
+		ui.add(pnlViewIncidents, mapPanelHandler.getMainPanel());
+	}
+	
+	public void refreshIncidentMap() {
+		if (mapPanelHandler != null) {
+			mapPanelHandler.refresh();
+		}
 	}
 	
 	public void showIncidentReports() {
-		System.out.println("showIncidentReports");
-		if (this.reportsPanelHandler == null) {
-			this.reportsPanelHandler = new ReportsPanelHandler(this.pluginController, this.frontlineController, this.ui);
+		LOG.debug("showIncidentReports");
+		if (reportsPanelHandler == null) {
+			reportsPanelHandler = new ReportsPanelHandler(pluginController, frontlineController, ui);
 		}
-		if (this.mapPanelHandler == null) {
-			this.mapPanelHandler.destroyMap();
+		if (mapPanelHandler == null) {
+			mapPanelHandler.destroyMap();
 		}
-		this.ui.setSelected(this.cbxIncidentMap, false);
-		this.ui.setSelected(this.cbxIncidentList, true);
-		this.reportsPanelHandler.init();
-		this.ui.removeAll(this.pnlViewIncidents);
-		this.ui.add(this.pnlViewIncidents, this.reportsPanelHandler.getMainPanel());
+		ui.setSelected(cbxIncidentMap, false);
+		ui.setSelected(cbxIncidentList, true);
+		reportsPanelHandler.init();
+		ui.removeAll(pnlViewIncidents);
+		ui.add(pnlViewIncidents, reportsPanelHandler.getMainPanel());
 	}
 
+	public void refreshIncidentReports() {
+		LOG.debug("refreshIncidentReports");
+		if (reportsPanelHandler != null) {
+			reportsPanelHandler.refresh();
+		}
+	}
+	
+	public void focusGained(Object textfield) {
+		String searchText = this.ui.getText(textfield);
+		if (searchText.equalsIgnoreCase(MappingMessages.getSearchMessages())) {
+			this.ui.setText(textfield, "");
+		}
+		this.ui.setForeground(Color.BLACK);
+	}
+	
+	public void focusLost(Object textfield) {
+		String searchText = this.ui.getText(textfield);
+		if (searchText == null || searchText.length() == 0) {
+			this.ui.setText(textfield, MappingMessages.getSearchMessages());
+			this.ui.setForeground(Color.LIGHT_GRAY);
+		}
+		else {
+			this.ui.setForeground(Color.BLACK);
+		}
+	}
+	
 	//################# SynchronizationCallback #################
 	
 	/**
@@ -326,14 +287,6 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 				LOG.debug("Category already exists", e);
 				return;
 			}
-					
-			//Add category to the keyword listing
-			Object row = ui.createTableRow(category);
-			createTableCell(row, "");
-			createTableCell(row, category.getTitle());
-			ui.add(ui.find(getTab(), COMPONENT_KEYWORDS_TABLE), row);
-			
-			LOG.debug("Category [" + category.getTitle() + "] added!");
 		}
 	}
 	
@@ -369,21 +322,13 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 				LOG.debug("Location already exists", e);
 				return;
 			}
-			
-			//Add location to the keyword listing
-			Object row = ui.createTableRow(location);
-			createTableCell(row, "");
-			createTableCell(row, location.getName());
-			ui.add(ui.find(getTab(), COMPONENT_KEYWORDS_TABLE), row);
-			
-			LOG.debug("Location [" + location.getName() + "] created!");
 		}
 	}
 
 	public void synchronizationFailed(String error) {
 		LOG.debug("synchronizationFailed:%s", error);
 		syncDialog.hideDialog();
-		this.ui.alert(error);
+		ui.alert(error);
 	}
 
 	public void synchronizationFinished() {
@@ -394,7 +339,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	public void synchronizationStarted(int tasks) {
 		LOG.debug("synchronizationStarted:%d", tasks);
 		if (syncDialog == null) {
-			syncDialog = new SyncDialogHandler(this.pluginController, this.frontlineController, this.ui);	
+			syncDialog = new SyncDialogHandler(pluginController, frontlineController, ui);	
 		}
 		syncDialog.setProgress(tasks, 1);
 		syncDialog.showDialog();

@@ -1,8 +1,8 @@
 <panel name="panelReports" gap="10" top="3" right="3" bottom="3" left="3" columns="1" weightx="1" weighty="1">
-	<table name="tblReports" weightx="1" weighty="1" perform="showReportDetails(item)">
+	<table name="tblReports" weightx="1" weighty="1" perform="showReportDetails(this,item)">
 		<header>
-			<column text="i18n.plugins.ushahidi.incident.online" width="40"/>
-			<column text="i18n.plugins.ushahidi.incident.verified" width="50"/>
+			<column text="i18n.plugins.ushahidi.incident.pending" width="55"/>
+			<column text="i18n.plugins.ushahidi.incident.verified" width="55"/>
 			<column text="i18n.plugins.ushahidi.incident.title" width="300"/>
 			<column text="i18n.plugins.ushahidi.incident.location" width="130"/>
 			<column text="i18n.plugins.ushahidi.incident.date" width="100"/>
@@ -10,11 +10,14 @@
 			<column text="i18n.plugins.ushahidi.incident.description" />
 		</header>
 	</table>
-	<panel gap="5" columns="5" weightx="1">
-		<label text="i18n.plugins.ushahidi.search" icon="/icons/search.png" for="txtSearch"/>
-		<textfield name="txtSearch" columns="30" action="search(this, cbxCategories)" focusgained="focusGained(this)" focuslost="focusLost(this)"/>
-		<label text=""/>
-		<label text="i18n.plugins.ushahidi.categories" for="cbxCategories" />
-		<combobox name="cbxCategories" action="search(txtSearch, this)" editable="false" weightx="1"/>
+	<panel gap="15" columns="2" weightx="1">
+		<panel gap="5" columns="2" valign="fill">
+			<label icon="/icons/search.png" for="txtSearch"/>
+			<textfield name="txtSearch" columns="30" action="search(this, cbxCategories)" focusgained="focusGained(this)" focuslost="focusLost(this)"/>
+		</panel>
+		<panel gap="5" columns="2" weightx="1" valign="fill">
+			<label text="i18n.plugins.ushahidi.categories" for="cbxCategories" />
+			<combobox name="cbxCategories" action="search(txtSearch, this)" editable="false" weightx="1"/>
+		</panel>
 	</panel>
 </panel>

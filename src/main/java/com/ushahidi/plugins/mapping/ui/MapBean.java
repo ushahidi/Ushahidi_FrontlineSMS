@@ -63,13 +63,8 @@ public class MapBean extends CustomComponent implements ImageObserver {
     }
 
     public synchronized void setIncidents(List<Incident> incidents){
-        if(this.incidents != null){
-            this.incidents = incidents;
-            repaint();
-        }
-        else {
-            this.incidents = incidents;
-        }
+    	this.incidents = incidents;
+        repaint();
     }
 
     /**

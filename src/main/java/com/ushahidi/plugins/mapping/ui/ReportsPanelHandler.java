@@ -9,6 +9,7 @@ import com.ushahidi.plugins.mapping.data.repository.CategoryDao;
 import com.ushahidi.plugins.mapping.data.repository.IncidentDao;
 import com.ushahidi.plugins.mapping.data.repository.MappingSetupDao;
 import com.ushahidi.plugins.mapping.utils.MappingLogger;
+import com.ushahidi.plugins.mapping.utils.MappingMessages;
 
 import net.frontlinesms.FrontlineSMS;
 import net.frontlinesms.ui.ExtendedThinlet;
@@ -20,7 +21,7 @@ import net.frontlinesms.ui.i18n.InternationalisationUtils;
 @SuppressWarnings("serial")
 public class ReportsPanelHandler extends ExtendedThinlet implements ThinletUiEventHandler {
 
-	public static MappingLogger LOG = MappingLogger.getLogger(ReportsPanelHandler.class);
+	private static MappingLogger LOG = MappingLogger.getLogger(ReportsPanelHandler.class);
 	
 	private static final String UI_PANEL_XML = "/ui/plugins/mapping/reportsPanel.xml";
 	
@@ -36,9 +37,6 @@ public class ReportsPanelHandler extends ExtendedThinlet implements ThinletUiEve
 	private final Object tblReports;
 	private final Object cbxCategories;
 	private final Object txtSearch;
-	
-	private final String SEARCH_PLACEHOLDER = "Filter incidents...";
-	private final String SHOW_ALL_CATEGORIES = "-- Show All Categories --";
 	
 	public ReportsPanelHandler(MappingPluginController pluginController, FrontlineSMS frontlineController, UiGeneratorController uiController) {
 		this.pluginController = pluginController;
@@ -68,24 +66,34 @@ public class ReportsPanelHandler extends ExtendedThinlet implements ThinletUiEve
 			}
 		}
 		ui.removeAll(cbxCategories);
-		ui.add(cbxCategories, createComboboxChoice(SHOW_ALL_CATEGORIES, null));
+		ui.add(cbxCategories, createComboboxChoice(MappingMessages.getAllCategories(), null));
 		for(Category category : categoryDao.getAllCategories(mappingSetupDao.getDefaultSetup())){
 			LOG.debug("Loading category %s", category.getTitle());
 			ui.add(cbxCategories, createComboboxChoice(category.getTitle(), category));
 		}
 		ui.setSelectedIndex(cbxCategories, 0);
-		ui.setText(txtSearch, SEARCH_PLACEHOLDER);
+		ui.setText(txtSearch, MappingMessages.getSearchIncidents());
+	}
+	
+	public void refresh() {
+		ui.removeAll(tblReports);
+		for(Incident incident: incidentDao.getAllIncidents(mappingSetupDao.getDefaultSetup())){
+			LOG.debug("Loading incident %s", incident.getTitle());
+			ui.add(tblReports, getRow(incident));
+		}
 	}
 	
 	public void search(Object textField, Object comboBox) {
 		Object selectedItem =  getSelectedItem(comboBox);
 		Category category = selectedItem != null ? getAttachedObject(selectedItem, Category.class) : null;
-		String searchText = ui.getText(textField).toLowerCase();
+		String searchText = ui.getText(textField).trim().toLowerCase();
 		LOG.debug("searchText=%s", searchText);
 		ui.removeAll(tblReports);
 		for(Incident incident: incidentDao.getAllIncidents(mappingSetupDao.getDefaultSetup())){
 			if (category == null || incident.hasCategory(category)) {
-				if ("".equalsIgnoreCase(searchText) || SEARCH_PLACEHOLDER.equalsIgnoreCase(searchText) || incident.getTitle().toLowerCase().indexOf(searchText) > -1) {
+				if (searchText.length() == 0 || 
+					searchText.equalsIgnoreCase(MappingMessages.getSearchIncidents()) || 
+					incident.getTitle().toLowerCase().indexOf(searchText) > -1) {
 					ui.add(tblReports, getRow(incident));
 				}
 			}
@@ -94,7 +102,7 @@ public class ReportsPanelHandler extends ExtendedThinlet implements ThinletUiEve
 	
 	public void focusGained(Object textfield) {
 		String searchText = ui.getText(textfield);
-		if (searchText.equalsIgnoreCase(SEARCH_PLACEHOLDER)) {
+		if (searchText.equalsIgnoreCase(MappingMessages.getSearchIncidents())) {
 			ui.setText(textfield, "");
 		}
 	}
@@ -102,7 +110,7 @@ public class ReportsPanelHandler extends ExtendedThinlet implements ThinletUiEve
 	public void focusLost(Object textfield) {
 		String searchText = ui.getText(textfield);
 		if (searchText == null || searchText.length() == 0) {
-			ui.setText(textfield, SEARCH_PLACEHOLDER);
+			ui.setText(textfield, MappingMessages.getSearchIncidents());
 		}
 	}
 	
@@ -110,12 +118,11 @@ public class ReportsPanelHandler extends ExtendedThinlet implements ThinletUiEve
 	 * Show the details of the selected report item
 	 * @param item
 	 */
-	public void showReportDetails(Object item){
-		Incident incident = (Incident)getAttachedObject(item);
-		if (incident != null) {
-			ReportDialogHandler reportDialog = new ReportDialogHandler(pluginController, frontlineController, ui);
-			reportDialog.showDialog(incident);
-		}
+	public void showReportDetails(Object table, Object item){
+		Object selectedItem = ui.getSelectedItem(table);
+		Incident incident = ui.getAttachedObject(selectedItem, Incident.class);
+		ReportDialogHandler reportDialog = new ReportDialogHandler(pluginController, frontlineController, ui);
+		reportDialog.showDialog(incident);
 	}
 	
 	/**
@@ -127,7 +134,7 @@ public class ReportsPanelHandler extends ExtendedThinlet implements ThinletUiEve
 	 */
 	public Object getRow(Incident incident){
 		Object row = createTableRow(incident);
-		createTableCell(row, incident.isMarked() == false);
+		createTableCell(row, incident.isMarked());
 		createTableCell(row, incident.isVerified());
 		createTableCell(row, incident.getTitle());
 		if (incident.getLocation() != null) {

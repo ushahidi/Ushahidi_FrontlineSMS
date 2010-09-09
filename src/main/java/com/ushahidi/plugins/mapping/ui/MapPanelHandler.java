@@ -1,17 +1,21 @@
 package com.ushahidi.plugins.mapping.ui;
 
 import java.io.File;
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.ushahidi.plugins.mapping.MappingPluginController;
+import com.ushahidi.plugins.mapping.data.domain.Category;
+import com.ushahidi.plugins.mapping.data.domain.Incident;
 import com.ushahidi.plugins.mapping.data.domain.MappingSetup;
+import com.ushahidi.plugins.mapping.data.repository.CategoryDao;
 import com.ushahidi.plugins.mapping.data.repository.IncidentDao;
 import com.ushahidi.plugins.mapping.data.repository.MappingSetupDao;
 import com.ushahidi.plugins.mapping.utils.MappingLogger;
+import com.ushahidi.plugins.mapping.utils.MappingMessages;
 
 import net.frontlinesms.FrontlineSMS;
 import net.frontlinesms.data.DuplicateKeyException;
-import net.frontlinesms.ui.DateSelecter;
 import net.frontlinesms.ui.ExtendedThinlet;
 import net.frontlinesms.ui.ThinletUiEventHandler;
 import net.frontlinesms.ui.UiGeneratorController;
@@ -21,20 +25,22 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 
 	private static final String UI_PANEL_XML = "/ui/plugins/mapping/mapPanel.xml";
 	
-	public static MappingLogger LOG = MappingLogger.getLogger(MapPanelHandler.class);	
+	private static MappingLogger LOG = MappingLogger.getLogger(MapPanelHandler.class);	
 	
 	private final MappingPluginController pluginController;
 	private final FrontlineSMS frontlineController;
 	private final UiGeneratorController ui;
 	
-	private Object mainPanel;
+	private final Object mainPanel;
 	
 	private final IncidentDao incidentDao;
+	private final CategoryDao categoryDao;
 	private final MappingSetupDao mappingSetupDao;
 	
 	private final MapBean mapBean;
 	private final Object lblCoordinates;
 	private final Object sldZoomController;
+	private final Object cbxCategories;
 	
 	public MapPanelHandler(MappingPluginController pluginController, FrontlineSMS frontlineController, UiGeneratorController uiController) {
 		this.pluginController = pluginController;
@@ -42,12 +48,14 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 		this.frontlineController = frontlineController;
 		
 		this.incidentDao = pluginController.getIncidentDao();
+		this.categoryDao = pluginController.getCategoryDao();
 		this.mappingSetupDao = pluginController.getMappingSetupDao();
 		
 		this.mainPanel = this.ui.loadComponentFromFile(UI_PANEL_XML, this);
 		this.mapBean = (MapBean)get(this.find(this.mainPanel, "mapBean"), BEAN);
 		this.lblCoordinates = this.ui.find(this.mainPanel, "lblCoordinates");
 		this.sldZoomController = this.ui.find(this.mainPanel, "sldZoomController");
+		this.cbxCategories = this.ui.find(this.mainPanel, "cbxCategories");
 	}
 	
 	public Object getMainPanel() {
@@ -55,6 +63,13 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 	}
 	
 	public void init() {
+		ui.removeAll(cbxCategories);
+		ui.add(cbxCategories, createComboboxChoice(MappingMessages.getAllCategories(), null));
+		for(Category category : categoryDao.getAllCategories(mappingSetupDao.getDefaultSetup())){
+			LOG.debug("Loading category %s", category.getTitle());
+			ui.add(cbxCategories, createComboboxChoice(category.getTitle(), category));
+		}
+		ui.setSelectedIndex(cbxCategories, 0);
 		if(mappingSetupDao.getDefaultSetup() != null) {
 			MappingSetup defaultSetup = mappingSetupDao.getDefaultSetup();
 			double latitude = defaultSetup.getLatitude();
@@ -78,28 +93,43 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 					}					
 				}
 			}
-			// Get the current zoom level from the slider
-//			int zoomLevel = getInteger(getZoomController(), ExtendedThinlet.VALUE);
-//			mapBean.setZoomLevel(zoomLevel);
 			mapBean.setLocation(longitude, latitude);			
 			mapBean.setIncidents(incidentDao.getAllIncidents(defaultSetup));
 			mapBean.addMapListener(this);
 			mapBean.setMapPanelHandler(this);
 		} 
 		else {
-			//The mapping plugin has not been configured; therefore disable the zoom controller
 			ui.setEnabled(sldZoomController, false);
 		}
 	}
 	
+	public void refresh() {
+		if (mapBean != null) {
+			mapBean.setIncidents(incidentDao.getAllIncidents(mappingSetupDao.getDefaultSetup()));	
+		}
+	}
+	
 	public void destroyMap() {
-		if (this.mapBean != null) {
-			this.mapBean.destroyMap();
+		if (mapBean != null) {
+			mapBean.destroyMap();
 		}
 	}
 	
 	public void addMapListener(MapListener listener) {
-		this.mapBean.addMapListener(listener);
+		mapBean.addMapListener(listener);
+	}
+	
+	public void search(Object comboBox) {
+		Object selectedItem =  getSelectedItem(comboBox);
+		Category category = selectedItem != null ? getAttachedObject(selectedItem, Category.class) : null;
+		LOG.debug("category=%s", category);
+		List<Incident> incidents = new ArrayList<Incident>();
+		for(Incident incident: incidentDao.getAllIncidents(mappingSetupDao.getDefaultSetup())){
+			if (category == null || incident.hasCategory(category)) {
+				incidents.add(incident);
+			}
+		}
+		mapBean.setIncidents(incidents);
 	}
 	
 	/**
@@ -113,7 +143,6 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 	/** @see {@link MapListener#mapZoomed(int)} */
 	public void mapZoomed(int zoom){
 	    LOG.info("Updating zoom controller to level " + zoom);
-	    // Update the zoom slider to reflect the current zoom level
 	    ui.setInteger(sldZoomController, VALUE, zoom);
 	}
 	
@@ -124,15 +153,15 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 	 */
 	public void zoomMap(Object zoomController){
 		int currentZoom = mapBean.getCurrentZoomLevel();		
-		int zoomVal = getInteger(zoomController, ExtendedThinlet.VALUE);
+		int zoomValue = getInteger(zoomController, ExtendedThinlet.VALUE);
 		// Adjust the zooming bar so that it moves in steps of 1 only
-		if(currentZoom < zoomVal){
-			ui.setInteger(zoomController, ExtendedThinlet.VALUE, zoomVal-1);
+		if(currentZoom < zoomValue){
+			ui.setInteger(zoomController, ExtendedThinlet.VALUE, zoomValue - 1);
 		}
-		else if (currentZoom > zoomVal){
-			ui.setInteger(zoomController, ExtendedThinlet.VALUE, zoomVal + 1);
+		else if (currentZoom > zoomValue){
+			ui.setInteger(zoomController, ExtendedThinlet.VALUE, zoomValue + 1);
 		}
-		mapBean.zoomMap(zoomVal);
+		mapBean.zoomMap(zoomValue);
 	}
 	
 	/**
@@ -156,46 +185,11 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 	}
 	
 	/**
-	 * Displays the date selector
-	 * 
-	 * @param textField
-	 */
-	public void showDateSelector(Object textField) {
-		LOG.trace("ENTER");
-		try {
-			new DateSelecter(ui, textField).showSelecter();
-		} 
-		catch (IOException e) {
-			LOG.error("Error parsing file for dateSelecter", e);
-			throw new RuntimeException(e);
-		}
-		LOG.trace("EXIT");
-	}	
-	
-	/**
 	 * Show the map save dialog
 	 */
 	public void saveMap() {
 		MapSaveDialogHandler mapSaveDialog = new MapSaveDialogHandler(pluginController, frontlineController, ui);
-		mapSaveDialog.showDialog(this.mapBean);
+		mapSaveDialog.showDialog(mapBean);
 	}
 	
-	public void incidentFilterDateChanged() {		
-	}
-	
-	public void showClusteredData () {
-		LOG.debug("showClusteredData");
-	}
-	
-	public void showPointData() {
-		LOG.debug("showPointData");
-	}
-	
-	public void fromDateChanged(Object textField) {
-		LOG.debug("fromDateChanged: " + this.ui.getText(textField));
-	}
-	
-	public void toDateChanged(Object textField) {
-		LOG.debug("toDateChanged: " + this.ui.getText(textField));
-	}
 }
