@@ -30,11 +30,11 @@ public class FormsManager extends Manager {
 
 	public static MappingLogger LOG = MappingLogger.getLogger(FormsManager.class);	
 	
-	private FormDao formDao;
+	private final FormDao formDao;
 	private final CategoryDao categoryDao;
 	private final MappingSetupDao mappingSetupDao;	
 
-	private FormsPluginController formsPluginController;
+	private final FormsPluginController formsPluginController;
 	private final Map<String, FormField> fieldDictionary = new HashMap<String, FormField>();
 	
 	/**
@@ -61,9 +61,6 @@ public class FormsManager extends Manager {
 		LOG.debug("createUshahidiForms");
 		try {
 			String formName = MappingMessages.getIncidentReport();
-			if (this.formDao == null) {
-				this.formDao = this.formsPluginController.getFormDao();
-			}
 			for(Form form : this.formDao.getAllForms()) {
 				if (form.getName().equalsIgnoreCase(formName)) {
 					for (FormField formField : form.getFields()) {

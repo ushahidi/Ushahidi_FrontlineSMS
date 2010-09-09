@@ -18,7 +18,7 @@ import com.ushahidi.plugins.mapping.data.repository.IncidentDao;
 import com.ushahidi.plugins.mapping.data.repository.LocationDao;
 import com.ushahidi.plugins.mapping.data.repository.MappingSetupDao;
 import com.ushahidi.plugins.mapping.managers.FormsManager;
-import com.ushahidi.plugins.mapping.managers.OperatorManager;
+import com.ushahidi.plugins.mapping.managers.SurveysManager;
 import com.ushahidi.plugins.mapping.sync.SynchronizationCallback;
 import com.ushahidi.plugins.mapping.sync.SynchronizationManager;
 import com.ushahidi.plugins.mapping.utils.MappingLogger;
@@ -58,8 +58,10 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
 	private final Object btnSave;
 	private final Object btnDelete;
 	private final Object btnCancel;
+	private final Object btnCreateForm;
+	private final Object btnCreateSurvey;
 	
-	private boolean shouldSynchronize;
+	private SyncDialogHandler syncDialog;
 	
 	public SetupDialogHandler(MappingPluginController pluginController, FrontlineSMS frontlineController, UiGeneratorController uiController) {
 		this.pluginController = pluginController;
@@ -81,29 +83,35 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
 		this.btnSave = ui.find(this.mainDialog, "btnSave");
 		this.btnDelete = ui.find(this.mainDialog, "btnDelete");
 		this.btnCancel = ui.find(this.mainDialog, "btnCancel");
+		this.btnCreateForm = ui.find(this.mainDialog, "btnCreateForm");
+		this.btnCreateSurvey = ui.find(this.mainDialog, "btnCreateSurvey");
 	}
 	
 	public void showDialog() {
 		if (mappingSetupDao.getCount() > 0){
 			ui.removeAll(tblSources);
 			for(MappingSetup setup: mappingSetupDao.getAllSetupItems()) {
-				add(tblSources, getRow(setup));
+				ui.add(tblSources, getRow(setup));
 			}
+			ui.setEnabled(this.btnCreateForm, true);
+			ui.setEnabled(this.btnCreateSurvey, true);
 		}
-		shouldSynchronize = false;
+		else {
+			ui.setEnabled(this.btnCreateForm, false);
+			ui.setEnabled(this.btnCreateSurvey, false);
+		}
 		ui.add(this.mainDialog);	
 	}
 	
 	public void removeDialog(Object dialog) {
 		ui.remove(dialog);
-		if (shouldSynchronize) {
-			ui.showConfirmationDialog("beginSynchronization", this, CONFIRM_SYNCHRONIZE_KEY);
-		}
 	}
 	
 	public void beginSynchronization() {
 		ui.removeConfirmationDialog();
-		pluginController.beginSynchronization();
+		String sourceURL = this.mappingSetupDao.getDefaultSetup().getSourceURL();
+		SynchronizationManager syncManager = new SynchronizationManager(this, sourceURL);	
+		syncManager.performFullSynchronization(null);
 	}
 	
 	public void showConfirmationDialog(String methodToBeCalled) {
@@ -248,9 +256,7 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
 		
 		boolean sourceDefault = getBoolean(chkSourceDefault, Thinlet.SELECTED);
 		if (sourceDefault) {
-			shouldSynchronize = true;
-			SynchronizationManager syncManager = new SynchronizationManager(this, sourceURL);	
-			syncManager.downloadGeoMidpoint();
+			ui.showConfirmationDialog("beginSynchronization", this, CONFIRM_SYNCHRONIZE_KEY);
 		}
 		if(currentDefault == null && sourceDefault == false){
 			LOG.debug("Default mapping setup not specified");
@@ -309,8 +315,8 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
 	
 	public void createSurveyQuestions() {
 		LOG.debug("createSurveyQuestions");
-		OperatorManager operatorManager = new OperatorManager(frontlineController, pluginController);
-        if(operatorManager.addUshahidiFields()) {
+		SurveysManager surveysManager = new SurveysManager(frontlineController, pluginController);
+        if(surveysManager.addUshahidiQuestions()) {
         	ui.alert(MappingMessages.getSurveyCreated());
         }
         else {
@@ -350,19 +356,78 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
 		pluginController.showIncidentMap();
 	}
 
-	public void synchronizationFinished() {}
+	public void synchronizationFinished() {
+		boolean hasMappingSetup = mappingSetupDao.getCount() > 0;
+		ui.setEnabled(this.btnCreateForm, hasMappingSetup);
+		ui.setEnabled(this.btnCreateSurvey, hasMappingSetup);
+		syncDialog.hideDialog();
+	}
 
-	public void synchronizationStarted(int tasks) {}
+	public void synchronizationStarted(int tasks) {
+		if (syncDialog == null) {
+			syncDialog = new SyncDialogHandler(pluginController, frontlineController, ui);	
+		}
+		syncDialog.setProgress(tasks, 1);
+		syncDialog.showDialog();
+	}
 
-	public void synchronizationUpdated(int tasks, int completed) {}
+	public void synchronizationUpdated(int tasks, int completed) {
+		syncDialog.setProgress(tasks, completed);	
+	}
 	
-	public void synchronizationFailed(String error) {}
+	public void synchronizationFailed(String error) {
+		boolean hasMappingSetup = mappingSetupDao.getCount() > 0;
+		ui.setEnabled(this.btnCreateForm, hasMappingSetup);
+		ui.setEnabled(this.btnCreateSurvey, hasMappingSetup);
+		syncDialog.hideDialog();
+		this.ui.alert(error);
+	}
 	
-	public void downloadedCategory(Category category) {}
+	public void downloadedCategory(Category category) {
+		LOG.debug("downloadedCategory: %s", category);
+		if (category != null) {
+			category.setMappingSetup(mappingSetupDao.getDefaultSetup());
+			try{
+				categoryDao.saveCategory(category);			
+			}
+			catch(DuplicateKeyException e){
+				LOG.debug("Category already exists", e);
+			}	
+		}
+	}
 
-	public void downloadedIncident(Incident incident) {}
+	public void downloadedIncident(Incident incident) {
+		LOG.debug("downloadedIncident: %s", incident);
+		if (incident != null) {
+			long frontendId = incident.getLocation().getFrontendId();
+			Location location = locationDao.findLocation(frontendId, mappingSetupDao.getDefaultSetup());
+			if(location == null){
+				downloadedLocation(incident.getLocation());
+				location = locationDao.findLocation(frontendId, mappingSetupDao.getDefaultSetup());
+			}
+			incident.setLocation(location);
+			incident.setMappingSetup(mappingSetupDao.getDefaultSetup());
+			try {
+				incidentDao.saveIncident(incident);
+			} 
+			catch (DuplicateKeyException e) {
+				LOG.debug("Incident already exists", e);
+			}	
+		}
+	}
 
-	public void downloadedLocation(Location location) {}
+	public void downloadedLocation(Location location) {
+		LOG.debug("downloadedLocation: %s", location);
+		if (location != null) {
+			location.setMappingSetup(mappingSetupDao.getDefaultSetup());
+			try{
+				locationDao.saveLocation(location);
+			}
+			catch(DuplicateKeyException e){			
+				LOG.debug("Location already exists", e);
+			}			
+		}
+	}
 
 	public void uploadedIncident(Incident incident) {}
 }

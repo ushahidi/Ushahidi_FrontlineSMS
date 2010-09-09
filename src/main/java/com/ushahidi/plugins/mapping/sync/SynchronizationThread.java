@@ -71,7 +71,9 @@ public class SynchronizationThread extends Thread{
 		this.syncManager = syncManager;
 		this.baseURL = syncURL;
 		this.pendingIncidents.clear();
-		this.pendingIncidents.addAll(pending);
+		if (pending != null) {
+			this.pendingIncidents.addAll(pending);	
+		}
 	}
 	
 	/**

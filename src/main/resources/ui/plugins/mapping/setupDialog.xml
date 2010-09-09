@@ -23,10 +23,10 @@
 		</panel>
 	</panel>
 	<panel text="i18n.plugins.ushahidi.setup.forms" border="true" columns="1" gap="5" weightx="1" top="9" left="9" bottom="9" right="9">
-		<button text="i18n.plugins.ushahidi.setup.forms.button" icon="/icons/form_add.png" weightx="1" action="createFormFields"/>
+		<button name="btnCreateForm"  text="i18n.plugins.ushahidi.setup.forms.button" icon="/icons/form_add.png" weightx="1" action="createFormFields"/>
 	</panel>
 	<panel text="i18n.plugins.ushahidi.setup.surveys" border="true" columns="1" gap="5" weightx="1" top="9" left="9" bottom="9" right="9">
-		<button text="i18n.plugins.ushahidi.setup.surveys.button" icon="/icons/field_add.png" weightx="1" action="createSurveyQuestions"/>
+		<button name="btnCreateSurvey" text="i18n.plugins.ushahidi.setup.surveys.button" icon="/icons/question_add.png" weightx="1" action="createSurveyQuestions"/>
 	</panel>
 	<button icon="/icons/cross.png" text="i18n.action.close" weightx="1" action="removeDialog(dlgSetup)"/>
 </dialog>
