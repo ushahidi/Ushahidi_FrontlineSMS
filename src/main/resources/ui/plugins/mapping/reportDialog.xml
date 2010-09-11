@@ -23,7 +23,7 @@
 			<checkbox name="cbxNewLocation" text="i18n.plugins.ushahidi.location.new" group="location" action="showNewLocation"/>
 			
 			<panel name="pnlExistingLocation" colspan="2" columns="1" weightx="1" visible="true">
-				<combobox name="cboReportLocations" columns="25" editable="false" weightx="1" action="locationChanged(this,txtReportCoordinates)"></combobox>
+				<combobox name="cboReportLocations" editable="false" weightx="1" action="locationChanged(this,txtReportCoordinates)"></combobox>
 			</panel>
 			<panel name="pnlNewLocation" colspan="2" columns="2" weightx="1" gap="5" visible="false">
 				<textfield name="txtNewLocation" weightx="1" editable="true" />

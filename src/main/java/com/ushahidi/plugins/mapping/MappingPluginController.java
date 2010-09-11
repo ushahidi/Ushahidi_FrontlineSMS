@@ -8,8 +8,6 @@ import com.ushahidi.plugins.mapping.ui.MappingUIController;
 import com.ushahidi.plugins.mapping.utils.MappingLogger;
 
 import net.frontlinesms.FrontlineSMS;
-import net.frontlinesms.data.domain.FrontlineMessage;
-import net.frontlinesms.listener.IncomingMessageListener;
 import net.frontlinesms.plugins.BasePluginController;
 import net.frontlinesms.plugins.PluginControllerProperties;
 import net.frontlinesms.plugins.PluginInitialisationException;
@@ -25,7 +23,7 @@ import org.springframework.context.ApplicationContext;
 @PluginControllerProperties(name="Mapping (Beta)", iconPath="/icons/map.png", i18nKey = "plugins.ushahidi",
         springConfigLocation="classpath:com/ushahidi/plugins/mapping/mapping-spring-hibernate.xml",
         hibernateConfigPath="classpath:com/ushahidi/plugins/mapping/mapping.hibernate.cfg.xml")
-public class MappingPluginController extends BasePluginController implements IncomingMessageListener {
+public class MappingPluginController extends BasePluginController {
     private static MappingLogger LOG = MappingLogger.getLogger(MappingPluginController.class);	
 
     private FrontlineSMS frontlineController;
@@ -47,8 +45,7 @@ public class MappingPluginController extends BasePluginController implements Inc
     public void init(FrontlineSMS frontlineController, ApplicationContext applicationContext) 
     throws PluginInitialisationException {
         this.frontlineController = frontlineController;
-        this.frontlineController.addIncomingMessageListener(this);
-
+       
         try{
             locationDao = (LocationDao)applicationContext.getBean("locationDao");
             incidentDao = (IncidentDao)applicationContext.getBean("incidentDao");
@@ -66,9 +63,6 @@ public class MappingPluginController extends BasePluginController implements Inc
     }
 
     public void deinit() {
-    	if (frontlineController != null) {
-            frontlineController.removeIncomingMessageListener(this);
-    	}
     	if (mappingUIController != null) {
             mappingUIController.shutdownUIController();
     	}
@@ -80,12 +74,7 @@ public class MappingPluginController extends BasePluginController implements Inc
         return mappingUIController.getTab();
     }
 
-    public void incomingMessageEvent(FrontlineMessage message) {
-        LOG.debug("Incident report received");
-        mappingUIController.handleIncomingMessage(message);
-    }
-
-    public LocationDao getLocationDao(){
+        public LocationDao getLocationDao(){
         return locationDao;
     }
 

@@ -51,7 +51,7 @@ public class InMemoryCategoryDao implements CategoryDao {
 		return allCategories.size();
 	}
 
-	public Category findCategory(long frontendId, MappingSetup setup) {
+	public Category findCategory(long serverId, MappingSetup setup) {
 		// TODO Auto-generated method stub
 		return null;
 	}

@@ -1,28 +1,55 @@
 package com.ushahidi.plugins.mapping.data.domain;
 
 import java.awt.Color;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
+import javax.persistence.JoinColumn;
+
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.CollectionOfElements;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+import org.hibernate.annotations.MapKey;
+import org.hibernate.annotations.Type;
 
 import net.frontlinesms.data.EntityField;
 
 
 @Entity
-@Table(uniqueConstraints={@UniqueConstraint(columnNames={"id","mappingSetup_id"})})
-public class Incident {
+@Table(uniqueConstraints={@UniqueConstraint(columnNames={"incident_id","mappingSetup_id"})})
+public class Incident implements Serializable {
 	
-//>	COLUMN NAME CONSTANTS
-	/** Column name for {@link #frontendId} */
-	private static final String FIELD_FRONTEND_ID = "frontendId";
+	public Incident() {
+		this.categories = new ArrayList<Category>();
+	}
+	
+	private static final long serialVersionUID = 1L;
+	//>	COLUMN NAME CONSTANTS
+	/** Column name for {@link #id} */
+	private static final String FIELD_ID = "incident_id";
+	/** Column name for {@link #serverId} */
+	private static final String FIELD_SERVER_ID = "serverId";
 	/** Column name for {@link #title} */
 	private static final String FIELD_TITLE = "title";
 	/** Column name for {@link #description} */
 	private static final String FIELD_DESCRIPTION = "description";
 	/** Column name for {@link #incidentDate} */
-	private static final String FIELD_INCIDENT_DATE = "incidentDate";
+	private static final String FIELD_INCIDENT_DATE = "incident_date";
 	/** Column name for  {@link #marked} */
 	private static final String FIELD_MARKED = "marked";
 	/** Column name for {@link #active} */
@@ -31,22 +58,26 @@ public class Incident {
 	private static final String FIELD_VERIFIED  = "verified";
 	/** Column name for {@link #categories} */
 	private static final String FIELD_CATEGORIES  = "categories";
+	/** Column name for {@link #mappingSetup} */
+	private static final String FIELD_MAPPING="mappingSetup";
+	/** Column name for {@link #mappingSetup} */
+	private static final String FIELD_MAPPING_ID="mappingSetup_id";
 	
-	/** Column name for {@link #firstName} */
-	private static final String FIELD_FIRST_NAME = "firstName";
-	/** Column name for {@link #lastName} */
-	private static final String FIELD_LAST_NAME = "lastName";
-	/** Column name for {@link #emailAddress } */
-	private static final String FIELD_EMAIL = "emailAddress";
-	/** Column name for {@link #phoneNumber} */
-	private static final String FIELD_PHONE_NUMBER = "phoneNumber";
+//	/** Column name for {@link #firstName} */
+//	private static final String FIELD_FIRST_NAME = "firstName";
+//	/** Column name for {@link #lastName} */
+//	private static final String FIELD_LAST_NAME = "lastName";
+//	/** Column name for {@link #emailAddress } */
+//	private static final String FIELD_EMAIL = "emailAddress";
+//	/** Column name for {@link #phoneNumber} */
+//	private static final String FIELD_PHONE_NUMBER = "phoneNumber";
 	
-	
-//>	ENTITY DETAILS
 	/** Field mapping for the properties contained in this class/entity */
 	public enum Field implements EntityField<Incident>{
-		/** Field mapping for {@link Incident#frontendid} */
-		FRONTEND_ID(FIELD_FRONTEND_ID),
+		/** Field mapping for {@link Incident#id} */
+		ID(FIELD_ID),
+		/** Field mapping for {@link Incident#servedId} */
+		SERVER_ID(FIELD_SERVER_ID),
 		/** Field mapping for {@link Incident#title} */
 		TITLE(FIELD_TITLE),
 		/** Field mapping for {@link Incident#description} */
@@ -62,7 +93,9 @@ public class Incident {
 		/** Field mapping for {@link Incident#catergories} */
 		CATEGORIES(FIELD_CATEGORIES),
 		/** Field mapping for {@link Incident#mappingSetup} */
-		MAPPING_SETUP("mappingSetup");
+		MAPPING_SETUP(FIELD_MAPPING),
+		/** Field mapping for {@link Incident#mappingSetup} */
+		MAPPING_SETUP_ID(FIELD_MAPPING_ID);
 		
 		/** name of a field */
 		private final String fieldName;
@@ -77,13 +110,14 @@ public class Incident {
 	}
 	
 //>	INSTANCE PROEPRTIES
-	@Id @GeneratedValue(strategy=GenerationType.IDENTITY)
-	@Column(unique=true, nullable=false, updatable=false)
+	@Id 
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@Column(name=FIELD_ID, unique=true, nullable=false, updatable=false)
 	private long id;
 	
-	/** Id of this Incident from the frontend */
-	@Column(name=FIELD_FRONTEND_ID)
-	private long frontendId;
+	/** Id of this Incident from the server */
+	@Column(name=FIELD_SERVER_ID, nullable=true)
+	private long serverId;
 	
 	/** Title of this incident */
 	@Column(name=FIELD_TITLE)
@@ -110,11 +144,26 @@ public class Incident {
 	private Date incidentDate;
 	
 	/** Categories of this incident */
-	@OneToMany(cascade=CascadeType.ALL, fetch=FetchType.EAGER)
-	private final List<Category> categories = new ArrayList<Category>();
+	//@JoinTable(name="incident_category")
+	//@Cascade({org.hibernate.annotations.CascadeType.DELETE, org.hibernate.annotations.CascadeType.DELETE_ORPHAN})
+	//@JoinTable(name="incident_category", joinColumns={@JoinColumn(name=FIELD_ID),@JoinColumn(name=FIELD_CATEGORY_ID)})
+//	@CollectionOfElements(targetElement=Category.class, fetch=FetchType.EAGER)
+//	@JoinTable(name="incident_category", joinColumns={@JoinColumn(name=FIELD_ID)})
+//	@MapKey(columns={@Column(name="category_id")})
+//	@Column(name="category", nullable=true, insertable=true, updatable=true)  
+//	@Fetch (FetchMode.SELECT)
+//	@Cascade({org.hibernate.annotations.CascadeType.ALL})
+	
+	@CollectionOfElements(targetElement=Category.class, fetch=FetchType.EAGER)
+	@JoinTable(name = "incident_category", 
+				joinColumns={@JoinColumn(name="incident_id")},
+				inverseJoinColumns={@JoinColumn(name="category_id")},
+				uniqueConstraints={@UniqueConstraint(columnNames={"incident_id","category_id"})})
+	@Cascade({org.hibernate.annotations.CascadeType.ALL})
+	private List<Category> categories;
 	
 	/** Location of this incident */
-	@ManyToOne
+	@ManyToOne(cascade=CascadeType.ALL)
 	private Location location;
 	
 	/** MappingSetup associated with this incident */
@@ -141,17 +190,17 @@ public class Incident {
 	 * Sets the id of this incident fetched from the frontend
 	 * @param id
 	 */
-	public void setFrontendId(long id){
-		this.frontendId = id;
+	public void setServerId(long serverId){
+		this.serverId = serverId;
 	}
 	
 	/**
 	 * Gets the frontend id of this incident. If the incident has been created from the desktop application,
 	 * this value is null. The application shall have to be sync'd so that this value can be set
-	 * @return {@link #frontendId}
+	 * @return {@link #serverId}
 	 */
-	public long getFrontendId(){
-		return this.frontendId;
+	public long getServerId(){
+		return this.serverId;
 	}
 	
 	/**
@@ -236,10 +285,22 @@ public class Incident {
 	 * Sets the categories of this incident
 	 * @param c
 	 */
-	public void setCategories(List<Category> c) {
+	public void setCategories(List<Category> categoryList) {
 		this.categories.clear();
-		if (c != null) {
-			this.categories.addAll(c);	
+		if (categoryList != null) {
+			this.categories.addAll(categoryList);	
+		}
+	}
+	
+	public void removeCategory(Category category) {
+		if (this.categories != null) {
+			this.categories.remove(category);
+		}
+	}
+	
+	public void removeCategories() {
+		if (this.categories != null) {
+			this.categories.removeAll(this.categories);
 		}
 	}
 	
@@ -248,9 +309,11 @@ public class Incident {
 	}
 	
 	public boolean hasCategory(Category category) {
-		for (Category c : this.categories) {
-			if (c.getFrontendId() == category.getFrontendId()) {
-				return true;
+		if (this.categories != null) {
+			for (Category c : this.categories) {
+				if (c.getServerId() == category.getServerId()) {
+					return true;
+				}
 			}
 		}
 		return false;
@@ -258,30 +321,36 @@ public class Incident {
 	
 	public String getCategoryNames() {
 		StringBuilder sb = new StringBuilder();
-		for(Category category: this.categories) {
-			if (sb.length() > 0) {
-				sb.append(",");
+		if (this.categories != null) {
+			for(Category category: this.categories) {
+				if (sb.length() > 0) {
+					sb.append(",");
+				}
+				sb.append(category.getTitle());
 			}
-			sb.append(category.getTitle());
 		}
 		return sb.toString();
 	}
 	
 	public String getCategoryIDs() {
 		StringBuilder sb = new StringBuilder();
-		for(Category category: this.categories) {
-			if (sb.length() > 0) {
-				sb.append(",");
+		if (this.categories != null) {
+			for(Category category: this.categories) {
+				if (sb.length() > 0) {
+					sb.append(",");
+				}
+				sb.append(category.getServerId());
 			}
-			sb.append(category.getFrontendId());
 		}
 		return sb.toString();
 	}
 	
 	public Color getCategoryColor() {
-		for(Category category: this.categories) {
-			if (category.getColor() != null) {
-				return category.getColor();
+		if (this.categories != null) {
+			for(Category category: this.categories) {
+				if (category.getColor() != null) {
+					return category.getColor();
+				}
 			}
 		}
 		return Color.RED;
@@ -339,8 +408,8 @@ public class Incident {
 	 * Sets the mapping setup item associated with this incident
 	 * @param setup
 	 */
-	public void setMappingSetup(MappingSetup setup){
-		this.mappingSetup = setup;
+	public void setMappingSetup(MappingSetup mappingSetup){
+		this.mappingSetup = mappingSetup;
 	}
 	
 	/**

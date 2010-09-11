@@ -17,13 +17,13 @@ public interface CategoryDao {
 	
 	public void saveCategory(Category category) throws DuplicateKeyException;
 	
-	public void saveCategory(List<Category> categories);
+	public void saveCategory(List<Category> categories) throws DuplicateKeyException;
 	
 	public void flush();
 	
 	public int getCount();
 	
-	public Category findCategory(long frontendId, MappingSetup setup);
+	public Category findCategory(long serverId, MappingSetup setup);
 	
 	public Category getCategory(long id);
 

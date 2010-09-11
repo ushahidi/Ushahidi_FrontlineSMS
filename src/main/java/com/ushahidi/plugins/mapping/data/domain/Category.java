@@ -1,10 +1,9 @@
 package com.ushahidi.plugins.mapping.data.domain;
 
 import java.awt.Color;
+import java.io.Serializable;
 
 import javax.persistence.*;
-
-import org.hibernate.annotations.Cascade;
 
 import net.frontlinesms.data.EntityField;
 
@@ -14,24 +13,33 @@ import net.frontlinesms.data.EntityField;
  *
  */
 @Entity
-@Table(uniqueConstraints={@UniqueConstraint(columnNames={"frontendId","mappingSetup_id"})})
-public class Category {
+@Table(uniqueConstraints={@UniqueConstraint(columnNames={"category_id","mappingSetup_id"})})
+public class Category implements Serializable {
 	
-//> COLUMN NAME CONSTANTS
-	/** Column name {@link #frontendId} */
-	private static final String FIELD_FRONTEND_ID = "frontendId";
+	private static final long serialVersionUID = 1L;
+	//> COLUMN NAME CONSTANTS
+	/** Column name {@link #id} */
+	private static final String FIELD_ID = "category_id";
+	/** Column name {@link #serverId} */
+	private static final String FIELD_SERVER_ID = "serverId";
 	/** Column name for {@link #title} */
 	private static final String FIELD_TITLE = "title";
 	/** Column name for {@link #description} */
 	private static final String FIELD_DESCRIPTION = "description";
 	/** Column name for {@link #color} */
 	private static final String FIELD_COLOR = "color";
+	/** Column name for {@link #mappingSetup} */
+	private static final String FIELD_MAPPING="mappingSetup";
+	/** Column name for {@link #mappingSetup} */
+	private static final String FIELD_MAPPING_ID="mappingSetup_id";
 	
 //>	ENTITY FIELDS
 	/** Details of the fields that this class has*/
 	public enum Field implements EntityField<Category>{
-		/** Field mapping for {@link Category#frontendId} */
-		FRONTEND_ID(FIELD_FRONTEND_ID),
+		/** Field mapping for {@link Category#id} */
+		ID(FIELD_ID),
+		/** Field mapping for {@link Category#servedId} */
+		SERVER_ID(FIELD_SERVER_ID),
 		/** Field mapping for {@link Category#title} */
 		TITLE(FIELD_TITLE),
 		/** Field mapping for {@link Category#description} */
@@ -39,7 +47,9 @@ public class Category {
 		/** Field mapping for {@link Category#color} */
 		COLOR(FIELD_COLOR),
 		/** Field mapping for {@link Category#mappingSetup} */
-		MAPPING_SETUP("mappingSetup");
+		MAPPING_SETUP(FIELD_MAPPING),
+		/** Field mapping for {@link Category#mappingSetup} */
+		MAPPING_SETUP_ID(FIELD_MAPPING_ID);
 		/** name of a field */
 		private final String fieldName;		
 		/**
@@ -53,12 +63,13 @@ public class Category {
 	
 //>	INSTANCE PROPERTIES
 	/** Unique id for this entity */
-	@Id @GeneratedValue(strategy=GenerationType.IDENTITY)
-	@Column(unique=true,nullable=false,updatable=false)
+	@Id 
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@Column(name=FIELD_ID, unique=true, nullable=false, updatable=false)
 	private long id;
 	
-	@Column(name=FIELD_FRONTEND_ID)
-	private long frontendId;
+	@Column(name=FIELD_SERVER_ID, nullable=true)
+	private long serverId;
 	
 	/** Title of this category */
 	@Column(name=FIELD_TITLE)
@@ -68,9 +79,10 @@ public class Category {
 	@Column(name=FIELD_DESCRIPTION)
 	private String description;
 	
-	@ManyToOne(cascade=CascadeType.ALL)
+	@ManyToOne
 	private MappingSetup mappingSetup;
 	
+	@Column(name=FIELD_COLOR)
 	private Color color;
 	
 	/**
@@ -93,16 +105,16 @@ public class Category {
 	 * Sets the id fetched from the frontend i.e. the online instance
 	 * @param id
 	 */
-	public void setFrontendId(long id){
-		this.frontendId = id;
+	public void setServerId(long serverId){
+		this.serverId = serverId;
 	}
 	
 	/**
 	 * 
-	 * @return {@link #frontendId}
+	 * @return {@link #serverId}
 	 */
-	public long getFrontendId(){
-		return this.frontendId;
+	public long getServerId(){
+		return this.serverId;
 	}
 	
 	/**
@@ -121,6 +133,12 @@ public class Category {
 		return title;
 	}
 	
+	public String getDisplayName(){
+		return (description != null && description.trim().equalsIgnoreCase(title.trim()) == false) 
+			? String.format("%s (%s)", title, description) 
+			: title;
+	}
+	
 	/**
 	 * Sets the category's description
 	 * @param description
@@ -137,8 +155,8 @@ public class Category {
 		return description;
 	}
 	
-	public void setMappingSetup(MappingSetup setup){
-		this.mappingSetup = setup;
+	public void setMappingSetup(MappingSetup mappingSetup){
+		this.mappingSetup = mappingSetup;
 	}
 	
 	public MappingSetup getMappingSetup(){

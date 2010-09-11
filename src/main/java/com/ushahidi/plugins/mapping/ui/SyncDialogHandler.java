@@ -39,31 +39,25 @@ public class SyncDialogHandler extends ExtendedThinlet implements ThinletUiEvent
 	}
 	
 	public void showDialog() {
-		setText(lblCurrentTask, "1");
-		setText(lblTotalTasks, "1");
-		this.ui.add(this.mainDialog);
+		ui.setText(lblCurrentTask, "1");
+		ui.setText(lblTotalTasks, "1");
+		ui.add(mainDialog);
 	}
 	
 	public void hideDialog() {
-		this.ui.remove(this.mainDialog);
+		ui.remove(mainDialog);
 	}
 	
 	/**
 	 * Updates the current value of the synchronization progress bar
 	 * 
-	 * @param dialog
-	 * @param taskNo
 	 */
 	public synchronized void setProgress(int tasks, int completed){
-		setText(lblCurrentTask, Integer.toString(completed));
-		setText(lblTotalTasks, Integer.toString(tasks));
-		
-		int currentValue = getInteger(pbarSynchronization, Thinlet.VALUE);
-		int maxValue = getInteger(pbarSynchronization, Thinlet.MAXIMUM);
-		currentValue += (completed <= tasks) ? (maxValue - currentValue) / tasks : (maxValue - currentValue);
-		setInteger(pbarSynchronization, Thinlet.VALUE, currentValue);
-		
-		ui.repaint();
+		int maximum = getInteger(pbarSynchronization, Thinlet.MAXIMUM);
+		float progress = (completed <= tasks) ? ((float)completed / (float)tasks) * (float)maximum : (float)maximum;
+		ui.setInteger(pbarSynchronization, Thinlet.VALUE, Math.round(progress));
+		ui.setText(lblCurrentTask, Integer.toString(completed));
+		ui.setText(lblTotalTasks, Integer.toString(tasks));
 	}
 	
 	public void removeDialog(Object dialog) {
@@ -71,6 +65,6 @@ public class SyncDialogHandler extends ExtendedThinlet implements ThinletUiEvent
 	}
 	
 	public void removeDialog() {
-		ui.remove(this.mainDialog);
+		ui.remove(mainDialog);
 	}
 }

@@ -12,7 +12,9 @@ import java.text.SimpleDateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 
 import org.json.JSONObject;
@@ -48,6 +50,8 @@ public class SynchronizationThread extends Thread{
 	private ArrayBlockingQueue<SynchronizationTask> taskQueue = new ArrayBlockingQueue<SynchronizationTask>(10);
 	
 	private final List<Incident> pendingIncidents = new ArrayList<Incident>();
+	private final Map<Long, Location> locations = new HashMap<Long, Location>();
+	private final Map<Long, Category> categories = new HashMap<Long, Category>();
 	
 	/**
 	 * Creates an instance of SynchronizationThread
@@ -96,7 +100,12 @@ public class SynchronizationThread extends Thread{
 					taskBuffer.append(task.getRequestParameter());
 				}
 				if(task.getTaskType().equalsIgnoreCase(SynchronizationAPI.PULL_TASK)){
-					if(task.getTaskValues().size() == 0) performPullTask(); else multiplePullTask(task.getTaskValues());
+					if(task.getTaskValues().size() == 0) { 
+						performPullTask(); 
+					}
+					else {
+						multiplePullTask(task.getTaskValues());
+					}
 				}
 				else if(task.getTaskType().equalsIgnoreCase(SynchronizationAPI.PUSH_TASK)){
 					performPushTask();
@@ -164,7 +173,6 @@ public class SynchronizationThread extends Thread{
 		LOG.debug(urlParameterStr);
 		if(baseTask.equalsIgnoreCase(SynchronizationAPI.POST_INCIDENT)){
 			urlParameterStr += SynchronizationAPI.getSubmitURLParameters(baseTask);
-			//Fetch all incidents and post them one by one
 			for(Incident incident : this.pendingIncidents) {
 				postIncident(incident, urlParameterStr);
 			}
@@ -262,51 +270,70 @@ public class SynchronizationThread extends Thread{
 	 */
 	private Category parseCategory(JSONObject item) throws JSONException{
 		System.out.println("fetchCategory: " + item.toString());
-		Category category = new Category();
-		category.setFrontendId(item.getLong("id"));
-		if (item.has("title")) {
-			category.setTitle(item.getString("title"));
-		}
-		if (item.has("description")) {
-			category.setDescription(item.getString("description"));
-		}
-		if (item.has("color")) {
-			try {
-				String color = "#" + item.getString("color");
-				category.setColor(Color.decode(color));	
-			}
-			catch (NumberFormatException ex) {
-				category.setColor(Color.RED);
-			}
+		long id = item.getLong("id");
+		if (categories.containsKey(id)) {
+			return categories.get(id);
 		}
 		else {
-			category.setColor(Color.RED);
+			Category category = new Category();
+			category.setServerId(id);
+			if (item.has("title")) {
+				category.setTitle(item.getString("title"));
+			}
+			if (item.has("description")) {
+				category.setDescription(item.getString("description"));
+			}
+			if (item.has("color")) {
+				try {
+					String color = "#" + item.getString("color");
+					category.setColor(Color.decode(color));	
+				}
+				catch (NumberFormatException ex) {
+					category.setColor(Color.RED);
+				}
+			}
+			else {
+				category.setColor(Color.RED);
+			}
+			categories.put(id, category);
+			return category;	
 		}
-		return category;
 	}
 	
 	private Incident parseIncident(JSONObject item) throws JSONException{
 		System.out.println("fetchIncident: " + item.toString());
 		Incident incident = new Incident();
-		incident.setFrontendId(item.getLong("incidentid"));
+		incident.setServerId(item.getLong("incidentid"));
 		incident.setTitle(item.getString("incidenttitle"));
 		incident.setDescription(item.getString("incidentdescription"));
 		incident.setVerified(item.getInt("incidentverified") == 1);
 		incident.setActive(item.getInt("incidentactive") == 1);
 		incident.setMarked(false);
 		
-		//Fetch the location info
-		Location location = new Location();
-		location.setFrontendId(item.getLong("locationid"));
-		location.setName(item.getString("locationname"));
-		location.setLatitude(item.getDouble("locationlatitude"));
-		location.setLongitude(item.getDouble("locationlongitude"));
-		incident.setLocation(location);
+		try {
+			LOG.debug("Loading Location...");
+			long locationId = item.getLong("locationid");
+			if (locations.containsKey(locationId)) {
+				incident.setLocation(locations.get(locationId));	
+			}
+			else {
+				Location location = new Location();
+				location.setServerId(locationId);
+				location.setName(item.getString("locationname"));
+				location.setLatitude(item.getDouble("locationlatitude"));
+				location.setLongitude(item.getDouble("locationlongitude"));
+				incident.setLocation(location);	
+				locations.put(locationId, location);
+			}	
+		}
+		catch (Exception ex) {
+			ex.printStackTrace();
+		}
 		
-		String dateStr = item.getString("incidentdate");;
+		String dateString = item.getString("incidentdate");;
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		try{
-			Date date = dateFormat.parse(dateStr);
+			Date date = dateFormat.parse(dateString);
 			incident.setIncidentDate(date);
 		}
 		catch(ParseException e){
@@ -316,13 +343,20 @@ public class SynchronizationThread extends Thread{
 	}
 	
 	private Location parseLocation(JSONObject item) throws JSONException{
-		System.out.println("fetchLocation: " + item.toString());
-		Location location = new Location();
-		location.setFrontendId(item.getInt("id"));
-		location.setName(item.getString("name"));
-		location.setLatitude(item.getDouble("latitude"));
-		location.setLongitude(item.getDouble("longitude"));
-		return location;
+		System.out.println("parseLocation: " + item.toString());
+		long id = item.getLong("id");
+		if (locations.containsKey(id)) {
+			return locations.get(id);
+		}
+		else {
+			Location location = new Location();
+			location.setServerId(id);
+			location.setName(item.getString("name"));
+			location.setLatitude(item.getDouble("latitude"));
+			location.setLongitude(item.getDouble("longitude"));
+			locations.put(id, location);
+			return location;	
+		}
 	}
 	
 	/**

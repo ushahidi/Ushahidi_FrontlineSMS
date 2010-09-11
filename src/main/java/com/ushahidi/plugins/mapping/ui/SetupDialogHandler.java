@@ -382,47 +382,53 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
 	}
 	
 	public void downloadedCategory(Category category) {
-		LOG.debug("downloadedCategory: %s", category);
+		LOG.debug("downloadedCategory:%s", category);
 		if (category != null) {
 			category.setMappingSetup(mappingSetupDao.getDefaultSetup());
 			try{
 				categoryDao.saveCategory(category);			
 			}
 			catch(DuplicateKeyException e){
-				LOG.debug("Category already exists", e);
+				LOG.debug("Category already exists: %s", e);
 			}	
 		}
 	}
 
 	public void downloadedIncident(Incident incident) {
-		LOG.debug("downloadedIncident: %s", incident);
+		LOG.debug("downloadedIncident:%s", incident);
 		if (incident != null) {
-			long frontendId = incident.getLocation().getFrontendId();
-			Location location = locationDao.findLocation(frontendId, mappingSetupDao.getDefaultSetup());
-			if(location == null){
-				downloadedLocation(incident.getLocation());
-				location = locationDao.findLocation(frontendId, mappingSetupDao.getDefaultSetup());
+			if (incident.getLocation() != null) {
+				if (locationDao.findLocation(incident.getLocation().getServerId(), mappingSetupDao.getDefaultSetup()) == null) {
+					downloadedLocation(incident.getLocation());
+				}
 			}
-			incident.setLocation(location);
+			if (incident.getCategories() != null) {
+				for(Category category : incident.getCategories()) {
+					if (categoryDao.findCategory(category.getServerId(), mappingSetupDao.getDefaultSetup()) == null) {
+						downloadedCategory(category);
+					}
+				}
+			}
 			incident.setMappingSetup(mappingSetupDao.getDefaultSetup());
 			try {
+				LOG.debug("saveIncident...");
 				incidentDao.saveIncident(incident);
 			} 
 			catch (DuplicateKeyException e) {
-				LOG.debug("Incident already exists", e);
+				LOG.debug("Incident already exists: %s", e);
 			}	
 		}
 	}
 
 	public void downloadedLocation(Location location) {
-		LOG.debug("downloadedLocation: %s", location);
+		LOG.debug("downloadedLocation:%s", location);
 		if (location != null) {
 			location.setMappingSetup(mappingSetupDao.getDefaultSetup());
 			try{
 				locationDao.saveLocation(location);
 			}
 			catch(DuplicateKeyException e){			
-				LOG.debug("Location already exists", e);
+				LOG.debug("Location already exists: %s", e);
 			}			
 		}
 	}

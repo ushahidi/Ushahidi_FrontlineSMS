@@ -6,28 +6,39 @@
  */
 package com.ushahidi.plugins.mapping.data.domain;
 
+import java.io.Serializable;
+
 import javax.persistence.*;
 
 import net.frontlinesms.data.EntityField;
 
 @Entity
-@Table(uniqueConstraints={@UniqueConstraint(columnNames={"id","mappingSetup_id"})})
-public class Location {
+@Table(uniqueConstraints={@UniqueConstraint(columnNames={"location_id","mappingSetup_id"})})
+public class Location implements Serializable {
 	
-//>	COLUMN NAME CONSTANTS
-	/** Column name for {@link #frontendId} */
-	private static final String FIELD_FRONTEND_ID = "frontendId";
+	private static final long serialVersionUID = 1L;
+	//>	COLUMN NAME CONSTANTS
+	/** Column name for {@link #id} */
+	private static final String FIELD_ID = "location_id";
+	/** Column name for {@link #serverId} */
+	private static final String FIELD_SERVER_ID = "serverId";
 	/** Column name for {@link #name} */
 	private static final String FIELD_NAME="name";
 	/** Column name for {@link #longitude} */
 	private static final String FIELD_LONGITUDE="longitude";
 	/** Column name for {@link #latitude} */
 	private static final String FIELD_LATITUDE="latitude";
+	/** Column name for {@link #mappingSetup} */
+	private static final String FIELD_MAPPING="mappingSetup";
+	/** Column name for {@link #mappingSetup} */
+	private static final String FIELD_MAPPING_ID="mappingSetup_id";
 
 //>	ENTITY FIELDS
 	public enum Field implements EntityField<Location>{
-		/** Field mapping for {@link Location#frontendId} */
-		FRONTEND_ID(FIELD_FRONTEND_ID),
+		/** Field mapping for {@link Location#id} */
+		ID(FIELD_ID),
+		/** Field mapping for {@link Location#serverId} */
+		SERVER_ID(FIELD_SERVER_ID),
 		/** Field mapping for {@link Location#name} */
 		NAME(FIELD_NAME),
 		/** Field mapping for {@link Location#longitude} */
@@ -35,7 +46,9 @@ public class Location {
 		/** Field mapping for {@link Location#latitude} */
 		LATITUDE(FIELD_LATITUDE),
 		/** Field mapping for {@link Location#mappingSetup} */
-		MAPPING_SETUP("mappingSetup");
+		MAPPING_SETUP(FIELD_MAPPING),
+		/** Field mapping for {@link Location#mappingSetup} */
+		MAPPING_SETUP_ID(FIELD_MAPPING_ID);
 		/** Name of a field */
 		private final String fieldName;		
 		/**
@@ -49,16 +62,17 @@ public class Location {
 	}
 
 //>	INSTANCE PROPERTIES
-	@Id @GeneratedValue(strategy=GenerationType.IDENTITY)
-	@Column(unique=true, nullable=false, updatable=false)
+	@Id 
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@Column(name=FIELD_ID, unique=true, nullable=false, updatable=false)
 	private long id;
 	
 	/** Id of this location on the frontend */
-	@Column(name=FIELD_FRONTEND_ID)
-	private long frontendId;
+	@Column(name=FIELD_SERVER_ID, nullable=true)
+	private long serverId;
 	
 	/** Name of this location */
-	@Column(name=FIELD_NAME,nullable=false)
+	@Column(name=FIELD_NAME, nullable=false)
 	private String name;
 	
 	/** Longitude of this location */
@@ -69,7 +83,7 @@ public class Location {
 	@Column(name=FIELD_LATITUDE, nullable=false)
 	private double latitude;
 	
-	@ManyToOne(cascade=CascadeType.ALL)
+	@ManyToOne
 	private MappingSetup mappingSetup;
 	
 	/**
@@ -77,9 +91,9 @@ public class Location {
 	 * @param lat Latitude of the location
 	 * @param lon Longitude of the location
 	 */
-	public Location(double lat, double lon){
-		this.latitude = lat;
-		this.longitude = lon;
+	public Location(double latitude, double longitude){
+		this.latitude = latitude;
+		this.longitude = longitude;
 	}
 	
 	/**
@@ -102,23 +116,23 @@ public class Location {
 	 * @return {@link #id}
 	 */
 	public long getId(){
-		return id;
+		return this.id;
 	}
 	
 	/**
 	 * Sets the frontend ID of this location
 	 * @param id
 	 */
-	public void setFrontendId(long id){
-		this.frontendId = id;
+	public void setServerId(long serverId){
+		this.serverId = serverId;
 	}
 	
 	/**
 	 * Gets the frontend id of the location
-	 * @return {@link #frontendId}
+	 * @return {@link #serverId}
 	 */
-	public long getFrontendId(){
-		return this.frontendId;
+	public long getServerId(){
+		return this.serverId;
 	}
 	
 	/**
@@ -135,6 +149,15 @@ public class Location {
 	 */
 	public String getName(){
 		return name;
+	}
+	
+	/**
+	 * Gets the display name of this location
+	 */
+	public String getDisplayName(){
+		return (name != null && name.equalsIgnoreCase("unknown") == false) 
+			? String.format("%s (%f, %f)", name, latitude, longitude) 
+			: String.format("(%f, %f)", latitude, longitude);
 	}
 	
 	/**
@@ -169,8 +192,8 @@ public class Location {
 		return latitude;
 	}
 	
-	public void setMappingSetup(MappingSetup setup){
-		this.mappingSetup =  setup;
+	public void setMappingSetup(MappingSetup mappingSetup){
+		this.mappingSetup = mappingSetup;
 	}
 	
 	public MappingSetup getMappingSetup(){

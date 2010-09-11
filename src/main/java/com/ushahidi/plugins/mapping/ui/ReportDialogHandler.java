@@ -4,6 +4,8 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.h2.jdbc.JdbcBatchUpdateException;
+
 import thinlet.Thinlet;
 
 
@@ -65,9 +67,12 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 	private final Object pnlNewLocation;
 	private final Object txtNewLocation;
 	
+	private static final String UNKNOWN = "unknown";
+	private static final String SEPARATOR = ", ";
+	
 	public ReportDialogHandler(MappingPluginController pluginController, FrontlineSMS frontlineController, UiGeneratorController uiController) {
 		this.pluginController = pluginController;
-		ui = uiController;
+		this.ui = uiController;
 		this.frontlineController = frontlineController;
 		
 		this.locationDao = pluginController.getLocationDao();
@@ -109,13 +114,15 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 		ui.setAttachedObject(mainDialog, incident);
 		
 		removeAll(cboReportLocations);
-		for(Location location: locationDao.getAllLocations(mappingSetupDao.getDefaultSetup())) {				
-			ui.add(cboReportLocations, createComboboxChoice(location.getName(), location));
+		for(Location location: locationDao.getAllLocations(mappingSetupDao.getDefaultSetup())) {
+			if (location.getName() != null && location.getName().equalsIgnoreCase(UNKNOWN) == false) {
+				ui.add(cboReportLocations, createComboboxChoice(location.getDisplayName(), location));
+			}
 		}
 		
 		removeAll(lstReportCategories);
 		for(Category category: categoryDao.getAllCategories(mappingSetupDao.getDefaultSetup())){
-			ui.add(lstReportCategories, createListItem(category.getTitle(), category));
+			ui.add(lstReportCategories, createListItem(category.getDisplayName(), category));
 		}
 		
 		if (incident != null) {
@@ -198,13 +205,15 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 		ui.setEditable(txtReportDescription, true);
 		
 		removeAll(cboReportLocations);
-		for(Location location: locationDao.getAllLocations(mappingSetupDao.getDefaultSetup())) {				
-			ui.add(cboReportLocations, createComboboxChoice(location.getName(), location));
+		for(Location location: locationDao.getAllLocations(mappingSetupDao.getDefaultSetup())) {	
+			if (location.getName() != null && location.getName().equalsIgnoreCase(UNKNOWN) == false) {
+				ui.add(cboReportLocations, createComboboxChoice(location.getDisplayName(), location));
+			}
 		}
 		
 		removeAll(lstReportCategories);
 		for(Category category: categoryDao.getAllCategories(mappingSetupDao.getDefaultSetup())){
-			ui.add(lstReportCategories, createListItem(category.getTitle(), category));
+			ui.add(lstReportCategories, createListItem(category.getDisplayName(), category));
 		}
 			
 		ui.setText(txtReportDate, InternationalisationUtils.getDatetimeFormat().format(message.getDate()));
@@ -234,7 +243,7 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 		}
 		else {
 			String coordinatesText = ui.getText(txtReportCoordinates);
-			String[] coordinates = coordinatesText.split(", ");
+			String[] coordinates = coordinatesText.split(SEPARATOR);
 			
 			double latitude = Double.parseDouble(coordinates[0]);
 			double longitude = Double.parseDouble(coordinates[1]);
@@ -257,9 +266,11 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 		incident.setDescription(getText(txtReportDescription));
 		incident.setMappingSetup(mappingSetupDao.getDefaultSetup());
 		
+		incident.removeCategories();
 		for(Object selectedItem : ui.getSelectedItems(lstReportCategories)) {
 			Category category = (Category)getAttachedObject(selectedItem);
 			incident.addCategory(category);
+			LOG.debug("category_id:%d server_id:%d", category.getId(), category.getServerId());
 		}
 		incident.setMarked(true);
 		
@@ -273,6 +284,7 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 			return;
 		}			
 		try{
+			LOG.debug("incident_id:%d", incident.getId());
 			if (incident.getId() > 0) {
 				incidentDao.updateIncident(incident);
 			}
@@ -280,12 +292,17 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 				incidentDao.saveIncident(incident);
 			}
 			ui.remove(mainDialog);
-			pluginController.showIncidentReports();
 		}
 		catch(DuplicateKeyException de) {
-			LOG.debug(de);
-			ui.alert(MappingMessages.getErrorCreateFromTextMessage());
+			de.printStackTrace();
+			if (incident.getId() > 0) {
+				ui.alert(MappingMessages.getErrorUpdatingIncident());
+			}
+			else {
+				ui.alert(MappingMessages.getErrorCreatingIncident());
+			}
 		}
+		pluginController.refreshIncidentReports();
 	}
 	
 	/**
@@ -313,7 +330,7 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 	public void locationChanged(Object comboBox, Object textField) {
 		Object selectedItem = getSelectedItem(comboBox);
 		Location location = (Location)getAttachedObject(selectedItem);
-		String coordinates = Double.toString(location.getLatitude()) + ", " + Double.toString(location.getLongitude());
+		String coordinates = Double.toString(location.getLatitude()) + SEPARATOR + Double.toString(location.getLongitude());
 		ui.setText(textField, coordinates);
 	}
 	

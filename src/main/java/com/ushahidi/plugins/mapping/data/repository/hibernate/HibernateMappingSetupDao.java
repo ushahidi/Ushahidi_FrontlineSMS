@@ -12,8 +12,7 @@ import com.ushahidi.plugins.mapping.data.repository.MappingSetupDao;
 import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Restrictions;
 
-public class HibernateMappingSetupDao extends BaseHibernateDao<MappingSetup> implements
-		MappingSetupDao {
+public class HibernateMappingSetupDao extends BaseHibernateDao<MappingSetup> implements MappingSetupDao {
 
 	/**
 	 * Constructor
@@ -38,8 +37,9 @@ public class HibernateMappingSetupDao extends BaseHibernateDao<MappingSetup> imp
 			DetachedCriteria criteria = super.getCriterion();
 			criteria.add(Restrictions.eq(MappingSetup.Field.DEFAULT.getFieldName(), 
 					new Boolean(true)));
-			if(super.getList(criteria).size() > 1)
+			if(super.getList(criteria).size() > 1) {
 				throw new DuplicateKeyException();
+			}
 		}
 		
 		super.save(setup);
@@ -65,8 +65,9 @@ public class HibernateMappingSetupDao extends BaseHibernateDao<MappingSetup> imp
 		if(setup.isDefaultSetup()){
 			DetachedCriteria criteria = super.getCriterion();
 			criteria.add(Restrictions.eq(MappingSetup.Field.DEFAULT.getFieldName(), new Boolean(true)));
-			if(super.getList(criteria).size() > 1)
+			if(super.getList(criteria).size() > 1) {
 				throw new DuplicateKeyException();
+			}
 		}
 		super.update(setup);
 	}

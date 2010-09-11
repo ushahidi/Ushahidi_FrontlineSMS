@@ -1,7 +1,6 @@
 package com.ushahidi.plugins.mapping.ui;
 
 import java.awt.Color;
-import java.util.ArrayList;
 import java.util.List;
 
 import com.ushahidi.plugins.mapping.MappingPluginController;
@@ -19,13 +18,16 @@ import net.frontlinesms.FrontlineSMS;
 import net.frontlinesms.data.DuplicateKeyException;
 import net.frontlinesms.data.domain.Contact;
 import net.frontlinesms.data.domain.FrontlineMessage;
+import net.frontlinesms.data.events.DatabaseEntityNotification;
+import net.frontlinesms.events.EventObserver;
+import net.frontlinesms.events.FrontlineEventNotification;
 import net.frontlinesms.ui.i18n.InternationalisationUtils;
 import net.frontlinesms.ui.ExtendedThinlet;
 import net.frontlinesms.ui.ThinletUiEventHandler;
 import net.frontlinesms.ui.UiGeneratorController;
 
 @SuppressWarnings("serial")
-public class MappingUIController extends ExtendedThinlet implements ThinletUiEventHandler, SynchronizationCallback {
+public class MappingUIController extends ExtendedThinlet implements ThinletUiEventHandler, SynchronizationCallback, EventObserver  {
 
 	private static MappingLogger LOG = MappingLogger.getLogger(MappingUIController.class);
 	
@@ -58,6 +60,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		this.pluginController = pluginController;
 		this.ui = uiController;
 		this.frontlineController = frontlineController;
+		this.frontlineController.getEventBus().registerObserver(this);
 		
 		this.locationDao = pluginController.getLocationDao();
 		this.categoryDao = pluginController.getCategoryDao();
@@ -162,7 +165,6 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	 * Performs synchronization with an Ushahidi instance
 	 */
 	public void beginSynchronization(){
-		//Check if the mapping plugin has been configured to synchronize to an Ushahidi instance
 		if (mappingSetupDao.getCount() == 0 || mappingSetupDao.getDefaultSetup() == null){
 			LOG.debug("Mapping plugin has not been configured");
 			showSetupDialog();
@@ -179,28 +181,6 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 			List<Incident> pendingIncidents = incidentDao.getUnMarkedIncidents(mappingSetupDao.getDefaultSetup());
 			syncManager.performFullSynchronization(pendingIncidents);
 		}
-	}
-	
-//	/**
-//	 * Gets all the frontend ids of the locations
-//	 * @return
-//	 */
-//	public List<String> getLocationIds(){
-//		ArrayList<String> locations = new ArrayList<String>();
-//		for(Location location : locationDao.getAllLocations(mappingSetupDao.getDefaultSetup())) {
-//			locations.add(Long.toString(location.getFrontendId()));
-//		}
-//		return locations;
-//	}
-	
-	/**
-	 * Adds an incoming message (received via the connected mobile phone) to the list of
-	 * messages
-	 * 
-	 * @param message The received message
-	 */
-	public void handleIncomingMessage(FrontlineMessage message) {
-		ui.add(tblMessages, getRow(message));
 	}
 	
 	public void showIncidentMap() {
@@ -278,7 +258,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	}
 
 	public void downloadedCategory(Category category) {
-		if(categoryDao.findCategory(category.getFrontendId(), mappingSetupDao.getDefaultSetup()) == null){
+		if(categoryDao.findCategory(category.getServerId(), mappingSetupDao.getDefaultSetup()) == null){
 			category.setMappingSetup(mappingSetupDao.getDefaultSetup());
 			try{
 				categoryDao.saveCategory(category);			
@@ -291,16 +271,19 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	}
 	
 	public void downloadedIncident(Incident incident) {
-		if(incidentDao.findIncident(incident.getFrontendId(), mappingSetupDao.getDefaultSetup()) == null){
-			long frontendId = incident.getLocation().getFrontendId();
-			Location location = locationDao.findLocation(frontendId, mappingSetupDao.getDefaultSetup());
-			
-			if(location == null){
-				downloadedLocation(incident.getLocation());
-				location = locationDao.findLocation(frontendId, mappingSetupDao.getDefaultSetup());
+		if(incidentDao.findIncident(incident.getServerId(), mappingSetupDao.getDefaultSetup()) == null){
+			if (incident.getLocation() != null) {
+				if (locationDao.findLocation(incident.getLocation().getServerId(), mappingSetupDao.getDefaultSetup()) == null) {
+					downloadedLocation(incident.getLocation());
+				}
 			}
-			
-			incident.setLocation(location);
+			if (incident.getCategories() != null) {
+				for(Category category : incident.getCategories()) {
+					if (categoryDao.findCategory(category.getServerId(), mappingSetupDao.getDefaultSetup()) == null) {
+						downloadedCategory(category);
+					}
+				}
+			}
 			incident.setMappingSetup(mappingSetupDao.getDefaultSetup());
 			try {
 				incidentDao.saveIncident(incident);
@@ -313,7 +296,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	}
 
 	public void downloadedLocation(Location location) {
-		if (locationDao.findLocation(location.getFrontendId(), mappingSetupDao.getDefaultSetup()) == null){
+		if (locationDao.findLocation(location.getServerId(), mappingSetupDao.getDefaultSetup()) == null){
 			location.setMappingSetup(mappingSetupDao.getDefaultSetup());
 			try{
 				locationDao.saveLocation(location);
@@ -341,7 +324,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		if (syncDialog == null) {
 			syncDialog = new SyncDialogHandler(pluginController, frontlineController, ui);	
 		}
-		syncDialog.setProgress(tasks, 1);
+		syncDialog.setProgress(tasks, 0);
 		syncDialog.showDialog();
 	}
 
@@ -357,6 +340,21 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		}
 		catch(DuplicateKeyException dk){
 			LOG.debug("Unable to update incident", dk);
+		}
+	}
+
+	//################# EventObserver #################
+	
+	@SuppressWarnings("unchecked")
+	public void notify(FrontlineEventNotification notification) {
+		if (notification instanceof DatabaseEntityNotification) {
+			DatabaseEntityNotification databaseEntityNotification = (DatabaseEntityNotification)notification;
+			if (databaseEntityNotification.getDatabaseEntity() instanceof FrontlineMessage) {
+				FrontlineMessage message = (FrontlineMessage)databaseEntityNotification.getDatabaseEntity();
+				if (message != null) {
+					ui.add(tblMessages, getRow(message));
+				}
+			}	
 		}
 	}
 		

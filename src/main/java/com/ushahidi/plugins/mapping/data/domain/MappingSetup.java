@@ -9,6 +9,8 @@ public class MappingSetup {
 	
 //> COLUMN NAMES
 	/** Column name for {@link #name} */
+	private static final String FIELD_ID = "id";
+	/** Column name for {@link #name} */
 	private static final String FIELD_NAME = "name";
 	/**  Column name for {@link #sourceURL} */
 	private static final String FIELD_SOURCEURL = "source_url";
@@ -28,6 +30,8 @@ public class MappingSetup {
 //> ENTITY FIELDS
 	/** Details of the fields that this entity has */
 	public enum Field implements EntityField<MappingSetup>{
+		/** Field mapping for {@link MappingSetup#name} */
+		ID(FIELD_ID),
 		/** Field mapping for {@link MappingSetup#name} */
 		NAME(FIELD_NAME),
 		/** Field mapping for {@link MappingSetup#sourceURL} */
@@ -56,8 +60,9 @@ public class MappingSetup {
 	}
 	
 //>	INSTANCE PROEPRTIES
-	@Id @GeneratedValue(strategy=GenerationType.IDENTITY)
-	@Column(unique=true, updatable=false, nullable=false)
+	@Id 
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@Column(name=FIELD_ID, unique=true, updatable=false, nullable=false)
 	private long id;
 	
 	/** Name of the mapping setup item */

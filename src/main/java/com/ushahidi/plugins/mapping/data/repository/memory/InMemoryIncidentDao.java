@@ -13,7 +13,6 @@ import com.ushahidi.plugins.mapping.data.domain.MappingSetup;
 import com.ushahidi.plugins.mapping.data.repository.IncidentDao;
 
 public class InMemoryIncidentDao implements IncidentDao {
-	
 
 	Set<Incident> allIncidents = new HashSet<Incident>();
 
@@ -79,6 +78,16 @@ public class InMemoryIncidentDao implements IncidentDao {
 	}
 
 	public void deleteIncidentsWithMapping(MappingSetup setup) {
+		
+	}
+
+	public void saveIncidentWithoutDuplicateHandling(Incident incident) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void updateIncidentWithoutDuplicateHandling(Incident incident) {
+		// TODO Auto-generated method stub
 		
 	}
 }

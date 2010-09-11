@@ -10,7 +10,7 @@ public interface LocationDao {
 	
 	public void saveLocation(Location location) throws DuplicateKeyException;
 	
-	public void saveLocations(List<Location> locations);
+	public void saveLocations(List<Location> locations) throws DuplicateKeyException;
 	
 	public List<Location> getAllLocations();
 	

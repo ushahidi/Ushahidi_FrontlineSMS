@@ -23,18 +23,29 @@ public class HibernateIncidentDao extends BaseHibernateDao<Incident> implements
 	}
 	
 	public List<Incident> getAllIncidents() {
-		return (getCount() == 0)? new ArrayList<Incident>() : super.getAll();
+		return (getCount() == 0) ? new ArrayList<Incident>() : super.getAll();
 	}
 
 	public List<Incident> getAllIncidents(int startIndex, int limit) {
-		return (getCount() == 0)?new ArrayList<Incident>():getAll(startIndex, limit);
+		return (getCount() == 0) ? new ArrayList<Incident>() : getAll(startIndex, limit);
 	}
 
 	public void saveIncident(Incident incident) throws DuplicateKeyException {		
 		super.save(incident);
-
+	}
+	
+	public void saveIncidentWithoutDuplicateHandling(Incident incident)  {		
+		super.saveWithoutDuplicateHandling(incident);
 	}
 
+	public void updateIncident(Incident incident) throws DuplicateKeyException {
+		super.update(incident);
+	}
+	
+	public void updateIncidentWithoutDuplicateHandling(Incident incident) {
+		super.updateWithoutDuplicateHandling(incident);
+	}
+	
 	public int getCount() {
 		return super.countAll();
 	}
@@ -53,22 +64,33 @@ public class HibernateIncidentDao extends BaseHibernateDao<Incident> implements
 		//Do nothing
 	}
 
-	public void saveIncident(List<Incident> incidents) {
-		// TODO Auto-generated method stub
-		
+	public void saveIncident(List<Incident> incidents) throws DuplicateKeyException {
+		boolean duplicateKeyException = false;
+		for(Incident incident : incidents) {
+			try {
+				super.save(incident);
+			} 
+			catch (DuplicateKeyException e) {
+				e.printStackTrace();
+				duplicateKeyException = true;
+			}
+		}
+		if (duplicateKeyException) {
+			throw new DuplicateKeyException();
+		}
 	}
 	
 	/**
-	 * Retrieves the incident whose unique id on the frontend is the one in @param frontendId
-	 * @param frontendId Unique id of the incident on the frontend
+	 * Retrieves the incident whose unique id on the frontend is the one in @param serverId
+	 * @param serverId Unique id of the incident on the frontend
 	 * @return {@link Incident}
 	 */
-	public Incident findIncident(long frontendId, MappingSetup setup){
+	public Incident findIncident(long serverId, MappingSetup setup){
 		if(getCount() == 0)
 			return null;
 		else{
 			DetachedCriteria criteria = super.getCriterion();
-			criteria.add(Restrictions.eq(Incident.Field.FRONTEND_ID.getFieldName(), new Long(frontendId)));
+			criteria.add(Restrictions.eq(Incident.Field.SERVER_ID.getFieldName(), new Long(serverId)));
 			criteria.add(Restrictions.eq(Incident.Field.MAPPING_SETUP.getFieldName(), setup));
 			return super.getUnique(criteria);
 		}
@@ -97,8 +119,7 @@ public class HibernateIncidentDao extends BaseHibernateDao<Incident> implements
 		else{
 			DetachedCriteria criteria = super.getCriterion();
 			criteria.add(Restrictions.eq("location", location));
-			criteria.add(Restrictions.eq(Incident.Field.MAPPING_SETUP.getFieldName(), 
-					location.getMappingSetup()));
+			criteria.add(Restrictions.eq(Incident.Field.MAPPING_SETUP.getFieldName(), location.getMappingSetup()));
 			return super.getList(criteria);
 		}
 	}
@@ -110,8 +131,9 @@ public class HibernateIncidentDao extends BaseHibernateDao<Incident> implements
 	 * @return
 	 */
 	public List<Incident> getIncidentsByCategory(Category category){
-		if(getCount() == 0)
+		if(getCount() == 0) {
 			return null;
+		}
 		else{
 			DetachedCriteria criteria = super.getCriterion();
 			criteria.add(Restrictions.eq("category", category));
@@ -126,19 +148,15 @@ public class HibernateIncidentDao extends BaseHibernateDao<Incident> implements
 	 * @return
 	 */
 	public List<Incident> getAllIncidents(MappingSetup setup){
-		if(getCount() == 0)
+		if(getCount() == 0) {
 			return new ArrayList<Incident>();
+		}
 		else{
 			DetachedCriteria criteria = super.getCriterion();
 			criteria.add(Restrictions.eq(Incident.Field.MAPPING_SETUP.getFieldName(), setup));
 			return super.getList(criteria);
 		}
 	}
-
-	public void updateIncident(Incident incident) throws DuplicateKeyException {
-		super.update(incident);
-	}
-	
 
 	public void deleteIncidentsWithMapping(MappingSetup setup) {
 		for(Incident incident : getAllIncidents(setup)) {

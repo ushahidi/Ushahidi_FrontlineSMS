@@ -13,8 +13,7 @@ import com.ushahidi.plugins.mapping.data.domain.Category;
 import com.ushahidi.plugins.mapping.data.domain.MappingSetup;
 import com.ushahidi.plugins.mapping.data.repository.CategoryDao;
 
-public class HibernateCategoryDao extends BaseHibernateDao<Category> implements
-		CategoryDao {
+public class HibernateCategoryDao extends BaseHibernateDao<Category> implements CategoryDao {
 
 	public HibernateCategoryDao(){
 		super(Category.class);
@@ -25,13 +24,14 @@ public class HibernateCategoryDao extends BaseHibernateDao<Category> implements
 	}
 
 	public List<Category> getAllCategories() {
-		return (getCount() == 0)? new ArrayList<Category>() : super.getAll();
+		return (getCount() == 0) ? new ArrayList<Category>() : super.getAll();
 	}
 	
 	public List<Category> getAllCategories(MappingSetup setup){
 		if(getCount() == 0){
 			return new ArrayList<Category>();
-		}else{
+		}
+		else{
 			DetachedCriteria criteria = super.getCriterion();
 			criteria.add(Restrictions.eq(Category.Field.MAPPING_SETUP.getFieldName(), setup));
 			return super.getList(criteria);
@@ -46,9 +46,20 @@ public class HibernateCategoryDao extends BaseHibernateDao<Category> implements
 		super.save(category);
 	}
 
-	public void saveCategory(List<Category> categories) {
-		// TODO Auto-generated method stub
-		
+	public void saveCategory(List<Category> categories) throws DuplicateKeyException{
+		boolean duplicateKeyException = false;
+		for(Category category : categories) {
+			try {
+				super.save(category);
+			} 
+			catch (DuplicateKeyException e) {
+				duplicateKeyException = true;
+				e.printStackTrace();
+			}
+		}
+		if (duplicateKeyException) {
+			throw new DuplicateKeyException();
+		}
 	}
 
 	public int getCount() {
@@ -56,16 +67,17 @@ public class HibernateCategoryDao extends BaseHibernateDao<Category> implements
 	}
 	
 	/**
-	 * Retrieves the category whose unique id on the frontend is the one in @param frontendId
-	 * @param frontendId Unique id of the category on the frontend
+	 * Retrieves the category whose unique id on the frontend is the one in @param serverId
+	 * @param serverId Unique id of the category on the frontend
 	 * @return {@link Category}
 	 */
-	public Category findCategory(long frontendId, MappingSetup setup){
-		if(getCount() == 0)
+	public Category findCategory(long serverId, MappingSetup setup){
+		if(getCount() == 0) {
 			return null;
+		}
 		else{
 			DetachedCriteria criteria = super.getCriterion();
-			criteria.add(Restrictions.eq(Category.Field.FRONTEND_ID.getFieldName(), new Long(frontendId)));
+			criteria.add(Restrictions.eq(Category.Field.SERVER_ID.getFieldName(), new Long(serverId)));
 			criteria.add(Restrictions.eq(Category.Field.MAPPING_SETUP.getFieldName(), setup));
 			return super.getUnique(criteria);
 		}

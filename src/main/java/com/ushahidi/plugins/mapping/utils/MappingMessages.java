@@ -209,8 +209,12 @@ public final class MappingMessages {
 		return getI18NString("plugins.ushahidi.categories.all");
 	}
 	
-	public static String getErrorCreateFromTextMessage() {
-		return getI18NString("plugins.ushahidi.incident.error.txt");
+	public static String getErrorCreatingIncident() {
+		return getI18NString("plugins.ushahidi.incident.error.creating");
+	}
+	
+	public static String getErrorUpdatingIncident() {
+		return getI18NString("plugins.ushahidi.incident.error.updating");
 	}
 	
 	public static String getErrorInvalidLocation() {

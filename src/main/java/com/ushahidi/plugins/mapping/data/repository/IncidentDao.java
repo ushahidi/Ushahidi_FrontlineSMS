@@ -11,8 +11,14 @@ import com.ushahidi.plugins.mapping.data.domain.MappingSetup;
 public interface IncidentDao {
 
 	public void saveIncident(Incident incident)	 throws DuplicateKeyException;
-		
-	public void saveIncident(List<Incident> incidents);
+	
+	public void saveIncidentWithoutDuplicateHandling(Incident incident);
+	
+	public void saveIncident(List<Incident> incidents) throws DuplicateKeyException;
+	
+	public void updateIncident(Incident incident) throws DuplicateKeyException;
+	
+	public void updateIncidentWithoutDuplicateHandling(Incident incident);
 	
 	public List<Incident>getAllIncidents(int startIndex, int limit);
 	
@@ -31,8 +37,6 @@ public interface IncidentDao {
 	public Incident getIncident(long id);
 	
 	public List<Incident> getIncidentsByLocation(Location location);
-	
-	public void updateIncident(Incident incident) throws DuplicateKeyException;
 	
 	public void deleteIncidentsWithMapping(MappingSetup setup);
 }
