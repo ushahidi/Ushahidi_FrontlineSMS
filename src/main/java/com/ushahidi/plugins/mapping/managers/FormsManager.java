@@ -55,12 +55,11 @@ public class FormsManager extends Manager {
 	}
 	
 	/**
-	 * Create Ushahidi-specific form
+	 * Create Ushahidi-specific form fields
 	 */
-	public boolean addUshahidiForms() {
+	public boolean addFormFields(String formName) {
 		LOG.debug("createUshahidiForms");
 		try {
-			String formName = MappingMessages.getIncidentReport();
 			for(Form form : this.formDao.getAllForms()) {
 				if (form.getName().equalsIgnoreCase(formName)) {
 					for (FormField formField : form.getFields()) {
@@ -86,9 +85,6 @@ public class FormsManager extends Manager {
 			for(Category category: this.categoryDao.getAllCategories(this.mappingSetupDao.getDefaultSetup())){
 				addFormField(form, FormFieldType.CHECK_BOX, category.getTitle());
 			}
-			//MEDIA
-			addFormField(form, FormFieldType.TEXT_FIELD, MappingMessages.getNews());
-			addFormField(form, FormFieldType.TEXT_FIELD, MappingMessages.getVideo());
 			//CONTACT
 			addFormField(form, FormFieldType.TEXT_FIELD, MappingMessages.getFirstName());
 			addFormField(form, FormFieldType.TEXT_FIELD, MappingMessages.getLastName());

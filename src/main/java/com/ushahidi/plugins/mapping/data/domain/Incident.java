@@ -144,16 +144,6 @@ public class Incident implements Serializable {
 	private Date incidentDate;
 	
 	/** Categories of this incident */
-	//@JoinTable(name="incident_category")
-	//@Cascade({org.hibernate.annotations.CascadeType.DELETE, org.hibernate.annotations.CascadeType.DELETE_ORPHAN})
-	//@JoinTable(name="incident_category", joinColumns={@JoinColumn(name=FIELD_ID),@JoinColumn(name=FIELD_CATEGORY_ID)})
-//	@CollectionOfElements(targetElement=Category.class, fetch=FetchType.EAGER)
-//	@JoinTable(name="incident_category", joinColumns={@JoinColumn(name=FIELD_ID)})
-//	@MapKey(columns={@Column(name="category_id")})
-//	@Column(name="category", nullable=true, insertable=true, updatable=true)  
-//	@Fetch (FetchMode.SELECT)
-//	@Cascade({org.hibernate.annotations.CascadeType.ALL})
-	
 	@CollectionOfElements(targetElement=Category.class, fetch=FetchType.EAGER)
 	@JoinTable(name = "incident_category", 
 				joinColumns={@JoinColumn(name="incident_id")},

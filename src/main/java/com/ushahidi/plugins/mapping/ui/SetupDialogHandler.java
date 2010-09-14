@@ -316,7 +316,7 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
 	public void createSurveyQuestions() {
 		LOG.debug("createSurveyQuestions");
 		SurveysManager surveysManager = new SurveysManager(frontlineController, pluginController);
-        if(surveysManager.addUshahidiQuestions()) {
+        if(surveysManager.addSurveyQuestions(MappingMessages.getIncidentReport())) {
         	ui.alert(MappingMessages.getSurveyCreated());
         }
         else {
@@ -327,7 +327,7 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
 	public void createFormFields() {
 		LOG.debug("createFormFields");
         FormsManager formsManager = new FormsManager(frontlineController, pluginController);
-        if(formsManager.addUshahidiForms()) {
+        if(formsManager.addFormFields(MappingMessages.getIncidentReport())) {
         	ui.alert(MappingMessages.getFormCreated());
         }
         else {

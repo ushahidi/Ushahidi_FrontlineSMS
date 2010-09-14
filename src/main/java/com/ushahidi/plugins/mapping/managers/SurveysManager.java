@@ -69,67 +69,6 @@ public class SurveysManager extends Manager {
 	}
 	
 	/**
-	 * Create Ushahidi-friendly Operator questions
-	 */
-	public boolean addUshahidiQuestions() {
-		LOG.debug("createUshahidiQuestions");
-		try {
-			List<Question> questions = new ArrayList<Question>();
-			Question question = null;
-			//DETAILS
-			question = addOperatorQuestion(MappingMessages.getTitle(), MappingMessages.getTitleKeyword(), MappingMessages.getTitleInfo(), QuestionType.PLAINTEXT);
-			if(question != null) questions.add(question);
-			
-			question = addOperatorQuestion(MappingMessages.getDescription(), MappingMessages.getDescriptionKeyword(), MappingMessages.getDescriptionInfo(), QuestionType.PLAINTEXT);
-			if(question != null) questions.add(question);
-			//DATE
-			question = addOperatorQuestion(MappingMessages.getDate(), MappingMessages.getDateKeyword(), MappingMessages.getDateInfo(), QuestionType.DATE);
-			if(question != null) questions.add(question);
-			//CATEGORIES
-			List<String> categories = new ArrayList<String>();
-			for(Category category: this.categoryDao.getAllCategories(this.mappingSetupDao.getDefaultSetup())){
-				categories.add(category.getTitle());
-			}
-			question = addOperatorQuestion(MappingMessages.getCategories(), MappingMessages.getCategoriesKeyword(), MappingMessages.getCategoriesInfo(), QuestionType.CHECKLIST, 
-								categories.toArray(new String[categories.size()]));
-			if(question != null) questions.add(question);
-			//LOCATION
-			List<String> locations = new ArrayList<String>();
-			for(Location location: this.locationDao.getAllLocations(this.mappingSetupDao.getDefaultSetup())) {
-				if (location.getName() != null && location.getName().length() > 0 && location.getName().equalsIgnoreCase("unknown") == false) {
-					locations.add(location.getName());
-				}
-			}
-			question = addOperatorQuestion(MappingMessages.getLocation(), MappingMessages.getLocationKeyword(), MappingMessages.getLocationInfo(), QuestionType.MULTICHOICE, 
-								locations.toArray(new String[locations.size()]));
-			if(question != null) questions.add(question);
-			//NEWS
-			question = addOperatorQuestion(MappingMessages.getNews(), MappingMessages.getNewsKeyword(), MappingMessages.getNewsInfo(), QuestionType.PLAINTEXT);
-			if(question != null) questions.add(question);
-			//VIDEO
-			question = addOperatorQuestion(MappingMessages.getVideo(), MappingMessages.getVideoKeyword(), MappingMessages.getVideoInfo(), QuestionType.PLAINTEXT);
-			if(question != null) questions.add(question);
-			//CONTACT
-			question = addOperatorQuestion(MappingMessages.getFirstName(), MappingMessages.getFirstNameKeyword(), MappingMessages.getFirstNameInfo(), QuestionType.PLAINTEXT);
-			if(question != null) questions.add(question);
-			
-			question = addOperatorQuestion(MappingMessages.getLastName(), MappingMessages.getLastNameKeyword(), MappingMessages.getLastNameInfo(), QuestionType.PLAINTEXT);
-			if(question != null) questions.add(question);
-			
-			question = addOperatorQuestion(MappingMessages.getEmail(), MappingMessages.getEmailKeyword(), MappingMessages.getEmailInfo(), QuestionType.PLAINTEXT);
-			if(question != null) questions.add(question);
-			
-			Survey survey = new Survey(MappingMessages.getIncidentReport(), "ushahidi", questions);
-			this.surveyDao.saveSurvey(survey);
-			return true;	
-		}
-		catch(Exception ex){
-			ex.printStackTrace();
-		}
-		return false;
-	}
-	
-	/**
 	 * Handle incoming FrontlineEventNotification
 	 */
 	@SuppressWarnings("unchecked")
@@ -151,15 +90,65 @@ public class SurveysManager extends Manager {
 	}
 	
 	/**
-	 * Create Ushahidi-specific Operator questions
-	 * @param name name
-	 * @param keyword keyword
-	 * @param infoSnippet info snippet
-	 * @param type operator type
-	 * @param schema operator schema
+	 * Create Ushahidi-friendly survey questions
 	 */
-	private Question addOperatorQuestion(String name, String keyword, String infoSnippet, String type) {
-		return addOperatorQuestion(name, keyword, infoSnippet, type, null);
+	public boolean addSurveyQuestions(String surveyName) {
+		LOG.debug("createUshahidiQuestions");
+		try {
+			List<Question> questions = new ArrayList<Question>();
+			//TITLE
+			createPlainTextQuestion(questions, MappingMessages.getTitle(), MappingMessages.getTitleKeyword(), MappingMessages.getTitleInfo());
+			//DESCRIPTION
+			createPlainTextQuestion(questions, MappingMessages.getDescription(), MappingMessages.getDescriptionKeyword(), MappingMessages.getDescriptionInfo());
+			//DATE
+			createDateQuestion(questions, MappingMessages.getDate(), MappingMessages.getDateKeyword(), MappingMessages.getDateInfo());
+			//CATEGORIES
+			List<String> categories = new ArrayList<String>();
+			for(Category category: this.categoryDao.getAllCategories(this.mappingSetupDao.getDefaultSetup())){
+				categories.add(category.getTitle());
+			}
+			createChecklistQuestion(questions, MappingMessages.getCategories(), MappingMessages.getCategoriesKeyword(), MappingMessages.getCategoriesInfo(), categories.toArray(new String[categories.size()]));
+			//LOCATION
+			List<String> locations = new ArrayList<String>();
+			for(Location location: this.locationDao.getAllLocations(this.mappingSetupDao.getDefaultSetup())) {
+				if (location.getName() != null && location.getName().length() > 0 && location.getName().equalsIgnoreCase("unknown") == false) {
+					locations.add(location.getName());
+				}
+			}
+			createChecklistQuestion(questions, MappingMessages.getLocation(), MappingMessages.getLocationKeyword(), MappingMessages.getLocationInfo(), locations.toArray(new String[locations.size()]));
+			
+			Survey survey = new Survey(MappingMessages.getIncidentReport(), surveyName, questions);
+			this.surveyDao.saveSurvey(survey);
+			return true;	
+		}
+		catch(Exception ex){
+			ex.printStackTrace();
+		}
+		return false;
+	}
+	
+	protected Question createPlainTextQuestion(List<Question> questions, String name, String keyword, String infoSnippet) {
+		return createQuestion(questions, name, keyword, infoSnippet, QuestionType.PLAINTEXT, null);
+	}
+	
+	protected Question createDateQuestion(List<Question> questions, String name, String keyword, String infoSnippet) {
+		return createQuestion(questions, name, keyword, infoSnippet, QuestionType.DATE, null);
+	}
+	
+	protected Question createIntegerQuestion(List<Question> questions, String name, String keyword, String infoSnippet) {
+		return createQuestion(questions, name, keyword, infoSnippet, QuestionType.INTEGER, null);
+	}
+	
+	protected Question createBooleanQuestion(List<Question> questions, String name, String keyword, String infoSnippet) {
+		return createQuestion(questions, name, keyword, infoSnippet, QuestionType.BOOLEAN, null);
+	}
+	
+	protected Question createMultiChoiceQuestion(List<Question> questions, String name, String keyword, String infoSnippet, String [] choices) {
+		return createQuestion(questions, name, keyword, infoSnippet, QuestionType.MULTICHOICE, choices);
+	}
+	
+	protected Question createChecklistQuestion(List<Question> questions, String name, String keyword, String infoSnippet, String [] choices) {
+		return createQuestion(questions, name, keyword, infoSnippet, QuestionType.CHECKLIST, choices);
 	}
 	
 	/**
@@ -168,22 +157,23 @@ public class SurveysManager extends Manager {
 	 * @param keyword keyword
 	 * @param infoSnippet info snippet
 	 * @param type operator type
-	 * @param schema operator schema
 	 * @param choices list of choices
 	 */
-	private Question addOperatorQuestion(String name, String keyword, String infoSnippet, String type, String [] choices) {
+	protected Question createQuestion(List<Question> questions, String name, String keyword, String infoSnippet, String type, String [] choices) {
 		try {
 			List<String> choiceList = choices != null ? Arrays.asList(choices) : null;
 			Question question = QuestionFactory.createQuestion(name, keyword, infoSnippet, type, null, choiceList);
 			this.questionDao.saveQuestion(question);
 			LOG.debug("Question Created [%s, %s, %s]", question.getName(), question.getKeyword(), question.getType());
 			this.questionDictionary.put(keyword, question);
+			questions.add(question);
 			return question;
 		} 
 		catch (DuplicateKeyException ex) {
 			LOG.error("Question Loaded [%s, %s, %s]", name, keyword, type);
 			Question question = this.questionDao.getQuestionForKeyword(keyword);
 			this.questionDictionary.put(keyword, question);
+			questions.add(question);
 			return question;
 		}
 		catch (Exception ex) {
