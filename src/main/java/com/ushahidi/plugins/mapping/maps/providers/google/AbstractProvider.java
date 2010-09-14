@@ -3,9 +3,9 @@ package com.ushahidi.plugins.mapping.maps.providers.google;
 import com.ushahidi.plugins.mapping.maps.core.Coordinate;
 import com.ushahidi.plugins.mapping.maps.geo.MercatorProjection;
 import com.ushahidi.plugins.mapping.maps.geo.Transformation;
-import com.ushahidi.plugins.mapping.maps.providers.AbstractMapProvider;
+import com.ushahidi.plugins.mapping.maps.providers.MapProvider;
 
-public abstract class AbstractProvider extends AbstractMapProvider {
+public abstract class AbstractProvider extends MapProvider {
 	
 	protected String ROAD_VERSION = "w2t.99";
 	protected String AERIAL_VERSION = "32";

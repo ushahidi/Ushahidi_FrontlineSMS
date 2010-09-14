@@ -13,17 +13,17 @@ import com.ushahidi.plugins.mapping.maps.geo.Location;
 import com.ushahidi.plugins.mapping.maps.geo.MercatorProjection;
 import com.ushahidi.plugins.mapping.maps.geo.Transformation;
 
-public abstract class AbstractMapProvider{
+public abstract class MapProvider{
 
     protected AbstractProjection projection;
     protected static int MAX_ZOOM = 20;
     protected static int MIN_ZOOM = 1;
-    protected static Logger LOG = FrontlineUtils.getLogger(AbstractMapProvider.class);
+    protected static Logger LOG = FrontlineUtils.getLogger(MapProvider.class);
     protected int zoomLevel;
     protected Coordinate topLeftOutLimit;
     protected Coordinate bottomRightInLimit;
 
-    public AbstractMapProvider(int minZoom, int maxZoom) {
+    public MapProvider(int minZoom, int maxZoom) {
 
         MIN_ZOOM = minZoom;
         MAX_ZOOM = maxZoom;
@@ -45,6 +45,8 @@ public abstract class AbstractMapProvider{
     public abstract int tileWidth();
 
     public abstract int tileHeight();
+    
+    public abstract String getTitle();
 
     public int getMaxZoom() {
         return MAX_ZOOM;

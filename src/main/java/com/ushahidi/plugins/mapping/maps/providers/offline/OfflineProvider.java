@@ -23,14 +23,19 @@ import com.ushahidi.plugins.mapping.maps.TileSaver;
 import com.ushahidi.plugins.mapping.maps.core.Coordinate;
 import com.ushahidi.plugins.mapping.maps.geo.MercatorProjection;
 import com.ushahidi.plugins.mapping.maps.geo.Transformation;
-import com.ushahidi.plugins.mapping.maps.providers.AbstractMapProvider;
+import com.ushahidi.plugins.mapping.maps.providers.MapProvider;
 
-public class OfflineProvider extends AbstractMapProvider {
+public class OfflineProvider extends MapProvider {
 
     public static final Logger LOG = FrontlineUtils.getLogger(OfflineProvider.class);
 
     private File tmpDir;
 
+	@Override
+	public String getTitle() {
+		return "Offline Mapping Provider";
+	}  
+	
     /**
      * @param archive
      *            Filename of the map archive

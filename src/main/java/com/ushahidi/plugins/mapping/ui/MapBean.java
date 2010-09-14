@@ -21,6 +21,7 @@ import com.ushahidi.plugins.mapping.data.domain.Incident;
 import com.ushahidi.plugins.mapping.maps.TiledMap;
 import com.ushahidi.plugins.mapping.maps.MapFactory;
 import com.ushahidi.plugins.mapping.maps.geo.Location;
+import com.ushahidi.plugins.mapping.maps.providers.MapProvider;
 import com.ushahidi.plugins.mapping.maps.providers.openstreetmap.OpenStreetMapProvider;
 import com.ushahidi.plugins.mapping.maps.providers.offline.OfflineProvider;
 import com.ushahidi.plugins.mapping.utils.MappingLogger;
@@ -38,6 +39,8 @@ public class MapBean extends CustomComponent implements ImageObserver {
 
     private MapDragListener mouseListener = new MapDragListener();
 
+    private MapProvider mapProvider;
+    
     /** location bounds for the region covered by the map */
     private Location location;
     /** Incidents to be plotted on the map */
@@ -50,12 +53,28 @@ public class MapBean extends CustomComponent implements ImageObserver {
     private static final int DEFAULT_ZOOM_LEVEL = 7;
     private static final int DEFAULT_POINT_SIZE = 18;
     private int pointSize = DEFAULT_POINT_SIZE;
+    private int zoomLevel = DEFAULT_ZOOM_LEVEL;
 
     public MapBean() {
         //Trap for mouse motion on the map
         addMouseListener(mouseListener);
         addMouseMotionListener(mouseListener);
         addMouseWheelListener(mouseListener);
+    }
+    
+    public void setMapProvider(MapProvider mapProvider) {
+    	this.mapProvider = mapProvider;
+    	destroyMap();
+    	map = null;
+    	repaint();
+    }
+    
+    public MapProvider getMapProvider() {
+    	if (this.mapProvider == null) {
+    		//Default to Open Street Map
+    		this.mapProvider = new OpenStreetMapProvider();
+    	}
+    	return this.mapProvider;
     }
 
     public void setOfflineMapFile(String fileName){
@@ -80,6 +99,19 @@ public class MapBean extends CustomComponent implements ImageObserver {
             repaint();
         }
         else{
+            location = new Location(latitude, longitude);
+        }
+    }
+    
+    public synchronized void setLocationAndZoomLevel(double longitude, double latitude, int zoom){		
+        if(location != null){
+            map = null;
+            zoomLevel = zoom;
+            location = new Location(latitude, longitude);
+            repaint();
+        }
+        else{
+        	zoomLevel = zoom;
             location = new Location(latitude, longitude);
         }
     }
@@ -116,13 +148,13 @@ public class MapBean extends CustomComponent implements ImageObserver {
         if(location == null){
             return;
         }
-        if (map == null && location != null ) {
+        if (map == null && location != null) {
             if(offlineMapFile == null){
-                map = MapFactory.mapByCenterZoom(new OpenStreetMapProvider(), location, DEFAULT_ZOOM_LEVEL, dimensions);
-            }else{
+                map = MapFactory.mapByCenterZoom(this.getMapProvider(), location, zoomLevel, dimensions);
+            }
+            else{
                 try {
-                    map = MapFactory.mapByCenterZoom(new OfflineProvider(offlineMapFile), 
-                            location, DEFAULT_ZOOM_LEVEL, dimensions);
+                    map = MapFactory.mapByCenterZoom(new OfflineProvider(offlineMapFile), location, zoomLevel, dimensions);
                 } catch (IOException e) {
                     LOG.debug(e);
                 }				
@@ -166,7 +198,6 @@ public class MapBean extends CustomComponent implements ImageObserver {
     }
 
     public boolean imageUpdate(Image img, int infoflags, int x, int y, int width, int height) {
-       // LOG.debug("Image Update");
         repaint();
         return true;
     }
@@ -184,13 +215,12 @@ public class MapBean extends CustomComponent implements ImageObserver {
         }
     }
 
-
-    public void zoomMap(int zoomVal){
-        LOG.debug("ZOOM VAL = " + zoomVal);
-        pointSize = (zoomVal < map.getZoom())? pointSize-2 : 
-            ((zoomVal >= DEFAULT_ZOOM_LEVEL)? DEFAULT_POINT_SIZE : pointSize+2);
-
-        map.zoomTo(zoomVal, new Point(this.getWidth() / 2, this.getHeight() / 2));
+    public void setZoomLevel(int zoomLevel){
+    	this.zoomLevel = zoomLevel;
+        LOG.debug("Zoome Lavel = %d", zoomLevel);
+        pointSize = (zoomLevel < map.getZoom()) ? pointSize-2 : 
+            ((zoomLevel >= DEFAULT_ZOOM_LEVEL)? DEFAULT_POINT_SIZE : pointSize+2);
+        map.zoomTo(zoomLevel, new Point(this.getWidth() / 2, this.getHeight() / 2));
         map.draw();
         repaint();
     }
@@ -199,17 +229,17 @@ public class MapBean extends CustomComponent implements ImageObserver {
     /**
      * @see {@link TiledMap#getZoom()}
      */
-    public int getCurrentZoomLevel(){
+    public int getZoomLevel(){
         return map.getZoom();
     }
-
 
     /**
      * Shuts down the map
      */
     public void destroyMap(){
-        if(map != null)
+        if(map != null) {
             map.destroy();
+        }
     }
 
     /**
@@ -234,7 +264,7 @@ public class MapBean extends CustomComponent implements ImageObserver {
             int zoom = map.getZoom() + 1;
             
             // Initiate zoom
-            zoomMap(zoom);
+            setZoomLevel(zoom);
             for (MapListener mapListener : mapListeners) {
             	mapListener.mapZoomed(zoom);
             }

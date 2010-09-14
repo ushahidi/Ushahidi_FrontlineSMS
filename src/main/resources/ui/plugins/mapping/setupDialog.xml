@@ -2,6 +2,19 @@
 <dialog text="i18n.plugins.ushahidi.setup" name="dlgSetup" icon="/icons/setup.png" closable="true" close="removeDialog(this)" 
 	modal="true" columns="1" resizable="true" gap="15" top="9" left="9" bottom="9" right="9">
 	<panel text="i18n.plugins.ushahidi.setup.mapping" weightx="1" border="true" columns="2" top="9" left="9" bottom="9" right="9" gap="5">
+		<label text="i18n.plugins.ushahidi.setup.default.latitude"/>
+		<textfield name="txtDefaultLatitude" weightx="1" columns="50" action="latitudeLongitudeChanged(this, txtDefaultLongitude)"/>
+		
+		<label text="i18n.plugins.ushahidi.setup.default.longitude"/>
+		<textfield name="txtDefaultLongitude" weightx="1" columns="50" action="latitudeLongitudeChanged(txtDefaultLatitude, this)"/>
+		
+		<label text="i18n.plugins.ushahidi.setup.default.zoom"/>
+		<slider name="sldDefaultZoom" height="2" weightx="1" minimum="1" unit="1" block="1" maximum="25" value="7" orientation="horizontal" action="zoomChanged(this)"/>
+		
+		<label text="i18n.plugins.ushahidi.setup.map.provider"/>
+		<combobox name="cbxMapProviders" editable="false" weightx="1" action="mapProviderChanged(this)"/>
+	</panel>
+	<panel text="i18n.plugins.ushahidi.setup.ushahidi" weightx="1" border="true" columns="2" top="9" left="9" bottom="9" right="9" gap="5">
 		<table weightx="1" weighty="1" colspan="2" name="tblSources" action="editMappingSource(dlgSetup, tblSources)">
 			<header>
 				<column text="i18n.plugins.ushahidi.setup.default" width="50"/>

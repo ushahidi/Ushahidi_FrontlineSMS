@@ -18,7 +18,7 @@ import org.apache.log4j.Logger;
 
 import com.ushahidi.plugins.mapping.maps.core.Coordinate;
 import com.ushahidi.plugins.mapping.maps.geo.Location;
-import com.ushahidi.plugins.mapping.maps.providers.AbstractMapProvider;
+import com.ushahidi.plugins.mapping.maps.providers.MapProvider;
 
 public class TiledMap implements TileRequestor{
 //> CONSTANTS
@@ -35,7 +35,7 @@ public class TiledMap implements TileRequestor{
 	/** Image object to store the map */
 	private BufferedImage mapImage;
 	/** Instance of the map provider to be used */
-	private AbstractMapProvider provider;
+	private MapProvider provider;
 	/** Dimensions of the map */
 	private Dimension mapSize = new Dimension(0, 0);
 	/** Coordinates */
@@ -50,7 +50,7 @@ public class TiledMap implements TileRequestor{
 	private long updateId;
 
 
-	public TiledMap(AbstractMapProvider provider, Dimension dimensions, Coordinate coordinate, Point offset) {
+	public TiledMap(MapProvider provider, Dimension dimensions, Coordinate coordinate, Point offset) {
 		this.provider = provider;
 		this.mapSize = dimensions;
 		this.coordinate = coordinate;
@@ -59,7 +59,6 @@ public class TiledMap implements TileRequestor{
 		this.zoom = coordinate.zoom;		
 	}
 	
-
 	public void setMapPosition(int x, int y){
 		if(mapPosition.x == x && mapPosition.y == y)
 			return;
@@ -374,7 +373,7 @@ public class TiledMap implements TileRequestor{
 		return mapSize;
 	}
 	
-	public AbstractMapProvider getProvider(){
+	public MapProvider getProvider(){
 		return this.provider;
 	}
 	

@@ -11,7 +11,7 @@
 	<panel weightx="1" columns="3" gap="15" top="10" valign="fill">
 		<panel gap="5" columns="2" valign="center">
 			<label text="i18n.plugins.ushahidi.map.zoom" valign="center"/>
-			<slider height="2" width="100" minimum="1" unit="1" block="1" maximum="25" value="7" orientation="horizontal" name="sldZoomController" action="zoomMap(this)"/>		
+			<slider name="sldZoomLevel" height="2" width="100" minimum="1" unit="1" block="1" maximum="25" value="7" orientation="horizontal" action="zoomMap(this)"/>		
 		</panel>
 		<panel gap="5" columns="2" valign="center">
 			<label text="i18n.plugins.ushahidi.map.location" valign="center"/>	

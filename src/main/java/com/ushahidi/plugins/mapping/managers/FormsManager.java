@@ -71,8 +71,9 @@ public class FormsManager extends Manager {
 				}
 			}
 			Form form = new Form(formName);
-			//DETAILS
+			//TITLE
 			addFormField(form, FormFieldType.TEXT_FIELD, MappingMessages.getTitle());
+			//DESCRIPTION
 			addFormField(form, FormFieldType.TEXT_AREA, MappingMessages.getDescription());
 			//DATE
 			addFormField(form, FormFieldType.DATE_FIELD, MappingMessages.getDate());

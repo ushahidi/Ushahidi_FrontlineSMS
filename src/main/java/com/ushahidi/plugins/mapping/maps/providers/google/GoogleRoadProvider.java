@@ -6,6 +6,9 @@ import java.util.List;
 import com.ushahidi.plugins.mapping.maps.core.Coordinate;
 
 public class GoogleRoadProvider extends AbstractProvider {
+	
+	public GoogleRoadProvider(){}
+	
     public List<String> getTileUrls(Coordinate coordinate) {
     	ArrayList<String> ret = new ArrayList<String>();
     	// http://mt3.google.com/vt/v=w2t.99&hl=en&x=615&y=516&z=10&s=G
@@ -22,5 +25,10 @@ public class GoogleRoadProvider extends AbstractProvider {
 	@Override
 	public String getTileId(Coordinate coordinate) {
 		return "GOOGLE_ROAD" + getZoomString(sourceCoordinate(coordinate));
+	}
+
+	@Override
+	public String getTitle() {
+		return "Google Maps Provider (Road)";
 	}    
 }

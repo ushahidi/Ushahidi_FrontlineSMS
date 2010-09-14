@@ -18,7 +18,7 @@ import net.frontlinesms.FrontlineUtils;
 import org.apache.log4j.Logger;
 
 import com.ushahidi.plugins.mapping.maps.core.Coordinate;
-import com.ushahidi.plugins.mapping.maps.providers.AbstractMapProvider;
+import com.ushahidi.plugins.mapping.maps.providers.MapProvider;
 
 public class TileRequest implements Runnable {
 
@@ -28,7 +28,7 @@ public class TileRequest implements Runnable {
 
 	int attempts = 1;
 	Boolean done;
-	AbstractMapProvider provider;
+	MapProvider provider;
 	private Coordinate coord;
 	private TileRequestor requestor;
 
@@ -37,7 +37,7 @@ public class TileRequest implements Runnable {
 	private static final Map<String, ArrayList<BufferedImage>> tileCache = Collections
 			.synchronizedMap(new HashMap<String, ArrayList<BufferedImage>>());
 
-	public TileRequest(AbstractMapProvider provider, Coordinate coord, Point offset, long updateId) {
+	public TileRequest(MapProvider provider, Coordinate coord, Point offset, long updateId) {
 		this.done = false;
 		this.provider = provider;
 		this.setCoord(coord);

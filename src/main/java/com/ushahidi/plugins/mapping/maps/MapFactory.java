@@ -5,7 +5,7 @@ import java.awt.Point;
 
 import com.ushahidi.plugins.mapping.maps.core.Coordinate;
 import com.ushahidi.plugins.mapping.maps.geo.Location;
-import com.ushahidi.plugins.mapping.maps.providers.AbstractMapProvider;
+import com.ushahidi.plugins.mapping.maps.providers.MapProvider;
 
 public class MapFactory {
 
@@ -18,7 +18,7 @@ public class MapFactory {
 	 * @param dimensions
 	 * @return
 	 */
-	public static TiledMap mapByCenterZoom(AbstractMapProvider provider, Location center, int zoom, Dimension dimensions) {
+	public static TiledMap mapByCenterZoom(MapProvider provider, Location center, int zoom, Dimension dimensions) {
 		provider.setZoomLevel(zoom);
 
 		Coordinate centerCoord = provider.locationCoordinate(center);
@@ -35,7 +35,7 @@ public class MapFactory {
 	 * @param centerCoord
 	 * @return
 	 */
-	public static Point calculateMapCenter(AbstractMapProvider provider, Coordinate centerCoord) {
+	public static Point calculateMapCenter(MapProvider provider, Coordinate centerCoord) {
 		// Initial tile coordinate
 		Coordinate initTileCoord = centerCoord.container();
 		

@@ -1,13 +1,9 @@
 package com.ushahidi.plugins.mapping.maps.providers.openstreetmap;
 
-import java.awt.Dimension;
-import java.awt.Point;
-import java.awt.image.BufferedImage;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import com.ushahidi.plugins.mapping.maps.TileRequest;
-import com.ushahidi.plugins.mapping.maps.TiledMap;
 import com.ushahidi.plugins.mapping.maps.core.Coordinate;
 import com.ushahidi.plugins.mapping.maps.geo.Location;
 
@@ -21,12 +17,24 @@ public class OpenStreetMapProvider extends AbstractProvider {
 	};
 	*/
 	
+	public OpenStreetMapProvider() {}
+	
 	public String getZoomString(Coordinate coordinate){
 		int zoom = (int)coordinate.zoom;
 		
 		return String.format("%d/%d/%d", zoom, (int)coordinate.col, (int)coordinate.row);
 	}
 
+	@Override
+	public String getTitle() {
+		return "Open Street Map Provider";
+	}  
+	
+	@Override
+    public String toString() {
+    	return "OPENSTREET_MAP";
+    }
+	 
 	@Override
 	public String getTileId(Coordinate coordinate) {
 		return "OPENSTREET_MAP" + getZoomString(coordinate);

@@ -19,10 +19,13 @@ import com.ushahidi.plugins.mapping.data.repository.LocationDao;
 import com.ushahidi.plugins.mapping.data.repository.MappingSetupDao;
 import com.ushahidi.plugins.mapping.managers.FormsManager;
 import com.ushahidi.plugins.mapping.managers.SurveysManager;
+import com.ushahidi.plugins.mapping.maps.providers.MapProvider;
+import com.ushahidi.plugins.mapping.maps.providers.MapProviderFactory;
 import com.ushahidi.plugins.mapping.sync.SynchronizationCallback;
 import com.ushahidi.plugins.mapping.sync.SynchronizationManager;
 import com.ushahidi.plugins.mapping.utils.MappingLogger;
 import com.ushahidi.plugins.mapping.utils.MappingMessages;
+import com.ushahidi.plugins.mapping.utils.MappingProperties;
 
 import net.frontlinesms.FrontlineSMS;
 import net.frontlinesms.data.DuplicateKeyException;
@@ -60,6 +63,10 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
 	private final Object btnCancel;
 	private final Object btnCreateForm;
 	private final Object btnCreateSurvey;
+	private final Object txtDefaultLatitude;
+	private final Object txtDefaultLongitude;
+	private final Object cbxMapProviders;
+	private final Object sldDefaultZoom;
 	
 	private SyncDialogHandler syncDialog;
 	
@@ -85,6 +92,10 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
 		this.btnCancel = ui.find(this.mainDialog, "btnCancel");
 		this.btnCreateForm = ui.find(this.mainDialog, "btnCreateForm");
 		this.btnCreateSurvey = ui.find(this.mainDialog, "btnCreateSurvey");
+		this.txtDefaultLatitude = ui.find(this.mainDialog, "txtDefaultLatitude");
+		this.txtDefaultLongitude = ui.find(this.mainDialog, "txtDefaultLongitude");
+		this.cbxMapProviders = ui.find(this.mainDialog, "cbxMapProviders");
+		this.sldDefaultZoom = ui.find(this.mainDialog, "sldDefaultZoom");
 	}
 	
 	public void showDialog() {
@@ -100,6 +111,20 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
 			ui.setEnabled(this.btnCreateForm, false);
 			ui.setEnabled(this.btnCreateSurvey, false);
 		}
+		ui.setText(txtDefaultLatitude, MappingProperties.getDefaultLatitudeString());
+		ui.setText(txtDefaultLongitude, MappingProperties.getDefaultLongitudeString());
+		
+		ui.removeAll(cbxMapProviders);
+		int index = 0;
+		for(MapProvider mapProvider : MapProviderFactory.getMapProviders()) {
+			Object comboChoice = ui.createComboboxChoice(mapProvider.getTitle(), mapProvider);
+			if (mapProvider == MappingProperties.getDefaultMapProvider()) {
+				ui.setSelectedIndex(cbxMapProviders, index);
+			}
+			index++;
+			ui.add(cbxMapProviders, comboChoice);
+		}
+		ui.setInteger(sldDefaultZoom, VALUE, MappingProperties.getDefaultZoomLevel());
 		ui.add(this.mainDialog);	
 	}
 	
@@ -335,6 +360,34 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
         }
 	}
 
+	public void latitudeLongitudeChanged(Object txtLatitude, Object txtLongitude) {
+		String latitude = ui.getText(txtLatitude); 
+		String longitude = ui.getText(txtLongitude); 
+		LOG.debug("latitude:%s longitude:%s", latitude, longitude);
+		MappingProperties.setDefaultLatitude(latitude);
+		MappingProperties.setDefaultLongitude(longitude);
+		pluginController.refreshIncidentMap();
+	}
+	
+	public void mapProviderChanged(Object comboBox) {
+		Object selectedItem = ui.getSelectedItem(comboBox);
+		if (selectedItem != null) {
+			MapProvider mapProvider = ui.getAttachedObject(selectedItem, MapProvider.class);
+			if (mapProvider != null) {
+				LOG.debug("MapProvider: %s", mapProvider.getTitle());
+				MappingProperties.setDefaultMapProvider(mapProvider);
+				pluginController.refreshIncidentMap();
+			}
+		}
+	}
+	
+	public void zoomChanged(Object sldZoomLevel) {
+		int zoomLevel = getInteger(sldZoomLevel, ExtendedThinlet.VALUE);
+		LOG.debug("zoom:%d", zoomLevel);
+		MappingProperties.setDefaultZoomLevel(zoomLevel);
+		pluginController.refreshIncidentMap();
+	}
+	
 	//################# SynchronizationCallback #################
 	
 	public void downloadedGeoMidpoint(String domain, String latitude, String longitude) {

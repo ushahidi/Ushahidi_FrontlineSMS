@@ -13,6 +13,7 @@ import com.ushahidi.plugins.mapping.data.repository.IncidentDao;
 import com.ushahidi.plugins.mapping.data.repository.MappingSetupDao;
 import com.ushahidi.plugins.mapping.utils.MappingLogger;
 import com.ushahidi.plugins.mapping.utils.MappingMessages;
+import com.ushahidi.plugins.mapping.utils.MappingProperties;
 
 import net.frontlinesms.FrontlineSMS;
 import net.frontlinesms.data.DuplicateKeyException;
@@ -39,7 +40,7 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 	
 	private final MapBean mapBean;
 	private final Object lblCoordinates;
-	private final Object sldZoomController;
+	private final Object sldZoomLevel;
 	private final Object cbxCategories;
 	
 	public MapPanelHandler(MappingPluginController pluginController, FrontlineSMS frontlineController, UiGeneratorController uiController) {
@@ -54,7 +55,7 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 		this.mainPanel = this.ui.loadComponentFromFile(UI_PANEL_XML, this);
 		this.mapBean = (MapBean)get(this.find(this.mainPanel, "mapBean"), BEAN);
 		this.lblCoordinates = this.ui.find(this.mainPanel, "lblCoordinates");
-		this.sldZoomController = this.ui.find(this.mainPanel, "sldZoomController");
+		this.sldZoomLevel = this.ui.find(this.mainPanel, "sldZoomLevel");
 		this.cbxCategories = this.ui.find(this.mainPanel, "cbxCategories");
 	}
 	
@@ -64,12 +65,7 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 	
 	public void init() {
 		ui.removeAll(cbxCategories);
-		ui.add(cbxCategories, createComboboxChoice(MappingMessages.getAllCategories(), null));
-		for(Category category : categoryDao.getAllCategories(mappingSetupDao.getDefaultSetup())){
-			LOG.debug("Loading category %s", category.getTitle());
-			ui.add(cbxCategories, createComboboxChoice(category.getTitle(), category));
-		}
-		ui.setSelectedIndex(cbxCategories, 0);
+		mapBean.setMapProvider(MappingProperties.getDefaultMapProvider());
 		if(mappingSetupDao.getDefaultSetup() != null) {
 			MappingSetup defaultSetup = mappingSetupDao.getDefaultSetup();
 			double latitude = defaultSetup.getLatitude();
@@ -93,14 +89,29 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 					}					
 				}
 			}
-			mapBean.setLocation(longitude, latitude);			
+			mapBean.setLocationAndZoomLevel(longitude, latitude, MappingProperties.getDefaultZoomLevel());			
 			mapBean.setIncidents(incidentDao.getAllIncidents(defaultSetup));
 			mapBean.addMapListener(this);
 			mapBean.setMapPanelHandler(this);
+			ui.setEnabled(sldZoomLevel, true);
+			ui.add(cbxCategories, createComboboxChoice(MappingMessages.getAllCategories(), null));
+			for(Category category : categoryDao.getAllCategories(mappingSetupDao.getDefaultSetup())){
+				LOG.debug("Loading category %s", category.getTitle());
+				ui.add(cbxCategories, createComboboxChoice(category.getTitle(), category));
+			}
+			ui.setSelectedIndex(cbxCategories, 0);
+			ui.setEnabled(cbxCategories, true);
 		} 
 		else {
-			ui.setEnabled(sldZoomController, false);
+			double latitude = MappingProperties.getDefaultLatitude();
+			double longitude = MappingProperties.getDefaultLongitude();
+			mapBean.setLocationAndZoomLevel(longitude, latitude, MappingProperties.getDefaultZoomLevel());			
+			mapBean.addMapListener(this);
+			mapBean.setMapPanelHandler(this);
+			ui.setEnabled(sldZoomLevel, true);
+			ui.setEnabled(cbxCategories, false);
 		}
+		ui.setInteger(sldZoomLevel, VALUE, MappingProperties.getDefaultZoomLevel());
 	}
 	
 	public void refresh() {
@@ -143,7 +154,7 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 	/** @see {@link MapListener#mapZoomed(int)} */
 	public void mapZoomed(int zoom){
 	    LOG.info("Updating zoom controller to level " + zoom);
-	    ui.setInteger(sldZoomController, VALUE, zoom);
+	    ui.setInteger(sldZoomLevel, VALUE, zoom);
 	}
 	
 	/**
@@ -152,7 +163,7 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 	 * @param zoomController The Zoom UI control
 	 */
 	public void zoomMap(Object zoomController){
-		int currentZoom = mapBean.getCurrentZoomLevel();		
+		int currentZoom = mapBean.getZoomLevel();		
 		int zoomValue = getInteger(zoomController, ExtendedThinlet.VALUE);
 		// Adjust the zooming bar so that it moves in steps of 1 only
 		if(currentZoom < zoomValue){
@@ -161,7 +172,7 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 		else if (currentZoom > zoomValue){
 			ui.setInteger(zoomController, ExtendedThinlet.VALUE, zoomValue + 1);
 		}
-		mapBean.zoomMap(zoomValue);
+		mapBean.setZoomLevel(zoomValue);
 	}
 	
 	/**

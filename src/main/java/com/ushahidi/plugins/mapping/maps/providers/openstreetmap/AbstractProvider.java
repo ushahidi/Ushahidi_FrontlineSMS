@@ -1,8 +1,8 @@
 package com.ushahidi.plugins.mapping.maps.providers.openstreetmap;
 
-import com.ushahidi.plugins.mapping.maps.providers.AbstractMapProvider;
+import com.ushahidi.plugins.mapping.maps.providers.MapProvider;
 
-public abstract class AbstractProvider extends AbstractMapProvider {
+public abstract class AbstractProvider extends MapProvider {
 	
 	public AbstractProvider() {
 		super(1, 18);
