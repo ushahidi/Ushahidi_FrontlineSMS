@@ -13,7 +13,6 @@ import com.ushahidi.plugins.mapping.utils.MappingMessages;
 
 import net.frontlinesms.FrontlineSMS;
 import net.frontlinesms.data.DuplicateKeyException;
-import net.frontlinesms.data.domain.Contact;
 import net.frontlinesms.ui.ExtendedThinlet;
 import net.frontlinesms.ui.ThinletUiEventHandler;
 import net.frontlinesms.ui.UiGeneratorController;
@@ -71,12 +70,10 @@ public class ContactDialogHandler extends ExtendedThinlet implements ThinletUiEv
 		this.txtCoordinates = ui.find(this.mainDialog, "txtCoordinates");
 	}
 	
-	public void showDialog(Contact contact) {
-		ui.setAttachedObject(mainDialog, contact);
-		ui.setText(txtContactName, contact.getDisplayName());
-		ContactLocation contactLocation = null;
-		if (contact instanceof ContactLocation) {
-			contactLocation = (ContactLocation)contact;
+	public void showDialog(ContactLocation contactLocation) {
+		ui.setAttachedObject(mainDialog, contactLocation);
+		ui.setText(txtContactName, contactLocation.getContactName());
+		if (contactLocation != null) {
 			ui.setText(txtCoordinates, contactLocation.getLocationCoordinates());
 		}
 		else {
@@ -98,18 +95,7 @@ public class ContactDialogHandler extends ExtendedThinlet implements ThinletUiEv
 	}
 	
 	public void saveContact(Object dialog) {
-		Contact contact = ui.getAttachedObject(mainDialog, Contact.class);
-		ContactLocation contactLocation = null;
-		if (contact instanceof ContactLocation) {
-			LOG.debug("Instance of ContactLocation");
-			contactLocation = (ContactLocation)contact;
-			//UPDATE contact_location SET location_id = 33 WHERE contact_id = 22;
-		}
-		else {
-			LOG.debug("NOT an Instance of ContactLocation");
-			//INSERT INTO contact_location (contact_id, location_id) VALUES (22,33);
-			contactLocation = new ContactLocation();
-		}
+		ContactLocation contactLocation = ui.getAttachedObject(mainDialog, ContactLocation.class);
 		if (this.getBoolean(cbxExistingLocation, Thinlet.SELECTED)){
 			Location location = getAttachedObject(getSelectedItem(cboLocations), Location.class);
 			contactLocation.setLocation(location);

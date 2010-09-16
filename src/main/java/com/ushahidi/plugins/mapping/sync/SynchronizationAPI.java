@@ -89,43 +89,23 @@ public final class SynchronizationAPI {
 	
 	public static final String STATUS_NOT_FOUND = "999";
 	
-	
-	/* Parameters for reporting an incident through the Ushahidi API */
-	private static final String REPORT_INCIDENT_PARAMETERS = "&incident_title=%s"+
-		"&incident_description=%s&incident_date=%s&incident_hour=%s&incident_minute=%s"+
-		"&incident_ampm=%s&incident_category=%s&latitude=%s&longitude=%s&location_name=%s";
-	
-	/* Parameters for all tagging tasks for media (photos, video and news) */
-	private static final String TAGMEDIA_TASK_PARAMETERS = "id=%d&url=%s";
-		
-	
-	public static String getParameterKey(String task){
-		if(task.equalsIgnoreCase(INCIDENTS)){
-			return INCIDENT_KEY;
-		}else if(task.equalsIgnoreCase(COUNTRIES)){
-			return COUNTRY_KEY;
-		}else if(task.equalsIgnoreCase(CATEGORIES)){
-			return CATEGORY_KEY;
-		}else if(task.equalsIgnoreCase(LOCATIONS)){
-			return LOCATION_KEY;
-		}else{	
-			return null;
-		}
-	}
-	
-	/**
-	 * Gets the URL parameter string to be submitted to the API during synchronization
-	 * @param postTask
-	 * @return
-	 */
-	public static String getSubmitURLParameters(String postTask){
-		if(postTask.equalsIgnoreCase(POST_INCIDENT)){
-			return REPORT_INCIDENT_PARAMETERS;
-		}else if(postTask.equalsIgnoreCase(TAG_PHOTO) || postTask.equalsIgnoreCase(TAG_NEWS)
-				||postTask.equalsIgnoreCase(TAG_VIDEO)){
-			return TAGMEDIA_TASK_PARAMETERS;
-		}
-		return null;
-	}
+	public static final String POST_TASK = "task";
+	public static final String POST_RESP = "resp";
+	public static final String POST_REPORT = "report";
+	public static final String POST_TITLE = "incident_title";
+	public static final String POST_DESCRIPTION = "incident_description";
+	public static final String POST_DATE = "incident_date";
+	public static final String POST_HOUR = "incident_hour";
+	public static final String POST_MINUTE = "incident_minute";
+	public static final String POST_AMPM = "incident_ampm";
+	public static final String POST_CATEGORIES = "incident_category";
+	public static final String POST_LATITUDE = "latitude";
+	public static final String POST_LONGITUDE = "longitude";
+	public static final String POST_LOCATION = "location_name";
+	public static final String POST_FIRSTNAME = "person_first";
+	public static final String POST_LASTNAME = "person_last";
+	public static final String POST_EMAIL = "person_email";
+	public static final String POST_MEDIA_ID = "id";
+	public static final String POST_MEDIA_URL = "url";
 	
 }

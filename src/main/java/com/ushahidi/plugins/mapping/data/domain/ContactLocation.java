@@ -1,9 +1,14 @@
 package com.ushahidi.plugins.mapping.data.domain;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
@@ -15,17 +20,59 @@ import net.frontlinesms.data.domain.Contact;
 
 @Entity
 @Table(name="contact_location")
-@Inheritance(strategy = InheritanceType.JOINED)
-public class ContactLocation extends Contact {
+public class ContactLocation {
 	
-	public ContactLocation() {
-		super(null, null, null, null, null, true);
+	public ContactLocation() {}
+	public ContactLocation(Contact contact) {
+		this.contact = contact;
+	}
+	public ContactLocation(Contact contact, Location location) {
+		this.contact = contact;
+		this.location = location;
 	}
 
-	@ManyToOne(targetEntity=Location.class, cascade=CascadeType.ALL)
-	@Cascade(value = org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
-	@Fetch (FetchMode.SELECT)
+	/** Unique id for this entity.  This is for hibernate usage. */
+	@Id @GeneratedValue(strategy=GenerationType.IDENTITY)
+	@Column(unique=true,nullable=false,updatable=false)
+	private long id;
+	
+	//@JoinColumn(name="location_id", nullable=true)
+//	@ManyToOne(cascade={CascadeType.PERSIST,CascadeType.REMOVE})
+//	@JoinTable(name="location_join", joinColumns={@JoinColumn(name="id")},  
+//               inverseJoinColumns={@JoinColumn(name="location_id")})
+//	@Cascade(value=org.hibernate.annotations.CascadeType.REMOVE)
+	@ManyToOne(cascade=CascadeType.ALL, fetch=FetchType.EAGER)
 	private Location location;
+	
+	//@Fetch(FetchMode.JOIN)
+	//@JoinColumn(name="contact_id", nullable=true) 
+//	@ManyToOne(cascade={CascadeType.PERSIST,CascadeType.REMOVE})
+//	@JoinTable(name="contact_join", joinColumns={@JoinColumn(name="id")},  
+//               inverseJoinColumns={@JoinColumn(name="contact_id")})
+//	@Cascade(value=org.hibernate.annotations.CascadeType.REMOVE)
+	@ManyToOne(cascade=CascadeType.ALL, fetch=FetchType.EAGER)
+	private Contact contact;
+	
+	/** @return the database ID of this contact */
+	public long getId() {
+		return this.id;
+	}
+	
+	public void setContact(Contact contact) {
+		this.contact = contact;
+	}
+	
+	public Contact getContact() {
+		return contact;
+	}
+	
+	public String getContactName() {
+		return contact != null ? contact.getName() : null;
+	}
+	
+	public long getContactId() {
+		return contact != null ? contact.getId() : 0;
+	}
 	
 	public void setLocation(Location location){
 		this.location = location;

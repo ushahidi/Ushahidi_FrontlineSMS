@@ -114,8 +114,9 @@ public class HibernateIncidentDao extends BaseHibernateDao<Incident> implements
 	 * @return
 	 */
 	public List<Incident> getIncidentsByLocation(Location location){
-		if(getCount() == 0)
+		if(getCount() == 0) {
 			return null;
+		}
 		else{
 			DetachedCriteria criteria = super.getCriterion();
 			criteria.add(Restrictions.eq("location", location));

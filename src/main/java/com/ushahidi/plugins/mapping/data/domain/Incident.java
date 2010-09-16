@@ -2,6 +2,7 @@ package com.ushahidi.plugins.mapping.data.domain;
 
 import java.awt.Color;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -56,17 +57,12 @@ public class Incident implements Serializable {
 	private static final String FIELD_CATEGORIES  = "categories";
 	/** Column name for {@link #mappingSetup} */
 	private static final String FIELD_MAPPING="mappingSetup";
-	/** Column name for {@link #mappingSetup} */
-	private static final String FIELD_MAPPING_ID="mappingSetup_id";
-	
-//	/** Column name for {@link #firstName} */
-//	private static final String FIELD_FIRST_NAME = "firstName";
-//	/** Column name for {@link #lastName} */
-//	private static final String FIELD_LAST_NAME = "lastName";
-//	/** Column name for {@link #emailAddress } */
-//	private static final String FIELD_EMAIL = "emailAddress";
-//	/** Column name for {@link #phoneNumber} */
-//	private static final String FIELD_PHONE_NUMBER = "phoneNumber";
+	/** Column name for {@link #firstName} */
+	private static final String FIELD_FIRST_NAME = "firstName";
+	/** Column name for {@link #lastName} */
+	private static final String FIELD_LAST_NAME = "lastName";
+	/** Column name for {@link #emailAddress } */
+	private static final String FIELD_EMAIL_ADDRESS = "emailAddress";
 	
 	/** Field mapping for the properties contained in this class/entity */
 	public enum Field implements EntityField<Incident>{
@@ -90,8 +86,12 @@ public class Incident implements Serializable {
 		CATEGORIES(FIELD_CATEGORIES),
 		/** Field mapping for {@link Incident#mappingSetup} */
 		MAPPING_SETUP(FIELD_MAPPING),
-		/** Field mapping for {@link Incident#mappingSetup} */
-		MAPPING_SETUP_ID(FIELD_MAPPING_ID);
+		/** Field mapping for {@link Incident#firstName} */
+		FIRST_NAME(FIELD_FIRST_NAME),
+		/** Field mapping for {@link Incident#lastName} */
+		LAST_NAME(FIELD_LAST_NAME),
+		/** Field mapping for {@link Incident#emailAddress} */
+		EMAIL_ADDRESS(FIELD_EMAIL_ADDRESS);
 		
 		/** name of a field */
 		private final String fieldName;
@@ -138,6 +138,15 @@ public class Incident implements Serializable {
 	/** Date when incident took place */
 	@Column(name=FIELD_INCIDENT_DATE)
 	private Date incidentDate;
+	
+	@Column(name=FIELD_FIRST_NAME)
+	private String firstName;
+	
+	@Column(name=FIELD_LAST_NAME)
+	private String lastName;
+	
+	@Column(name=FIELD_EMAIL_ADDRESS)
+	private String emailAddress;
 	
 	/** Categories of this incident */
 	@ManyToMany(cascade={CascadeType.PERSIST, CascadeType.MERGE}, fetch=FetchType.EAGER)
@@ -238,12 +247,26 @@ public class Incident implements Serializable {
 		return location;
 	}
 	
+	public String getLocationName() {
+		return location != null ? location.getName() : null;
+	}
+	
+	public double getLocationLatitude() {
+		return location != null ? location.getLatitude() : 0;
+	}
+	
+	public double getLocationLongitude() {
+		return location != null ? location.getLongitude() : 0;
+	}
+	
 	public boolean isLocation(Location location) {
 		if (this.location != null && location != null) {
 			return this.location.getId() == location.getId();
 		}
 		return false;
 	}
+	
+	
 	
 	/**
 	 * Sets the date when the incident occurred
@@ -259,6 +282,26 @@ public class Incident implements Serializable {
 	 */
 	public Date getIncidentDate(){
 		return incidentDate;
+	}
+	
+	public String getDateString() {
+		SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
+		return incidentDate != null ? dateFormat.format(incidentDate) : null;
+	}
+	
+	public String getDateHour() {
+		SimpleDateFormat dateFormat = new SimpleDateFormat("HH");
+		return incidentDate != null ? dateFormat.format(incidentDate) : null;
+	}
+	
+	public String getDateMinute() {
+		SimpleDateFormat dateFormat = new SimpleDateFormat("mm");
+		return incidentDate != null ? dateFormat.format(incidentDate) : null;
+	}
+	
+	public String getDateAmPm() {
+		SimpleDateFormat dateFormat = new SimpleDateFormat("a");
+		return incidentDate != null ? dateFormat.format(incidentDate).toLowerCase() : null;
 	}
 	
 	/**
@@ -405,5 +448,33 @@ public class Incident implements Serializable {
 	 */
 	public MappingSetup getMappingSetup(){
 		return this.mappingSetup;
+	}
+	
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
+	
+	public String getFirstName() {
+		return firstName;
+	}
+	
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
+	}
+	
+	public String getLastName() {
+		return lastName;
+	}
+	
+	public String getFullName() {
+		return String.format("%s %s", firstName, lastName).trim();
+	}
+	
+	public void setEmailAddress(String emailAddress) {
+		this.emailAddress = emailAddress;
+	}
+	
+	public String getEmailAddress() {
+		return emailAddress;
 	}
 }

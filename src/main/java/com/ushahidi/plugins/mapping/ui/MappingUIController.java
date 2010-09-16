@@ -21,7 +21,8 @@ import net.frontlinesms.FrontlineSMS;
 import net.frontlinesms.data.DuplicateKeyException;
 import net.frontlinesms.data.domain.Contact;
 import net.frontlinesms.data.domain.FrontlineMessage;
-import net.frontlinesms.data.events.DatabaseEntityNotification;
+import net.frontlinesms.data.events.EntityDeleteWarning;
+import net.frontlinesms.data.events.EntitySavedNotification;
 import net.frontlinesms.data.repository.ContactDao;
 import net.frontlinesms.events.EventObserver;
 import net.frontlinesms.events.FrontlineEventNotification;
@@ -119,12 +120,10 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	public void showContacts() {
 		LOG.debug("showContacts");
 		ui.removeAll(tblContacts);
+		List<ContactLocation> contactLocations = contactLocationDao.getContactLocations();
 		for(Contact contact : contactDao.getAllContacts()) {
 			LOG.debug("Contact:%s", contact.getName());
-			ui.add(tblContacts, getRow(contact));
-		}
-		for(ContactLocation contactLocation : contactLocationDao.getContactLocations()) {
-			LOG.debug("ContactLocation:%s %s", contactLocation.getName(), contactLocation.getLocationName());
+			ui.add(tblContacts, getRow(contact, getContactLocation(contact, contactLocations)));
 		}
 		ui.setVisible(pnlMessages, false);
 		ui.setVisible(pnlContacts, true);
@@ -154,16 +153,12 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	public void searchContacts(Object textField) {
 		String searchText = ui.getText(textField).trim().toLowerCase();
 		ui.removeAll(tblContacts);
+		List<ContactLocation> contactLocations = contactLocationDao.getContactLocations();
 		for(Contact contact : contactDao.getAllContacts()) {
 			if (contact.getName() == null || contact.getName().toLowerCase().indexOf(searchText) > -1) {
-				ui.add(tblContacts, getRow(contact));
+				ui.add(tblContacts, getRow(contact, getContactLocation(contact, contactLocations)));
 			}
 		}
-//		for(ContactLocation contactLocation : contactLocationDao.getContactLocations()) {
-//			if (contactLocation.getDisplayName().toLowerCase().indexOf(searchText) > -1) {
-//				ui.add(tblContacts, getRow(contactLocation));
-//			}
-//		}
 	}
 	
 	/**
@@ -188,7 +183,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		if (contact != null) {
 			ContactDialogHandler dialog = new ContactDialogHandler(pluginController, frontlineController, ui);
 			mapPanelHandler.addMapListener(dialog);
-			dialog.showDialog(contact);	
+			dialog.showDialog(getContactLocation(contact));	
 			return dialog;
 		}
 		return null;
@@ -220,12 +215,11 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		return row;
 	}
 	
-	private Object getRow(Contact contact){		
+	private Object getRow(Contact contact, ContactLocation contactLocation){		
 		Object row = createTableRow(contact);
 		if (contact != null) {
 			createTableCell(row, contact.getDisplayName());
-			if (contact instanceof ContactLocation) {
-				ContactLocation contactLocation = (ContactLocation)contact;
+			if (contactLocation != null) {
 				createTableCell(row, contactLocation.getLocationName());
 				createTableCell(row, contactLocation.getLocationLatitude());
 				createTableCell(row, contactLocation.getLocationLongitude());
@@ -245,16 +239,32 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		return row;
 	}
 	
+	private ContactLocation getContactLocation(Contact contact) {
+		return getContactLocation(contact, null);
+	}
+	
+	private ContactLocation getContactLocation(Contact contact, List<ContactLocation> contactLocations) {
+		if (contactLocations == null) {
+			contactLocations = contactLocationDao.getContactLocations();
+		}
+		for(ContactLocation contactLocation : contactLocations) {
+			if (contact.getId() == contactLocation.getContactId()) {
+				return contactLocation;
+			}
+		}
+		return new ContactLocation(contact);
+	}
+	
 	/**
 	 * Gets the display name for the sender of of the text message
 	 * @param message
 	 * @return
 	 */
 	private String getSenderDisplayName(FrontlineMessage message) {
-		Contact sender = frontlineController.getContactDao().getFromMsisdn(message.getSenderMsisdn());
-		if (sender != null) {
-			if (sender.getDisplayName() != null) {
-				return String.format("%s (%s)", sender.getDisplayName(), message.getSenderMsisdn()) ;
+		Contact contact = frontlineController.getContactDao().getFromMsisdn(message.getSenderMsisdn());
+		if (contact != null) {
+			if (contact.getName() != null) {
+				return String.format("%s (%s)", contact.getName(), message.getSenderMsisdn()) ;
 			}
 			return String.format("%s", message.getSenderMsisdn());
 		}
@@ -457,15 +467,30 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	
 	@SuppressWarnings("unchecked")
 	public void notify(FrontlineEventNotification notification) {
-		if (notification instanceof DatabaseEntityNotification) {
-			DatabaseEntityNotification databaseEntityNotification = (DatabaseEntityNotification)notification;
-			if (databaseEntityNotification.getDatabaseEntity() instanceof FrontlineMessage) {
-				FrontlineMessage message = (FrontlineMessage)databaseEntityNotification.getDatabaseEntity();
+		LOG.debug("notification: %s", notification.toString());
+		if (notification instanceof EntityDeleteWarning) {
+			EntityDeleteWarning entityDeleteWarning = (EntityDeleteWarning)notification;
+			LOG.debug("entityDeleteWarning: %s", entityDeleteWarning.getDatabaseEntity().getClass());
+//			if (entityDeleteWarning.getDatabaseEntity() instanceof Contact) {
+//				Contact contact = (Contact)entityDeleteWarning.getDatabaseEntity();
+//				for(ContactLocation contactLocation : contactLocationDao.getContactLocations()) {
+//					if (contactLocation.getContactId() == contact.getId()) {
+//						LOG.debug("Deleting ContactLocation: %s", contactLocation.getId());
+//						contactLocationDao.deleteContactLocation(contactLocation);
+//						break;
+//					}
+//				}
+//			}
+		}
+		else if (notification instanceof EntitySavedNotification) {
+			EntitySavedNotification entitySavedNotification = (EntitySavedNotification)notification;
+			if (entitySavedNotification.getDatabaseEntity() instanceof FrontlineMessage) {
+				FrontlineMessage message = (FrontlineMessage)entitySavedNotification.getDatabaseEntity();
 				if (message != null) {
 					ui.add(tblMessages, getRow(message));
 				}
 			}
-			else if (databaseEntityNotification.getDatabaseEntity() instanceof Contact) {
+			else if (entitySavedNotification.getDatabaseEntity() instanceof Contact) {
 				searchContacts(this.txtSearchContacts);
 //				Contact contact = (Contact)databaseEntityNotification.getDatabaseEntity();
 //				if(contact != null) {

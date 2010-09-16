@@ -71,7 +71,6 @@ public class HibernateLocationDao extends BaseHibernateDao<Location> implements 
 	 * @return {@link Location}
 	 */
 	public Location findLocation(long serverId, MappingSetup setup){
-		LOG.debug("findLocation:%d", serverId);
 		if(getCount() == 0) {
 			return null;
 		}

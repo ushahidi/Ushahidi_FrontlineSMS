@@ -54,8 +54,10 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 	private final Object txtReportCoordinates;
 	private final Object pnlReportLocation;
 	private final Object cboReportLocations;
-	private final Object txtSender;
-	private final Object lblSender;
+	private final Object txtSenderName;
+	private final Object lblSenderName;
+	private final Object txtSenderEmail;
+	private final Object lblSenderEmail;
 	private final Object btnSave;
 	private final Object btnCancel;
 	private final Object btnClose;
@@ -87,8 +89,10 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 		this.txtReportDate = ui.find(this.mainDialog, "txtReportDate");
 		this.btnReportDate = ui.find(this.mainDialog, "btnReportDate");
 		
-		this.txtSender = ui.find(this.mainDialog, "txtSender");
-		this.lblSender = ui.find(this.mainDialog, "lblSender");
+		this.txtSenderName = ui.find(this.mainDialog, "txtSenderName");
+		this.lblSenderName = ui.find(this.mainDialog, "lblSenderName");
+		this.txtSenderEmail = ui.find(this.mainDialog, "txtSenderEmail");
+		this.lblSenderEmail = ui.find(this.mainDialog, "lblSenderEmail");
 		
 		this.txtReportCategories = ui.find(this.mainDialog, "txtReportCategories");
 		this.lstReportCategories = ui.find(this.mainDialog, "lstReportCategories");
@@ -114,7 +118,7 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 		removeAll(cboReportLocations);
 		for(Location location: locationDao.getAllLocations(mappingSetupDao.getDefaultSetup())) {
 			if (location.getName() != null && location.getName().equalsIgnoreCase(UNKNOWN) == false) {
-				ui.add(cboReportLocations, createComboboxChoice(location.getDisplayName(), location));
+				ui.add(cboReportLocations, createComboboxChoice(location.getName(), location));
 			}
 		}
 		
@@ -150,6 +154,8 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 				ui.setSelectedIndex(cboReportLocations, -1);
 				ui.setText(txtReportCoordinates, "");
 			}
+			ui.setText(txtSenderName, incident.getFirstName());
+			ui.setText(txtSenderEmail, incident.getEmailAddress());
 		}
 		else {
 			ui.setText(txtReportTitle, "");
@@ -170,8 +176,10 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 		ui.setVisible(btnCancel, editMode);
 		ui.setVisible(btnClose, !editMode);
 		
-		ui.setVisible(lblSender, editMode);
-		ui.setVisible(txtSender, editMode);
+		ui.setVisible(lblSenderName, editMode);
+		ui.setVisible(txtSenderName, editMode);
+		ui.setVisible(lblSenderEmail, editMode);
+		ui.setVisible(txtSenderEmail, editMode);
 		
 		ui.setEditable(txtReportTitle, editMode);
 		ui.setEditable(txtReportDescription, editMode);
@@ -194,8 +202,10 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 		ui.setVisible(btnCancel, true);
 		ui.setVisible(btnClose, false);
 		
-		ui.setVisible(lblSender, true);
-		ui.setVisible(txtSender, true);
+		ui.setVisible(lblSenderName, true);
+		ui.setVisible(txtSenderName, true);
+		ui.setVisible(lblSenderEmail, true);
+		ui.setVisible(txtSenderEmail, true);
 		
 		ui.setVisible(btnReportDate, true);
 		
@@ -205,7 +215,7 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 		removeAll(cboReportLocations);
 		for(Location location: locationDao.getAllLocations(mappingSetupDao.getDefaultSetup())) {	
 			if (location.getName() != null && location.getName().equalsIgnoreCase(UNKNOWN) == false) {
-				ui.add(cboReportLocations, createComboboxChoice(location.getDisplayName(), location));
+				ui.add(cboReportLocations, createComboboxChoice(location.getName(), location));
 			}
 		}
 		
@@ -215,9 +225,16 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 		}
 			
 		ui.setText(txtReportDate, InternationalisationUtils.getDatetimeFormat().format(message.getDate()));
-		ui.setText(txtSender, getSenderDisplayValue(message));
 		ui.setText(txtReportTitle, message.getTextContent());
-		
+		Contact contact = getContact(message);
+		if (contact != null){
+			ui.setText(txtSenderName, contact.getName());
+			ui.setText(txtSenderEmail, contact.getEmailAddress());
+		}
+		else {
+			ui.setText(txtSenderName, "");
+			ui.setText(txtSenderEmail, "");
+		}
 		ui.add(mainDialog);	
 	}
 	
@@ -263,6 +280,21 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 		incident.setTitle(getText(txtReportTitle));
 		incident.setDescription(getText(txtReportDescription));
 		incident.setMappingSetup(mappingSetupDao.getDefaultSetup());
+		incident.setEmailAddress(ui.getText(txtSenderEmail));
+		String[] words = ui.getText(this.txtSenderName).split(" ");
+		if (words != null && words.length > 0) {
+			incident.setFirstName(words[0]);
+			if (words.length > 1) {
+				incident.setLastName(words[1]);
+			}
+			else {
+				incident.setLastName(null);
+			}
+		}
+		else {
+			incident.setFirstName(null);
+			incident.setLastName(null);
+		}
 		
 		incident.removeCategories();
 		for(Object selectedItem : ui.getSelectedItems(lstReportCategories)) {
@@ -315,14 +347,8 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 		return items;
 	}
 	
-	/**
-	 * Gets the display name for the sender of of the text message
-	 * @param message
-	 * @return
-	 */
-	private String getSenderDisplayValue(FrontlineMessage message) {
-		Contact sender = frontlineController.getContactDao().getFromMsisdn(message.getSenderMsisdn());
-		return sender != null ? sender.getDisplayName() + "(" + message.getSenderMsisdn() + ")" : message.getSenderMsisdn();
+	private Contact getContact(FrontlineMessage message) {
+		return frontlineController.getContactDao().getFromMsisdn(message.getSenderMsisdn());
 	}
 	
 	public void locationChanged(Object comboBox, Object textField) {
@@ -367,7 +393,10 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 	public void pointSelected(double latitude, double longitude) {
 		ui.setText(txtReportCoordinates, String.format("%f, %f", latitude, longitude));
 		ui.setText(txtNewLocation, String.format("%f, %f", latitude, longitude));
+		pluginController.refreshIncidentMap();
+		pluginController.refreshIncidentReports();
 		setBoolean(mainDialog, Thinlet.MODAL, true);
 		ui.setVisible(mainDialog, true);
+		ui.repaint();
 	}
 }

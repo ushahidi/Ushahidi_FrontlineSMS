@@ -124,10 +124,8 @@ public class SynchronizationThread extends Thread{
 	 */
 	public void performPullTask(){
 		String urlStr = getRequestURL();
-		urlStr += (urlParameterValue == null)? "":urlParameterValue;
-		
-		LOG.debug("URL: " + urlStr);
-		
+		urlStr += (urlParameterValue == null) ? "" : urlParameterValue;
+		LOG.debug("URL: %s", urlStr);
 		StringBuffer buffer = new StringBuffer();
 		try{
 			String line = null;
@@ -170,16 +168,14 @@ public class SynchronizationThread extends Thread{
 	 */
 	public void performPushTask(){
 		LOG.debug("performPushTask");
-		String urlParameterStr = SynchronizationAPI.REQUEST_URL_PREFIX + taskBuffer.toString();
-		LOG.debug(urlParameterStr);
+		String url = SynchronizationAPI.REQUEST_URL_PREFIX + taskBuffer.toString();
 		if(baseTask.equalsIgnoreCase(SynchronizationAPI.POST_INCIDENT)){
-			urlParameterStr += SynchronizationAPI.getSubmitURLParameters(baseTask);
 			for(Incident incident : this.pendingIncidents) {
-				postIncident(incident, urlParameterStr);
+				postIncident(incident, url);
 			}
 		}
 		else if(baseTask.equalsIgnoreCase(SynchronizationAPI.TAG_NEWS)){
-			urlParameterStr += SynchronizationAPI.getSubmitURLParameters(baseTask);
+			LOG.debug("TODO POST MEDIA URLS");
 		}
 	}
 	
@@ -189,16 +185,8 @@ public class SynchronizationThread extends Thread{
 	 */
 	public String getRequestURL(){
 		String extra = (baseURL.charAt(baseURL.length()-1) == '/') ? "" : "/";
-		return (baseTask == SynchronizationAPI.POST_INCIDENT)? baseURL + extra : 
+		return (baseTask == SynchronizationAPI.POST_INCIDENT) ? baseURL + extra : 
 			baseURL + extra + SynchronizationAPI.REQUEST_URL_PREFIX + taskBuffer.toString();
-	}
-	
-	/**
-	 * Gets the key to be used to lookup values in the payload
-	 * @return
-	 */
-	public String getPayloadKey(){
-		return SynchronizationAPI.getParameterKey(baseTask);
 	}
 	
 	/**
@@ -226,7 +214,7 @@ public class SynchronizationThread extends Thread{
 		}
 		else {
 			JSONArray items = data.getJSONArray(baseTask);
-			LOG.debug("items: %s", items);
+			//LOG.debug("items: %s", items);
 			for(int i=0; i < items.length(); i++){
 				JSONObject item = (JSONObject)items.getJSONObject(i);
 				if(baseTask.equals(SynchronizationAPI.CATEGORIES)){
@@ -270,7 +258,7 @@ public class SynchronizationThread extends Thread{
 	 * @throws JSONException
 	 */
 	private Category parseCategory(JSONObject item) throws JSONException{
-		System.out.println("fetchCategory: " + item.toString());
+		//LOG.debug("fetchCategory: %s", item.toString());
 		long id = item.getLong("id");
 		if (categories.containsKey(id)) {
 			return categories.get(id);
@@ -302,7 +290,7 @@ public class SynchronizationThread extends Thread{
 	}
 	
 	private Incident parseIncident(JSONObject item) throws JSONException{
-		System.out.println("fetchIncident: " + item.toString());
+		//LOG.debug("fetchIncident: %s", item.toString());
 		Incident incident = new Incident();
 		incident.setServerId(item.getLong("incidentid"));
 		incident.setTitle(item.getString("incidenttitle"));
@@ -312,7 +300,7 @@ public class SynchronizationThread extends Thread{
 		incident.setMarked(false);
 		
 		try {
-			LOG.debug("Loading Location...");
+			//LOG.debug("Loading Location...");
 			long locationId = item.getLong("locationid");
 			if (locations.containsKey(locationId)) {
 				incident.setLocation(locations.get(locationId));	
@@ -344,7 +332,7 @@ public class SynchronizationThread extends Thread{
 	}
 	
 	private Location parseLocation(JSONObject item) throws JSONException{
-		System.out.println("parseLocation: " + item.toString());
+		//LOG.debug("parseLocation: %s", item.toString());
 		long id = item.getLong("id");
 		if (locations.containsKey(id)) {
 			return locations.get(id);
@@ -364,33 +352,41 @@ public class SynchronizationThread extends Thread{
 	 * Posts an incident to the frontend. 
 	 * 
 	 * @param incident The incident to be posted
-	 * @param urlParameterStr Pre-defined url parmaeter string for posting an incident to the frontend
+	 * @param requestParams Pre-defined url parmaeter string for posting an incident to the frontend
 	 */
-	private void postIncident(Incident incident, String urlParameterStr){
+	private void postIncident(Incident incident, String requestParams){
 		LOG.debug("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
 		LOG.debug("UPLOADING: %s", incident.getTitle());
-		LOG.debug("URL: %s", urlParameterStr);
-		Date date = incident.getIncidentDate();
-		String parameterStr = String.format(urlParameterStr, 
-				incident.getTitle(), 
-				incident.getDescription(), 
-				getDateTimeComponent(date, "MM/dd/yyyy"), 
-				getDateTimeComponent(date, "HH"), getDateTimeComponent(date, "mm"),
-				getDateTimeComponent(date, "a").toLowerCase(),
-				incident.getCategoryIDs(),
-				Double.toString(incident.getLocation().getLatitude()), 
-				Double.toString(incident.getLocation().getLongitude()),
-				incident.getLocation().getName()
-				);
-		LOG.debug("POST: %s", parameterStr);
+		LOG.debug("PARAMS: %s", requestParams);
+		
+		SynchronizationPost postBody = new SynchronizationPost();
+		postBody.add(SynchronizationAPI.POST_TASK, SynchronizationAPI.POST_REPORT);
+		postBody.add(SynchronizationAPI.POST_RESP, "JSON");
+		postBody.add(SynchronizationAPI.POST_TITLE, incident.getTitle());
+		postBody.add(SynchronizationAPI.POST_DESCRIPTION, incident.getDescription());
+		postBody.add(SynchronizationAPI.POST_DATE, incident.getDateString());
+		postBody.add(SynchronizationAPI.POST_HOUR, incident.getDateHour());
+		postBody.add(SynchronizationAPI.POST_MINUTE, incident.getDateMinute());
+		postBody.add(SynchronizationAPI.POST_AMPM, incident.getDateAmPm());
+		postBody.add(SynchronizationAPI.POST_CATEGORIES, incident.getCategoryIDs());
+		postBody.add(SynchronizationAPI.POST_LATITUDE, incident.getLocationLatitude());
+		postBody.add(SynchronizationAPI.POST_LONGITUDE, incident.getLocationLongitude());
+		postBody.add(SynchronizationAPI.POST_LOCATION, incident.getLocationName());
+		postBody.add(SynchronizationAPI.POST_FIRSTNAME, incident.getFirstName());
+		postBody.add(SynchronizationAPI.POST_LASTNAME, incident.getLastName());
+		postBody.add(SynchronizationAPI.POST_EMAIL, incident.getEmailAddress());
+		
 		try{
-			URL url = new URL(getRequestURL());			
+			String requestURL = String.format("%s%s", getRequestURL(), requestParams);
+			LOG.debug("URL: %s", requestURL);
+			LOG.debug("POST: %s", postBody);
+			URL url = new URL(requestURL);			
 			URLConnection connection = url.openConnection();
 			connection.setDoOutput(true);
 			StringBuffer response = new StringBuffer();
 			OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream());
 			try {
-				writer.write(parameterStr);
+				writer.write(postBody.toString());
 				writer.flush();
 				BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 				try {
@@ -438,11 +434,6 @@ public class SynchronizationThread extends Thread{
 			jsx.printStackTrace();
 			LOG.debug("JSON Error: ", jsx);
 		}
-	}
-	
-	private String getDateTimeComponent(Date date, String part){
-		SimpleDateFormat dateFormat = new SimpleDateFormat(part);
-		return dateFormat.format(date);
 	}
 	
 	/**

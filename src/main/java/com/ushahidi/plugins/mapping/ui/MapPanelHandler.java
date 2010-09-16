@@ -115,6 +115,7 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 	}
 	
 	public void refresh() {
+		LOG.debug("MapPanelHandler.refresh");
 		if (mapBean != null) {
 			mapBean.setIncidents(incidentDao.getAllIncidents(mappingSetupDao.getDefaultSetup()));	
 			mapBean.repaint();

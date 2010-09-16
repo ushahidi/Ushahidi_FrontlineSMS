@@ -44,7 +44,7 @@ public class MapBean extends CustomComponent implements ImageObserver {
     /** location bounds for the region covered by the map */
     private Location location;
     /** Incidents to be plotted on the map */
-    private List<Incident> incidents;
+    private final List<Incident> incidents = new ArrayList<Incident>();
     /** Instance of the UI controller for the mapping plugin */
     private MapPanelHandler mapPanelHandler;
     /** Name of the file containing the offline maps*/
@@ -71,7 +71,7 @@ public class MapBean extends CustomComponent implements ImageObserver {
     
     public MapProvider getMapProvider() {
     	if (this.mapProvider == null) {
-    		//Default to Open Street Map
+    		//Default is Open Street Map
     		this.mapProvider = new OpenStreetMapProvider();
     	}
     	return this.mapProvider;
@@ -82,8 +82,12 @@ public class MapBean extends CustomComponent implements ImageObserver {
     }
 
     public synchronized void setIncidents(List<Incident> incidents){
-    	this.incidents = incidents;
-        repaint();
+    	this.incidents.removeAll(this.incidents);
+    	this.incidents.addAll(incidents);
+    	if (map != null) {
+    		map.draw();
+    	}
+    	repaint();
     }
 
     /**
@@ -141,7 +145,7 @@ public class MapBean extends CustomComponent implements ImageObserver {
         return new Point(mouseListener.mouseCoords.x, mouseListener.mouseCoords.y);
     }
 
-    public void paint(Graphics g) {
+    public void paint(Graphics graphic) {
         if (dimensions == null) {
             dimensions = getSize();
         }
@@ -167,19 +171,19 @@ public class MapBean extends CustomComponent implements ImageObserver {
             map.resize(dimensions.width, dimensions.height);
             image = map.draw();
         }
-        g.drawImage(image, 0, 0, null);		
-        plotIncidents(g);
+        graphic.drawImage(image, 0, 0, null);		
+        plotIncidents(graphic);
     }
 
-    public void plotIncidents(Graphics g){
+    private void plotIncidents(Graphics graphic){
         if(location != null && map != null && incidents != null){			
             for(Incident incident: incidents){
-            	g.setColor(incident.getCategoryColor());
+            	graphic.setColor(incident.getCategoryColor());
             	if (incident.getLocation() != null) {
             		double latitude = incident.getLocation().getLatitude();
                     double longitude = incident.getLocation().getLongitude();
                     Point incidentPoint = map.locationPoint(new Location(latitude, longitude));
-                    g.fillOval((int) incidentPoint.x, (int) incidentPoint.y, pointSize, pointSize);	
+                    graphic.fillOval((int) incidentPoint.x, (int) incidentPoint.y, pointSize, pointSize);	
             	}
             }
         }		
@@ -218,8 +222,8 @@ public class MapBean extends CustomComponent implements ImageObserver {
     public void setZoomLevel(int zoomLevel){
     	this.zoomLevel = zoomLevel;
         LOG.debug("Zoome Lavel = %d", zoomLevel);
-        pointSize = (zoomLevel < map.getZoom()) ? pointSize-2 : 
-            ((zoomLevel >= DEFAULT_ZOOM_LEVEL)? DEFAULT_POINT_SIZE : pointSize+2);
+        pointSize = (zoomLevel < map.getZoom()) ? pointSize - 2 : 
+            ((zoomLevel >= DEFAULT_ZOOM_LEVEL)? DEFAULT_POINT_SIZE : pointSize + 2);
         map.zoomTo(zoomLevel, new Point(this.getWidth() / 2, this.getHeight() / 2));
         map.draw();
         repaint();
@@ -258,69 +262,62 @@ public class MapBean extends CustomComponent implements ImageObserver {
             mouseCoords = new Point();
         }
 
-        public void mouseClicked(MouseEvent e){
-            //LOG.info("Zooming map");
-            // Increase the current zoom level by 1
-            int zoom = map.getZoom() + 1;
-            
-            // Initiate zoom
-            setZoomLevel(zoom);
-            for (MapListener mapListener : mapListeners) {
-            	mapListener.mapZoomed(zoom);
-            }
+        public void mouseClicked(MouseEvent event){
+        	if (map != null) {
+        		int zoom = map.getZoom() + 1;
+                setZoomLevel(zoom);
+                for (MapListener mapListener : mapListeners) {
+                	mapListener.mapZoomed(zoom);
+                }	
+        	}
         }
 
-        public void mousePressed(MouseEvent e){
-            // If the click count >= 2, zoom the map
-            if(e.getClickCount() >= 2){
-                mouseClicked(e);
+        public void mousePressed(MouseEvent event){
+            if(event.getClickCount() >= 2){
+                mouseClicked(event);
                 return;
             }
-            // Save the screen coordinates of the clicked location
-            downCoords = e.getPoint();
-
-            for (MapListener mapListener : mapListeners) {
-                Location location = map.pointLocation(e.getPoint());
-                mapListener.pointSelected(location.lat, location.lon);
-            }
+            downCoords = event.getPoint();
+           for (MapListener mapListener : mapListeners) {
+            	if (map != null && mapListener != null && event.getPoint() != null) {
+            		Location location = map.pointLocation(event.getPoint());
+            		if (location != null) {
+            			 mapListener.pointSelected(location.lat, location.lon);	
+            		}
+                }
+            }	
         }
 
-        public void mouseReleased(MouseEvent e){            
+        public void mouseReleased(MouseEvent event){            
             downCoords = null;
         }
 
-        public void mouseMoved(MouseEvent e){
-            handlePosition(e);
-            
-            // Update display of the current map coordinates on the UI
+        public void mouseMoved(MouseEvent event){
+            handlePosition(event);
             updateCoordinateDisplay();
         }
 
-        public void mouseDragged(MouseEvent e){
-            handlePosition(e);
-            handleDrag(e);
+        public void mouseDragged(MouseEvent event){
+            handlePosition(event);
+            handleDrag(event);
         }
 
-        public void mouseExited(MouseEvent e){
+        public void mouseExited(MouseEvent event){}
 
+        public void mouseEntered(MouseEvent event){
+            super.mouseEntered(event);
         }
 
-        public void mouseEntered(MouseEvent e){
-            super.mouseEntered(e);
-        }
-
-        public void mouseWheelMoved(MouseWheelEvent e){
-            LOG.debug("Mouse wheel moved");
-        }
+        public void mouseWheelMoved(MouseWheelEvent event){}
 
         /**
          * Saves the current position of the mouse on the map canvas for purposes
          * of updating the coordinate display on the UI
          * 
-         * @param e
+         * @param event
          */
-        private void handlePosition(MouseEvent e){
-            mouseCoords = e.getPoint();
+        private void handlePosition(MouseEvent event){
+            mouseCoords = event.getPoint();
         }
 
         /**
@@ -328,20 +325,22 @@ public class MapBean extends CustomComponent implements ImageObserver {
          * A drag is only initiated if the (x,y) values in @param e are different
          * from the ones in {@link #downCoords}
          * 
-         * @param e {@link java.awt.event.MouseEvent} reference
+         * @param event {@link java.awt.event.MouseEvent} reference
          */
-        private void handleDrag(MouseEvent e){
+        private void handleDrag(MouseEvent event){
             if(downCoords != null){
-                int tx = downCoords.x  - e.getX();
-                int ty = downCoords.y - e.getY();
+                int tx = downCoords.x - event.getX();
+                int ty = downCoords.y - event.getY();
                 
                 // Save the current position to prevent extra dragging
-                downCoords = e.getPoint();
+                downCoords = event.getPoint();
                 
                 // Only pan the map if the change is non-zero
                 if(tx != 0 && ty != 0){
                     //LOG.debug("Panning map");
-                    map.panBy(tx, ty);
+                	if (map != null) {
+                		map.panBy(tx, ty);
+                	}
                     repaint();
                 }
             }

@@ -33,8 +33,11 @@
 		<label text="i18n.plugins.ushahidi.incident.coordinates" valign="top" />
 		<textfield name="txtReportCoordinates" columns="50" weightx="1" editable="false"/>
        
-		<label name="lblSender" text="i18n.plugins.ushahidi.sender" valign="top"/>
- 		<textfield name="txtSender" columns="50" />
+		<label name="lblSenderName" text="i18n.plugins.ushahidi.sender.name" valign="top"/>
+ 		<textfield name="txtSenderName" columns="50" />
+ 		
+ 		<label name="lblSenderEmail" text="i18n.plugins.ushahidi.sender.email" valign="top"/>
+ 		<textfield name="txtSenderEmail" columns="50" />
  		
  		<button name="btnCancel" icon="/icons/cross.png" text="i18n.action.cancel" action="removeDialog(dialogReportDetails)" weightx="1"/>
  		<button name="btnSave" icon="/icons/tick.png" text="i18n.action.save" action="saveReport(dialogReportDetails)" weightx="1"/>	
