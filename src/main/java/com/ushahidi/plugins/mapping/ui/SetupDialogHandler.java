@@ -366,7 +366,7 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
 		LOG.debug("latitude:%s longitude:%s", latitude, longitude);
 		MappingProperties.setDefaultLatitude(latitude);
 		MappingProperties.setDefaultLongitude(longitude);
-		pluginController.refreshIncidentMap();
+		pluginController.showIncidentMap();
 	}
 	
 	public void mapProviderChanged(Object comboBox) {
@@ -376,7 +376,7 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
 			if (mapProvider != null) {
 				LOG.debug("MapProvider: %s", mapProvider.getTitle());
 				MappingProperties.setDefaultMapProvider(mapProvider);
-				pluginController.refreshIncidentMap();
+				pluginController.showIncidentMap();
 			}
 		}
 	}
@@ -385,7 +385,7 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
 		int zoomLevel = getInteger(sldZoomLevel, ExtendedThinlet.VALUE);
 		LOG.debug("zoom:%d", zoomLevel);
 		MappingProperties.setDefaultZoomLevel(zoomLevel);
-		pluginController.refreshIncidentMap();
+		pluginController.showIncidentMap();
 	}
 	
 	//################# SynchronizationCallback #################

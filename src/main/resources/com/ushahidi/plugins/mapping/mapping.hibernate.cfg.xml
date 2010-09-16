@@ -6,5 +6,6 @@
         <mapping class="com.ushahidi.plugins.mapping.data.domain.Location" />
         <mapping class="com.ushahidi.plugins.mapping.data.domain.Incident" />
         <mapping class="com.ushahidi.plugins.mapping.data.domain.MappingSetup" />
+        <mapping class="com.ushahidi.plugins.mapping.data.domain.ContactLocation" />
     </session-factory>
 </hibernate-configuration>

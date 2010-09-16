@@ -4,8 +4,6 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.h2.jdbc.JdbcBatchUpdateException;
-
 import thinlet.Thinlet;
 
 
@@ -238,7 +236,7 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 			incident = (Incident)attachedObject;
 		}
 		if (ui.getSelectedItem(cbxExistingLocation) != null){
-			Location location = (Location)getAttachedObject(getSelectedItem(cboReportLocations));
+			Location location = getAttachedObject(getSelectedItem(cboReportLocations), Location.class);
 			incident.setLocation(location);
 		}
 		else {
@@ -268,7 +266,7 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 		
 		incident.removeCategories();
 		for(Object selectedItem : ui.getSelectedItems(lstReportCategories)) {
-			Category category = (Category)getAttachedObject(selectedItem);
+			Category category = getAttachedObject(selectedItem, Category.class);
 			incident.addCategory(category);
 			LOG.debug("category_id:%d server_id:%d", category.getId(), category.getServerId());
 		}
@@ -345,17 +343,6 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 		ui.setVisible(dialog, false);
 	}
 
-	//@Override
-	public void mapZoomed(int zoom) {}
-
-	//@Override
-	public void pointSelected(double lat, double lon) {
-		ui.setText(txtReportCoordinates, String.format("%f, %f", lat, lon));
-		ui.setText(txtNewLocation, String.format("%f, %f", lat, lon));
-		setBoolean(mainDialog, Thinlet.MODAL, true);
-		ui.setVisible(mainDialog, true);
-	}
-	
 	public void showDateSelecter(Object textField) {
 		ui.showDateSelecter(textField);
 	}
@@ -370,5 +357,17 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 		LOG.debug("showNewLocation");
 		ui.setVisible(pnlExistingLocation, false);
 		ui.setVisible(pnlNewLocation, true);
+	}
+	
+
+	//################# MapListener #################
+	
+	public void mapZoomed(int zoom) {}
+
+	public void pointSelected(double latitude, double longitude) {
+		ui.setText(txtReportCoordinates, String.format("%f, %f", latitude, longitude));
+		ui.setText(txtNewLocation, String.format("%f, %f", latitude, longitude));
+		setBoolean(mainDialog, Thinlet.MODAL, true);
+		ui.setVisible(mainDialog, true);
 	}
 }

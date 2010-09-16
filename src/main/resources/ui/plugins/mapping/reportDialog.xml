@@ -1,5 +1,5 @@
-<dialog text="" name="dialogReportDetails" modal="true" closable="true" close="removeDialog(this)" gap="10" top="3" right="3" bottom="3" left="3">
-   <panel columns="2" gap="5" top="3" right="3" bottom="3" left="3">
+<dialog name="dialogReportDetails" text="i18n.plugins.ushahidi.report" icon="/icons/report.png" modal="true" closable="true" close="removeDialog(this)" gap="10" top="3" right="3" bottom="3" left="3">
+   <panel columns="2" gap="10" top="3" right="3" bottom="3" left="3">
       	<label text="i18n.plugins.ushahidi.incident.title" valign="top" />
 		<textfield name="txtReportTitle" columns="50" editable="false"/>
        
@@ -21,7 +21,6 @@
 		<panel name="pnlReportLocation" columns="2" weightx="1" visible="false" gap="5">
 			<checkbox name="cbxExistingLocation" text="i18n.plugins.ushahidi.location.existing" group="location" selected="true" action="showExistingLocations"/>
 			<checkbox name="cbxNewLocation" text="i18n.plugins.ushahidi.location.new" group="location" action="showNewLocation"/>
-			
 			<panel name="pnlExistingLocation" colspan="2" columns="1" weightx="1" visible="true">
 				<combobox name="cboReportLocations" editable="false" weightx="1" action="locationChanged(this,txtReportCoordinates)"></combobox>
 			</panel>

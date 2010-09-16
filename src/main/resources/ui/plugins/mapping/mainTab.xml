@@ -2,21 +2,38 @@
 	<panel bottom="9" columns="2" gap="9" left="9" right="9" top="9" weightx="1" weighty="1">
 		<label icon="/icons/header/mapManager.png" valign="top" />
 		<splitpane divider="350" weightx="1" weighty="1" rowspan="2">
-			<panel columns="1" weightx="1" weighty="1" gap="10">
-				<panel text="i18n.plugins.ushahidi.messages" border="true" weightx="1" weighty="1" gap="5" columns="1" left="9" right="9" top="9" bottom="9">
+			<panel columns="1" weightx="1" weighty="1" gap="10" left="5">
+				<panel weightx="1" gap="5" columns="2">
+					<checkbox name="cbxMessages" text="i18n.plugins.ushahidi.messages" icon="/icons/sms.png" group="messagesOrContacts" selected="true" action="showMessages" />
+					<checkbox name="cbxContacts" text="i18n.plugins.ushahidi.contacts" icon="/icons/users.png" group="messagesOrContacts" action="showContacts" />
+				</panel>
+				<panel name="pnlMessages" columns="1" weightx="1" weighty="1" gap="5">
+					<table name="tblMessages" weightx="1" weighty="1" perform="showIncidentDialog(this,item)">
+						<header>
+							<column icon="/icons/time.png" text="i18n.common.date" width="100" />
+							<column icon="/icons/keyword.png" text="i18n.common.sender"	width="100" />
+							<column icon="/icons/user_sender.png" text="i18n.common.message" width="100" />
+						</header>
+					</table>
 					<panel columns="2" weightx="1" gap="5">
-						<label name="lblSearch" icon="/icons/search.png" for="txtSearch" />
-						<textfield name="txtSearch" weightx="1" weighty="1" text="i18n.plugins.ushahidi.search.messages"
-							action="search(this)" focusgained="focusGained(this)" focuslost="focusLost(this)"/>
+						<label icon="/icons/search.png" for="txtSearchMessages" />
+						<textfield name="txtSearchMessages" weightx="1" weighty="1" text="i18n.plugins.ushahidi.search.messages"
+							action="searchMessages(this)" focusgained="focusGained(this)" focuslost="focusLost(this)"/>
 					</panel>
-					<panel weightx="1" weighty="1">
-						<table name="tblMessages" weightx="1" weighty="1" perform="showIncidentDialog(this,item)">
-							<header>
-								<column icon="/icons/time.png" text="i18n.common.date" width="100" />
-								<column icon="/icons/keyword.png" text="i18n.common.sender"	width="100" />
-								<column icon="/icons/user_sender.png" text="i18n.common.message" width="100" />
-							</header>
-						</table>
+				</panel>
+				<panel name="pnlContacts" columns="1" weightx="1" weighty="1" gap="5" visible="false">
+					<table name="tblContacts" weightx="1" weighty="1" perform="showContactDialog(this,item)">
+						<header>
+							<column icon="/icons/user.png" text="i18n.common.name" width="164" />
+							<column icon="/icons/map.png" text="i18n.plugins.ushahidi.location.default"	width="180" />
+							<column text="i18n.plugins.ushahidi.location.latitude" width="90" />
+							<column text="i18n.plugins.ushahidi.location.longitude" width="90" />
+						</header>
+					</table>
+					<panel columns="2" weightx="1" gap="5">
+						<label icon="/icons/search.png" for="txtSearchContacts" />
+						<textfield name="txtSearchContacts" weightx="1" weighty="1" text="i18n.plugins.ushahidi.search.contacts"
+							action="searchContacts(this)" focusgained="focusGained(this)" focuslost="focusLost(this)"/>
 					</panel>
 				</panel>
 				<panel weightx="1" gap="10" columns="2">
@@ -26,8 +43,8 @@
 			</panel>
 			<panel columns="1" weightx="1" weighty="1" text="i18n.plugins.ushahidi.incidents" border="true" gap="5" top="9" bottom="9" left="9" right="9">
 				<panel weightx="1" gap="10" columns="2">
-					<checkbox name="cbxIncidentMap" text="i18n.plugins.ushahidi.view.map" icon="/icons/map.png" group="view" selected="true" action="showIncidentMap" />
-					<checkbox name="cbxIncidentList" text="i18n.plugins.ushahidi.view.reports" icon="/icons/report.png" group="view" action="showIncidentReports" />
+					<checkbox name="cbxIncidentMap" text="i18n.plugins.ushahidi.view.map" icon="/icons/map.png" group="mapOrReports" selected="true" action="showIncidentMap" />
+					<checkbox name="cbxIncidentList" text="i18n.plugins.ushahidi.view.reports" icon="/icons/report.png" group="mapOrReports" action="showIncidentReports" />
 				</panel>
 				<panel name="pnlViewIncidents" columns="1" weightx="1" weighty="1">
 					

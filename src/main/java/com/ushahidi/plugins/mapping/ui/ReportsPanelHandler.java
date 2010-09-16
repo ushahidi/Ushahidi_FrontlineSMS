@@ -58,21 +58,30 @@ public class ReportsPanelHandler extends ExtendedThinlet implements ThinletUiEve
 	}
 	
 	public void init() {
-		if (incidentDao.getCount() > 0) {
-			ui.removeAll(tblReports);
-			for(Incident incident: incidentDao.getAllIncidents(mappingSetupDao.getDefaultSetup())){
-				LOG.debug("Loading incident %s", incident.getTitle());
-				ui.add(tblReports, getRow(incident));
-			}
-		}
+		ui.removeAll(tblReports);
 		ui.removeAll(cbxCategories);
-		ui.add(cbxCategories, createComboboxChoice(MappingMessages.getAllCategories(), null));
-		for(Category category : categoryDao.getAllCategories(mappingSetupDao.getDefaultSetup())){
-			LOG.debug("Loading category %s", category.getTitle());
-			ui.add(cbxCategories, createComboboxChoice(category.getTitle(), category));
+		if (mappingSetupDao.getDefaultSetup() != null) {
+			if (incidentDao.getCount() > 0) {
+				for(Incident incident: incidentDao.getAllIncidents(mappingSetupDao.getDefaultSetup())){
+					LOG.debug("Loading incident %s", incident.getTitle());
+					ui.add(tblReports, getRow(incident));
+				}
+			}
+			ui.add(cbxCategories, createComboboxChoice(MappingMessages.getAllCategories(), null));
+			for(Category category : categoryDao.getAllCategories(mappingSetupDao.getDefaultSetup())){
+				LOG.debug("Loading category %s", category.getTitle());
+				ui.add(cbxCategories, createComboboxChoice(category.getTitle(), category));
+			}
+			ui.setSelectedIndex(cbxCategories, 0);	
+			ui.setText(txtSearch, MappingMessages.getSearchIncidents());
+			ui.setEnabled(cbxCategories, true);
+			ui.setEnabled(txtSearch, true);
 		}
-		ui.setSelectedIndex(cbxCategories, 0);
-		ui.setText(txtSearch, MappingMessages.getSearchIncidents());
+		else {
+			ui.setText(txtSearch, "");
+			ui.setEnabled(txtSearch, false);
+			ui.setEnabled(cbxCategories, false);
+		}
 	}
 	
 	public void refresh() {

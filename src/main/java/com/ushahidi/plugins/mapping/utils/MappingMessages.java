@@ -229,4 +229,8 @@ public final class MappingMessages {
 		return getI18NString("plugins.ushahidi.search.incidents");
 	}
 	
+	public static String getSearchContacts() {
+		return getI18NString("plugins.ushahidi.search.contacts");
+	}
+	
 }

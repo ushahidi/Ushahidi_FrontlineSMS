@@ -7,7 +7,7 @@
 			<column text="i18n.plugins.ushahidi.incident.location" width="130"/>
 			<column text="i18n.plugins.ushahidi.incident.date" width="100"/>
 			<column text="i18n.plugins.ushahidi.incident.categories" width="200"/>
-			<column text="i18n.plugins.ushahidi.incident.description" />
+			<column text="i18n.plugins.ushahidi.incident.description" width="400"/>
 		</header>
 	</table>
 	<panel gap="15" columns="2" weightx="1">

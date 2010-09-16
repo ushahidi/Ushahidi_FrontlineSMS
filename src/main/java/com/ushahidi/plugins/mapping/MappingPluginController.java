@@ -1,6 +1,7 @@
 package com.ushahidi.plugins.mapping;
 
 import com.ushahidi.plugins.mapping.data.repository.CategoryDao;
+import com.ushahidi.plugins.mapping.data.repository.ContactLocationDao;
 import com.ushahidi.plugins.mapping.data.repository.LocationDao;
 import com.ushahidi.plugins.mapping.data.repository.IncidentDao;
 import com.ushahidi.plugins.mapping.data.repository.MappingSetupDao;
@@ -33,6 +34,7 @@ public class MappingPluginController extends BasePluginController {
     private LocationDao locationDao;
     private IncidentDao incidentDao;
     private MappingSetupDao mappingSetupDao;
+    private ContactLocationDao contactLocationDao;
     
     public String getHibernateConfigPath() {
         return "classpath:com/ushahidi/plugins/mapping/mapping.hibernate.cfg.xml";
@@ -51,6 +53,7 @@ public class MappingPluginController extends BasePluginController {
             incidentDao = (IncidentDao)applicationContext.getBean("incidentDao");
             mappingSetupDao = (MappingSetupDao)applicationContext.getBean("mappingSetupDao");
             categoryDao = (CategoryDao)applicationContext.getBean("categoryDao");
+            contactLocationDao = (ContactLocationDao)applicationContext.getBean("contactLocationDao");
         }
         catch(Throwable t){
             LOG.warn("Unable to initialize mapping plugin");
@@ -90,6 +93,10 @@ public class MappingPluginController extends BasePluginController {
         return mappingSetupDao;
     }
     
+    public ContactLocationDao getContactLocationDao(){
+        return contactLocationDao;
+    }
+    
     public void showIncidentMap() {
     	mappingUIController.showIncidentMap();
     }
@@ -108,5 +115,9 @@ public class MappingPluginController extends BasePluginController {
     
     public void beginSynchronization() {
     	mappingUIController.beginSynchronization();
+    }
+    
+    public void refreshContacts() {
+    	mappingUIController.refreshContacts();
     }
 }

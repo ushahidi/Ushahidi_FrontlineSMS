@@ -14,21 +14,17 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.persistence.JoinColumn;
 
 import org.hibernate.annotations.Cascade;
-import org.hibernate.annotations.CollectionOfElements;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
-import org.hibernate.annotations.MapKey;
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 
 import net.frontlinesms.data.EntityField;
-
 
 @Entity
 @Table(uniqueConstraints={@UniqueConstraint(columnNames={"incident_id","mappingSetup_id"})})
@@ -144,12 +140,13 @@ public class Incident implements Serializable {
 	private Date incidentDate;
 	
 	/** Categories of this incident */
-	@CollectionOfElements(targetElement=Category.class, fetch=FetchType.EAGER)
-	@JoinTable(name = "incident_category", 
-				joinColumns={@JoinColumn(name="incident_id")},
-				inverseJoinColumns={@JoinColumn(name="category_id")},
-				uniqueConstraints={@UniqueConstraint(columnNames={"incident_id","category_id"})})
-	@Cascade({org.hibernate.annotations.CascadeType.ALL})
+	@ManyToMany(cascade={CascadeType.PERSIST, CascadeType.MERGE}, fetch=FetchType.EAGER)
+	@Cascade(org.hibernate.annotations.CascadeType.SAVE_UPDATE)
+	@LazyCollection(LazyCollectionOption.FALSE)
+	@JoinTable(name="incident_category",
+			   joinColumns=@JoinColumn(name="incident_id", unique=false),
+			   inverseJoinColumns=@JoinColumn(name="category_id", unique=false))
+	@JoinColumn(name="incident_id") 
 	private List<Category> categories;
 	
 	/** Location of this incident */

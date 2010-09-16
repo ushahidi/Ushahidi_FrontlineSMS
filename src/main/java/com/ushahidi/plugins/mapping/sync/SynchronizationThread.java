@@ -169,6 +169,7 @@ public class SynchronizationThread extends Thread{
 	 * marked for posting are submitted
 	 */
 	public void performPushTask(){
+		LOG.debug("performPushTask");
 		String urlParameterStr = SynchronizationAPI.REQUEST_URL_PREFIX + taskBuffer.toString();
 		LOG.debug(urlParameterStr);
 		if(baseTask.equalsIgnoreCase(SynchronizationAPI.POST_INCIDENT)){
@@ -366,6 +367,9 @@ public class SynchronizationThread extends Thread{
 	 * @param urlParameterStr Pre-defined url parmaeter string for posting an incident to the frontend
 	 */
 	private void postIncident(Incident incident, String urlParameterStr){
+		LOG.debug("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+		LOG.debug("UPLOADING: %s", incident.getTitle());
+		LOG.debug("URL: %s", urlParameterStr);
 		Date date = incident.getIncidentDate();
 		String parameterStr = String.format(urlParameterStr, 
 				incident.getTitle(), 
@@ -378,29 +382,23 @@ public class SynchronizationThread extends Thread{
 				Double.toString(incident.getLocation().getLongitude()),
 				incident.getLocation().getName()
 				);
-		//post the incident to the frontend
-		LOG.debug("Posting incident " + parameterStr);
+		LOG.debug("POST: %s", parameterStr);
 		try{
-			//Send data
 			URL url = new URL(getRequestURL());			
-			URLConnection conn = url.openConnection();
-			conn.setDoOutput(true);
+			URLConnection connection = url.openConnection();
+			connection.setDoOutput(true);
 			StringBuffer response = new StringBuffer();
-			OutputStreamWriter writer = new OutputStreamWriter(conn.getOutputStream());
+			OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream());
 			try {
-				//write parameters
 				writer.write(parameterStr);
 				writer.flush();
-				
-				//Get the response
-				BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+				BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 				try {
 					String line = null;
 					while((line = reader.readLine()) != null){
 						response.append(line);
 					}
-
-					LOG.debug("Response: "  + response.toString());	
+					LOG.debug("RESPONSE: %s", response.toString());	
 				}
 				finally {
 					reader.close();
@@ -410,8 +408,9 @@ public class SynchronizationThread extends Thread{
 				writer.close();
 			}			
 			//Get the status of the posting and update the sync manager with the list of failed incidents
-			if(response.toString().indexOf("{") != -1){
+			if(response.toString().indexOf("{") > -1){
 				JSONObject payload = new JSONObject(response.toString());
+				LOG.debug("PAYLOAD:%s", payload);
 				JSONObject status = payload.getJSONObject("error");			
 				if(((String)status.get("code")).equalsIgnoreCase("0")){
 					syncManager.uploadedIncident(incident);
@@ -426,15 +425,17 @@ public class SynchronizationThread extends Thread{
 				syncManager.updateFailedIncidents(incident);
 				LOG.debug("Incident post failed: "+ response.toString());
 			}
-			
 		}
 		catch(MalformedURLException me){
+			me.printStackTrace();
 			LOG.debug("URL error: ", me);
 		}
 		catch(IOException io){
+			io.printStackTrace();
 			LOG.debug("IO Error: ", io); 
 		}
 		catch(JSONException jsx){
+			jsx.printStackTrace();
 			LOG.debug("JSON Error: ", jsx);
 		}
 	}

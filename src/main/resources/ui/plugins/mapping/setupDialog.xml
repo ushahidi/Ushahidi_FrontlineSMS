@@ -3,13 +3,14 @@
 	modal="true" columns="1" resizable="true" gap="15" top="9" left="9" bottom="9" right="9">
 	<panel text="i18n.plugins.ushahidi.setup.mapping" weightx="1" border="true" columns="2" top="9" left="9" bottom="9" right="9" gap="5">
 		<label text="i18n.plugins.ushahidi.setup.default.latitude"/>
-		<textfield name="txtDefaultLatitude" weightx="1" columns="50" action="latitudeLongitudeChanged(this, txtDefaultLongitude)"/>
+		<textfield name="txtDefaultLatitude" weightx="1" columns="50" tooltip="i18n.plugins.ushahidi.setup.default.latitude.info" action="latitudeLongitudeChanged(this, txtDefaultLongitude)"/>
 		
 		<label text="i18n.plugins.ushahidi.setup.default.longitude"/>
-		<textfield name="txtDefaultLongitude" weightx="1" columns="50" action="latitudeLongitudeChanged(txtDefaultLatitude, this)"/>
+		<textfield name="txtDefaultLongitude" weightx="1" columns="50" tooltip="i18n.plugins.ushahidi.setup.default.longitude.info" action="latitudeLongitudeChanged(txtDefaultLatitude, this)"/>
 		
 		<label text="i18n.plugins.ushahidi.setup.default.zoom"/>
-		<slider name="sldDefaultZoom" height="2" weightx="1" minimum="1" unit="1" block="1" maximum="25" value="7" orientation="horizontal" action="zoomChanged(this)"/>
+		<slider name="sldDefaultZoom" height="2" weightx="1" minimum="1" unit="1" block="1" maximum="25" value="7" orientation="horizontal" 
+				tooltip="i18n.plugins.ushahidi.setup.default.zoom.info" action="zoomChanged(this)"/>
 		
 		<label text="i18n.plugins.ushahidi.setup.map.provider"/>
 		<combobox name="cbxMapProviders" editable="false" weightx="1" action="mapProviderChanged(this)"/>
@@ -23,10 +24,10 @@
 			</header>
 		</table>
 		<label text="i18n.plugins.ushahidi.setup.sourcename"/>
-		<textfield name="txtSourceName" weightx="1" columns="50" action="sourceChanged(this, txtSourceURL)"/>
+		<textfield name="txtSourceName" weightx="1" columns="50" tooltip="i18n.plugins.ushahidi.setup.sourcename.info" action="sourceChanged(this, txtSourceURL)"/>
 			
 		<label text="i18n.plugins.ushahidi.setup.source" />
-		<textfield name="txtSourceURL" weightx="1" columns="50" action="sourceChanged(txtSourceName, this)"/>
+		<textfield name="txtSourceURL" weightx="1" columns="50" tooltip="i18n.plugins.ushahidi.setup.source.info" action="sourceChanged(txtSourceName, this)"/>
 			
 		<checkbox name="chkSourceDefault" text="i18n.plugins.ushahidi.setup.default" />
 		<panel weightx="1" gap="5" columns="3">

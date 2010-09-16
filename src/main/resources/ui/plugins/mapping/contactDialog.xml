@@ -1,0 +1,25 @@
+<dialog name="dlgContact" text="i18n.plugins.ushahidi.contact" icon="/icons/users.png" modal="true" closable="true" close="removeDialog(this)" gap="10" top="3" right="3" bottom="3" left="3">
+	<panel columns="2" gap="5" top="3" right="3" bottom="3" left="3">
+      	<label text="i18n.common.name" valign="top" />
+      	<textfield name="txtContactName" columns="50" editable="false"/>
+      	
+      	<label text="i18n.plugins.ushahidi.incident.location" valign="top" />
+      	<panel name="pnlLocation" columns="2" weightx="1" gap="5">
+			<checkbox name="cbxExistingLocation" text="i18n.plugins.ushahidi.location.existing" group="location" selected="true" action="showExistingLocations"/>
+			<checkbox name="cbxNewLocation" text="i18n.plugins.ushahidi.location.new" group="location" action="showNewLocation"/>
+			<panel name="pnlExistingLocation" colspan="2" columns="1" weightx="1" visible="true">
+				<combobox name="cboLocations" editable="false" weightx="1" action="locationChanged(this,txtCoordinates)"></combobox>
+			</panel>
+			<panel name="pnlNewLocation" colspan="2" columns="2" weightx="1" gap="5" visible="false">
+				<textfield name="txtNewLocation" weightx="1" editable="true" />
+				<button name="btnSelectPoint" text="i18n.plugins.ushahidi.map.select.point" type="link" action="selectLocationFromMap(dlgContact)"/>
+			</panel>
+		</panel>
+		
+		<label text="i18n.plugins.ushahidi.incident.coordinates" valign="top" />
+		<textfield name="txtCoordinates" columns="50" weightx="1" editable="false"/>
+		
+		<button name="btnCancel" icon="/icons/cross.png" text="i18n.action.cancel" action="removeDialog(dlgContact)" weightx="1"/>
+ 		<button name="btnSave" icon="/icons/tick.png" text="i18n.action.save" action="saveContact(dlgContact)"  weightx="1"/>	
+	</panel>
+</dialog>

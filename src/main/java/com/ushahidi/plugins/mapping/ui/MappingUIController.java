@@ -3,6 +3,8 @@ package com.ushahidi.plugins.mapping.ui;
 import java.awt.Color;
 import java.util.List;
 
+import thinlet.Thinlet;
+
 import com.ushahidi.plugins.mapping.MappingPluginController;
 import com.ushahidi.plugins.mapping.sync.SynchronizationCallback;
 import com.ushahidi.plugins.mapping.sync.SynchronizationManager;
@@ -10,6 +12,7 @@ import com.ushahidi.plugins.mapping.utils.MappingLogger;
 import com.ushahidi.plugins.mapping.utils.MappingMessages;
 import com.ushahidi.plugins.mapping.data.domain.*;
 import com.ushahidi.plugins.mapping.data.repository.CategoryDao;
+import com.ushahidi.plugins.mapping.data.repository.ContactLocationDao;
 import com.ushahidi.plugins.mapping.data.repository.IncidentDao;
 import com.ushahidi.plugins.mapping.data.repository.LocationDao;
 import com.ushahidi.plugins.mapping.data.repository.MappingSetupDao;
@@ -19,6 +22,7 @@ import net.frontlinesms.data.DuplicateKeyException;
 import net.frontlinesms.data.domain.Contact;
 import net.frontlinesms.data.domain.FrontlineMessage;
 import net.frontlinesms.data.events.DatabaseEntityNotification;
+import net.frontlinesms.data.repository.ContactDao;
 import net.frontlinesms.events.EventObserver;
 import net.frontlinesms.events.FrontlineEventNotification;
 import net.frontlinesms.ui.i18n.InternationalisationUtils;
@@ -42,10 +46,12 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	private final Object pnlViewIncidents;
 	private SyncDialogHandler syncDialog;
 	
+	private final ContactDao contactDao;
 	private final LocationDao locationDao;
 	private final CategoryDao categoryDao;
 	private final IncidentDao incidentDao;
 	private final MappingSetupDao mappingSetupDao;
+	private final ContactLocationDao contactLocationDao;
 		
 	private SynchronizationManager syncManager;
 	private MapPanelHandler mapPanelHandler;
@@ -54,7 +60,12 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	private final Object cbxIncidentMap;
 	private final Object cbxIncidentList;
 	private final Object tblMessages;
-	private final Object txtSearch;
+	private final Object txtSearchMessages;
+	private final Object txtSearchContacts;
+	private final Object tblContacts;
+	private final Object pnlContacts;
+	private final Object pnlMessages;
+	private final Object cbxContacts;
 	
 	public MappingUIController(MappingPluginController pluginController, FrontlineSMS frontlineController, UiGeneratorController uiController) {
 		this.pluginController = pluginController;
@@ -62,17 +73,24 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		this.frontlineController = frontlineController;
 		this.frontlineController.getEventBus().registerObserver(this);
 		
+		this.contactDao = frontlineController.getContactDao();
 		this.locationDao = pluginController.getLocationDao();
 		this.categoryDao = pluginController.getCategoryDao();
 		this.incidentDao = pluginController.getIncidentDao();
 		this.mappingSetupDao = pluginController.getMappingSetupDao();
+		this.contactLocationDao = pluginController.getContactLocationDao();
 		
 		this.mainTab = this.ui.loadComponentFromFile(XML_MAIN_TAB, this);
 		this.pnlViewIncidents = this.ui.find(this.mainTab, "pnlViewIncidents");
 		this.cbxIncidentMap = this.ui.find(this.mainTab, "cbxIncidentMap");
 		this.cbxIncidentList = this.ui.find(this.mainTab, "cbxIncidentList");
 		this.tblMessages = this.ui.find(this.mainTab, "tblMessages");
-		this.txtSearch = this.ui.find(this.mainTab, "txtSearch");
+		this.txtSearchMessages = this.ui.find(this.mainTab, "txtSearchMessages");
+		this.txtSearchContacts = this.ui.find(this.mainTab, "txtSearchContacts");
+		this.tblContacts = this.ui.find(this.mainTab, "tblContacts");
+		this.pnlContacts = this.ui.find(this.mainTab, "pnlContacts");
+		this.pnlMessages = this.ui.find(this.mainTab, "pnlMessages");
+		this.cbxContacts = this.ui.find(this.mainTab, "cbxContacts");
 	}
 	
 	/**
@@ -80,7 +98,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	 * This method must be called by {@link MappingPluginController}
 	 */
 	public void initUIController(){
-		search(this.txtSearch);
+		searchMessages(this.txtSearchMessages);
 		showIncidentMap();
 	}
 	
@@ -88,7 +106,38 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		return mainTab;
 	}
 	
-	public void search(Object textField) {
+	public void showMessages() {
+		LOG.debug("showMessages");
+		ui.removeAll(tblMessages);
+		for (FrontlineMessage message : frontlineController.getMessageDao().getMessages(FrontlineMessage.Type.RECEIVED, FrontlineMessage.Status.RECEIVED)) {
+			ui.add(tblMessages, getRow(message));
+		}
+		ui.setVisible(pnlMessages, true);
+		ui.setVisible(pnlContacts, false);
+	}
+	
+	public void showContacts() {
+		LOG.debug("showContacts");
+		ui.removeAll(tblContacts);
+		for(Contact contact : contactDao.getAllContacts()) {
+			LOG.debug("Contact:%s", contact.getName());
+			ui.add(tblContacts, getRow(contact));
+		}
+		for(ContactLocation contactLocation : contactLocationDao.getContactLocations()) {
+			LOG.debug("ContactLocation:%s %s", contactLocation.getName(), contactLocation.getLocationName());
+		}
+		ui.setVisible(pnlMessages, false);
+		ui.setVisible(pnlContacts, true);
+	}
+	
+	public void refreshContacts() {
+		LOG.debug("refreshContacts");
+		if (this.getBoolean(cbxContacts, Thinlet.SELECTED)) {
+			showContacts();
+		}
+	}
+	
+	public void searchMessages(Object textField) {
 		String searchText = ui.getText(textField).trim().toLowerCase();
 		ui.removeAll(tblMessages);		
 		for (FrontlineMessage message : frontlineController.getMessageDao().getMessages(FrontlineMessage.Type.RECEIVED, FrontlineMessage.Status.RECEIVED)) {
@@ -102,6 +151,21 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		}
 	}
 	
+	public void searchContacts(Object textField) {
+		String searchText = ui.getText(textField).trim().toLowerCase();
+		ui.removeAll(tblContacts);
+		for(Contact contact : contactDao.getAllContacts()) {
+			if (contact.getName() == null || contact.getName().toLowerCase().indexOf(searchText) > -1) {
+				ui.add(tblContacts, getRow(contact));
+			}
+		}
+//		for(ContactLocation contactLocation : contactLocationDao.getContactLocations()) {
+//			if (contactLocation.getDisplayName().toLowerCase().indexOf(searchText) > -1) {
+//				ui.add(tblContacts, getRow(contactLocation));
+//			}
+//		}
+	}
+	
 	/**
 	 * Displays the incident creation dialog
 	 * This dialog allows the user to create an Ushahidi incident report from a text message
@@ -109,11 +173,22 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	 * @param item Selected {@link Message}; the one an incident report shall be created from
 	 */
 	public ReportDialogHandler showIncidentDialog(Object table, Object item) {
-		FrontlineMessage message = (FrontlineMessage) getAttachedObject(item);						
+		FrontlineMessage message = ui.getAttachedObject(item, FrontlineMessage.class);						
 		if (message != null) {
 			ReportDialogHandler dialog = new ReportDialogHandler(pluginController, frontlineController, ui);
 			mapPanelHandler.addMapListener(dialog);
 			dialog.showDialog(message);	
+			return dialog;
+		}
+		return null;
+	}
+	
+	public ContactDialogHandler showContactDialog(Object table, Object item) {
+		Contact contact = ui.getAttachedObject(item, Contact.class);	
+		if (contact != null) {
+			ContactDialogHandler dialog = new ContactDialogHandler(pluginController, frontlineController, ui);
+			mapPanelHandler.addMapListener(dialog);
+			dialog.showDialog(contact);	
 			return dialog;
 		}
 		return null;
@@ -142,6 +217,31 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		createTableCell(row, InternationalisationUtils.getDatetimeFormat().format(message.getDate()));
 		createTableCell(row, getSenderDisplayName(message));
 		createTableCell(row, message.getTextContent());
+		return row;
+	}
+	
+	private Object getRow(Contact contact){		
+		Object row = createTableRow(contact);
+		if (contact != null) {
+			createTableCell(row, contact.getDisplayName());
+			if (contact instanceof ContactLocation) {
+				ContactLocation contactLocation = (ContactLocation)contact;
+				createTableCell(row, contactLocation.getLocationName());
+				createTableCell(row, contactLocation.getLocationLatitude());
+				createTableCell(row, contactLocation.getLocationLongitude());
+			}
+			else {
+				createTableCell(row, "");
+				createTableCell(row, "");
+				createTableCell(row, "");
+			}
+		}
+		else {
+			createTableCell(row, "");
+			createTableCell(row, "");
+			createTableCell(row, "");
+			createTableCell(row, "");
+		}
 		return row;
 	}
 	
@@ -225,7 +325,10 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	
 	public void focusGained(Object textfield) {
 		String searchText = this.ui.getText(textfield);
-		if (searchText.equalsIgnoreCase(MappingMessages.getSearchMessages())) {
+		if (textfield == txtSearchMessages && searchText.equalsIgnoreCase(MappingMessages.getSearchMessages())) {
+			this.ui.setText(textfield, "");
+		}
+		else if (textfield == txtSearchContacts && searchText.equalsIgnoreCase(MappingMessages.getSearchContacts())) {
 			this.ui.setText(textfield, "");
 		}
 		this.ui.setForeground(Color.BLACK);
@@ -234,7 +337,12 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	public void focusLost(Object textfield) {
 		String searchText = this.ui.getText(textfield);
 		if (searchText == null || searchText.length() == 0) {
-			this.ui.setText(textfield, MappingMessages.getSearchMessages());
+			if (textfield == txtSearchMessages) {
+				this.ui.setText(textfield, MappingMessages.getSearchMessages());
+			}
+			else if (textfield == txtSearchContacts) {
+				this.ui.setText(textfield, MappingMessages.getSearchMessages());
+			}
 			this.ui.setForeground(Color.LIGHT_GRAY);
 		}
 		else {
@@ -334,11 +442,13 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	}
 
 	public void uploadedIncident(Incident incident) {
-		incident.setMarked(false);
 		try{
+			incident.setMarked(false);
 			incidentDao.updateIncident(incident);
+			reportsPanelHandler.refresh();
 		}
 		catch(DuplicateKeyException dk){
+			dk.printStackTrace();
 			LOG.debug("Unable to update incident", dk);
 		}
 	}
@@ -354,7 +464,14 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 				if (message != null) {
 					ui.add(tblMessages, getRow(message));
 				}
-			}	
+			}
+			else if (databaseEntityNotification.getDatabaseEntity() instanceof Contact) {
+				searchContacts(this.txtSearchContacts);
+//				Contact contact = (Contact)databaseEntityNotification.getDatabaseEntity();
+//				if(contact != null) {
+//					ui.add(tblContacts, getRow(contact, null));
+//				}
+			}
 		}
 	}
 		

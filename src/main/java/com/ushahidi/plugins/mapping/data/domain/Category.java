@@ -13,7 +13,7 @@ import net.frontlinesms.data.EntityField;
  *
  */
 @Entity
-@Table(uniqueConstraints={@UniqueConstraint(columnNames={"category_id","mappingSetup_id"})})
+@Table(name="category", uniqueConstraints={@UniqueConstraint(columnNames={"category_id","mappingSetup_id"})})
 public class Category implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
