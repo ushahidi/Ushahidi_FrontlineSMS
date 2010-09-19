@@ -237,4 +237,12 @@ public final class MappingMessages {
 		return getI18NString("plugins.ushahidi.search.contacts");
 	}
 	
+	public static String getIncidentCreatedFromForm() {
+		return getI18NString("plugins.ushahidi.incident.created.via.form");
+	}
+	
+	public static String getIncidentCreatedFromSurvey() {
+		return getI18NString("plugins.ushahidi.incident.created.via.survey");
+	}
+	
 }

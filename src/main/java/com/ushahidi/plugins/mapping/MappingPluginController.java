@@ -10,6 +10,7 @@ import com.ushahidi.plugins.mapping.util.MappingLogger;
 
 import net.frontlinesms.FrontlineSMS;
 import net.frontlinesms.data.repository.ContactDao;
+import net.frontlinesms.data.repository.MessageDao;
 import net.frontlinesms.plugins.BasePluginController;
 import net.frontlinesms.plugins.PluginControllerProperties;
 import net.frontlinesms.plugins.PluginInitialisationException;
@@ -18,7 +19,7 @@ import net.frontlinesms.ui.UiGeneratorController;
 import org.springframework.context.ApplicationContext;
 
 /**
- * 
+ * MappingPluginController
  * @author ekala
  *
  */
@@ -36,6 +37,7 @@ public class MappingPluginController extends BasePluginController {
     private CategoryDao categoryDao;
     private LocationDao locationDao;
     private IncidentDao incidentDao;
+    private MessageDao messageDao;
     private MappingSetupDao mappingSetupDao;
     private ContactLocationDao contactLocationDao;
     
@@ -53,6 +55,7 @@ public class MappingPluginController extends BasePluginController {
        
         try{
         	this.contactDao = frontlineController.getContactDao();
+        	this.messageDao = frontlineController.getMessageDao();
         	this.locationDao = (LocationDao)applicationContext.getBean("locationDao");
         	this.incidentDao = (IncidentDao)applicationContext.getBean("incidentDao");
         	this.mappingSetupDao = (MappingSetupDao)applicationContext.getBean("mappingSetupDao");
@@ -81,6 +84,10 @@ public class MappingPluginController extends BasePluginController {
         return mappingUIController.getTab();
     }
 
+    public MessageDao getMessageDao(){
+        return messageDao;
+    }
+    
     public LocationDao getLocationDao(){
         return locationDao;
     }
@@ -127,5 +134,9 @@ public class MappingPluginController extends BasePluginController {
     
     public void refreshContacts() {
     	mappingUIController.refreshContacts();
+    }
+    
+    public void setStatus(String status) {
+    	mappingUIController.setStatus(status);
     }
 }

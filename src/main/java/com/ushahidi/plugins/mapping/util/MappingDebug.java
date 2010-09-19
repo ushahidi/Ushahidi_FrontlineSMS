@@ -1,8 +1,14 @@
 package com.ushahidi.plugins.mapping.util;
 
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Scanner;
+
+import net.frontlinesms.data.domain.Contact;
+import net.frontlinesms.data.domain.FrontlineMessage;
+import net.frontlinesms.data.repository.ContactDao;
+import net.frontlinesms.data.repository.MessageDao;
 
 import com.ushahidi.plugins.mapping.managers.FormsManager;
 import com.ushahidi.plugins.mapping.managers.SurveysManager;
@@ -18,14 +24,18 @@ public class MappingDebug {
 	
 	private final FormsManager formsManager;
 	private final SurveysManager surveysManager;
+	private final MessageDao messageDao;
+	private final ContactDao contactDao;
 	
 	/**
 	 * MappingDebug
 	 * @param pluginController MappingPluginController
 	 */
-	public MappingDebug(FormsManager formsManager, SurveysManager surveysManager) {
+	public MappingDebug(FormsManager formsManager, SurveysManager surveysManager, MessageDao messageDao, ContactDao contactDao) {
 		this.formsManager = formsManager;
 		this.surveysManager = surveysManager;
+		this.messageDao = messageDao;
+		this.contactDao = contactDao;
 	}
 	
 	/**
@@ -35,6 +45,18 @@ public class MappingDebug {
 		Thread thread = new DebugTerminal();
 		thread.start();
     }
+	
+	private String getSenderMsisdn() {
+		for (Contact contact : this.contactDao.getAllContacts()) {
+			if (contact.getPhoneNumber() != null) {
+				return contact.getPhoneNumber();
+			}
+			else if (contact.getOtherPhoneNumber() != null) {
+				return contact.getOtherPhoneNumber();
+			}
+		}
+		return null;
+	}
 	
 	/**
 	 * Inner threaded class for listening to System.in
@@ -62,6 +84,12 @@ public class MappingDebug {
 	            }
 	            else if (message.equalsIgnoreCase("help")){
 	            	LOG.error("Enter 'form' to create a sample Form, 'survey' to create a sample Survey or 'exit' to terminate console.");
+	            }
+	            else {
+	            	long dateReceived = Calendar.getInstance().getTimeInMillis();
+	            	String senderMsisdn = getSenderMsisdn();
+	            	LOG.debug("Message Created: %s", message);
+	            	messageDao.saveMessage(FrontlineMessage.createIncomingMessage(dateReceived, senderMsisdn, null, message));
 	            }
 	        }
 		 }

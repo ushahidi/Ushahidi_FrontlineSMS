@@ -71,16 +71,15 @@ public class SurveysManager extends Manager {
 	/**
 	 * Handle incoming FrontlineEventNotification
 	 */
-	@SuppressWarnings("unchecked")
 	public void notify(FrontlineEventNotification notification) {
-		if (notification instanceof EntitySavedNotification) {
-			EntitySavedNotification entitySavedNotification = (EntitySavedNotification)notification;
+		if (notification instanceof EntitySavedNotification<?>) {
+			EntitySavedNotification<?> entitySavedNotification = (EntitySavedNotification<?>)notification;
 			if (entitySavedNotification != null) {
-				if (entitySavedNotification.getDatabaseEntity() instanceof Answer) {
-					Answer questionResponse = (Answer)entitySavedNotification.getDatabaseEntity();
-					if (questionDictionary.containsKey(questionResponse.getQuestionKeyword())) {
-						Question question = questionResponse.getQuestion();
-						LOG.error("Ushahidi Question Received [%s, %s, %s, %s]", question.getName(), question.getKeyword(), question.getType(), questionResponse.getAnswerValue());
+				if (entitySavedNotification.getDatabaseEntity() instanceof Answer<?>) {
+					Answer<?> answer = (Answer<?>)entitySavedNotification.getDatabaseEntity();
+					if (questionDictionary.containsKey(answer.getQuestionKeyword())) {
+						Question question = answer.getQuestion();
+						LOG.error("Ushahidi Question Received [%s, %s, %s, %s]", question.getName(), question.getKeyword(), question.getType(), answer.getAnswerValue());
 					}
 				}	
 			}
@@ -120,7 +119,7 @@ public class SurveysManager extends Manager {
 			return true;	
 		}
 		catch(Exception ex){
-			ex.printStackTrace();
+			LOG.error("Exception in addSurveyQuestions", ex);
 		}
 		return false;
 	}
@@ -130,8 +129,8 @@ public class SurveysManager extends Manager {
 			
 			return true;
 		}
-		catch (Exception e){
-			
+		catch (Exception ex){
+			LOG.error("Exception in addSurveyAnswers", ex);
 		}
 		return false;
 	}

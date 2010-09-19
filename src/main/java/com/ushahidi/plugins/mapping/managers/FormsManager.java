@@ -79,10 +79,9 @@ public class FormsManager extends Manager {
 	/**
 	 * Handle incoming FrontlineEventNotification
 	 */
-	@SuppressWarnings("unchecked")
 	public void notify(FrontlineEventNotification notification) {
-		if (notification instanceof EntitySavedNotification) {
-			EntitySavedNotification entitySavedNotification = (EntitySavedNotification)notification;
+		if (notification instanceof EntitySavedNotification<?>) {
+			EntitySavedNotification<?> entitySavedNotification = (EntitySavedNotification<?>)notification;
 			if (entitySavedNotification.getDatabaseEntity() instanceof FormResponse) {
 				FormResponse formResponse = (FormResponse)entitySavedNotification.getDatabaseEntity();
 				Form form = formResponse.getParentForm();
@@ -190,6 +189,7 @@ public class FormsManager extends Manager {
 					try {
 						incidentDao.saveIncident(incident);
 						LOG.debug("Saving New Incident: %s", incident.getTitle());
+						pluginController.setStatus(MappingMessages.getIncidentCreatedFromForm());
 						pluginController.refreshIncidentMap();
 						pluginController.refreshIncidentReports();
 					} 
@@ -236,7 +236,7 @@ public class FormsManager extends Manager {
 			}
 			//OTHER LOCATION
 			addFormField(form, FormFieldType.TEXT_FIELD, MappingMessages.getLocationOther());
-			this.formDao.saveForm(form);	
+			this.formDao.saveForm(form);
 			return true;
 		}
 		catch(Exception ex) {

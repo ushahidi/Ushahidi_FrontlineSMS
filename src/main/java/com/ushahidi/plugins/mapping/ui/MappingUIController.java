@@ -28,6 +28,7 @@ import net.frontlinesms.data.domain.FrontlineMessage;
 import net.frontlinesms.data.events.EntityDeleteWarning;
 import net.frontlinesms.data.events.EntitySavedNotification;
 import net.frontlinesms.data.repository.ContactDao;
+import net.frontlinesms.data.repository.MessageDao;
 import net.frontlinesms.events.EventObserver;
 import net.frontlinesms.events.FrontlineEventNotification;
 import net.frontlinesms.ui.i18n.InternationalisationUtils;
@@ -58,6 +59,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	private final LocationDao locationDao;
 	private final CategoryDao categoryDao;
 	private final IncidentDao incidentDao;
+	private final MessageDao messageDao;
 	private final MappingSetupDao mappingSetupDao;
 	private final ContactLocationDao contactLocationDao;
 		
@@ -85,6 +87,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		this.locationDao = pluginController.getLocationDao();
 		this.categoryDao = pluginController.getCategoryDao();
 		this.incidentDao = pluginController.getIncidentDao();
+		this.messageDao = pluginController.getMessageDao();
 		this.mappingSetupDao = pluginController.getMappingSetupDao();
 		this.contactLocationDao = pluginController.getContactLocationDao();
 		
@@ -104,7 +107,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		this.formsManager = new FormsManager(frontlineController, pluginController);
 		
 		if (MappingProperties.isDebugMode()) {
-			MappingDebug mappingDebug = new MappingDebug(formsManager, surveysManager);
+			MappingDebug mappingDebug = new MappingDebug(formsManager, surveysManager, messageDao, contactDao);
 			mappingDebug.startDebugTerminal();
 		}
 	}
@@ -120,6 +123,10 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	
 	public Object getTab() {
 		return mainTab;
+	}
+	
+	public void setStatus(String status) {
+		ui.setStatus(status);
 	}
 	
 	public void showMessages() {
@@ -480,11 +487,10 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 
 	//################# EventObserver #################
 	
-	@SuppressWarnings("unchecked")
 	public void notify(FrontlineEventNotification notification) {
 		LOG.debug("notification: %s", notification.toString());
-		if (notification instanceof EntityDeleteWarning) {
-			EntityDeleteWarning entityDeleteWarning = (EntityDeleteWarning)notification;
+		if (notification instanceof EntityDeleteWarning<?>) {
+			EntityDeleteWarning<?> entityDeleteWarning = (EntityDeleteWarning<?>)notification;
 			LOG.debug("entityDeleteWarning: %s", entityDeleteWarning.getDatabaseEntity().getClass());
 //			if (entityDeleteWarning.getDatabaseEntity() instanceof Contact) {
 //				Contact contact = (Contact)entityDeleteWarning.getDatabaseEntity();
@@ -497,8 +503,8 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 //				}
 //			}
 		}
-		else if (notification instanceof EntitySavedNotification) {
-			EntitySavedNotification entitySavedNotification = (EntitySavedNotification)notification;
+		else if (notification instanceof EntitySavedNotification<?>) {
+			EntitySavedNotification<?> entitySavedNotification = (EntitySavedNotification<?>)notification;
 			if (entitySavedNotification.getDatabaseEntity() instanceof FrontlineMessage) {
 				FrontlineMessage message = (FrontlineMessage)entitySavedNotification.getDatabaseEntity();
 				if (message != null) {
