@@ -23,9 +23,9 @@ import com.ushahidi.plugins.mapping.maps.providers.MapProvider;
 import com.ushahidi.plugins.mapping.maps.providers.MapProviderFactory;
 import com.ushahidi.plugins.mapping.sync.SynchronizationCallback;
 import com.ushahidi.plugins.mapping.sync.SynchronizationManager;
-import com.ushahidi.plugins.mapping.utils.MappingLogger;
-import com.ushahidi.plugins.mapping.utils.MappingMessages;
-import com.ushahidi.plugins.mapping.utils.MappingProperties;
+import com.ushahidi.plugins.mapping.util.MappingLogger;
+import com.ushahidi.plugins.mapping.util.MappingMessages;
+import com.ushahidi.plugins.mapping.util.MappingProperties;
 
 import net.frontlinesms.FrontlineSMS;
 import net.frontlinesms.data.DuplicateKeyException;
@@ -47,6 +47,9 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
 	private final MappingPluginController pluginController;
 	private final FrontlineSMS frontlineController;
 	private final UiGeneratorController ui;
+	
+	private final SurveysManager surveysManager;
+	private final FormsManager formsManager;
 	
 	private final LocationDao locationDao;
 	private final CategoryDao categoryDao;
@@ -70,10 +73,13 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
 	
 	private SyncDialogHandler syncDialog;
 	
-	public SetupDialogHandler(MappingPluginController pluginController, FrontlineSMS frontlineController, UiGeneratorController uiController) {
+	public SetupDialogHandler(MappingPluginController pluginController, FrontlineSMS frontlineController, UiGeneratorController uiController, FormsManager formsManager, SurveysManager surveysManager) {
 		this.pluginController = pluginController;
 		this.ui = uiController;
 		this.frontlineController = frontlineController;
+		
+		this.formsManager = formsManager;
+		this.surveysManager = surveysManager;
 		
 		this.locationDao = pluginController.getLocationDao();
 		this.categoryDao = pluginController.getCategoryDao();
@@ -340,8 +346,7 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
 	
 	public void createSurveyQuestions() {
 		LOG.debug("createSurveyQuestions");
-		SurveysManager surveysManager = new SurveysManager(frontlineController, pluginController);
-        if(surveysManager.addSurveyQuestions(MappingMessages.getIncidentReport())) {
+		if(surveysManager.addSurveyQuestions(MappingMessages.getIncidentReport())) {
         	ui.alert(MappingMessages.getSurveyCreated());
         }
         else {
@@ -351,8 +356,7 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
 	
 	public void createFormFields() {
 		LOG.debug("createFormFields");
-        FormsManager formsManager = new FormsManager(frontlineController, pluginController);
-        if(formsManager.addFormFields(MappingMessages.getIncidentReport())) {
+		if(formsManager.addFormFields()) {
         	ui.alert(MappingMessages.getFormCreated());
         }
         else {

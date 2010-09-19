@@ -12,7 +12,7 @@ import net.frontlinesms.data.DuplicateKeyException;
 import com.ushahidi.plugins.mapping.data.domain.Location;
 import com.ushahidi.plugins.mapping.data.domain.MappingSetup;
 import com.ushahidi.plugins.mapping.data.repository.LocationDao;
-import com.ushahidi.plugins.mapping.utils.MappingLogger;
+import com.ushahidi.plugins.mapping.util.MappingLogger;
 
 public class HibernateLocationDao extends BaseHibernateDao<Location> implements LocationDao {
 

@@ -11,9 +11,9 @@ import com.ushahidi.plugins.mapping.data.domain.MappingSetup;
 import com.ushahidi.plugins.mapping.data.repository.CategoryDao;
 import com.ushahidi.plugins.mapping.data.repository.IncidentDao;
 import com.ushahidi.plugins.mapping.data.repository.MappingSetupDao;
-import com.ushahidi.plugins.mapping.utils.MappingLogger;
-import com.ushahidi.plugins.mapping.utils.MappingMessages;
-import com.ushahidi.plugins.mapping.utils.MappingProperties;
+import com.ushahidi.plugins.mapping.util.MappingLogger;
+import com.ushahidi.plugins.mapping.util.MappingMessages;
+import com.ushahidi.plugins.mapping.util.MappingProperties;
 
 import net.frontlinesms.FrontlineSMS;
 import net.frontlinesms.data.DuplicateKeyException;

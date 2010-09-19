@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
 
-import com.ushahidi.plugins.mapping.utils.MappingLogger;
+import com.ushahidi.plugins.mapping.util.MappingLogger;
 import com.ushahidi.plugins.mapping.data.domain.*;
 
 /**

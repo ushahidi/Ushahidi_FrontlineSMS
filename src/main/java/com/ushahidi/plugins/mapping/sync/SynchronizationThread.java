@@ -24,7 +24,7 @@ import org.json.JSONException;
 import com.ushahidi.plugins.mapping.data.domain.Category;
 import com.ushahidi.plugins.mapping.data.domain.Location;
 import com.ushahidi.plugins.mapping.data.domain.Incident;
-import com.ushahidi.plugins.mapping.utils.MappingLogger;
+import com.ushahidi.plugins.mapping.util.MappingLogger;
 
 public class SynchronizationThread extends Thread{
 //>	STATIC	

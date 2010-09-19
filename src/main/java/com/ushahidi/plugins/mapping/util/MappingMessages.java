@@ -1,4 +1,4 @@
-package com.ushahidi.plugins.mapping.utils;
+package com.ushahidi.plugins.mapping.util;
 
 import static net.frontlinesms.ui.i18n.InternationalisationUtils.getI18NString;
 
@@ -71,6 +71,10 @@ public final class MappingMessages {
 	
 	public static String getLocation() {
 		return getI18NString("plugins.ushahidi.incident.location");
+	}
+	
+	public static String getLocationOther() {
+		return getI18NString("plugins.ushahidi.incident.location.other");
 	}
 	
 	public static String getLocationInfo() {

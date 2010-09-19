@@ -12,8 +12,8 @@ import com.ushahidi.plugins.mapping.data.domain.Location;
 import com.ushahidi.plugins.mapping.data.repository.CategoryDao;
 import com.ushahidi.plugins.mapping.data.repository.LocationDao;
 import com.ushahidi.plugins.mapping.data.repository.MappingSetupDao;
-import com.ushahidi.plugins.mapping.utils.MappingLogger;
-import com.ushahidi.plugins.mapping.utils.MappingMessages;
+import com.ushahidi.plugins.mapping.util.MappingLogger;
+import com.ushahidi.plugins.mapping.util.MappingMessages;
 
 import net.frontlinesms.FrontlineSMS;
 import net.frontlinesms.data.DuplicateKeyException;
@@ -81,8 +81,6 @@ public class SurveysManager extends Manager {
 					if (questionDictionary.containsKey(questionResponse.getQuestionKeyword())) {
 						Question question = questionResponse.getQuestion();
 						LOG.error("Ushahidi Question Received [%s, %s, %s, %s]", question.getName(), question.getKeyword(), question.getType(), questionResponse.getAnswerValue());
-						
-						
 					}
 				}	
 			}
@@ -123,6 +121,17 @@ public class SurveysManager extends Manager {
 		}
 		catch(Exception ex){
 			ex.printStackTrace();
+		}
+		return false;
+	}
+	
+	public boolean addSurveyAnswers(String title) {
+		try {
+			
+			return true;
+		}
+		catch (Exception e){
+			
 		}
 		return false;
 	}

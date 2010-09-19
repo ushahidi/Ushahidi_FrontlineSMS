@@ -16,10 +16,10 @@ public abstract class Manager implements EventObserver {
 	 * @param frontlineController FrontlineSMS
 	 * @return PluginController
 	 */
-	protected static <T extends PluginController> T getPluginController(FrontlineSMS frontlineController, Class<T> clazz) {
+	protected static <T extends PluginController> T getPluginController(FrontlineSMS frontlineController, Class<T> pluginClass) {
 		for (PluginController pluginController : frontlineController.getPluginManager().getPluginControllers()) {
-			if (pluginController.getClass() == clazz) {
-				return clazz.cast(pluginController);
+			if (pluginController.getClass() == pluginClass) {
+				return pluginClass.cast(pluginController);
 			}
 		}
 		return null;

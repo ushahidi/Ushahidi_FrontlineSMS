@@ -14,7 +14,7 @@ import com.ushahidi.plugins.mapping.data.domain.MappingSetup;
 import com.ushahidi.plugins.mapping.data.repository.MappingSetupDao;
 import com.ushahidi.plugins.mapping.maps.TileSaver;
 import com.ushahidi.plugins.mapping.maps.TiledMap;
-import com.ushahidi.plugins.mapping.utils.MappingLogger;
+import com.ushahidi.plugins.mapping.util.MappingLogger;
 
 @SuppressWarnings("serial")
 public class MapSaveDialogHandler extends ExtendedThinlet implements ThinletUiEventHandler {

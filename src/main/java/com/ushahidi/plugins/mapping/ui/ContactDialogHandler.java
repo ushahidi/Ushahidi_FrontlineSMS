@@ -8,8 +8,8 @@ import com.ushahidi.plugins.mapping.data.domain.Location;
 import com.ushahidi.plugins.mapping.data.repository.ContactLocationDao;
 import com.ushahidi.plugins.mapping.data.repository.LocationDao;
 import com.ushahidi.plugins.mapping.data.repository.MappingSetupDao;
-import com.ushahidi.plugins.mapping.utils.MappingLogger;
-import com.ushahidi.plugins.mapping.utils.MappingMessages;
+import com.ushahidi.plugins.mapping.util.MappingLogger;
+import com.ushahidi.plugins.mapping.util.MappingMessages;
 
 import net.frontlinesms.FrontlineSMS;
 import net.frontlinesms.data.DuplicateKeyException;

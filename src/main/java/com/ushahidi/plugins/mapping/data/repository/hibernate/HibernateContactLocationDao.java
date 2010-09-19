@@ -7,7 +7,7 @@ import net.frontlinesms.data.repository.hibernate.BaseHibernateDao;
 
 import com.ushahidi.plugins.mapping.data.domain.ContactLocation;
 import com.ushahidi.plugins.mapping.data.repository.ContactLocationDao;
-import com.ushahidi.plugins.mapping.utils.MappingLogger;
+import com.ushahidi.plugins.mapping.util.MappingLogger;
 
 public class HibernateContactLocationDao extends BaseHibernateDao<ContactLocation> implements ContactLocationDao {
 

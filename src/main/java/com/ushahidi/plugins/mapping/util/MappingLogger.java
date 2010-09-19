@@ -1,4 +1,4 @@
-package com.ushahidi.plugins.mapping.utils;
+package com.ushahidi.plugins.mapping.util;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.spi.LoggerFactory;

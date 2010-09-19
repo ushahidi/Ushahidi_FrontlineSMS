@@ -6,9 +6,10 @@ import com.ushahidi.plugins.mapping.data.repository.LocationDao;
 import com.ushahidi.plugins.mapping.data.repository.IncidentDao;
 import com.ushahidi.plugins.mapping.data.repository.MappingSetupDao;
 import com.ushahidi.plugins.mapping.ui.MappingUIController;
-import com.ushahidi.plugins.mapping.utils.MappingLogger;
+import com.ushahidi.plugins.mapping.util.MappingLogger;
 
 import net.frontlinesms.FrontlineSMS;
+import net.frontlinesms.data.repository.ContactDao;
 import net.frontlinesms.plugins.BasePluginController;
 import net.frontlinesms.plugins.PluginControllerProperties;
 import net.frontlinesms.plugins.PluginInitialisationException;
@@ -28,8 +29,10 @@ public class MappingPluginController extends BasePluginController {
     private static MappingLogger LOG = MappingLogger.getLogger(MappingPluginController.class);	
 
     private FrontlineSMS frontlineController;
+    private ApplicationContext applicationContext;
     private MappingUIController mappingUIController;
-
+	
+	private ContactDao contactDao;
     private CategoryDao categoryDao;
     private LocationDao locationDao;
     private IncidentDao incidentDao;
@@ -44,19 +47,20 @@ public class MappingPluginController extends BasePluginController {
         return "classpath:com/ushahidi/plugins/mapping/mapping-spring-hibernate.xml";
     }
 
-    public void init(FrontlineSMS frontlineController, ApplicationContext applicationContext) 
-    throws PluginInitialisationException {
+    public void init(FrontlineSMS frontlineController, ApplicationContext applicationContext) throws PluginInitialisationException {
         this.frontlineController = frontlineController;
+        this.applicationContext = applicationContext;
        
         try{
-            locationDao = (LocationDao)applicationContext.getBean("locationDao");
-            incidentDao = (IncidentDao)applicationContext.getBean("incidentDao");
-            mappingSetupDao = (MappingSetupDao)applicationContext.getBean("mappingSetupDao");
-            categoryDao = (CategoryDao)applicationContext.getBean("categoryDao");
-            contactLocationDao = (ContactLocationDao)applicationContext.getBean("contactLocationDao");
+        	this.contactDao = frontlineController.getContactDao();
+        	this.locationDao = (LocationDao)applicationContext.getBean("locationDao");
+        	this.incidentDao = (IncidentDao)applicationContext.getBean("incidentDao");
+        	this.mappingSetupDao = (MappingSetupDao)applicationContext.getBean("mappingSetupDao");
+        	this.categoryDao = (CategoryDao)applicationContext.getBean("categoryDao");
+        	this.contactLocationDao = (ContactLocationDao)applicationContext.getBean("contactLocationDao");
         }
         catch(Throwable t){
-            LOG.warn("Unable to initialize mapping plugin");
+        	LOG.error("Unable to initialize dao objects");
             throw new PluginInitialisationException(t);
         }
     }
@@ -77,7 +81,7 @@ public class MappingPluginController extends BasePluginController {
         return mappingUIController.getTab();
     }
 
-        public LocationDao getLocationDao(){
+    public LocationDao getLocationDao(){
         return locationDao;
     }
 
@@ -95,6 +99,10 @@ public class MappingPluginController extends BasePluginController {
     
     public ContactLocationDao getContactLocationDao(){
         return contactLocationDao;
+    }
+    
+    public ContactDao getContactDao() {
+    	return contactDao;
     }
     
     public void showIncidentMap() {

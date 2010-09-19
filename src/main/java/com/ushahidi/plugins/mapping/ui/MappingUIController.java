@@ -6,10 +6,14 @@ import java.util.List;
 import thinlet.Thinlet;
 
 import com.ushahidi.plugins.mapping.MappingPluginController;
+import com.ushahidi.plugins.mapping.managers.FormsManager;
+import com.ushahidi.plugins.mapping.managers.SurveysManager;
 import com.ushahidi.plugins.mapping.sync.SynchronizationCallback;
 import com.ushahidi.plugins.mapping.sync.SynchronizationManager;
-import com.ushahidi.plugins.mapping.utils.MappingLogger;
-import com.ushahidi.plugins.mapping.utils.MappingMessages;
+import com.ushahidi.plugins.mapping.util.MappingDebug;
+import com.ushahidi.plugins.mapping.util.MappingLogger;
+import com.ushahidi.plugins.mapping.util.MappingMessages;
+import com.ushahidi.plugins.mapping.util.MappingProperties;
 import com.ushahidi.plugins.mapping.data.domain.*;
 import com.ushahidi.plugins.mapping.data.repository.CategoryDao;
 import com.ushahidi.plugins.mapping.data.repository.ContactLocationDao;
@@ -42,6 +46,9 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	private final MappingPluginController pluginController;
 	private final FrontlineSMS frontlineController;
 	private final UiGeneratorController ui;
+	
+    private final SurveysManager surveysManager;
+	private final FormsManager formsManager;
 	
 	private final Object mainTab;
 	private final Object pnlViewIncidents;
@@ -92,6 +99,14 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		this.pnlContacts = this.ui.find(this.mainTab, "pnlContacts");
 		this.pnlMessages = this.ui.find(this.mainTab, "pnlMessages");
 		this.cbxContacts = this.ui.find(this.mainTab, "cbxContacts");
+		
+		this.surveysManager = new SurveysManager(frontlineController, pluginController);
+		this.formsManager = new FormsManager(frontlineController, pluginController);
+		
+		if (MappingProperties.isDebugMode()) {
+			MappingDebug mappingDebug = new MappingDebug(formsManager, surveysManager);
+			mappingDebug.startDebugTerminal();
+		}
 	}
 	
 	/**
@@ -197,7 +212,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	 * Displays the mapping setup dialog
 	 */
 	public SetupDialogHandler showSetupDialog(){
-		SetupDialogHandler dialog = new SetupDialogHandler(pluginController, frontlineController, ui);
+		SetupDialogHandler dialog = new SetupDialogHandler(pluginController, frontlineController, ui, formsManager, surveysManager);
 		dialog.showDialog();
 		return dialog;
 	}
@@ -409,7 +424,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 				LOG.debug("Incident already exists", e);
 				return;
 			}
-			LOG.debug("Incident [" + incident.getTitle() + "] created!");
+			LOG.debug("Incident [%s] created!", incident.getTitle());
 		}
 	}
 
@@ -492,10 +507,6 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 			}
 			else if (entitySavedNotification.getDatabaseEntity() instanceof Contact) {
 				searchContacts(this.txtSearchContacts);
-//				Contact contact = (Contact)databaseEntityNotification.getDatabaseEntity();
-//				if(contact != null) {
-//					ui.add(tblContacts, getRow(contact, null));
-//				}
 			}
 		}
 	}

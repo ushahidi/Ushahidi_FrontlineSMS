@@ -3,7 +3,7 @@ package com.ushahidi.plugins.mapping.ui;
 import thinlet.Thinlet;
 
 import com.ushahidi.plugins.mapping.MappingPluginController;
-import com.ushahidi.plugins.mapping.utils.MappingLogger;
+import com.ushahidi.plugins.mapping.util.MappingLogger;
 
 import net.frontlinesms.FrontlineSMS;
 import net.frontlinesms.ui.ExtendedThinlet;

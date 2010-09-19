@@ -1,4 +1,4 @@
-package com.ushahidi.plugins.mapping.utils;
+package com.ushahidi.plugins.mapping.util;
 
 import com.ushahidi.plugins.mapping.maps.providers.MapProvider;
 import com.ushahidi.plugins.mapping.maps.providers.MapProviderFactory;
@@ -17,6 +17,7 @@ public class MappingProperties extends UserHomeFilePropertySet {
 	private static final String DEFAULT_ZOOM = "default.zoom";
 	private static final String DEFAULT_MAP_PROVIDER = "default.map.provider";
 	private static final String TRUE = "true";
+	private static final String YES = "yes";
 	private static final String FALSE = "false";
 	
 	protected MappingProperties() {
@@ -31,7 +32,8 @@ public class MappingProperties extends UserHomeFilePropertySet {
 	}
 	
 	public static boolean isDebugMode() {
-		return TRUE.equalsIgnoreCase(getInstance().getProperty(DEBUG_MODE));
+		return 	TRUE.equalsIgnoreCase(getInstance().getProperty(DEBUG_MODE)) ||
+				YES.equalsIgnoreCase(getInstance().getProperty(DEBUG_MODE));
 	}
 	
 	public static void setDebugMode(boolean debug) {

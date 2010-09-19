@@ -24,7 +24,7 @@ import com.ushahidi.plugins.mapping.maps.geo.Location;
 import com.ushahidi.plugins.mapping.maps.providers.MapProvider;
 import com.ushahidi.plugins.mapping.maps.providers.openstreetmap.OpenStreetMapProvider;
 import com.ushahidi.plugins.mapping.maps.providers.offline.OfflineProvider;
-import com.ushahidi.plugins.mapping.utils.MappingLogger;
+import com.ushahidi.plugins.mapping.util.MappingLogger;
 
 @SuppressWarnings("serial")
 public class MapBean extends CustomComponent implements ImageObserver {
