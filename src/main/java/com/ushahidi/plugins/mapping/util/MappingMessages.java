@@ -245,4 +245,8 @@ public final class MappingMessages {
 		return getI18NString("plugins.ushahidi.incident.created.via.survey");
 	}
 	
+	public static String getIncidentUpdatedFromSurvey() {
+		return getI18NString("plugins.ushahidi.incident.updated.via.survey");
+	}
+	
 }

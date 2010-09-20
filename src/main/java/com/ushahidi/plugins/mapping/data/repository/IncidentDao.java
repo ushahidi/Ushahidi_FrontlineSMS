@@ -3,6 +3,7 @@ package com.ushahidi.plugins.mapping.data.repository;
 import java.util.List;
 
 import net.frontlinesms.data.DuplicateKeyException;
+import net.frontlinesms.plugins.surveys.data.domain.SurveyResponse;
 
 import com.ushahidi.plugins.mapping.data.domain.Incident;
 import com.ushahidi.plugins.mapping.data.domain.Location;
@@ -39,4 +40,6 @@ public interface IncidentDao {
 	public List<Incident> getIncidentsByLocation(Location location);
 	
 	public void deleteIncidentsWithMapping(MappingSetup setup);
+	
+	public Incident getIncidentBySurveyResponse(SurveyResponse surveyResponse);
 }

@@ -135,7 +135,12 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 				Category category = ui.getAttachedObject(item, Category.class);
 				ui.setSelected(item, incident.hasCategory(category));
 			}
-			ui.setText(txtReportDate, InternationalisationUtils.getDatetimeFormat().format(incident.getIncidentDate()));
+			if (incident.getIncidentDate() != null) {
+				ui.setText(txtReportDate, InternationalisationUtils.getDatetimeFormat().format(incident.getIncidentDate()));
+			}
+			else {
+				ui.setText(txtReportDate, "");
+			}
 			if (incident.getLocation() != null) {
 				ui.setText(txtReportLocation, incident.getLocation().getName());
 				int index = 0;

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import net.frontlinesms.data.DuplicateKeyException;
+import net.frontlinesms.plugins.surveys.data.domain.SurveyResponse;
 
 import com.ushahidi.plugins.mapping.data.domain.Incident;
 import com.ushahidi.plugins.mapping.data.domain.Location;
@@ -89,5 +90,10 @@ public class InMemoryIncidentDao implements IncidentDao {
 	public void updateIncidentWithoutDuplicateHandling(Incident incident) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	public Incident getIncidentBySurveyResponse(SurveyResponse surveyResponse) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

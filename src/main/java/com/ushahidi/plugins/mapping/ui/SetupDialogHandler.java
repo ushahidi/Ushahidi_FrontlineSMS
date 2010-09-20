@@ -346,7 +346,7 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
 	
 	public void createSurveyQuestions() {
 		LOG.debug("createSurveyQuestions");
-		if(surveysManager.addSurveyQuestions(MappingMessages.getIncidentReport())) {
+		if(surveysManager.addSurveyQuestions()) {
 			ui.setStatus(MappingMessages.getSurveyCreated());
         	ui.alert(MappingMessages.getSurveyCreated());
         }

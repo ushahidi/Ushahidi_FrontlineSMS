@@ -11,6 +11,7 @@ import com.ushahidi.plugins.mapping.data.repository.IncidentDao;
 
 import net.frontlinesms.data.DuplicateKeyException;
 import net.frontlinesms.data.repository.hibernate.BaseHibernateDao;
+import net.frontlinesms.plugins.surveys.data.domain.SurveyResponse;
 
 import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Restrictions;
@@ -163,5 +164,11 @@ public class HibernateIncidentDao extends BaseHibernateDao<Incident> implements
 		for(Incident incident : getAllIncidents(setup)) {
 			super.delete(incident);
 		}
+	}
+	
+	public Incident getIncidentBySurveyResponse(SurveyResponse surveyResponse) {
+		DetachedCriteria criteria = super.getCriterion();
+		criteria.add(Restrictions.eq(Incident.Field.SURVEY_RESPONSE.getFieldName(), surveyResponse));
+		return super.getUnique(criteria);
 	}
 }

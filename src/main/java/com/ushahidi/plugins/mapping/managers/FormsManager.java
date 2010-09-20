@@ -188,7 +188,7 @@ public class FormsManager extends Manager {
 					}
 					try {
 						incidentDao.saveIncident(incident);
-						LOG.debug("Saving New Incident: %s", incident.getTitle());
+						LOG.debug("New Incident Created: %s", incident.getTitle());
 						pluginController.setStatus(MappingMessages.getIncidentCreatedFromForm());
 						pluginController.refreshIncidentMap();
 						pluginController.refreshIncidentReports();
@@ -237,6 +237,7 @@ public class FormsManager extends Manager {
 			//OTHER LOCATION
 			addFormField(form, FormFieldType.TEXT_FIELD, MappingMessages.getLocationOther());
 			this.formDao.saveForm(form);
+			LOG.debug("Form Created: %s", form.getName());
 			return true;
 		}
 		catch(Exception ex) {

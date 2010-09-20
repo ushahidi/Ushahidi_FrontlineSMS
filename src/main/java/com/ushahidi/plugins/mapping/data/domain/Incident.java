@@ -17,6 +17,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.persistence.JoinColumn;
@@ -26,6 +27,7 @@ import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
 import net.frontlinesms.data.EntityField;
+import net.frontlinesms.plugins.surveys.data.domain.SurveyResponse;
 
 @Entity
 @Table(uniqueConstraints={@UniqueConstraint(columnNames={"incident_id","mappingSetup_id"})})
@@ -63,6 +65,8 @@ public class Incident implements Serializable {
 	private static final String FIELD_LAST_NAME = "lastName";
 	/** Column name for {@link #emailAddress } */
 	private static final String FIELD_EMAIL_ADDRESS = "emailAddress";
+	/** Column name for {@link #surveyResponse } */
+	private static final String FIELD_SURVEY_RESPONSE = "surveyResponse";
 	
 	/** Field mapping for the properties contained in this class/entity */
 	public enum Field implements EntityField<Incident>{
@@ -91,7 +95,9 @@ public class Incident implements Serializable {
 		/** Field mapping for {@link Incident#lastName} */
 		LAST_NAME(FIELD_LAST_NAME),
 		/** Field mapping for {@link Incident#emailAddress} */
-		EMAIL_ADDRESS(FIELD_EMAIL_ADDRESS);
+		EMAIL_ADDRESS(FIELD_EMAIL_ADDRESS),
+		/** Field mapping for {@link Incident#surveyResponse} */
+		SURVEY_RESPONSE(FIELD_SURVEY_RESPONSE);
 		
 		/** name of a field */
 		private final String fieldName;
@@ -165,6 +171,9 @@ public class Incident implements Serializable {
 	/** MappingSetup associated with this incident */
 	@ManyToOne
 	private MappingSetup mappingSetup;
+	
+	@OneToOne(optional=true)
+	private SurveyResponse surveyResponse;
 		
 	/**
 	 * Sets a unique identifier for this Incident
@@ -476,5 +485,13 @@ public class Incident implements Serializable {
 	
 	public String getEmailAddress() {
 		return emailAddress;
+	}
+	
+	public SurveyResponse getSurveyResponse() {
+		return surveyResponse;
+	}
+	
+	public void setSurveyResponse(SurveyResponse surveyResponse) {
+		this.surveyResponse = surveyResponse;
 	}
 }
