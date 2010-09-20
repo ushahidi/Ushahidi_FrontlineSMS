@@ -1,5 +1,8 @@
 package com.ushahidi.plugins.mapping.managers;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -88,29 +91,10 @@ public class SurveysManager extends Manager {
 				SurveyResponse surveyResponse = (SurveyResponse)entitySavedNotification.getDatabaseEntity();
 				if (surveyResponse.isCompleted()) {
 					LOG.debug("Survey '%s' IS completed", surveyResponse.getSurveyName());
+					saveIncidentFromSurveryResponse(surveyResponse);
 				}
 				else {
 					LOG.debug("Survey '%s' NOT completed", surveyResponse.getSurveyName());
-				}
-				Incident incident = new Incident();
-				incident.setMarked(true);
-				incident.setMappingSetup(mappingSetupDao.getDefaultSetup());
-				incident.setSurveyResponse(surveyResponse);
-				Contact contact = surveyResponse.getContact();
-				if (contact != null) {
-					incident.setFirstName(contact.getName());
-					incident.setEmailAddress(contact.getEmailAddress());
-				}
-				//TODO update incident properties
-				try {
-					incidentDao.saveIncident(incident);
-					LOG.debug("New Incident Created: %s", incident.getTitle());
-					pluginController.setStatus(MappingMessages.getIncidentCreatedFromSurvey());
-					pluginController.refreshIncidentMap();
-					pluginController.refreshIncidentReports();
-				} 
-				catch (DuplicateKeyException ex) {
-					LOG.error("DuplicateKeyException: %s", ex);
 				}
 			}
 		}
@@ -120,28 +104,78 @@ public class SurveysManager extends Manager {
 				SurveyResponse surveyResponse = (SurveyResponse)entityUpdatedNotification.getDatabaseEntity();
 				if (surveyResponse.isCompleted()) {
 					LOG.debug("Survey '%s' IS completed", surveyResponse.getSurveyName());
+					saveIncidentFromSurveryResponse(surveyResponse);
 				}
 				else {
 					LOG.debug("Survey '%s' NOT completed", surveyResponse.getSurveyName());
 				}
-				Incident incident = incidentDao.getIncidentBySurveyResponse(surveyResponse);
-				if (incident != null) {
-					//TODO update incident properties
-					try {
-						incidentDao.updateIncident(incident);
-						LOG.debug("Incident Updated: %s", incident.getTitle());
-						pluginController.setStatus(MappingMessages.getIncidentUpdatedFromSurvey());
-						pluginController.refreshIncidentMap();
-						pluginController.refreshIncidentReports();
-					} 
-					catch (DuplicateKeyException ex) {
-						LOG.error("DuplicateKeyException: %s", ex);
-					}
-				}
-				else {
-					LOG.error("Incident is NULL for Survey: %s", surveyResponse.getSurveyName());
+			}
+		}
+	}
+	
+	/**
+	 * Save incident from survery response
+	 * @param surveyResponse SurveyResponse
+	 */
+	private void saveIncidentFromSurveryResponse(SurveyResponse surveyResponse) {
+		Incident incident = incidentDao.getIncidentBySurveyResponse(surveyResponse);
+		if (incident == null) {
+			incident = new Incident();
+		}
+		incident.setMarked(true);
+		incident.setMappingSetup(mappingSetupDao.getDefaultSetup());
+		incident.setSurveyResponse(surveyResponse);
+		Contact contact = surveyResponse.getContact();
+		if (contact != null) {
+			incident.setFirstName(contact.getName());
+			incident.setEmailAddress(contact.getEmailAddress());
+		}
+		for (Answer<?> answer : surveyResponse.getAnswers()) {
+			LOG.debug("%s = %s", answer.getQuestionName(), answer.getAnswerValue());
+			if (answer.getQuestionName().equalsIgnoreCase(MappingMessages.getTitle())) {
+				incident.setTitle(answer.getAnswerValue());
+			}
+			else if (answer.getQuestionName().equalsIgnoreCase(MappingMessages.getDescription())) {
+				incident.setDescription(answer.getAnswerValue());
+			}
+			else if (answer.getQuestionName().equalsIgnoreCase(MappingMessages.getDate())) {
+				try {
+					DateFormat format = new SimpleDateFormat("dd/MM/yyyy");
+					incident.setIncidentDate(format.parse(answer.getAnswerValue()));
+				} 
+				catch (ParseException ex) {
+					LOG.error("Error parsing date: %s", ex);
 				}
 			}
+			else if (answer.getQuestionName().equalsIgnoreCase(MappingMessages.getCategories())) {
+				//TODO improve this double for-loop
+				for(String categoryTitle : answer.getAnswerValue().split(",")) {
+					for(Category category : categoryDao.getAllCategories(mappingSetupDao.getDefaultSetup())) {
+						if (category.getTitle().equalsIgnoreCase(categoryTitle)) {
+							incident.addCategory(category);
+							break;
+						}
+					}
+				}
+			}
+			else if (answer.getQuestionName().equalsIgnoreCase(MappingMessages.getLocation())) {
+				for(Location location : locationDao.getAllLocations(mappingSetupDao.getDefaultSetup())) {
+					if (location.getName().equalsIgnoreCase(answer.getAnswerValue())) {
+						incident.setLocation(location);
+						break;
+					}
+				}
+			}
+		}
+		try {
+			incidentDao.saveIncident(incident);
+			LOG.debug("New Incident Created: %s", incident.getTitle());
+			pluginController.setStatus(MappingMessages.getIncidentCreatedFromSurvey());
+			pluginController.refreshIncidentMap();
+			pluginController.refreshIncidentReports();
+		} 
+		catch (DuplicateKeyException ex) {
+			LOG.error("DuplicateKeyException: %s", ex);
 		}
 	}
 	
@@ -160,20 +194,20 @@ public class SurveysManager extends Manager {
 			createDateQuestion(questions, MappingMessages.getDate(), MappingMessages.getDateKeyword(), MappingMessages.getDateInfo());
 			//CATEGORIES
 			List<String> categories = new ArrayList<String>();
-			for(Category category: this.categoryDao.getAllCategories(this.mappingSetupDao.getDefaultSetup())){
+			for(Category category: this.categoryDao.getAllCategories(mappingSetupDao.getDefaultSetup())){
 				categories.add(category.getTitle());
 			}
 			createChecklistQuestion(questions, MappingMessages.getCategories(), MappingMessages.getCategoriesKeyword(), MappingMessages.getCategoriesInfo(), categories.toArray(new String[categories.size()]));
 			//LOCATION
 			List<String> locations = new ArrayList<String>();
-			for(Location location: this.locationDao.getAllLocations(this.mappingSetupDao.getDefaultSetup())) {
+			for(Location location: this.locationDao.getAllLocations(mappingSetupDao.getDefaultSetup())) {
 				if (location.getName() != null && location.getName().length() > 0 && location.getName().equalsIgnoreCase("unknown") == false) {
 					locations.add(location.getName());
 				}
 			}
 			createChecklistQuestion(questions, MappingMessages.getLocation(), MappingMessages.getLocationKeyword(), MappingMessages.getLocationInfo(), locations.toArray(new String[locations.size()]));
 			
-			Survey survey = new Survey(surveyName, "ushahidi", questions);
+			Survey survey = new Survey(surveyName, "report", questions);
 			this.surveyDao.saveSurvey(survey);
 			LOG.debug("Survey Created: %s", survey.getName());
 			return true;	

@@ -4,6 +4,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import thinlet.Thinlet;
+
 import com.ushahidi.plugins.mapping.MappingPluginController;
 import com.ushahidi.plugins.mapping.data.domain.Category;
 import com.ushahidi.plugins.mapping.data.domain.Incident;
@@ -42,6 +44,10 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 	private final Object lblCoordinates;
 	private final Object sldZoomLevel;
 	private final Object cbxCategories;
+	private final Object cbxShowMessages;
+	private final Object cbxShowForms;
+	private final Object cbxShowSurveys;
+	private final Object cbxShowIncidents;
 	
 	public MapPanelHandler(MappingPluginController pluginController, FrontlineSMS frontlineController, UiGeneratorController uiController) {
 		this.pluginController = pluginController;
@@ -57,6 +63,10 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 		this.lblCoordinates = this.ui.find(this.mainPanel, "lblCoordinates");
 		this.sldZoomLevel = this.ui.find(this.mainPanel, "sldZoomLevel");
 		this.cbxCategories = this.ui.find(this.mainPanel, "cbxCategories");
+		this.cbxShowMessages = this.ui.find(this.mainPanel, "cbxShowMessages");
+		this.cbxShowForms = this.ui.find(this.mainPanel, "cbxShowForms");
+		this.cbxShowSurveys = this.ui.find(this.mainPanel, "cbxShowSurveys");
+		this.cbxShowIncidents = this.ui.find(this.mainPanel, "cbxShowIncidents");
 	}
 	
 	public Object getMainPanel() {
@@ -101,6 +111,10 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 			}
 			ui.setSelectedIndex(cbxCategories, 0);
 			ui.setEnabled(cbxCategories, true);
+			if (getBoolean(cbxShowIncidents, Thinlet.ENABLED) == false) {
+				ui.setSelected(cbxShowIncidents, true);
+			}
+			ui.setEnabled(cbxShowIncidents, true);
 		} 
 		else {
 			double latitude = MappingProperties.getDefaultLatitude();
@@ -110,6 +124,8 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 			mapBean.setMapPanelHandler(this);
 			ui.setEnabled(sldZoomLevel, true);
 			ui.setEnabled(cbxCategories, false);
+			ui.setEnabled(cbxShowIncidents, false);
+			ui.setSelected(cbxShowIncidents, false);
 		}
 		ui.setInteger(sldZoomLevel, VALUE, MappingProperties.getDefaultZoomLevel());
 	}
@@ -119,6 +135,16 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 		if (mapBean != null) {
 			mapBean.setIncidents(incidentDao.getAllIncidents(mappingSetupDao.getDefaultSetup()));	
 			mapBean.repaint();
+		}
+		if(mappingSetupDao.getDefaultSetup() != null) {
+			if (getBoolean(cbxShowIncidents, Thinlet.ENABLED) == false) {
+				ui.setSelected(cbxShowIncidents, true);
+			}
+			ui.setEnabled(cbxShowIncidents, true);
+		}
+		else {
+			ui.setEnabled(cbxShowIncidents, false);
+			ui.setSelected(cbxShowIncidents, false);
 		}
 	}
 	
@@ -145,12 +171,20 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 		mapBean.setIncidents(incidents);
 	}
 	
+	public void showChanged(Object cbxShowMessages, Object cbxShowForms, Object cbxShowSurveys, Object cbxShowIncidents) {
+		boolean showMessages = getBoolean(cbxShowMessages, Thinlet.SELECTED);
+		boolean showForms = getBoolean(cbxShowForms, Thinlet.SELECTED);
+		boolean showSurveys = getBoolean(cbxShowSurveys, Thinlet.SELECTED);
+		boolean showIncidents = getBoolean(cbxShowIncidents, Thinlet.SELECTED);
+		LOG.debug("showMessages:%s showForms:%s showSurveys:%s showIncidents:%s", showMessages, showForms, showSurveys, showIncidents);
+	}
+	
 	/**
 	 * Fired by {@link MapListener} when a point is selected on the map; the incident creation
 	 * dialog is displayed with the coordinates of the selected location
 	 */
 	public void pointSelected(double lat, double lon) {
-		LOG.debug("%f, %f", lat, lon);		
+		LOG.debug("Latitude:%f Longitude:%f", lat, lon);		
 	}
 	
 	/** @see {@link MapListener#mapZoomed(int)} */

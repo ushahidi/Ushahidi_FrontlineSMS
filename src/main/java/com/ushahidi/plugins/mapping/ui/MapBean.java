@@ -168,8 +168,10 @@ public class MapBean extends CustomComponent implements ImageObserver {
         }
         if(isResized()) {
             dimensions = getSize();
-            map.resize(dimensions.width, dimensions.height);
-            image = map.draw();
+            if (map != null) {
+            	map.resize(dimensions.width, dimensions.height);
+                image = map.draw();	
+            }
         }
         graphic.drawImage(image, 0, 0, null);		
         plotIncidents(graphic);

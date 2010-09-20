@@ -25,6 +25,8 @@ import net.frontlinesms.FrontlineSMS;
 import net.frontlinesms.data.DuplicateKeyException;
 import net.frontlinesms.data.domain.Contact;
 import net.frontlinesms.data.domain.FrontlineMessage;
+import net.frontlinesms.data.domain.FrontlineMessage.Status;
+import net.frontlinesms.data.domain.FrontlineMessage.Type;
 import net.frontlinesms.data.events.EntityDeleteWarning;
 import net.frontlinesms.data.events.EntitySavedNotification;
 import net.frontlinesms.data.repository.ContactDao;
@@ -108,7 +110,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		
 		if (MappingProperties.isDebugMode()) {
 			MappingDebug mappingDebug = new MappingDebug(formsManager, surveysManager, messageDao, contactDao);
-			mappingDebug.startDebugTerminal();
+			//mappingDebug.startDebugTerminal();
 		}
 	}
 	
@@ -488,7 +490,6 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	//################# EventObserver #################
 	
 	public void notify(FrontlineEventNotification notification) {
-		LOG.debug("notification: %s", notification.toString());
 		if (notification instanceof EntityDeleteWarning<?>) {
 			EntityDeleteWarning<?> entityDeleteWarning = (EntityDeleteWarning<?>)notification;
 			LOG.debug("entityDeleteWarning: %s", entityDeleteWarning.getDatabaseEntity().getClass());
@@ -507,8 +508,9 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 			EntitySavedNotification<?> entitySavedNotification = (EntitySavedNotification<?>)notification;
 			if (entitySavedNotification.getDatabaseEntity() instanceof FrontlineMessage) {
 				FrontlineMessage message = (FrontlineMessage)entitySavedNotification.getDatabaseEntity();
-				if (message != null) {
+				if (message != null && message.getType() == Type.RECEIVED) {
 					ui.add(tblMessages, getRow(message));
+					LOG.debug("Adding Message: %s", message.getTextContent());
 				}
 			}
 			else if (entitySavedNotification.getDatabaseEntity() instanceof Contact) {
