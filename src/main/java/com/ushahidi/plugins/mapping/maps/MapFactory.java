@@ -7,6 +7,11 @@ import com.ushahidi.plugins.mapping.maps.core.Coordinate;
 import com.ushahidi.plugins.mapping.maps.geo.Location;
 import com.ushahidi.plugins.mapping.maps.providers.MapProvider;
 
+/**
+ * MapFactory
+ * @author dalezak
+ *
+ */
 public class MapFactory {
 
 	/**
@@ -21,10 +26,10 @@ public class MapFactory {
 	public static TiledMap mapByCenterZoom(MapProvider provider, Location center, int zoom, Dimension dimensions) {
 		provider.setZoomLevel(zoom);
 
-		Coordinate centerCoord = provider.locationCoordinate(center);
-		Point mapOffset = calculateMapCenter(provider, centerCoord);
+		Coordinate centerCoordinate = provider.locationCoordinate(center);
+		Point mapOffset = calculateMapCenter(provider, centerCoordinate);
 				
-		return new TiledMap(provider, dimensions, centerCoord, mapOffset);
+		return new TiledMap(provider, dimensions, centerCoordinate, mapOffset);
 	}
 	
 	/**
@@ -42,8 +47,7 @@ public class MapFactory {
 		// initial tile position, assuming centered tile well in grid
 		int initX = (int)((initTileCoord.col - centerCoord.col) * provider.tileWidth());
 		int initY = (int)((initTileCoord.row - centerCoord.row) * provider.tileHeight());
-		Point initPoint = new Point(initX, initY);   
-
-		return initPoint;			
+		
+		return new Point(initX, initY);			
 	}
 }

@@ -12,20 +12,17 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import net.frontlinesms.FrontlineUtils;
-
-import org.apache.log4j.Logger;
-
 import com.ushahidi.plugins.mapping.maps.core.Coordinate;
 import com.ushahidi.plugins.mapping.maps.geo.Location;
 import com.ushahidi.plugins.mapping.maps.providers.MapProvider;
+import com.ushahidi.plugins.mapping.util.MappingLogger;
 
 public class TiledMap implements TileRequestor{
 //> CONSTANTS
 	/** Size of the thread pool for to be used for fetching the tiles */
 	public static final int THREAD_POOL_SIZE = 5;
 	/** Logger object */
-	public static final Logger LOG = FrontlineUtils.getLogger(Map.class);
+	public static MappingLogger LOG = MappingLogger.getLogger(TiledMap.class);
 	/** Thread pool to be used to perform the tile requests */
 	private final ExecutorService e = Executors.newFixedThreadPool(5);
 	/** Cache for the tile requests */
@@ -60,8 +57,9 @@ public class TiledMap implements TileRequestor{
 	}
 	
 	public void setMapPosition(int x, int y){
-		if(mapPosition.x == x && mapPosition.y == y)
+		if(mapPosition.x == x && mapPosition.y == y) {
 			return;
+		}
 		mapPosition.x = x;
 		mapPosition.y = y;
 	}
@@ -75,9 +73,9 @@ public class TiledMap implements TileRequestor{
 	}
 	
 	public void setZoom(int zoom){
-		if(this.zoom == zoom)
+		if(this.zoom == zoom) {
 			return;
-		
+		}
 		this.zoom = Math.min(zoom, provider.getMaxZoom());
 		provider.setZoomLevel(zoom);
 	}
@@ -95,8 +93,9 @@ public class TiledMap implements TileRequestor{
 	}
 	
 	public void setOffset(int x, int y){
-		if(offset.x == x && offset.y == y)
+		if(offset.x == x && offset.y == y) {
 			return;
+		}
 		offset = new Point(x, y);
 	}
 	
@@ -136,20 +135,21 @@ public class TiledMap implements TileRequestor{
 		int delta = ((targetZoom - oldZoom)>=1)?1:-1;
 		
 		// Prevent further zooming if new zoom level shall be greater than the max zoom level for the map service 
-		if( (this.zoom + delta) > provider.getMaxZoom())
+		if((this.zoom + delta) > provider.getMaxZoom()) {
 			return;
+		}
 		
 		// Set the new zoom level
 		this.zoom = Math.min(provider.getMaxZoom(), (this.zoom + delta));
 		provider.setZoomLevel(getZoom());
-		
 		
 		int dx = pivot.x;
 		int dy = pivot.y;
 		
 		if(delta >= 1){
 			setMapPosition(mapPosition.x * 2 + dx, mapPosition.y * 2 + dy);
-		}else if(delta < 1){
+		}
+		else if(delta < 1){
 			setMapPosition((mapPosition.x - dx) / 2, (mapPosition.y - dy) / 2);
 		}
 		
@@ -163,19 +163,8 @@ public class TiledMap implements TileRequestor{
 	 * @return x,y point on the map image
 	 */
 	public Point locationPoint(Location location) {
-		//Point point = new Point(offset.x, offset.y);
-		Coordinate coord = provider.locationCoordinate(location);
-		
-		// distance from the known coordinate offset
-		//point.x += (int)(provider.tileWidth() * (coord.col - coordinate.col));
-		//point.y += (int)(provider.tileHeight() * (coord.row - coordinate.row));		
-		
-		// because of the center/corner business
-		//point.x += mapSize.getWidth() / 2;
-		//point.y += mapSize.getHeight() / 2;
-	
-		return new Point((int)(coord.col - mapPosition.x), (int)(coord.row - mapPosition.y));
-		//return point;
+		Coordinate coordinate = provider.locationCoordinate(location);
+		return new Point((int)(coordinate.col - mapPosition.x), (int)(coordinate.row - mapPosition.y));
 	}
 
 	/**
@@ -192,8 +181,6 @@ public class TiledMap implements TileRequestor{
 
 	public BufferedImage draw() {
 		// Draw map out to an Image and return it.
-		LOG.debug("START DRAW");
-		
 		// Create the canvas onto which the map tiles will be drawn
 		if(mapImage == null){
 			mapImage = new BufferedImage(mapSize.width , mapSize.height, BufferedImage.TYPE_INT_RGB);
@@ -220,7 +207,6 @@ public class TiledMap implements TileRequestor{
 				Point tilePoint = new Point(dx, dy);
 				TileRequest tile = new TileRequest(provider, tileCoord, tilePoint, updateId);
 				if (tile.isLoaded()) {
-					LOG.debug("Rendering Tile " + tileCoord);
 					renderTile(tile, false);
 				} else {
 					// Draw blank tile
@@ -232,20 +218,16 @@ public class TiledMap implements TileRequestor{
 		}		
 
 		// Draw the tiles on the canvas
-		LOG.debug("FINISH DRAW");
-		
 		return mapImage;
 	}
 
 	protected void renderTile(TileRequest tile, boolean update) {
-		LOG.debug("Rendering tile. Update. " + tile.getCoord());
 		String tileKey = provider.getTileId(tile.getCoord());
 		if (tileRequests.containsKey(tileKey)) {
 			tileRequests.remove(tileKey);
 		}
 		//Are we still in the viewport after a scroll?
 		if(tile.getUpdateId() != updateId) {
-			LOG.debug("Tile no longer visible " + tile.getCoord());
 			return;
 		}
 		Graphics2D g = mapImage.createGraphics();
@@ -269,15 +251,14 @@ public class TiledMap implements TileRequestor{
 		String tileKey = provider.getTileId(tileCoord);
 		
 		if (tileRequests.containsKey(tileKey)) {
-			LOG.debug("Updating tile offset " + tileCoord);
 			TileRequest tile2 = tileRequests.get(tileKey);
 			//Prevent NullPointerException
 			if(tile2 != null){
 				tile2.setOffset(tilePoint);
 				tile2.setUpdateId(updateId);
 			}
-		} else {
-			LOG.debug("Queueing tile " + tileCoord);
+		} 
+		else {
 			// Queue tile request
 			tile.setRequestor(this);
 			tileRequests.put(tileKey, tile);

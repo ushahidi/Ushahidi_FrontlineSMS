@@ -135,7 +135,6 @@ public class SynchronizationThread extends Thread{
 				while((line = reader.readLine()) != null){
 					buffer.append(line);
 				}
-				LOG.debug("Payload :" + buffer.toString());			
 				processPayload(buffer.toString());	
 			}
 			finally {
@@ -355,7 +354,6 @@ public class SynchronizationThread extends Thread{
 	 * @param requestParams Pre-defined url parmaeter string for posting an incident to the frontend
 	 */
 	private void postIncident(Incident incident, String requestParams){
-		LOG.debug("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
 		LOG.debug("UPLOADING: %s", incident.getTitle());
 		LOG.debug("PARAMS: %s", requestParams);
 		

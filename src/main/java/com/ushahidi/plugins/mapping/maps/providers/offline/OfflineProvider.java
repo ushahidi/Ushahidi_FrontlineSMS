@@ -45,14 +45,12 @@ public class OfflineProvider extends MapProvider {
         super(MIN_ZOOM, MAX_ZOOM);
 
         // Unzip archive to temp dir
-        tmpDir = new File(System.getProperty("java.io.tmpdir"), UUID
-                .randomUUID().toString());
+        tmpDir = new File(System.getProperty("java.io.tmpdir"), UUID.randomUUID().toString());
         unzipArchive(archive);
 
         // Get the map's properties from MANIFEST
         Properties manifest = new Properties();
-        manifest.load(new FileInputStream(new File(tmpDir,
-                TileSaver.MANIFEST_FILE)));
+        manifest.load(new FileInputStream(new File(tmpDir,TileSaver.MANIFEST_FILE)));
         MIN_ZOOM = Integer.parseInt(manifest.getProperty(TileSaver.MIN_ZOOM_PROPERTY));
         MAX_ZOOM = Integer.parseInt(manifest.getProperty(TileSaver.MAX_ZOOM_PROPERTY));
 
@@ -85,11 +83,8 @@ public class OfflineProvider extends MapProvider {
     }
 
     private void unzipArchive(String archive) throws IOException {
-        Enumeration<? extends ZipEntry> entries;
         ZipFile zipFile = new ZipFile(archive);
-        ;
-
-        entries = zipFile.entries();
+        Enumeration<? extends ZipEntry> entries = zipFile.entries();
         while (entries.hasMoreElements()) {
             ZipEntry entry = (ZipEntry) entries.nextElement();
 
@@ -99,10 +94,8 @@ public class OfflineProvider extends MapProvider {
             }
 
             LOG.debug("Extracting file: " + targetFile.getAbsolutePath());
-            copyInputStream(zipFile.getInputStream(entry),
-                    new BufferedOutputStream(new FileOutputStream(targetFile)));
+            copyInputStream(zipFile.getInputStream(entry), new BufferedOutputStream(new FileOutputStream(targetFile)));
         }
-
         zipFile.close();
     }
 

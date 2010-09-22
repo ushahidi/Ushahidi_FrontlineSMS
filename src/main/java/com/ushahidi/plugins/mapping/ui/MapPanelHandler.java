@@ -127,6 +127,10 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 			ui.setEnabled(cbxShowIncidents, false);
 			ui.setSelected(cbxShowIncidents, false);
 		}
+		mapBean.setShowMessages(getBoolean(cbxShowMessages, Thinlet.SELECTED));
+		mapBean.setShowForms(getBoolean(cbxShowForms, Thinlet.SELECTED));
+		mapBean.setShowSurveys(getBoolean(cbxShowSurveys, Thinlet.SELECTED));
+		mapBean.setShowIncidents(getBoolean(cbxShowIncidents, Thinlet.SELECTED));
 		ui.setInteger(sldZoomLevel, VALUE, MappingProperties.getDefaultZoomLevel());
 	}
 	
@@ -172,11 +176,11 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 	}
 	
 	public void showChanged(Object cbxShowMessages, Object cbxShowForms, Object cbxShowSurveys, Object cbxShowIncidents) {
-		boolean showMessages = getBoolean(cbxShowMessages, Thinlet.SELECTED);
-		boolean showForms = getBoolean(cbxShowForms, Thinlet.SELECTED);
-		boolean showSurveys = getBoolean(cbxShowSurveys, Thinlet.SELECTED);
-		boolean showIncidents = getBoolean(cbxShowIncidents, Thinlet.SELECTED);
-		LOG.debug("showMessages:%s showForms:%s showSurveys:%s showIncidents:%s", showMessages, showForms, showSurveys, showIncidents);
+		mapBean.setShowMessages(getBoolean(cbxShowMessages, Thinlet.SELECTED));
+		mapBean.setShowForms(getBoolean(cbxShowForms, Thinlet.SELECTED));
+		mapBean.setShowSurveys(getBoolean(cbxShowSurveys, Thinlet.SELECTED));
+		mapBean.setShowIncidents(getBoolean(cbxShowIncidents, Thinlet.SELECTED));
+		mapBean.repaint();
 	}
 	
 	/**

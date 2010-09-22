@@ -29,8 +29,4 @@
 	<bean id="mappingSetupDao" class="com.ushahidi.plugins.mapping.data.repository.hibernate.HibernateMappingSetupDao">
 		<property name="sessionFactory" ref="sessionFactory" />
 	</bean>
-	
-	<bean id="contactLocationDao" class="com.ushahidi.plugins.mapping.data.repository.hibernate.HibernateContactLocationDao">
-		<property name="sessionFactory" ref="sessionFactory" />
-	</bean>
 </beans>

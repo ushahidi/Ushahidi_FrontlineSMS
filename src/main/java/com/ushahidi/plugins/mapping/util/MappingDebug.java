@@ -83,7 +83,7 @@ public class MappingDebug {
 	            	surveysManager.addSurveyAnswers(title);
 	            }
 	            else if (message.equalsIgnoreCase("help")){
-	            	LOG.error("Enter 'form' to create a sample Form, 'survey' to create a sample Survey or 'exit' to terminate console.");
+	            	LOG.out("Enter 'form' to create a sample Form, 'survey' to create a sample Survey or 'exit' to terminate console.");
 	            }
 	            else {
 	            	long dateReceived = Calendar.getInstance().getTimeInMillis();

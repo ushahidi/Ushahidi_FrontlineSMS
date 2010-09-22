@@ -133,10 +133,12 @@ public class SurveysManager extends Manager {
 		for (Answer<?> answer : surveyResponse.getAnswers()) {
 			LOG.debug("%s = %s", answer.getQuestionName(), answer.getAnswerValue());
 			if (answer.getQuestionName().equalsIgnoreCase(MappingMessages.getTitle())) {
-				incident.setTitle(answer.getAnswerValue());
+				//TODO use answer.getAnswerValue()
+				incident.setTitle(answer.getMessage().getTextContent());
 			}
 			else if (answer.getQuestionName().equalsIgnoreCase(MappingMessages.getDescription())) {
-				incident.setDescription(answer.getAnswerValue());
+				//TODO use answer.getAnswerValue()
+				incident.setDescription(answer.getMessage().getTextContent());
 			}
 			else if (answer.getQuestionName().equalsIgnoreCase(MappingMessages.getDate())) {
 				try {

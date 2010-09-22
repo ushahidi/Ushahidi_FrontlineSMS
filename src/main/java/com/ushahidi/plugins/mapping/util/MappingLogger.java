@@ -85,6 +85,14 @@ public class MappingLogger extends Logger {
 		}
 	}
 	
+	public void out(String message) {
+		System.out.println(message);
+	}
+	
+	public void out(String format, Object ... args) {
+		System.out.println(String.format(format, args));
+	}
+	
 }
 
 class MappingLoggerFactory implements LoggerFactory {

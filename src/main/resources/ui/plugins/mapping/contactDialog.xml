@@ -3,7 +3,7 @@
       	<label text="i18n.common.name" valign="top" />
       	<textfield name="txtContactName" columns="50" editable="false"/>
       	
-      	<label text="i18n.plugins.ushahidi.incident.location" valign="top" />
+      	<label text="i18n.plugins.ushahidi.location" valign="top" />
       	<panel name="pnlLocation" columns="2" weightx="1" gap="5">
 			<checkbox name="cbxExistingLocation" text="i18n.plugins.ushahidi.location.existing" group="location" selected="true" action="showExistingLocations"/>
 			<checkbox name="cbxNewLocation" text="i18n.plugins.ushahidi.location.new" group="location" action="showNewLocation"/>

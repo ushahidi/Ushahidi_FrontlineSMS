@@ -3,9 +3,8 @@ package com.ushahidi.plugins.mapping.ui;
 import thinlet.Thinlet;
 
 import com.ushahidi.plugins.mapping.MappingPluginController;
-import com.ushahidi.plugins.mapping.data.domain.ContactLocation;
 import com.ushahidi.plugins.mapping.data.domain.Location;
-import com.ushahidi.plugins.mapping.data.repository.ContactLocationDao;
+import com.ushahidi.plugins.mapping.data.domain.LocationDetails;
 import com.ushahidi.plugins.mapping.data.repository.LocationDao;
 import com.ushahidi.plugins.mapping.data.repository.MappingSetupDao;
 import com.ushahidi.plugins.mapping.util.MappingLogger;
@@ -13,6 +12,8 @@ import com.ushahidi.plugins.mapping.util.MappingMessages;
 
 import net.frontlinesms.FrontlineSMS;
 import net.frontlinesms.data.DuplicateKeyException;
+import net.frontlinesms.data.domain.Contact;
+import net.frontlinesms.data.repository.ContactDao;
 import net.frontlinesms.ui.ExtendedThinlet;
 import net.frontlinesms.ui.ThinletUiEventHandler;
 import net.frontlinesms.ui.UiGeneratorController;
@@ -26,22 +27,21 @@ public class ContactDialogHandler extends ExtendedThinlet implements ThinletUiEv
 	private static final String UI_DIALOG_XML = "/ui/plugins/mapping/contactDialog.xml";
 
 	private final MappingPluginController pluginController;
+	@SuppressWarnings("unused")
 	private final FrontlineSMS frontlineController;
 	private final UiGeneratorController ui;
 	
 	private final Object mainDialog;
 	
 	private final LocationDao locationDao;
+	private final ContactDao contactDao;
 	private final MappingSetupDao mappingSetupDao;
-	private final ContactLocationDao contactLocationDao;
 	
 	private final Object txtContactName;
-	private final Object pnlLocation;
 	private final Object cboLocations;
 	private final Object pnlExistingLocation;
 	private final Object pnlNewLocation;
 	private final Object cbxExistingLocation;
-	private final Object cbxNewLocation;
 	private final Object txtNewLocation;
 	private final Object txtCoordinates;
 	
@@ -54,67 +54,69 @@ public class ContactDialogHandler extends ExtendedThinlet implements ThinletUiEv
 		this.frontlineController = frontlineController;
 		
 		this.locationDao = pluginController.getLocationDao();
+		this.contactDao = pluginController.getContactDao();
 		this.mappingSetupDao = pluginController.getMappingSetupDao();
-		this.contactLocationDao = pluginController.getContactLocationDao();
 		
 		this.mainDialog = ui.loadComponentFromFile(UI_DIALOG_XML, this);
 		
 		this.txtContactName = ui.find(this.mainDialog, "txtContactName");
 		this.cboLocations = ui.find(this.mainDialog, "cboLocations");
-		this.pnlLocation = ui.find(this.mainDialog, "pnlLocation");
 		this.pnlExistingLocation = ui.find(this.mainDialog, "pnlExistingLocation");
 		this.pnlNewLocation = ui.find(this.mainDialog, "pnlNewLocation");
 		this.cbxExistingLocation = ui.find(this.mainDialog, "cbxExistingLocation");
-		this.cbxNewLocation = ui.find(this.mainDialog, "cbxNewLocation");
 		this.txtNewLocation = ui.find(this.mainDialog, "txtNewLocation");
 		this.txtCoordinates = ui.find(this.mainDialog, "txtCoordinates");
 	}
 	
-	public void showDialog(ContactLocation contactLocation) {
-		ui.setAttachedObject(mainDialog, contactLocation);
-		ui.setText(txtContactName, contactLocation.getContactName());
-		if (contactLocation != null) {
-			ui.setText(txtCoordinates, contactLocation.getLocationCoordinates());
+	public void showDialog(Contact contact) {
+		ui.setAttachedObject(mainDialog, contact);
+		removeAll(cboLocations);
+		if (contact != null) {
+			ui.setText(txtContactName, contact.getName());
+			LocationDetails locationDetails = contact.getDetails(LocationDetails.class);
+			if (locationDetails != null) {
+				ui.setText(txtCoordinates, locationDetails.getLocationCoordinates());
+			}
+			else {
+				ui.setText(txtCoordinates, "");
+			}
+			int index = 0;
+			ui.setSelectedIndex(cboLocations, -1);
+			for(Location location: locationDao.getAllLocations()) {	
+				if (location.getName() != null && location.getName().equalsIgnoreCase(UNKNOWN) == false) {
+					ui.add(cboLocations, createComboboxChoice(location.getName(), location));
+					if (locationDetails != null && location.getId() == locationDetails.getLocationID()) {
+						ui.setSelectedIndex(cboLocations, index);
+					}
+				}
+				index++;
+			}
 		}
 		else {
+			ui.setText(txtContactName, "");
 			ui.setText(txtCoordinates, "");
-		}
-		removeAll(cboLocations);
-		int index = 0;
-		ui.setSelectedIndex(cboLocations, -1);
-		for(Location location: locationDao.getAllLocations()) {	
-			if (location.getName() != null && location.getName().equalsIgnoreCase(UNKNOWN) == false) {
-				ui.add(cboLocations, createComboboxChoice(location.getName(), location));
-				if (contactLocation != null && contactLocation.getLocationID() == location.getId()) {
-					ui.setSelectedIndex(cboLocations, index);
-				}
-			}
-			index++;
 		}
 		ui.add(mainDialog);
 	}
 	
 	public void saveContact(Object dialog) {
-		ContactLocation contactLocation = ui.getAttachedObject(mainDialog, ContactLocation.class);
+		Contact contact = ui.getAttachedObject(mainDialog, Contact.class);
+		LocationDetails locationDetails = contact.getDetails(LocationDetails.class);
 		if (this.getBoolean(cbxExistingLocation, Thinlet.SELECTED)){
 			Location location = getAttachedObject(getSelectedItem(cboLocations), Location.class);
-			contactLocation.setLocation(location);
+			if (locationDetails != null) {
+				locationDetails.setLocation(location);
+			}
+			else {
+				contact.addDetails(new LocationDetails(location));
+			}
 			try {
-				LOG.debug("ContactLocationID:%d", contactLocation.getId());
-				if (contactLocation.getId() > 0) {
-					LOG.debug("UPDATING ContactLocation");
-					contactLocationDao.updateContactLocation(contactLocation);
-				}
-				else {
-					LOG.debug("SAVING ContactLocation");
-					contactLocationDao.saveContactLocation(contactLocation);
-				}
+				contactDao.updateContact(contact);
 				ui.remove(dialog);
 				pluginController.refreshContacts();
 			} 
 			catch (DuplicateKeyException e) {
 				e.printStackTrace();
-				ui.alert(MappingMessages.getErrorInvalidLocation());
 			}
 		}
 		else {
@@ -135,14 +137,14 @@ public class ContactDialogHandler extends ExtendedThinlet implements ThinletUiEv
 					ui.alert(MappingMessages.getErrorInvalidLocation());
 					return;
 				}
-				contactLocation.setLocation(location);
+				if (locationDetails != null) {
+					locationDetails.setLocation(location);
+				}
+				else {
+					contact.addDetails(new LocationDetails(location));
+				}
 				try {
-					if (contactLocation.getId() > 0) {
-						contactLocationDao.updateContactLocation(contactLocation);
-					}
-					else {
-						contactLocationDao.saveContactLocation(contactLocation);
-					}
+					contactDao.updateContact(contact);
 					ui.remove(dialog);
 					pluginController.refreshContacts();
 				} 
@@ -182,7 +184,7 @@ public class ContactDialogHandler extends ExtendedThinlet implements ThinletUiEv
 	
 	public void selectLocationFromMap(Object dialog) {
 		ui.setEnabled(cboLocations, false);
-		pluginController.showIncidentMap();
+		pluginController.refreshIncidentMap();
 		setBoolean(dialog, Thinlet.MODAL, false);
 		ui.setVisible(dialog, false);
 	}

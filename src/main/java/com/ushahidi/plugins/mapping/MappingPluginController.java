@@ -1,7 +1,6 @@
 package com.ushahidi.plugins.mapping;
 
 import com.ushahidi.plugins.mapping.data.repository.CategoryDao;
-import com.ushahidi.plugins.mapping.data.repository.ContactLocationDao;
 import com.ushahidi.plugins.mapping.data.repository.LocationDao;
 import com.ushahidi.plugins.mapping.data.repository.IncidentDao;
 import com.ushahidi.plugins.mapping.data.repository.MappingSetupDao;
@@ -39,7 +38,6 @@ public class MappingPluginController extends BasePluginController {
     private IncidentDao incidentDao;
     private MessageDao messageDao;
     private MappingSetupDao mappingSetupDao;
-    private ContactLocationDao contactLocationDao;
     
     public String getHibernateConfigPath() {
         return "classpath:com/ushahidi/plugins/mapping/mapping.hibernate.cfg.xml";
@@ -60,7 +58,6 @@ public class MappingPluginController extends BasePluginController {
         	this.incidentDao = (IncidentDao)applicationContext.getBean("incidentDao");
         	this.mappingSetupDao = (MappingSetupDao)applicationContext.getBean("mappingSetupDao");
         	this.categoryDao = (CategoryDao)applicationContext.getBean("categoryDao");
-        	this.contactLocationDao = (ContactLocationDao)applicationContext.getBean("contactLocationDao");
         }
         catch(Throwable t){
         	LOG.error("Unable to initialize dao objects");
@@ -102,10 +99,6 @@ public class MappingPluginController extends BasePluginController {
 
     public MappingSetupDao getMappingSetupDao(){
         return mappingSetupDao;
-    }
-    
-    public ContactLocationDao getContactLocationDao(){
-        return contactLocationDao;
     }
     
     public ContactDao getContactDao() {
