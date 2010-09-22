@@ -393,9 +393,9 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 
 	//################# MapListener #################
 	
-	public void mapZoomed(int zoom) {}
+	public void zoomChanged(int zoom) {}
 
-	public void pointSelected(double latitude, double longitude) {
+	public void locationSelected(double latitude, double longitude) {
 		ui.setText(txtReportCoordinates, String.format("%f, %f", latitude, longitude));
 		ui.setText(txtNewLocation, String.format("%f, %f", latitude, longitude));
 		pluginController.refreshIncidentMap();
@@ -404,4 +404,6 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 		ui.setVisible(mainDialog, true);
 		ui.repaint();
 	}
+	
+	public void locationHovered(double latitude, double longitude) {}
 }

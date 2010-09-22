@@ -10,28 +10,31 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
-import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
 import java.io.IOException;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.imageio.ImageIO;
-
 import thinlet.CustomComponent;
 
-import com.ushahidi.plugins.mapping.data.domain.Incident;
 import com.ushahidi.plugins.mapping.maps.TiledMap;
 import com.ushahidi.plugins.mapping.maps.MapFactory;
 import com.ushahidi.plugins.mapping.maps.geo.Location;
 import com.ushahidi.plugins.mapping.maps.providers.MapProvider;
 import com.ushahidi.plugins.mapping.maps.providers.openstreetmap.OpenStreetMapProvider;
 import com.ushahidi.plugins.mapping.maps.providers.offline.OfflineProvider;
+import com.ushahidi.plugins.mapping.ui.markers.Marker;
 import com.ushahidi.plugins.mapping.util.MappingLogger;
 
-@SuppressWarnings("serial")
+/**
+ * MapBean
+ * @author dalezak
+ *
+ */
 public class MapBean extends CustomComponent implements ImageObserver {
+
+	private static final long serialVersionUID = 1L;
 
 	public static MappingLogger LOG = MappingLogger.getLogger(MapBean.class);
 	
@@ -47,10 +50,9 @@ public class MapBean extends CustomComponent implements ImageObserver {
     
     /** location bounds for the region covered by the map */
     private Location location;
-    /** Incidents to be plotted on the map */
-    private final List<Incident> incidents = new ArrayList<Incident>();
+    /** Markers to be plotted on the map */
+    private final List<Marker> markers = new ArrayList<Marker>();
     /** Instance of the UI controller for the mapping plugin */
-    private MapPanelHandler mapPanelHandler;
     /** Name of the file containing the offline maps*/
     private String offlineMapFile;
 
@@ -59,40 +61,10 @@ public class MapBean extends CustomComponent implements ImageObserver {
     private int pointSize = DEFAULT_POINT_SIZE;
     private int zoomLevel = DEFAULT_ZOOM_LEVEL;
 
-    private BufferedImage imageIncident;
-    private BufferedImage imageMessage;
-    private BufferedImage imageForm;
-    private BufferedImage imageSurvey;
-    
-    public void setShowIncidents(boolean showIncidents) {
-    	this.showIncidents = showIncidents;
-    }protected boolean showIncidents = false;
-    
-    public void setShowMessages(boolean showMessages) {
-    	this.showMessages = showMessages;
-    }protected boolean showMessages = false;
-    
-    public void setShowForms(boolean showForms) {
-    	this.showForms = showForms;
-    }protected boolean showForms = false;
-    
-    public void setShowSurveys(boolean showSurveys) {
-    	this.showSurveys = showSurveys;
-    }protected boolean showSurveys = false;
-    
     public MapBean() {
         addMouseListener(mouseListener);
         addMouseMotionListener(mouseListener);
         addMouseWheelListener(mouseListener);
-        try {
-			imageIncident = ImageIO.read(getClass().getResource("/icons/big_ushahidi.png"));
-			imageMessage = ImageIO.read(getClass().getResource("/icons/big_sms.png"));
-			imageForm = ImageIO.read(getClass().getResource("/icons/big_form.png"));
-			imageSurvey = ImageIO.read(getClass().getResource("/icons/big_survey.png"));
-		} 
-        catch (IOException ex) {
-			LOG.error("Error Incident Image: %s", ex);
-		}
     }
     
     public void setMapProvider(MapProvider mapProvider) {
@@ -114,12 +86,20 @@ public class MapBean extends CustomComponent implements ImageObserver {
         this.offlineMapFile = fileName;
     }
 
-    public synchronized void setIncidents(List<Incident> incidents){
-    	this.incidents.removeAll(this.incidents);
-    	this.incidents.addAll(incidents);
-    	repaint();
+    public synchronized void clearMarkers(boolean repaint) {
+    	this.markers.removeAll(this.markers);
+    	if (repaint) {
+    		repaint();
+    	}
     }
-
+    
+    public synchronized void addMarker(Marker marker, boolean repaint) {
+    	this.markers.add(marker);
+    	if (repaint) {
+    		repaint();
+    	}
+    }
+    
     /**
      * Initializes the static location property
      * 
@@ -148,15 +128,6 @@ public class MapBean extends CustomComponent implements ImageObserver {
         	zoomLevel = zoom;
             location = new Location(latitude, longitude);
         }
-    }
-
-    /**
-     * Sets the MappingUIController
-     * 
-     * @param controller
-     */
-    public synchronized void setMapPanelHandler(MapPanelHandler mapPanelHandler){
-        this.mapPanelHandler = mapPanelHandler;
     }
 
     public Dimension getPreferredSize() {
@@ -204,38 +175,20 @@ public class MapBean extends CustomComponent implements ImageObserver {
             }
         }
         graphic.drawImage(image, 0, 0, null);	
-        plotIncidents(graphic, showIncidents);	
-        plotMessages(graphic, showMessages);
-        plotForms(graphic, showForms);
-        plotSurveys(graphic, showSurveys);
+        plotMarkers(graphic);	
     }
 
-    private void plotIncidents(Graphics g, boolean show){
-        if(show && map != null && incidents != null){	
-        	Image scaled = imageIncident.getScaledInstance(pointSize, pointSize, Image.SCALE_FAST);
-        	for(Incident incident: incidents){
-            	if (incident.getLocation() != null) {
-            		double latitude = incident.getLocation().getLatitude();
-                    double longitude = incident.getLocation().getLongitude();
-                    Point point = map.locationPoint(new Location(latitude, longitude));
-                    g.drawImage(scaled, point.x, point.y, pointSize, pointSize, this);
-                }
-            }
-		}		
+    private void plotMarkers(Graphics g){
+		for(Marker marker : this.markers) {
+			if (marker.getLocation() != null) {
+				double latitude = marker.getLocation().getLatitude();
+        		double longitude = marker.getLocation().getLongitude();
+        		Point point = map.locationPoint(new Location(latitude, longitude));
+        		g.drawImage(marker.getImage(), point.x, point.y, pointSize, pointSize, this);
+			}
+		}
     }
     
-    private void plotMessages(Graphics g, boolean show) {
-    	//TODO plot Messages
-    }
-    
-    private void plotForms(Graphics g, boolean show) {
-    	//TODO plot Forms
-    }
-    
-    private void plotSurveys(Graphics g, boolean show) {
-    	//TODO plot Surveys
-    }
-
     public synchronized void addMapListener(MapListener listener) {
     	this.mapListeners.add(listener);
     }
@@ -251,19 +204,6 @@ public class MapBean extends CustomComponent implements ImageObserver {
     public boolean imageUpdate(Image img, int infoflags, int x, int y, int width, int height) {
         repaint();
         return true;
-    }
-
-    /**
-     * Updates the mapping tab with the current geographical coordinates
-     * 
-     * @param x Current x position of the mouse
-     * @param y Current y position of the mouse
-     */
-    public void updateCoordinateDisplay(){
-        if (mapPanelHandler != null && map != null){			
-            Location location = map.pointLocation(getCursorPosition());
-            mapPanelHandler.updateCoordinateLabel(location.lat, location.lon);
-        }
     }
 
     public void setZoomLevel(int zoomLevel){
@@ -329,7 +269,7 @@ public class MapBean extends CustomComponent implements ImageObserver {
             	if (map != null && mapListener != null && event.getPoint() != null) {
             		Location location = map.pointLocation(event.getPoint());
             		if (location != null) {
-            			 mapListener.pointSelected(location.lat, location.lon);	
+            			 mapListener.locationSelected(location.lat, location.lon);	
             		}
                 }
             }	
@@ -341,7 +281,6 @@ public class MapBean extends CustomComponent implements ImageObserver {
 
         public void mouseMoved(MouseEvent event){
             handlePosition(event);
-            updateCoordinateDisplay();
         }
 
         public void mouseDragged(MouseEvent event){
@@ -365,6 +304,14 @@ public class MapBean extends CustomComponent implements ImageObserver {
          */
         private void handlePosition(MouseEvent event){
             mouseCoords = event.getPoint();
+            for (MapListener mapListener : mapListeners) {
+            	if (map != null && mapListener != null && event.getPoint() != null) {
+            		Location location = map.pointLocation(event.getPoint());
+            		if (location != null) {
+            			 mapListener.locationHovered(location.lat, location.lon);	
+            		}
+                }
+            }
         }
 
         /**

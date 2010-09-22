@@ -191,13 +191,15 @@ public class ContactDialogHandler extends ExtendedThinlet implements ThinletUiEv
 
 	//################# MapListener #################
 	
-	public void mapZoomed(int zoom) {}
+	public void zoomChanged(int zoom) {}
 
-	public void pointSelected(double latitude, double longitude) {
+	public void locationSelected(double latitude, double longitude) {
 		ui.setText(txtCoordinates, String.format("%f, %f", latitude, longitude));
 		ui.setText(txtNewLocation, String.format("%f, %f", latitude, longitude));
 		setBoolean(mainDialog, Thinlet.MODAL, true);
 		ui.setVisible(mainDialog, true);
 		ui.repaint();
 	}
+	
+	public void locationHovered(double latitude, double longitude) {}
 }

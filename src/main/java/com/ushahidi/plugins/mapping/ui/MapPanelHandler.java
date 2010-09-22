@@ -1,24 +1,31 @@
 package com.ushahidi.plugins.mapping.ui;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
 import thinlet.Thinlet;
 
 import com.ushahidi.plugins.mapping.MappingPluginController;
 import com.ushahidi.plugins.mapping.data.domain.Category;
 import com.ushahidi.plugins.mapping.data.domain.Incident;
+import com.ushahidi.plugins.mapping.data.domain.LocationDetails;
 import com.ushahidi.plugins.mapping.data.domain.MappingSetup;
 import com.ushahidi.plugins.mapping.data.repository.CategoryDao;
 import com.ushahidi.plugins.mapping.data.repository.IncidentDao;
 import com.ushahidi.plugins.mapping.data.repository.MappingSetupDao;
+import com.ushahidi.plugins.mapping.ui.markers.IncidentMarker;
+import com.ushahidi.plugins.mapping.ui.markers.MessageMarker;
 import com.ushahidi.plugins.mapping.util.MappingLogger;
 import com.ushahidi.plugins.mapping.util.MappingMessages;
 import com.ushahidi.plugins.mapping.util.MappingProperties;
 
 import net.frontlinesms.FrontlineSMS;
 import net.frontlinesms.data.DuplicateKeyException;
+import net.frontlinesms.data.domain.Contact;
+import net.frontlinesms.data.domain.FrontlineMessage;
+import net.frontlinesms.data.domain.FrontlineMessage.Status;
+import net.frontlinesms.data.domain.FrontlineMessage.Type;
+import net.frontlinesms.data.repository.ContactDao;
+import net.frontlinesms.data.repository.MessageDao;
 import net.frontlinesms.ui.ExtendedThinlet;
 import net.frontlinesms.ui.ThinletUiEventHandler;
 import net.frontlinesms.ui.UiGeneratorController;
@@ -38,6 +45,8 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 	
 	private final IncidentDao incidentDao;
 	private final CategoryDao categoryDao;
+	private final MessageDao messageDao;
+	private final ContactDao contactDao;
 	private final MappingSetupDao mappingSetupDao;
 	
 	private final MapBean mapBean;
@@ -56,6 +65,8 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 		
 		this.incidentDao = pluginController.getIncidentDao();
 		this.categoryDao = pluginController.getCategoryDao();
+		this.messageDao = pluginController.getMessageDao();
+		this.contactDao = pluginController.getContactDao();
 		this.mappingSetupDao = pluginController.getMappingSetupDao();
 		
 		this.mainPanel = this.ui.loadComponentFromFile(UI_PANEL_XML, this);
@@ -100,9 +111,11 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 				}
 			}
 			mapBean.setLocationAndZoomLevel(longitude, latitude, MappingProperties.getDefaultZoomLevel());			
-			mapBean.setIncidents(incidentDao.getAllIncidents(defaultSetup));
+			mapBean.clearMarkers(false);
+			for(Incident incident : incidentDao.getAllIncidents(mappingSetupDao.getDefaultSetup())) {
+				mapBean.addMarker(new IncidentMarker(incident), false);
+			}
 			mapBean.addMapListener(this);
-			mapBean.setMapPanelHandler(this);
 			ui.setEnabled(sldZoomLevel, true);
 			ui.add(cbxCategories, createComboboxChoice(MappingMessages.getAllCategories(), null));
 			for(Category category : categoryDao.getAllCategories(mappingSetupDao.getDefaultSetup())){
@@ -121,25 +134,16 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 			double longitude = MappingProperties.getDefaultLongitude();
 			mapBean.setLocationAndZoomLevel(longitude, latitude, MappingProperties.getDefaultZoomLevel());			
 			mapBean.addMapListener(this);
-			mapBean.setMapPanelHandler(this);
 			ui.setEnabled(sldZoomLevel, true);
 			ui.setEnabled(cbxCategories, false);
 			ui.setEnabled(cbxShowIncidents, false);
 			ui.setSelected(cbxShowIncidents, false);
 		}
-		mapBean.setShowMessages(getBoolean(cbxShowMessages, Thinlet.SELECTED));
-		mapBean.setShowForms(getBoolean(cbxShowForms, Thinlet.SELECTED));
-		mapBean.setShowSurveys(getBoolean(cbxShowSurveys, Thinlet.SELECTED));
-		mapBean.setShowIncidents(getBoolean(cbxShowIncidents, Thinlet.SELECTED));
 		ui.setInteger(sldZoomLevel, VALUE, MappingProperties.getDefaultZoomLevel());
 	}
 	
 	public void refresh() {
 		LOG.debug("MapPanelHandler.refresh");
-		if (mapBean != null) {
-			mapBean.setIncidents(incidentDao.getAllIncidents(mappingSetupDao.getDefaultSetup()));	
-			mapBean.repaint();
-		}
 		if(mappingSetupDao.getDefaultSetup() != null) {
 			if (getBoolean(cbxShowIncidents, Thinlet.ENABLED) == false) {
 				ui.setSelected(cbxShowIncidents, true);
@@ -149,6 +153,34 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 		else {
 			ui.setEnabled(cbxShowIncidents, false);
 			ui.setSelected(cbxShowIncidents, false);
+		}
+		if (mapBean != null) {
+			mapBean.clearMarkers(false);
+			if(getBoolean(cbxShowMessages, Thinlet.SELECTED)) {
+				LOG.debug("Showing Messages");
+				for(FrontlineMessage message : messageDao.getMessages(Type.RECEIVED, Status.RECEIVED)) {
+					Contact contact = contactDao.getFromMsisdn(message.getSenderMsisdn());
+					if (contact != null) {
+						LocationDetails locationDetails = contact.getDetails(LocationDetails.class);
+						if (locationDetails != null && locationDetails.getLocation() != null) {
+							mapBean.addMarker(new MessageMarker(message, locationDetails.getLocation()), false);
+						}
+					}
+				}
+			}
+			if(getBoolean(cbxShowSurveys, Thinlet.SELECTED)) {
+				LOG.debug("Showing Surveys");	
+			}
+			if(getBoolean(cbxShowForms, Thinlet.SELECTED)) {
+				LOG.debug("Showing Forms");
+			}
+			if(getBoolean(cbxShowIncidents, Thinlet.SELECTED)) {
+				LOG.debug("Showing Incidents");
+				for(Incident incident : incidentDao.getAllIncidents(mappingSetupDao.getDefaultSetup())) {
+					mapBean.addMarker(new IncidentMarker(incident), false);
+				}	
+			}
+			mapBean.repaint();
 		}
 	}
 	
@@ -166,33 +198,17 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 		Object selectedItem =  getSelectedItem(comboBox);
 		Category category = selectedItem != null ? getAttachedObject(selectedItem, Category.class) : null;
 		LOG.debug("category=%s", category);
-		List<Incident> incidents = new ArrayList<Incident>();
+		mapBean.clearMarkers(false);
 		for(Incident incident: incidentDao.getAllIncidents(mappingSetupDao.getDefaultSetup())){
 			if (category == null || incident.hasCategory(category)) {
-				incidents.add(incident);
+				mapBean.addMarker(new IncidentMarker(incident), false);
 			}
 		}
-		mapBean.setIncidents(incidents);
-	}
-	
-	public void showChanged(Object cbxShowMessages, Object cbxShowForms, Object cbxShowSurveys, Object cbxShowIncidents) {
-		mapBean.setShowMessages(getBoolean(cbxShowMessages, Thinlet.SELECTED));
-		mapBean.setShowForms(getBoolean(cbxShowForms, Thinlet.SELECTED));
-		mapBean.setShowSurveys(getBoolean(cbxShowSurveys, Thinlet.SELECTED));
-		mapBean.setShowIncidents(getBoolean(cbxShowIncidents, Thinlet.SELECTED));
 		mapBean.repaint();
 	}
 	
-	/**
-	 * Fired by {@link MapListener} when a point is selected on the map; the incident creation
-	 * dialog is displayed with the coordinates of the selected location
-	 */
-	public void pointSelected(double lat, double lon) {
-		LOG.debug("Latitude:%f Longitude:%f", lat, lon);		
-	}
-	
 	/** @see {@link MapListener#mapZoomed(int)} */
-	public void mapZoomed(int zoom){
+	public void zoomChanged(int zoom){
 	    LOG.info("Updating zoom controller to level " + zoom);
 	    ui.setInteger(sldZoomLevel, VALUE, zoom);
 	}
@@ -202,10 +218,9 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 	 * 
 	 * @param zoomController The Zoom UI control
 	 */
-	public void zoomMap(Object zoomController){
+	public void zoomChanged(Object zoomController){
 		int currentZoom = mapBean.getZoomLevel();		
 		int zoomValue = getInteger(zoomController, ExtendedThinlet.VALUE);
-		// Adjust the zooming bar so that it moves in steps of 1 only
 		if(currentZoom < zoomValue){
 			ui.setInteger(zoomController, ExtendedThinlet.VALUE, zoomValue - 1);
 		}
@@ -216,31 +231,27 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 	}
 	
 	/**
-	 * Updates the screen with the current geographical coordinates based on the current
-	 * position of the mouse. A mouse motion listener is used to track mouse movement on
-	 * the map
-	 * 
-	 * @param lat Latitude location
-	 * @param lon Longitude location
-	 */
-	public void updateCoordinateLabel(double lat, double lon){
-		String latString = Double.toString(lat);
-		if (latString.length() > 8) {
-			latString = latString.substring(0,8);
-		}
-		String lonString = Double.toString(lon);
-		if (lonString.length() > 8) {
-			lonString = lonString.substring(0,8);
-		}
-		ui.setText(lblCoordinates, latString + ", " + lonString);
-	}
-	
-	/**
 	 * Show the map save dialog
 	 */
 	public void saveMap() {
 		MapSaveDialogHandler mapSaveDialog = new MapSaveDialogHandler(pluginController, frontlineController, ui);
 		mapSaveDialog.showDialog(mapBean);
+	}
+
+	public void locationHovered(double latitude, double longitude) {
+		String latString = Double.toString(latitude);
+		if (latString.length() > 8) {
+			latString = latString.substring(0,8);
+		}
+		String lonString = Double.toString(longitude);
+		if (lonString.length() > 8) {
+			lonString = lonString.substring(0,8);
+		}
+		ui.setText(lblCoordinates, latString + ", " + lonString);
+	}
+
+	public void locationSelected(double latitude, double longitude) {
+		LOG.debug("Latitude:%f Longitude:%f", latitude, longitude);
 	}
 	
 }
