@@ -17,18 +17,22 @@ import javax.persistence.Id;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.persistence.JoinColumn;
 
 import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
 import net.frontlinesms.data.EntityField;
 import net.frontlinesms.plugins.surveys.data.domain.SurveyResponse;
 
+@SuppressWarnings("serial")
 @Entity
 @Table(uniqueConstraints={@UniqueConstraint(columnNames={"incident_id","mappingSetup_id"})})
 public class Incident implements Serializable {
@@ -37,7 +41,6 @@ public class Incident implements Serializable {
 		this.categories = new ArrayList<Category>();
 	}
 	
-	private static final long serialVersionUID = 1L;
 	//>	COLUMN NAME CONSTANTS
 	/** Column name for {@link #id} */
 	private static final String FIELD_ID = "incident_id";
@@ -174,6 +177,12 @@ public class Incident implements Serializable {
 	
 	@OneToOne(optional=true)
 	private SurveyResponse surveyResponse;
+	
+	@OneToMany(cascade=CascadeType.ALL, fetch=FetchType.EAGER)
+	@LazyCollection(LazyCollectionOption.FALSE)
+	@Cascade(org.hibernate.annotations.CascadeType.ALL)
+	@Fetch(value=FetchMode.SUBSELECT)
+	private List<Media> media;
 		
 	/**
 	 * Sets a unique identifier for this Incident
@@ -274,8 +283,6 @@ public class Incident implements Serializable {
 		}
 		return false;
 	}
-	
-	
 	
 	/**
 	 * Sets the date when the incident occurred
@@ -493,5 +500,33 @@ public class Incident implements Serializable {
 	
 	public void setSurveyResponse(SurveyResponse surveyResponse) {
 		this.surveyResponse = surveyResponse;
+	}
+	
+	public List<Media> getMedia() {
+		return media;
+	}
+	
+	public void addMedia(Media m) {
+		if (media == null) {
+			media = new ArrayList<Media>();
+		}
+		if (containsMedia(m) == false) {
+			media.add(m);
+		}
+	}
+	
+	public void removeMedia(Media m) {
+		if (media != null) {
+			media.remove(m);
+		}
+	}
+	
+	public boolean containsMedia(Media m) {
+		for(Media m2 : media) {
+			if (m2.getServerId() == m.getServerId()) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

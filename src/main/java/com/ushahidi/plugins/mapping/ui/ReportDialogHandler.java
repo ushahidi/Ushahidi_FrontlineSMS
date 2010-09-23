@@ -11,6 +11,8 @@ import com.ushahidi.plugins.mapping.MappingPluginController;
 import com.ushahidi.plugins.mapping.data.domain.Category;
 import com.ushahidi.plugins.mapping.data.domain.Incident;
 import com.ushahidi.plugins.mapping.data.domain.Location;
+import com.ushahidi.plugins.mapping.data.domain.Media;
+import com.ushahidi.plugins.mapping.data.domain.Photo;
 import com.ushahidi.plugins.mapping.data.repository.CategoryDao;
 import com.ushahidi.plugins.mapping.data.repository.IncidentDao;
 import com.ushahidi.plugins.mapping.data.repository.LocationDao;
@@ -67,6 +69,8 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 	private final Object pnlExistingLocation;
 	private final Object pnlNewLocation;
 	private final Object txtNewLocation;
+	private final Object pnlPhotos;
+	private final Object lblPhotos;
 	
 	private static final String UNKNOWN = "unknown";
 	private static final String SEPARATOR = ", ";
@@ -107,6 +111,8 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 		
 		this.pnlNewLocation = ui.find(this.mainDialog, "pnlNewLocation");
 		this.txtNewLocation =  ui.find(this.mainDialog, "txtNewLocation");
+		this.pnlPhotos = ui.find(this.mainDialog, "pnlPhotos");
+		this.lblPhotos = ui.find(this.mainDialog, "lblPhotos");
 		
 		this.btnSave = ui.find(this.mainDialog, "btnSave");
 		this.btnCancel = ui.find(this.mainDialog, "btnCancel");
@@ -162,6 +168,21 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 			}
 			ui.setText(txtSenderName, incident.getFirstName());
 			ui.setText(txtSenderEmail, incident.getEmailAddress());
+			
+			ui.removeAll(pnlPhotos);
+			LOG.debug("Photos: %d", incident.getMedia().size());
+			for(Media media : incident.getMedia()) {
+				LOG.debug("Media: %s", media.getLink());
+				if (media instanceof Photo) {
+					Photo photo = (Photo)media;
+					Object label = createLabel("");
+					ui.setIcon(label, photo.getImage());
+					ui.setWeight(label, 1, 0);
+					ui.add(pnlPhotos, label);
+				}
+			}
+			ui.setVisible(lblPhotos, true);
+			ui.setVisible(pnlPhotos, true);
 		}
 		else {
 			ui.setText(txtReportTitle, "");
@@ -169,7 +190,10 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 			ui.setText(txtReportCategories, "");
 			ui.setText(txtReportDate, "");
 			ui.setText(txtReportLocation, "");
-			ui.setText(txtReportCoordinates, "");	
+			ui.setText(txtReportCoordinates, "");
+			ui.removeAll(pnlPhotos);
+			ui.setVisible(lblPhotos, false);
+			ui.setVisible(pnlPhotos, false);
 		}
 		boolean editMode = incident == null || incident.isMarked();
 		ui.setVisible(txtReportLocation, !editMode);
@@ -214,6 +238,8 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 		ui.setVisible(txtSenderEmail, true);
 		
 		ui.setVisible(btnReportDate, true);
+		ui.setVisible(lblPhotos, false);
+		ui.setVisible(pnlPhotos, false);
 		
 		ui.setEditable(txtReportTitle, true);
 		ui.setEditable(txtReportDescription, true);

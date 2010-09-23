@@ -20,6 +20,9 @@ public final class SynchronizationAPI {
 	/* Locations request parameter */
 	public static final String LOCATIONS = "locations";
 	
+	/* Media request parameter */
+	public static final String MEDIA = "media";
+	
 	/* Adds an incident */
 	public static final String POST_INCIDENT = "report";
 		

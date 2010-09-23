@@ -7,5 +7,9 @@
         <mapping class="com.ushahidi.plugins.mapping.data.domain.Incident" />
         <mapping class="com.ushahidi.plugins.mapping.data.domain.MappingSetup" />
         <mapping class="com.ushahidi.plugins.mapping.data.domain.LocationDetails" />
+        <mapping class="com.ushahidi.plugins.mapping.data.domain.Media" />
+        <mapping class="com.ushahidi.plugins.mapping.data.domain.Photo" />
+        <mapping class="com.ushahidi.plugins.mapping.data.domain.News" />
+        <mapping class="com.ushahidi.plugins.mapping.data.domain.Video" />
     </session-factory>
 </hibernate-configuration>

@@ -1,10 +1,14 @@
 package com.ushahidi.plugins.mapping.sync;
 
 import java.awt.Color;
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStreamReader;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.net.URLConnection;
@@ -17,13 +21,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 
+import javax.imageio.ImageIO;
+
+import net.frontlinesms.resources.ResourceUtils;
+
 import org.json.JSONObject;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import com.ushahidi.plugins.mapping.data.domain.Audio;
 import com.ushahidi.plugins.mapping.data.domain.Category;
 import com.ushahidi.plugins.mapping.data.domain.Location;
 import com.ushahidi.plugins.mapping.data.domain.Incident;
+import com.ushahidi.plugins.mapping.data.domain.Media;
+import com.ushahidi.plugins.mapping.data.domain.News;
+import com.ushahidi.plugins.mapping.data.domain.Photo;
+import com.ushahidi.plugins.mapping.data.domain.Video;
 import com.ushahidi.plugins.mapping.util.MappingLogger;
 
 public class SynchronizationThread extends Thread{
@@ -195,6 +208,7 @@ public class SynchronizationThread extends Thread{
 	 */
 	private void processPayload(String payload) throws JSONException{
 		JSONObject jsonPayload = new JSONObject(payload);
+		LOG.debug("Payload: %s", jsonPayload);
 		JSONObject data = jsonPayload.getJSONObject(SynchronizationAPI.PAYLOAD);
 		if(baseTask.equals(SynchronizationAPI.GEOMIDPOINT)){
 			try {
@@ -239,7 +253,20 @@ public class SynchronizationThread extends Thread{
 							}
 						}		
 					}
-					//TODO load media
+					if (item.has(SynchronizationAPI.MEDIA)) {
+						JSONArray mediaItems = (JSONArray)item.getJSONArray(SynchronizationAPI.MEDIA);
+						if (mediaItems != null) {
+							for(int j=0; j < mediaItems.length(); j++){
+								JSONObject mediaItem = mediaItems.getJSONObject(j);
+								LOG.debug("Media: %s", mediaItem);
+								Media media = parseMedia(mediaItem);
+								if(media != null) {
+									LOG.debug("Adding Media: %s", media);
+									incident.addMedia(media);
+								}
+							}
+						}
+					}
 					syncManager.downloadedIncident(incident);
 				}
 				else if(baseTask.equals(SynchronizationAPI.LOCATIONS)){
@@ -251,13 +278,63 @@ public class SynchronizationThread extends Thread{
 		}
 	}
 	
+	private Media parseMedia(JSONObject item) throws JSONException{
+		LOG.debug("parseMedia: %s", item.toString());
+		long id = item.getLong("id");
+		int type = item.getInt("type");
+		String link = item.getString("link");
+		if (type == Media.Type.PHOTO.getCode()) {
+			try {
+				File destinationDirectory = new File(ResourceUtils.getConfigDirectoryPath(), "photos");
+				if (destinationDirectory.exists() == false) {
+					destinationDirectory.mkdir();
+				}
+				File destinationFilePath = new File(destinationDirectory, link);
+				URI baseURI = new URI(baseURL.toLowerCase());
+				if (destinationFilePath.exists() == false) {
+					String sourceFilePath = baseURI.getHost().indexOf(".crowdmap.com") > -1 
+						? String.format("%s/media/uploads/%s/%s", baseURL, baseURI.getHost().split("\\.")[0], link)
+						: String.format("%s/media/uploads/%s", baseURL, link);
+					URL url = new URL(sourceFilePath);
+					BufferedImage image = ImageIO.read(url);
+					ImageIO.write(image, "jpg", destinationFilePath);
+					LOG.debug("Downloaded Photo: %s", sourceFilePath);
+				}
+				else {
+					LOG.debug("Photo Exists, Skipping: %s", destinationFilePath);
+				}
+				return new Photo(id, link, destinationFilePath.getAbsolutePath());
+			} 
+			catch (URISyntaxException e) {
+				LOG.error("URISyntaxException Parsing URI: %s", baseURL);
+			}
+			catch (IOException ex) {
+				LOG.error("IOException Downloading Media %s : %s", link, ex);
+			}
+			catch (Exception ex) {
+				LOG.error("Unknown Exception Downloading Media %s : %s", link, ex);
+			}
+			return null;
+		}
+		if (type == Media.Type.AUDIO.getCode()) {
+			return new Audio(id, link);
+		}
+		if (type == Media.Type.VIDEO.getCode()) {
+			return new Video(id, link);
+		}
+		if (type == Media.Type.NEWS.getCode()) {
+			return new News(id, link);
+		}
+		return null;
+	}
+	
 	/**
 	 * Fetches the categories from the JSON array and populates the InMemory database
 	 * @param categories
 	 * @throws JSONException
 	 */
 	private Category parseCategory(JSONObject item) throws JSONException{
-		//LOG.debug("fetchCategory: %s", item.toString());
+		LOG.debug("parseCategory: %s", item.toString());
 		long id = item.getLong("id");
 		if (categories.containsKey(id)) {
 			return categories.get(id);
@@ -289,7 +366,7 @@ public class SynchronizationThread extends Thread{
 	}
 	
 	private Incident parseIncident(JSONObject item) throws JSONException{
-		//LOG.debug("fetchIncident: %s", item.toString());
+		LOG.debug("parseIncident: %s", item.toString());
 		Incident incident = new Incident();
 		incident.setServerId(item.getLong("incidentid"));
 		incident.setTitle(item.getString("incidenttitle"));
@@ -331,7 +408,7 @@ public class SynchronizationThread extends Thread{
 	}
 	
 	private Location parseLocation(JSONObject item) throws JSONException{
-		//LOG.debug("parseLocation: %s", item.toString());
+		LOG.debug("parseLocation: %s", item.toString());
 		long id = item.getLong("id");
 		if (locations.containsKey(id)) {
 			return locations.get(id);

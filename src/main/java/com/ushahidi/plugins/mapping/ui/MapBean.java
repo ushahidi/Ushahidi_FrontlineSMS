@@ -189,15 +189,17 @@ public class MapBean extends CustomComponent implements ImageObserver {
 			if (marker.getLocation() != null) {
 				double latitude = marker.getLocation().getLatitude();
         		double longitude = marker.getLocation().getLongitude();
-        		Point point = map.locationPoint(new Location(latitude, longitude));
-        		g.drawImage(marker.getImage(), point.x, point.y, pointSize, pointSize, null);
-        		Polygon polygon = new Polygon();
-        		polygon.addPoint(point.x, point.y);
-        		polygon.addPoint(point.x + pointSize, point.y);
-        		polygon.addPoint(point.x + pointSize, point.y + pointSize);
-        		polygon.addPoint(point.x, point.y + pointSize);
-        		polygons.put(polygon, marker);
-			}
+        		if (map != null) {
+        			Point point = map.locationPoint(new Location(latitude, longitude));
+            		g.drawImage(marker.getImage(), point.x, point.y, pointSize, pointSize, null);
+            		Polygon polygon = new Polygon();
+            		polygon.addPoint(point.x, point.y);
+            		polygon.addPoint(point.x + pointSize, point.y);
+            		polygon.addPoint(point.x + pointSize, point.y + pointSize);
+            		polygon.addPoint(point.x, point.y + pointSize);
+            		polygons.put(polygon, marker);	
+        		}
+        	}
 		}
     }
     
