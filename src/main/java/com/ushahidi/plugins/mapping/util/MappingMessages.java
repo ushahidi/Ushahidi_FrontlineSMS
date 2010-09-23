@@ -9,6 +9,14 @@ import static net.frontlinesms.ui.i18n.InternationalisationUtils.getI18NString;
  */
 public final class MappingMessages {
 	
+	public static String getFormResponse() {
+		return getI18NString("plugins.ushahidi.form.response");
+	}
+	
+	public static String getSurveyResponse() {
+		return getI18NString("plugins.ushahidi.survey.response");
+	}
+	
 	public static String getIncidentReport() {
 		return getI18NString("plugins.ushahidi.incident.report");
 	}

@@ -299,12 +299,15 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		LOG.debug("showIncidentMap");
 		if (mapPanelHandler == null) {
 			mapPanelHandler = new MapPanelHandler(pluginController, frontlineController, ui);
+			mapPanelHandler.setSurveyResponseDao(surveysManager.getSurveyResponseDao());
+			mapPanelHandler.setFormResponseDao(formsManager.getFormResponseDao());
 		}
 		ui.setSelected(cbxIncidentMap, true);
 		ui.setSelected(cbxIncidentList, false);
 		mapPanelHandler.init();
 		ui.removeAll(pnlViewIncidents);
 		ui.add(pnlViewIncidents, mapPanelHandler.getMainPanel());
+		mapPanelHandler.refresh();
 	}
 	
 	public void refreshIncidentMap() {
@@ -326,6 +329,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		reportsPanelHandler.init();
 		ui.removeAll(pnlViewIncidents);
 		ui.add(pnlViewIncidents, reportsPanelHandler.getMainPanel());
+		reportsPanelHandler.refresh();
 	}
 
 	public void refreshIncidentReports() {

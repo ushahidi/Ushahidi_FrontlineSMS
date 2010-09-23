@@ -141,7 +141,7 @@ public class ReportsPanelHandler extends ExtendedThinlet implements ThinletUiEve
 	 * 
 	 * @return
 	 */
-	public Object getRow(Incident incident){
+	private Object getRow(Incident incident){
 		Object row = createTableRow(incident);
 		createTableCell(row, incident.isMarked());
 		createTableCell(row, incident.isVerified());

@@ -7,6 +7,7 @@ import com.ushahidi.plugins.mapping.data.domain.Location;
 import com.ushahidi.plugins.mapping.data.domain.LocationDetails;
 import com.ushahidi.plugins.mapping.data.repository.LocationDao;
 import com.ushahidi.plugins.mapping.data.repository.MappingSetupDao;
+import com.ushahidi.plugins.mapping.ui.markers.Marker;
 import com.ushahidi.plugins.mapping.util.MappingLogger;
 import com.ushahidi.plugins.mapping.util.MappingMessages;
 
@@ -202,4 +203,6 @@ public class ContactDialogHandler extends ExtendedThinlet implements ThinletUiEv
 	}
 	
 	public void locationHovered(double latitude, double longitude) {}
+	
+	public void markerSelected(Marker marker) {}
 }

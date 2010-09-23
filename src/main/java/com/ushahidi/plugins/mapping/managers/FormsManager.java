@@ -260,6 +260,22 @@ public class FormsManager extends Manager {
 	}
 	
 	/**
+	 * Get FormResponseDao
+	 * @return FormResponseDao
+	 */
+	public FormResponseDao getFormResponseDao() {
+		return formResponseDao;
+	}
+	
+	/**
+	 * Get FormDao
+	 * @return FormDao
+	 */
+	public FormDao getFormDao() {
+		return formDao;
+	}
+	
+	/**
 	 * Add Field to Form
 	 * @param form Form
 	 * @param formFieldType FormFieldType

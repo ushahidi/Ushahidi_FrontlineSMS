@@ -151,6 +151,10 @@ public class Location implements Serializable {
 		return name;
 	}
 	
+	public String getCoordinates() {
+		return String.format("%f, %f", latitude, longitude);
+	}
+	
 	/**
 	 * Gets the display name of this location
 	 */

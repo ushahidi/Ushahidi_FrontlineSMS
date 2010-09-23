@@ -8,9 +8,9 @@ import com.ushahidi.plugins.mapping.data.domain.Location;
  * @author dalezak
  *
  */
+@SuppressWarnings("serial")
 public class IncidentMarker extends Marker {
 
-	private static final long serialVersionUID = 1L;
 	private Incident incident;
 	
 	public IncidentMarker(Incident incident){
@@ -24,6 +24,11 @@ public class IncidentMarker extends Marker {
 		
 	public Incident getIncident(){
 		return incident;
+	}
+
+	@Override
+	public String toString() {
+		return String.format("[%s]", incident.getTitle());
 	}
 	
 }

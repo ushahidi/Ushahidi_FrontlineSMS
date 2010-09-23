@@ -1,9 +1,9 @@
 <dialog name="dlgContact" text="i18n.plugins.ushahidi.contact" icon="/icons/users.png" modal="true" closable="true" close="removeDialog(this)" gap="10" top="3" right="3" bottom="3" left="3">
 	<panel columns="2" gap="5" top="3" right="3" bottom="3" left="3">
-      	<label text="i18n.common.name" valign="top" />
+      	<label text="i18n.common.name" icon="/icons/user.png" valign="top" />
       	<textfield name="txtContactName" columns="50" editable="false"/>
       	
-      	<label text="i18n.plugins.ushahidi.location" valign="top" />
+      	<label text="i18n.plugins.ushahidi.location" icon="/icons/map.png" valign="top" />
       	<panel name="pnlLocation" columns="2" weightx="1" gap="5">
 			<checkbox name="cbxExistingLocation" text="i18n.plugins.ushahidi.location.existing" group="location" selected="true" action="showExistingLocations"/>
 			<checkbox name="cbxNewLocation" text="i18n.plugins.ushahidi.location.new" group="location" action="showNewLocation"/>
@@ -16,7 +16,7 @@
 			</panel>
 		</panel>
 		
-		<label text="i18n.plugins.ushahidi.incident.coordinates" valign="top" />
+		<label text="i18n.plugins.ushahidi.incident.coordinates" icon="/icons/coordinates.png" valign="top" />
 		<textfield name="txtCoordinates" columns="50" weightx="1" editable="false"/>
 		
 		<button name="btnCancel" icon="/icons/cross.png" text="i18n.action.cancel" action="removeDialog(dlgContact)" weightx="1"/>

@@ -5,8 +5,10 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Point;
+import java.awt.Polygon;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
@@ -14,7 +16,9 @@ import java.awt.image.ImageObserver;
 import java.io.IOException;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import thinlet.CustomComponent;
 
@@ -52,6 +56,7 @@ public class MapBean extends CustomComponent implements ImageObserver {
     private Location location;
     /** Markers to be plotted on the map */
     private final List<Marker> markers = new ArrayList<Marker>();
+    private final Map<Polygon, Marker> polygons = new HashMap<Polygon, Marker>();
     /** Instance of the UI controller for the mapping plugin */
     /** Name of the file containing the offline maps*/
     private String offlineMapFile;
@@ -62,7 +67,7 @@ public class MapBean extends CustomComponent implements ImageObserver {
     private int zoomLevel = DEFAULT_ZOOM_LEVEL;
 
     public MapBean() {
-        addMouseListener(mouseListener);
+    	addMouseListener(mouseListener);
         addMouseMotionListener(mouseListener);
         addMouseWheelListener(mouseListener);
     }
@@ -179,18 +184,27 @@ public class MapBean extends CustomComponent implements ImageObserver {
     }
 
     private void plotMarkers(Graphics g){
+    	polygons.clear();
 		for(Marker marker : this.markers) {
 			if (marker.getLocation() != null) {
 				double latitude = marker.getLocation().getLatitude();
         		double longitude = marker.getLocation().getLongitude();
         		Point point = map.locationPoint(new Location(latitude, longitude));
-        		g.drawImage(marker.getImage(), point.x, point.y, pointSize, pointSize, this);
+        		g.drawImage(marker.getImage(), point.x, point.y, pointSize, pointSize, null);
+        		Polygon polygon = new Polygon();
+        		polygon.addPoint(point.x, point.y);
+        		polygon.addPoint(point.x + pointSize, point.y);
+        		polygon.addPoint(point.x + pointSize, point.y + pointSize);
+        		polygon.addPoint(point.x, point.y + pointSize);
+        		polygons.put(polygon, marker);
 			}
 		}
     }
     
     public synchronized void addMapListener(MapListener listener) {
-    	this.mapListeners.add(listener);
+    	if (this.mapListeners.contains(listener) == false) {
+    		this.mapListeners.add(listener);
+    	}
     }
 
     public synchronized void removeMapListener(MapListener listener) {
@@ -237,7 +251,7 @@ public class MapBean extends CustomComponent implements ImageObserver {
      * Private class to handle the map dragging events
      * Credit To: http://mappanel.sourceforge.net 
      */
-    private class MapDragListener extends MouseAdapter implements MouseMotionListener, MouseWheelListener{
+    private class MapDragListener extends MouseAdapter implements MouseListener, MouseMotionListener, MouseWheelListener{
     //> PROPERTIES
         /** Saves the current screen coordinates when the mouse is moved or dragged */
         private Point mouseCoords;
@@ -250,63 +264,70 @@ public class MapBean extends CustomComponent implements ImageObserver {
         }
 
         public void mouseClicked(MouseEvent e){
-//        	if (map != null) {
-//        		int zoom = map.getZoom() + 1;
-//                setZoomLevel(zoom);
-//                for (MapListener mapListener : mapListeners) {
-//                	mapListener.mapZoomed(zoom);
-//                }	
-//        	}
+        	for(Polygon polygon : polygons.keySet()) {
+        		if (polygon.contains(e.getX(), e.getY())) {
+        			Marker marker = polygons.get(polygon);
+        			if (marker != null) {
+        				for (MapListener mapListener : mapListeners) {
+        	            	if (map != null && mapListener != null) {
+        	            		mapListener.markerSelected(marker);
+        	                }
+        	            }
+        				break;
+        			}
+        		}
+        	}
         }
 
-        public void mousePressed(MouseEvent event){
-            if(event.getClickCount() >= 2){
-                mouseClicked(event);
-                return;
+        public void mousePressed(MouseEvent e){
+        	if(e.getClickCount() >= 2){
+        		mouseClicked(e);
             }
-            downCoords = event.getPoint();
-           for (MapListener mapListener : mapListeners) {
-            	if (map != null && mapListener != null && event.getPoint() != null) {
-            		Location location = map.pointLocation(event.getPoint());
-            		if (location != null) {
-            			 mapListener.locationSelected(location.lat, location.lon);	
-            		}
-                }
-            }	
+        	else {
+        		downCoords = e.getPoint();
+                for (MapListener mapListener : mapListeners) {
+                 	if (map != null && mapListener != null && e.getPoint() != null) {
+                 		Location location = map.pointLocation(e.getPoint());
+                 		if (location != null) {
+                 			 mapListener.locationSelected(location.lat, location.lon);	
+                 		}
+                     }
+                 }		
+        	}
         }
 
-        public void mouseReleased(MouseEvent event){            
+        public void mouseReleased(MouseEvent e){            
             downCoords = null;
         }
 
-        public void mouseMoved(MouseEvent event){
-            handlePosition(event);
+        public void mouseMoved(MouseEvent e){
+            handlePosition(e);
         }
 
-        public void mouseDragged(MouseEvent event){
-            handlePosition(event);
-            handleDrag(event);
+        public void mouseDragged(MouseEvent e){
+            handlePosition(e);
+            handleDrag(e);
         }
 
-        public void mouseExited(MouseEvent event){}
+        public void mouseExited(MouseEvent e){}
 
-        public void mouseEntered(MouseEvent event){
-            super.mouseEntered(event);
+        public void mouseEntered(MouseEvent e){
+            super.mouseEntered(e);
         }
 
-        public void mouseWheelMoved(MouseWheelEvent event){}
+        public void mouseWheelMoved(MouseWheelEvent e){}
 
         /**
          * Saves the current position of the mouse on the map canvas for purposes
          * of updating the coordinate display on the UI
          * 
-         * @param event
+         * @param e
          */
-        private void handlePosition(MouseEvent event){
-            mouseCoords = event.getPoint();
+        private void handlePosition(MouseEvent e){
+            mouseCoords = e.getPoint();
             for (MapListener mapListener : mapListeners) {
-            	if (map != null && mapListener != null && event.getPoint() != null) {
-            		Location location = map.pointLocation(event.getPoint());
+            	if (map != null && mapListener != null && e.getPoint() != null) {
+            		Location location = map.pointLocation(e.getPoint());
             		if (location != null) {
             			 mapListener.locationHovered(location.lat, location.lon);	
             		}
@@ -319,20 +340,19 @@ public class MapBean extends CustomComponent implements ImageObserver {
          * A drag is only initiated if the (x,y) values in @param e are different
          * from the ones in {@link #downCoords}
          * 
-         * @param event {@link java.awt.event.MouseEvent} reference
+         * @param e {@link java.awt.event.MouseEvent} reference
          */
-        private void handleDrag(MouseEvent event){
+        private void handleDrag(MouseEvent e){
             if(downCoords != null){
-                int tx = downCoords.x - event.getX();
-                int ty = downCoords.y - event.getY();
+                int tx = downCoords.x - e.getX();
+                int ty = downCoords.y - e.getY();
                 
                 // Save the current position to prevent extra dragging
-                downCoords = event.getPoint();
+                downCoords = e.getPoint();
                 
                 // Only pan the map if the change is non-zero
                 if(tx != 0 && ty != 0){
-                    //LOG.debug("Panning map");
-                	if (map != null) {
+                    if (map != null) {
                 		map.panBy(tx, ty);
                 	}
                     repaint();

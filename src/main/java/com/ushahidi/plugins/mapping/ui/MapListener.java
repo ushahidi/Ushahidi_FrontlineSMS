@@ -1,5 +1,7 @@
 package com.ushahidi.plugins.mapping.ui;
 
+import com.ushahidi.plugins.mapping.ui.markers.Marker;
+
 /**
  * MapListener
  * @author dalezak
@@ -26,5 +28,11 @@ public interface MapListener {
 	 * @param zoom The new zoom level of the map
 	 */
 	public void zoomChanged(int zoom);
+	
+	/**
+	 * This method is called when a map markeris double clicked
+	 * @param marker
+	 */
+	public void markerSelected(Marker marker);
 	
 }

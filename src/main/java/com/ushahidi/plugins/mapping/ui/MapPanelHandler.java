@@ -12,8 +12,11 @@ import com.ushahidi.plugins.mapping.data.domain.MappingSetup;
 import com.ushahidi.plugins.mapping.data.repository.CategoryDao;
 import com.ushahidi.plugins.mapping.data.repository.IncidentDao;
 import com.ushahidi.plugins.mapping.data.repository.MappingSetupDao;
+import com.ushahidi.plugins.mapping.ui.markers.FormMarker;
 import com.ushahidi.plugins.mapping.ui.markers.IncidentMarker;
+import com.ushahidi.plugins.mapping.ui.markers.Marker;
 import com.ushahidi.plugins.mapping.ui.markers.MessageMarker;
+import com.ushahidi.plugins.mapping.ui.markers.SurveyMarker;
 import com.ushahidi.plugins.mapping.util.MappingLogger;
 import com.ushahidi.plugins.mapping.util.MappingMessages;
 import com.ushahidi.plugins.mapping.util.MappingProperties;
@@ -26,6 +29,10 @@ import net.frontlinesms.data.domain.FrontlineMessage.Status;
 import net.frontlinesms.data.domain.FrontlineMessage.Type;
 import net.frontlinesms.data.repository.ContactDao;
 import net.frontlinesms.data.repository.MessageDao;
+import net.frontlinesms.plugins.forms.data.domain.FormResponse;
+import net.frontlinesms.plugins.forms.data.repository.FormResponseDao;
+import net.frontlinesms.plugins.surveys.data.domain.SurveyResponse;
+import net.frontlinesms.plugins.surveys.data.repository.SurveyResponseDao;
 import net.frontlinesms.ui.ExtendedThinlet;
 import net.frontlinesms.ui.ThinletUiEventHandler;
 import net.frontlinesms.ui.UiGeneratorController;
@@ -47,6 +54,8 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 	private final CategoryDao categoryDao;
 	private final MessageDao messageDao;
 	private final ContactDao contactDao;
+	private SurveyResponseDao surveyResponseDao;
+	private FormResponseDao formResponseDao;
 	private final MappingSetupDao mappingSetupDao;
 	
 	private final MapBean mapBean;
@@ -142,6 +151,9 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 		ui.setInteger(sldZoomLevel, VALUE, MappingProperties.getDefaultZoomLevel());
 	}
 	
+	/**
+	 * Refresh map and markers
+	 */
 	public void refresh() {
 		LOG.debug("MapPanelHandler.refresh");
 		if(mappingSetupDao.getDefaultSetup() != null) {
@@ -156,7 +168,7 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 		}
 		if (mapBean != null) {
 			mapBean.clearMarkers(false);
-			if(getBoolean(cbxShowMessages, Thinlet.SELECTED)) {
+			if(getBoolean(cbxShowMessages, Thinlet.SELECTED) && contactDao != null) {
 				LOG.debug("Showing Messages");
 				for(FrontlineMessage message : messageDao.getMessages(Type.RECEIVED, Status.RECEIVED)) {
 					Contact contact = contactDao.getFromMsisdn(message.getSenderMsisdn());
@@ -168,13 +180,31 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 					}
 				}
 			}
-			if(getBoolean(cbxShowSurveys, Thinlet.SELECTED)) {
+			if(getBoolean(cbxShowSurveys, Thinlet.SELECTED) && surveyResponseDao != null) {
 				LOG.debug("Showing Surveys");	
+				for(SurveyResponse surveyResponse : surveyResponseDao.getAllSurveyResponses()) {
+					Contact contact = surveyResponse.getContact();
+					if (contact != null) {
+						LocationDetails locationDetails = contact.getDetails(LocationDetails.class);
+						if (locationDetails != null && locationDetails.getLocation() != null) {
+							mapBean.addMarker(new SurveyMarker(surveyResponse, locationDetails.getLocation()), false);
+						}
+					}
+				}		
 			}
-			if(getBoolean(cbxShowForms, Thinlet.SELECTED)) {
+			if(getBoolean(cbxShowForms, Thinlet.SELECTED) && formResponseDao != null) {
 				LOG.debug("Showing Forms");
+				for(FormResponse formResponse : formResponseDao.getAllFormResponses()) {
+					Contact contact = contactDao.getFromMsisdn(formResponse.getSubmitter());
+					if (contact != null) {
+						LocationDetails locationDetails = contact.getDetails(LocationDetails.class);
+						if (locationDetails != null && locationDetails.getLocation() != null) {
+							mapBean.addMarker(new FormMarker(formResponse, locationDetails.getLocation(), formResponse.getParentForm()), false);
+						}
+					}
+				}
 			}
-			if(getBoolean(cbxShowIncidents, Thinlet.SELECTED)) {
+			if(getBoolean(cbxShowIncidents, Thinlet.SELECTED) && incidentDao != null) {
 				LOG.debug("Showing Incidents");
 				for(Incident incident : incidentDao.getAllIncidents(mappingSetupDao.getDefaultSetup())) {
 					mapBean.addMarker(new IncidentMarker(incident), false);
@@ -182,6 +212,14 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 			}
 			mapBean.repaint();
 		}
+	}
+	
+	public void setSurveyResponseDao(SurveyResponseDao surveyResponseDao) {
+		this.surveyResponseDao = surveyResponseDao;
+	}
+	
+	public void setFormResponseDao(FormResponseDao formResponseDao) {
+		this.formResponseDao = formResponseDao;
 	}
 	
 	public void destroyMap() {
@@ -239,19 +277,52 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 	}
 
 	public void locationHovered(double latitude, double longitude) {
-		String latString = Double.toString(latitude);
-		if (latString.length() > 8) {
-			latString = latString.substring(0,8);
+		String latitudeString = Double.toString(latitude);
+		if (latitudeString.length() > 8) {
+			latitudeString = latitudeString.substring(0,8);
 		}
-		String lonString = Double.toString(longitude);
-		if (lonString.length() > 8) {
-			lonString = lonString.substring(0,8);
+		String longitudeString = Double.toString(longitude);
+		if (longitudeString.length() > 8) {
+			longitudeString = longitudeString.substring(0,8);
 		}
-		ui.setText(lblCoordinates, latString + ", " + lonString);
+		ui.setText(lblCoordinates, String.format("%s, %s", latitudeString, longitudeString));
 	}
 
-	public void locationSelected(double latitude, double longitude) {
-		LOG.debug("Latitude:%f Longitude:%f", latitude, longitude);
-	}
+	public void locationSelected(double latitude, double longitude) {}
 	
+	public void markerSelected(Marker marker) { 
+		if (marker instanceof IncidentMarker) {
+			IncidentMarker incidentMarker = (IncidentMarker)marker;
+			if (incidentMarker.getIncident() != null) {
+				LOG.debug("Incident: %s", incidentMarker.getIncident().getTitle());
+				ReportDialogHandler reportDialog = new ReportDialogHandler(pluginController, frontlineController, ui);
+				reportDialog.showDialog(incidentMarker.getIncident());
+			}
+		}
+		else if (marker instanceof MessageMarker) {
+			MessageMarker messageMarker = (MessageMarker)marker;
+			if (messageMarker != null && messageMarker.getFrontlineMessage() != null) {
+				LOG.debug("Message: %s", messageMarker.getFrontlineMessage().getTextContent());
+				ResponseDialogHandler responseDialog = new ResponseDialogHandler(pluginController, frontlineController, ui);
+				responseDialog.showDialog(messageMarker.getFrontlineMessage(), messageMarker.getLocation());
+			}
+		}
+		else if (marker instanceof FormMarker) {
+			FormMarker formMarker = (FormMarker)marker;
+			if (formMarker != null && formMarker.getFormResponse() != null) {
+				LOG.debug("Form: %s", formMarker.getFormResponse());
+				ResponseDialogHandler responseDialog = new ResponseDialogHandler(pluginController, frontlineController, ui);
+				responseDialog.setFormResponseDao(formResponseDao);
+				responseDialog.showDialog(formMarker.getFormResponse(), formMarker.getLocation(), formMarker.getForm());
+			}
+		}
+		else if (marker instanceof SurveyMarker) {
+			SurveyMarker surveyMarker = (SurveyMarker)marker;
+			if(surveyMarker != null && surveyMarker.getSurveyResponse() != null) {
+				LOG.debug("Survey: %s", surveyMarker.getSurveyResponse());
+				ResponseDialogHandler responseDialog = new ResponseDialogHandler(pluginController, frontlineController, ui);
+				responseDialog.showDialog(surveyMarker.getSurveyResponse(), surveyMarker.getLocation());
+			}
+		}
+	}
 }

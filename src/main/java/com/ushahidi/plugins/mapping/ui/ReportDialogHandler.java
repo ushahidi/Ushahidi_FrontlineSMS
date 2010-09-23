@@ -15,6 +15,7 @@ import com.ushahidi.plugins.mapping.data.repository.CategoryDao;
 import com.ushahidi.plugins.mapping.data.repository.IncidentDao;
 import com.ushahidi.plugins.mapping.data.repository.LocationDao;
 import com.ushahidi.plugins.mapping.data.repository.MappingSetupDao;
+import com.ushahidi.plugins.mapping.ui.markers.Marker;
 import com.ushahidi.plugins.mapping.util.MappingLogger;
 import com.ushahidi.plugins.mapping.util.MappingMessages;
 
@@ -406,4 +407,6 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 	}
 	
 	public void locationHovered(double latitude, double longitude) {}
+	
+	public void markerSelected(Marker marker) {}
 }

@@ -23,7 +23,9 @@ public class MapSaveDialogHandler extends ExtendedThinlet implements ThinletUiEv
 	
 	public static MappingLogger LOG = MappingLogger.getLogger(MapSaveDialogHandler.class);
 	
+	@SuppressWarnings("unused")
 	private final MappingPluginController pluginController;
+	@SuppressWarnings("unused")
 	private final FrontlineSMS frontlineController;
 	private final UiGeneratorController ui;
 	

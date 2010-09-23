@@ -15,6 +15,7 @@ import net.frontlinesms.plugins.PluginControllerProperties;
 import net.frontlinesms.plugins.PluginInitialisationException;
 import net.frontlinesms.ui.UiGeneratorController;
 
+import org.hibernate.SessionFactory;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -29,7 +30,8 @@ public class MappingPluginController extends BasePluginController {
     private static MappingLogger LOG = MappingLogger.getLogger(MappingPluginController.class);	
 
     private FrontlineSMS frontlineController;
-    private ApplicationContext applicationContext;
+    @SuppressWarnings("unused")
+	private ApplicationContext applicationContext;
     private MappingUIController mappingUIController;
 	
 	private ContactDao contactDao;
@@ -38,6 +40,7 @@ public class MappingPluginController extends BasePluginController {
     private IncidentDao incidentDao;
     private MessageDao messageDao;
     private MappingSetupDao mappingSetupDao;
+    private SessionFactory sessionFactory;
     
     public String getHibernateConfigPath() {
         return "classpath:com/ushahidi/plugins/mapping/mapping.hibernate.cfg.xml";
@@ -54,10 +57,11 @@ public class MappingPluginController extends BasePluginController {
         try{
         	this.contactDao = frontlineController.getContactDao();
         	this.messageDao = frontlineController.getMessageDao();
-        	this.locationDao = (LocationDao)applicationContext.getBean("locationDao");
-        	this.incidentDao = (IncidentDao)applicationContext.getBean("incidentDao");
-        	this.mappingSetupDao = (MappingSetupDao)applicationContext.getBean("mappingSetupDao");
-        	this.categoryDao = (CategoryDao)applicationContext.getBean("categoryDao");
+        	this.locationDao = (LocationDao)applicationContext.getBean("locationDao", LocationDao.class);
+        	this.incidentDao = (IncidentDao)applicationContext.getBean("incidentDao", IncidentDao.class);
+        	this.mappingSetupDao = (MappingSetupDao)applicationContext.getBean("mappingSetupDao", MappingSetupDao.class);
+        	this.categoryDao = (CategoryDao)applicationContext.getBean("categoryDao", CategoryDao.class);
+        	this.sessionFactory = (SessionFactory)applicationContext.getBean("sessionFactory", SessionFactory.class);
         }
         catch(Throwable t){
         	LOG.error("Unable to initialize dao objects");
@@ -105,6 +109,10 @@ public class MappingPluginController extends BasePluginController {
     	return contactDao;
     }
     
+    public SessionFactory getSessionFactory() {
+    	return sessionFactory;
+    }
+    
     public void showIncidentMap() {
     	mappingUIController.showIncidentMap();
     }
@@ -132,4 +140,5 @@ public class MappingPluginController extends BasePluginController {
     public void setStatus(String status) {
     	mappingUIController.setStatus(status);
     }
+   
 }

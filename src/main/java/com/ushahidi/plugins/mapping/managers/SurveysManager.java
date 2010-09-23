@@ -34,6 +34,7 @@ import net.frontlinesms.plugins.surveys.data.domain.answers.Answer;
 import net.frontlinesms.plugins.surveys.data.repository.QuestionDao;
 import net.frontlinesms.plugins.surveys.data.repository.QuestionFactory;
 import net.frontlinesms.plugins.surveys.data.repository.SurveyDao;
+import net.frontlinesms.plugins.surveys.data.repository.SurveyResponseDao;
 
 /**
  * SurveysManager
@@ -47,6 +48,7 @@ public class SurveysManager extends Manager {
 	private final MappingPluginController pluginController;
 	private final QuestionDao questionDao;
 	private final SurveyDao surveyDao;
+	private final SurveyResponseDao surveyResponseDao;
 	
 	private final CategoryDao categoryDao;
 	private final LocationDao locationDao;
@@ -72,6 +74,7 @@ public class SurveysManager extends Manager {
 		SurveysPluginController surveysPluginController = getPluginController(frontlineController, SurveysPluginController.class);
 		this.questionDao = surveysPluginController.getQuestionDao();
 		this.surveyDao = surveysPluginController.getSurveyDao();
+		this.surveyResponseDao = surveysPluginController.getSurveyResponseDao();
 		
 		this.surveyName = MappingMessages.getIncidentReport();
 	}
@@ -229,6 +232,10 @@ public class SurveysManager extends Manager {
 			LOG.error("Exception in addSurveyAnswers", ex);
 		}
 		return false;
+	}
+	
+	public SurveyResponseDao getSurveyResponseDao() {
+		return surveyResponseDao;
 	}
 	
 	protected Question createPlainTextQuestion(List<Question> questions, String name, String keyword, String infoSnippet) {

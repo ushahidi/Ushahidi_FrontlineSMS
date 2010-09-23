@@ -9,9 +9,9 @@ import net.frontlinesms.data.domain.FrontlineMessage;
  * @author dalezak
  *
  */
+@SuppressWarnings("serial")
 public class MessageMarker extends Marker {
 
-	private static final long serialVersionUID = 1L;
 	private FrontlineMessage message;
 	
 	public MessageMarker(FrontlineMessage message, Location location){
@@ -21,6 +21,11 @@ public class MessageMarker extends Marker {
 		
 	public FrontlineMessage getFrontlineMessage(){
 		return message;
+	}
+	
+	@Override
+	public String toString() {
+		return String.format("[%s]", message.getTextContent());
 	}
 	
 }

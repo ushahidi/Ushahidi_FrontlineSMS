@@ -9,9 +9,9 @@ import net.frontlinesms.plugins.surveys.data.domain.SurveyResponse;
  * @author dalezak
  *
  */
+@SuppressWarnings("serial")
 public class SurveyMarker extends Marker {
 
-	private static final long serialVersionUID = 1L;
 	private SurveyResponse surveyResponse;
 	
 	public SurveyMarker(SurveyResponse surveyResponse, Location location){
@@ -23,4 +23,8 @@ public class SurveyMarker extends Marker {
 		return surveyResponse;
 	}
 	
+	@Override
+	public String toString() {
+		return String.format("[%s, %s]", surveyResponse.getContactPhoneNumber(), surveyResponse.getSurveyName());
+	}
 }
