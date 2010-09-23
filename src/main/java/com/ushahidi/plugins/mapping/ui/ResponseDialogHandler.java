@@ -50,6 +50,7 @@ public class ResponseDialogHandler extends ExtendedThinlet implements ThinletUiE
 	private final Object txtDate;
 	private final Object txtMessage;
 	private final Object lblMessage;
+	private final Object lblDate;
 	
 	public ResponseDialogHandler(MappingPluginController pluginController, FrontlineSMS frontlineController, UiGeneratorController uiController) {
 		this.pluginController = pluginController;
@@ -65,6 +66,7 @@ public class ResponseDialogHandler extends ExtendedThinlet implements ThinletUiE
 		this.txtCoordinates = this.ui.find(this.mainDialog, "txtCoordinates");
 		this.tblResponses = this.ui.find(this.mainDialog, "tblResponses");
 		this.txtDate = this.ui.find(this.mainDialog, "txtDate");
+		this.lblDate = this.ui.find(this.mainDialog, "lblDate");
 		this.txtMessage = this.ui.find(this.mainDialog, "txtMessage");
 		this.lblMessage = this.ui.find(this.mainDialog, "lblMessage");
 	}
@@ -88,6 +90,8 @@ public class ResponseDialogHandler extends ExtendedThinlet implements ThinletUiE
 		ui.setVisible(txtMessage, false);
 		ui.setVisible(lblMessage, false);
 		ui.setVisible(tblResponses, true);
+		ui.setVisible(lblDate, true);
+		ui.setVisible(txtDate, true);
 		ui.setIcon(mainDialog, "/icons/survey.png");
 		ui.setText(mainDialog, MappingMessages.getSurveyResponse());
 		ui.add(mainDialog);
@@ -120,6 +124,7 @@ public class ResponseDialogHandler extends ExtendedThinlet implements ThinletUiE
 		}
 		catch (LazyInitializationException ex) {
 			//TODO fix this LazyInitializationException
+			ex.printStackTrace();
 			int index = 1;
 			for(ResponseValue value : formResponse.getResults()) {
 				ui.add(tblResponses, getRow(String.format("Field %d", index), value.toString()));
@@ -129,6 +134,8 @@ public class ResponseDialogHandler extends ExtendedThinlet implements ThinletUiE
 		ui.setVisible(txtMessage, false);
 		ui.setVisible(lblMessage, false);
 		ui.setVisible(tblResponses, true);
+		ui.setVisible(lblDate, false);
+		ui.setVisible(txtDate, false);
 		ui.setIcon(mainDialog, "/icons/form.png");
 		ui.setText(mainDialog, MappingMessages.getFormResponse());
 		ui.add(mainDialog);
@@ -152,8 +159,10 @@ public class ResponseDialogHandler extends ExtendedThinlet implements ThinletUiE
 		ui.setVisible(txtMessage, true);
 		ui.setVisible(lblMessage, true);
 		ui.setVisible(tblResponses, false);
-		ui.setIcon(mainDialog, "/icons/form.png");
-		ui.setText(mainDialog, MappingMessages.getFormResponse());
+		ui.setVisible(lblDate, true);
+		ui.setVisible(txtDate, true);
+		ui.setIcon(mainDialog, "/icons/sms.png");
+		ui.setText(mainDialog, MappingMessages.getMessageReceived());
 		ui.add(mainDialog);
 	}
 	

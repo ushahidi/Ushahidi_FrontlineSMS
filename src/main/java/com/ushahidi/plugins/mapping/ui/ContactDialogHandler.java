@@ -148,6 +148,7 @@ public class ContactDialogHandler extends ExtendedThinlet implements ThinletUiEv
 					contactDao.updateContact(contact);
 					ui.remove(dialog);
 					pluginController.refreshContacts();
+					pluginController.refreshIncidentMap();
 				} 
 				catch (DuplicateKeyException e) {
 					e.printStackTrace();

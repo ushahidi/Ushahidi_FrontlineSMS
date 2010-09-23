@@ -47,7 +47,9 @@ public class MappingDebug {
     }
 	
 	private String getSenderMsisdn() {
-		for (Contact contact : this.contactDao.getAllContacts()) {
+		List<Contact> contacts = this.contactDao.getAllContacts();
+		for(int index = contacts.size() - 1; index >= 0; index--){
+			Contact contact = contacts.get(index);
 			if (contact.getPhoneNumber() != null) {
 				return contact.getPhoneNumber();
 			}
@@ -77,10 +79,12 @@ public class MappingDebug {
 	            else if (message.toLowerCase().startsWith("form")){
 	            	String title = words.length > 1 ? words[1] : null;
 	            	formsManager.addFormResponse(title);
+	            	LOG.debug("Form Created: %s", title);
 	            }
 	            else if (message.toLowerCase().startsWith("survey")){
 	            	String title = words.length > 1 ? words[1] : null;
 	            	surveysManager.addSurveyAnswers(title);
+	            	LOG.debug("Survey Created: %s", title);
 	            }
 	            else if (message.equalsIgnoreCase("help")){
 	            	LOG.out("Enter 'form' to create a sample Form, 'survey' to create a sample Survey or 'exit' to terminate console.");

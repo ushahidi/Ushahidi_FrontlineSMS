@@ -12,8 +12,8 @@
       	<label text="i18n.plugins.ushahidi.incident.coordinates" icon="/icons/coordinates.png" valign="top" />
 		<textfield name="txtCoordinates" columns="50" weightx="1" editable="false"/>
 		
-		<label text="i18n.common.date" icon="/icons/date.png" valign="top" />
-		<textfield name="txtDate" columns="50" weightx="1" editable="false"/>
+		<label name="lblDate" text="i18n.common.date" icon="/icons/date.png" valign="top" />
+		<textfield name="txtDate" columns="50" weightx="1" editable="false" />
 		
 		<label name="lblMessage" text="i18n.common.message" icon="/icons/sms.png" valign="top" />
 		<textarea name="txtMessage" columns="50" rows="3" weightx="1" editable="false"/>
