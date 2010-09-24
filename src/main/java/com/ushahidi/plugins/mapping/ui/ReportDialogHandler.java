@@ -181,6 +181,12 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 					ui.add(pnlPhotos, label);
 				}
 			}
+			if (incident.getMedia().size() > 0) {
+				ui.setHeight(pnlPhotos, 225);
+			}
+			else {
+				ui.setHeight(pnlPhotos, 12);
+			}
 			ui.setVisible(lblPhotos, true);
 			ui.setVisible(pnlPhotos, true);
 		}
@@ -285,28 +291,33 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 			incident = (Incident)attachedObject;
 		}
 		if (ui.getSelectedItem(cbxExistingLocation) != null){
-			Location location = getAttachedObject(getSelectedItem(cboReportLocations), Location.class);
-			incident.setLocation(location);
+			Object selectedItem = getSelectedItem(cboReportLocations);
+			if (selectedItem != null) {
+				Location location = getAttachedObject(selectedItem, Location.class);
+				incident.setLocation(location);	
+			}
 		}
 		else {
 			String coordinatesText = ui.getText(txtReportCoordinates);
-			String[] coordinates = coordinatesText.split(SEPARATOR);
-			
-			double latitude = Double.parseDouble(coordinates[0]);
-			double longitude = Double.parseDouble(coordinates[1]);
-			
-			Location location = new Location(latitude, longitude);
-			location.setName(coordinatesText);
-			location.setMappingSetup(mappingSetupDao.getDefaultSetup());
-			try{
-				locationDao.saveLocation(location);					
+			if (coordinatesText != null && coordinatesText.length() > 0) {
+				String[] coordinates = coordinatesText.split(SEPARATOR);
+				
+				double latitude = Double.parseDouble(coordinates[0]);
+				double longitude = Double.parseDouble(coordinates[1]);
+				
+				Location location = new Location(latitude, longitude);
+				location.setName(coordinatesText);
+				location.setMappingSetup(mappingSetupDao.getDefaultSetup());
+				try{
+					locationDao.saveLocation(location);					
+				}
+				catch(DuplicateKeyException de){
+					LOG.debug(de);
+					ui.alert(MappingMessages.getErrorInvalidLocation());
+					return;
+				}
+				incident.setLocation(location);
 			}
-			catch(DuplicateKeyException de){
-				LOG.debug(de);
-				ui.alert(MappingMessages.getErrorInvalidLocation());
-				return;
-			}
-			incident.setLocation(location);
 		}			
 		
 		incident.setTitle(getText(txtReportTitle));
@@ -365,6 +376,7 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 			}
 		}
 		pluginController.refreshIncidentReports();
+		pluginController.refreshIncidentMap();
 	}
 	
 	/**
