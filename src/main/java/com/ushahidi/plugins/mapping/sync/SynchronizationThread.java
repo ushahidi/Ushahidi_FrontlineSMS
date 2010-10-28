@@ -6,12 +6,10 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.MalformedURLException;
-import java.net.URLConnection;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -39,6 +37,11 @@ import com.ushahidi.plugins.mapping.data.domain.Photo;
 import com.ushahidi.plugins.mapping.data.domain.Video;
 import com.ushahidi.plugins.mapping.util.MappingLogger;
 
+/**
+ * SynchronizationThread
+ * @author dalezak
+ *
+ */
 public class SynchronizationThread extends Thread{
 //>	STATIC	
 	public static MappingLogger LOG = MappingLogger.getLogger(SynchronizationThread.class);	
@@ -94,6 +97,14 @@ public class SynchronizationThread extends Thread{
 	}
 	
 	/**
+	 * Gets the number of tasks in the task queue
+	 * @return
+	 */
+	public int getTaskCount(){
+		return taskQueue.size();
+	}
+	
+	/**
 	 * Adds a {@link SynchronizationTask} to the task queue
 	 * @param task
 	 */
@@ -101,6 +112,9 @@ public class SynchronizationThread extends Thread{
 		taskQueue.add(task);
 	}
 	
+	/**
+	 * Thread
+	 */
 	public void run(){
 		//Process the items in the task queue in a FIFO fashion
 		while(!taskQueue.isEmpty()){
@@ -183,7 +197,7 @@ public class SynchronizationThread extends Thread{
 		String url = SynchronizationAPI.REQUEST_URL_PREFIX + taskBuffer.toString();
 		if(baseTask.equalsIgnoreCase(SynchronizationAPI.POST_INCIDENT)){
 			for(Incident incident : this.pendingIncidents) {
-				postIncident(incident, url);
+				postIncidentAndPhotos(incident, url);
 			}
 		}
 		else if(baseTask.equalsIgnoreCase(SynchronizationAPI.TAG_NEWS)){
@@ -425,98 +439,84 @@ public class SynchronizationThread extends Thread{
 	}
 	
 	/**
-	 * Posts an incident to the frontend. 
+	 * Posts an incident and photos to the frontend. 
 	 * 
 	 * @param incident The incident to be posted
-	 * @param requestParams Pre-defined url parmaeter string for posting an incident to the frontend
+	 * @param requestParams Pre-defined url parmaeter string for posting an incident to the frontend 
 	 */
-	private void postIncident(Incident incident, String requestParams){
-		LOG.debug("UPLOADING: %s", incident.getTitle());
-		LOG.debug("PARAMS: %s", requestParams);
-		
-		SynchronizationPost postBody = new SynchronizationPost();
-		postBody.add(SynchronizationAPI.POST_TASK, SynchronizationAPI.POST_REPORT);
-		postBody.add(SynchronizationAPI.POST_RESP, "JSON");
-		postBody.add(SynchronizationAPI.POST_TITLE, incident.getTitle());
-		postBody.add(SynchronizationAPI.POST_DESCRIPTION, incident.getDescription());
-		postBody.add(SynchronizationAPI.POST_DATE, incident.getDateString());
-		postBody.add(SynchronizationAPI.POST_HOUR, incident.getDateHour());
-		postBody.add(SynchronizationAPI.POST_MINUTE, incident.getDateMinute());
-		postBody.add(SynchronizationAPI.POST_AMPM, incident.getDateAmPm());
-		postBody.add(SynchronizationAPI.POST_CATEGORIES, incident.getCategoryIDs());
-		postBody.add(SynchronizationAPI.POST_LATITUDE, incident.getLocationLatitude());
-		postBody.add(SynchronizationAPI.POST_LONGITUDE, incident.getLocationLongitude());
-		postBody.add(SynchronizationAPI.POST_LOCATION, incident.getLocationName());
-		postBody.add(SynchronizationAPI.POST_FIRSTNAME, incident.getFirstName());
-		postBody.add(SynchronizationAPI.POST_LASTNAME, incident.getLastName());
-		postBody.add(SynchronizationAPI.POST_EMAIL, incident.getEmailAddress());
-		
-		try{
-			String requestURL = String.format("%s%s", getRequestURL(), requestParams);
-			LOG.debug("URL: %s", requestURL);
-			LOG.debug("POST: %s", postBody);
-			URL url = new URL(requestURL);			
-			URLConnection connection = url.openConnection();
-			connection.setDoOutput(true);
-			StringBuffer response = new StringBuffer();
-			OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream());
-			try {
-				writer.write(postBody.toString());
-				writer.flush();
-				BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-				try {
-					String line = null;
-					while((line = reader.readLine()) != null){
-						response.append(line);
-					}
-					LOG.debug("RESPONSE: %s", response.toString());	
-				}
-				finally {
-					reader.close();
-				}	
+	private void postIncidentAndPhotos(Incident incident, String requestParams) {
+		String url = String.format("%s%s", getRequestURL(), requestParams);
+		LOG.debug("URL: %s", url);
+		try {
+			SynchronizationPost post = new SynchronizationPost(url);
+			post.add(SynchronizationAPI.POST_TASK, SynchronizationAPI.POST_REPORT);
+			post.add(SynchronizationAPI.POST_RESP, SynchronizationAPI.JSON);
+			post.add(SynchronizationAPI.POST_TITLE, incident.getTitle());
+			post.add(SynchronizationAPI.POST_DESCRIPTION, incident.getDescription());
+			post.add(SynchronizationAPI.POST_DATE, incident.getDateString());
+			post.add(SynchronizationAPI.POST_HOUR, incident.getDateHour());
+			post.add(SynchronizationAPI.POST_MINUTE, incident.getDateMinute());
+			post.add(SynchronizationAPI.POST_AMPM, incident.getDateAmPm());
+			post.add(SynchronizationAPI.POST_CATEGORIES, incident.getCategoryIDs());
+			post.add(SynchronizationAPI.POST_LATITUDE, incident.getLocationLatitude());
+			post.add(SynchronizationAPI.POST_LONGITUDE, incident.getLocationLongitude());
+			post.add(SynchronizationAPI.POST_LOCATION, incident.getLocationName());
+			post.add(SynchronizationAPI.POST_FIRSTNAME, incident.getFirstName());
+			post.add(SynchronizationAPI.POST_LASTNAME, incident.getLastName());
+			post.add(SynchronizationAPI.POST_EMAIL, incident.getEmailAddress());
+			for(Photo photo : incident.getPhotos()) {
+				post.add(SynchronizationAPI.POST_PHOTO, photo.getFilePath());
 			}
-			finally {
-				writer.close();
-			}			
-			//Get the status of the posting and update the sync manager with the list of failed incidents
-			if(response.toString().indexOf("{") > -1){
+			String response = post.postFormData();
+			if(response != null && response.toString().indexOf("{") > -1){
 				JSONObject payload = new JSONObject(response.toString());
-				LOG.debug("PAYLOAD:%s", payload);
+				LOG.debug("PAYLOAD: %s", payload);
 				JSONObject status = payload.getJSONObject("error");			
-				if(((String)status.get("code")).equalsIgnoreCase("0")){
+				String message = (String)status.get("message");
+				String code = (String)status.get("code");
+				if(code.equalsIgnoreCase(SynchronizationAPI.STATUS_SUCCESS)){
+					incident.setSyncStatus(null);
 					syncManager.uploadedIncident(incident);
-					LOG.debug("Incident post succeeded: " + payload);
+					LOG.debug("POST Successful: %s", payload);
 				}
-				else{
+				else if (code.equalsIgnoreCase(SynchronizationAPI.STATUS_FORM_POST_FAILED)){
 					syncManager.updateFailedIncidents(incident);
-					LOG.debug("Incident post failed: "+ payload.toString());
+					incident.setSyncStatus(message);
+					syncManager.updateFailedIncidents(incident);
+					LOG.error("POST Failed: %s", message);
+				}
+				else {
+					syncManager.updateFailedIncidents(incident);
+					incident.setSyncStatus(message);
+					syncManager.updateFailedIncidents(incident);
+					LOG.error("POST Failed: %s", message);
 				}
 			}
-			else{
+			else {
 				syncManager.updateFailedIncidents(incident);
-				LOG.debug("Incident post failed: "+ response.toString());
+				LOG.error("POST Failed: %s", response);
 			}
+		} 
+		catch (MalformedURLException ex) {
+			LOG.error("MalformedURLException: %s", ex);
+			ex.printStackTrace();
+			syncManager.updateFailedIncidents(incident);
 		}
-		catch(MalformedURLException me){
-			me.printStackTrace();
-			LOG.debug("URL error: ", me);
-		}
-		catch(IOException io){
-			io.printStackTrace();
-			LOG.debug("IO Error: ", io); 
-		}
-		catch(JSONException jsx){
-			jsx.printStackTrace();
-			LOG.debug("JSON Error: ", jsx);
-		}
+		catch (IOException ex) {
+			LOG.error("IOException: %s", ex);
+			ex.printStackTrace();
+			syncManager.updateFailedIncidents(incident);
+		} 
+		catch (JSONException ex) {
+			LOG.error("JSONException: %s", ex);
+			ex.printStackTrace();
+			syncManager.updateFailedIncidents(incident);
+		} 
+		catch (Exception ex) {
+			LOG.error("Exception: %s", ex);
+			ex.printStackTrace();
+			syncManager.updateFailedIncidents(incident);
+		} 
 	}
-	
-	/**
-	 * Gets the number of tasks in the task queue
-	 * @return
-	 */
-	public int getTaskCount(){
-		return taskQueue.size();
-	}
-	
+		
 }

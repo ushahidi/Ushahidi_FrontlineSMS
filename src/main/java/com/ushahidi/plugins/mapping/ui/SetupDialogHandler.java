@@ -1,5 +1,6 @@
 package com.ushahidi.plugins.mapping.ui;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -23,12 +24,14 @@ import com.ushahidi.plugins.mapping.maps.providers.MapProvider;
 import com.ushahidi.plugins.mapping.maps.providers.MapProviderFactory;
 import com.ushahidi.plugins.mapping.sync.SynchronizationCallback;
 import com.ushahidi.plugins.mapping.sync.SynchronizationManager;
+import com.ushahidi.plugins.mapping.util.FileUtils;
 import com.ushahidi.plugins.mapping.util.MappingLogger;
 import com.ushahidi.plugins.mapping.util.MappingMessages;
 import com.ushahidi.plugins.mapping.util.MappingProperties;
 
 import net.frontlinesms.FrontlineSMS;
 import net.frontlinesms.data.DuplicateKeyException;
+import net.frontlinesms.resources.ResourceUtils;
 import net.frontlinesms.ui.ExtendedThinlet;
 import net.frontlinesms.ui.Icon;
 import net.frontlinesms.ui.ThinletUiEventHandler;
@@ -57,19 +60,25 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
 	private final MappingSetupDao mappingSetupDao;
 	
 	private final Object mainDialog;
-	private final Object tblSources;
-	private final Object txtSourceName;
-	private final Object txtSourceURL;
-	private final Object chkSourceDefault;
-	private final Object btnSave;
-	private final Object btnDelete;
-	private final Object btnCancel;
-	private final Object btnCreateForm;
-	private final Object btnCreateSurvey;
-	private final Object txtDefaultLatitude;
-	private final Object txtDefaultLongitude;
-	private final Object cbxMapProviders;
-	private final Object sldDefaultZoom;
+	private final UIFields fields;
+	private class UIFields extends Fields {
+		public UIFields(UiGeneratorController uiController, Object parent) {
+			super(uiController, parent);
+		}
+		public Object tblSources;
+		public Object txtSourceName;
+		public Object txtSourceURL;
+		public Object chkSourceDefault;
+		public Object btnSave;
+		public Object btnDelete;
+		public Object btnCancel;
+		public Object btnCreateForm;
+		public Object btnCreateSurvey;
+		public Object txtDefaultLatitude;
+		public Object txtDefaultLongitude;
+		public Object cbxMapProviders;
+		public Object sldDefaultZoom;
+	}
 	
 	private SyncDialogHandler syncDialog;
 	
@@ -87,55 +96,53 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
 		this.mappingSetupDao = pluginController.getMappingSetupDao();
 		
 		this.mainDialog = ui.loadComponentFromFile(UI_SETUP_DIALOG, this);
-		
-		this.tblSources = ui.find(this.mainDialog, "tblSources");
-		this.txtSourceName = ui.find(this.mainDialog, "txtSourceName");
-		this.txtSourceURL = ui.find(this.mainDialog, "txtSourceURL");
-		this.chkSourceDefault = ui.find(this.mainDialog, "chkSourceDefault");
-		
-		this.btnSave = ui.find(this.mainDialog, "btnSave");
-		this.btnDelete = ui.find(this.mainDialog, "btnDelete");
-		this.btnCancel = ui.find(this.mainDialog, "btnCancel");
-		this.btnCreateForm = ui.find(this.mainDialog, "btnCreateForm");
-		this.btnCreateSurvey = ui.find(this.mainDialog, "btnCreateSurvey");
-		this.txtDefaultLatitude = ui.find(this.mainDialog, "txtDefaultLatitude");
-		this.txtDefaultLongitude = ui.find(this.mainDialog, "txtDefaultLongitude");
-		this.cbxMapProviders = ui.find(this.mainDialog, "cbxMapProviders");
-		this.sldDefaultZoom = ui.find(this.mainDialog, "sldDefaultZoom");
+		this.fields = new UIFields(ui, mainDialog);
 	}
 	
 	public void showDialog() {
 		if (mappingSetupDao.getCount() > 0){
-			ui.removeAll(tblSources);
+			ui.removeAll(fields.tblSources);
 			for(MappingSetup setup: mappingSetupDao.getAllSetupItems()) {
-				ui.add(tblSources, getRow(setup));
+				ui.add(fields.tblSources, getRow(setup));
 			}
-			ui.setEnabled(this.btnCreateForm, true);
-			ui.setEnabled(this.btnCreateSurvey, true);
+			ui.setEnabled(fields.btnCreateForm, true);
+			ui.setEnabled(fields.btnCreateSurvey, true);
 		}
 		else {
-			ui.setEnabled(this.btnCreateForm, false);
-			ui.setEnabled(this.btnCreateSurvey, false);
+			ui.setEnabled(fields.btnCreateForm, false);
+			ui.setEnabled(fields.btnCreateSurvey, false);
 		}
-		ui.setText(txtDefaultLatitude, MappingProperties.getDefaultLatitudeString());
-		ui.setText(txtDefaultLongitude, MappingProperties.getDefaultLongitudeString());
+		ui.setText(fields.txtDefaultLatitude, MappingProperties.getDefaultLatitudeString());
+		ui.setText(fields.txtDefaultLongitude, MappingProperties.getDefaultLongitudeString());
 		
-		ui.removeAll(cbxMapProviders);
+		ui.removeAll(fields.cbxMapProviders);
 		int index = 0;
 		for(MapProvider mapProvider : MapProviderFactory.getMapProviders()) {
 			Object comboChoice = ui.createComboboxChoice(mapProvider.getTitle(), mapProvider);
 			if (mapProvider == MappingProperties.getDefaultMapProvider()) {
-				ui.setSelectedIndex(cbxMapProviders, index);
+				ui.setSelectedIndex(fields.cbxMapProviders, index);
 			}
 			index++;
-			ui.add(cbxMapProviders, comboChoice);
+			ui.add(fields.cbxMapProviders, comboChoice);
 		}
-		ui.setInteger(sldDefaultZoom, VALUE, MappingProperties.getDefaultZoomLevel());
+		ui.setInteger(fields.sldDefaultZoom, VALUE, MappingProperties.getDefaultZoomLevel());
 		ui.add(this.mainDialog);	
 	}
 	
 	public void removeDialog(Object dialog) {
 		ui.remove(dialog);
+	}
+	
+	public void clearMapCache(Object button) {
+		File mapsDirectory = new File(ResourceUtils.getConfigDirectoryPath(), "maps");
+		if (mapsDirectory.exists()) {
+			float directorySize = FileUtils.getDirectorySize(mapsDirectory);
+			int filesDeleted = FileUtils.deleteFiles(mapsDirectory);
+			ui.alert(String.format("%d %s : %.1f\n mb", filesDeleted, MappingMessages.getMapCacheFilesDeleted(), directorySize));	
+		}
+		else {
+			ui.alert(String.format("0 %s", MappingMessages.getMapCacheFilesDeleted()));	
+		}
 	}
 	
 	public void beginSynchronization() {
@@ -183,18 +190,18 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
 			MappingSetup setup = (MappingSetup)attachedObject;
 			ui.setAttachedObject(setupDialog, setup);
 			
-			ui.setText(txtSourceName, setup.getName());
-			ui.setText(txtSourceURL, setup.getSourceURL());
-			ui.setSelected(chkSourceDefault, setup.isDefaultSetup());
+			ui.setText(fields.txtSourceName, setup.getName());
+			ui.setText(fields.txtSourceURL, setup.getSourceURL());
+			ui.setSelected(fields.chkSourceDefault, setup.isDefaultSetup());
 			
-			ui.setEnabled(btnSave, true);
-			ui.setEnabled(btnDelete, true);
-			ui.setEnabled(btnCancel, true);
+			ui.setEnabled(fields.btnSave, true);
+			ui.setEnabled(fields.btnDelete, true);
+			ui.setEnabled(fields.btnCancel, true);
 		}
 	}
 	
 	public void deleteMappingSource() {
-		Object selectedItem = getSelectedItem(tblSources);
+		Object selectedItem = getSelectedItem(fields.tblSources);
 		Object attachedObject = getAttachedObject(selectedItem, MappingSetup.class);
 		if(attachedObject instanceof MappingSetup){
 			MappingSetup mappingSetup = (MappingSetup)attachedObject;
@@ -207,14 +214,14 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
 		}
 		ui.remove(selectedItem);
 		
-		ui.setSelectedItem(tblSources, null);
-		ui.setText(txtSourceName, "");
-		ui.setText(txtSourceURL,"");
-		ui.setSelected(chkSourceDefault, false);
+		ui.setSelectedItem(fields.tblSources, null);
+		ui.setText(fields.txtSourceName, "");
+		ui.setText(fields.txtSourceURL,"");
+		ui.setSelected(fields.chkSourceDefault, false);
 		
-		ui.setEnabled(btnSave, false);
-		ui.setEnabled(btnDelete, false);
-		ui.setEnabled(btnCancel, false);
+		ui.setEnabled(fields.btnSave, false);
+		ui.setEnabled(fields.btnDelete, false);
+		ui.setEnabled(fields.btnCancel, false);
 		
 		ui.removeConfirmationDialog();
 	}
@@ -224,12 +231,12 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
 		String sourceUrl = getText(txtSourceURL);
 		if (sourceName != null && sourceName.length() > 0 && 
 			sourceUrl != null && sourceUrl.length() > 0 && isValidUrl(sourceUrl, true)) {
-			ui.setEnabled(btnSave, true);
+			ui.setEnabled(fields.btnSave, true);
 		}
 		else {
-			ui.setEnabled(btnSave, false);
+			ui.setEnabled(fields.btnSave, false);
 		}
-		ui.setEnabled(btnCancel, true);
+		ui.setEnabled(fields.btnCancel, true);
 	}
 	
 	private boolean isValidUrl(String urlString, boolean regex) {
@@ -257,13 +264,13 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
 	 * @param dialog
 	 */
 	public void addMappingSource(Object dialog){
-		String sourceName = getText(txtSourceName);
+		String sourceName = getText(fields.txtSourceName);
 		if(sourceName == null || sourceName.length() == 0) {
 			ui.alert(MappingMessages.getSourceNameMissing());
 			LOG.debug("Invalid or empty source name");
 			return;
 		}
-		String sourceURL = getText(txtSourceURL);
+		String sourceURL = getText(fields.txtSourceURL);
 		if(sourceURL == null || sourceURL.length() == 0) {
 			ui.alert(MappingMessages.getSourceUrlMissing());
 			LOG.debug("Invalid or empty source url");
@@ -285,7 +292,7 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
 		mappingSetup.setName(sourceName);
 		mappingSetup.setSourceURL(sourceURL);
 		
-		boolean sourceDefault = getBoolean(chkSourceDefault, Thinlet.SELECTED);
+		boolean sourceDefault = getBoolean(fields.chkSourceDefault, Thinlet.SELECTED);
 		if (sourceDefault) {
 			ui.showConfirmationDialog("beginSynchronization", this, CONFIRM_SYNCHRONIZE_KEY);
 		}
@@ -309,9 +316,9 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
 			else{
 				mappingSetupDao.updateMappingSetup(mappingSetup);
 			}
-			ui.removeAll(tblSources);
+			ui.removeAll(fields.tblSources);
 			for(MappingSetup m : mappingSetupDao.getAllSetupItems()) {
-				ui.add(tblSources, getRow(m));
+				ui.add(fields.tblSources, getRow(m));
 			}
 		}
 		catch(DuplicateKeyException e){
@@ -334,14 +341,14 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
 	 * @param dialog
 	 */
 	public void clearSourceFields(Object dialog){
-		ui.setSelectedItem(tblSources, null);
-		ui.setText(txtSourceName, "");
-		ui.setText(txtSourceURL,"");
-		ui.setSelected(chkSourceDefault, false);
+		ui.setSelectedItem(fields.tblSources, null);
+		ui.setText(fields.txtSourceName, "");
+		ui.setText(fields.txtSourceURL,"");
+		ui.setSelected(fields.chkSourceDefault, false);
 		
-		ui.setEnabled(btnSave, false);
-		ui.setEnabled(btnDelete, false);
-		ui.setEnabled(btnCancel, false);
+		ui.setEnabled(fields.btnSave, false);
+		ui.setEnabled(fields.btnDelete, false);
+		ui.setEnabled(fields.btnCancel, false);
 	}
 	
 	public void createSurveyQuestions() {
@@ -414,8 +421,8 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
 
 	public void synchronizationFinished() {
 		boolean hasMappingSetup = mappingSetupDao.getCount() > 0;
-		ui.setEnabled(this.btnCreateForm, hasMappingSetup);
-		ui.setEnabled(this.btnCreateSurvey, hasMappingSetup);
+		ui.setEnabled(fields.btnCreateForm, hasMappingSetup);
+		ui.setEnabled(fields.btnCreateSurvey, hasMappingSetup);
 		syncDialog.hideDialog();
 		pluginController.showIncidentMap();
 	}
@@ -434,8 +441,8 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
 	
 	public void synchronizationFailed(String error) {
 		boolean hasMappingSetup = mappingSetupDao.getCount() > 0;
-		ui.setEnabled(this.btnCreateForm, hasMappingSetup);
-		ui.setEnabled(this.btnCreateSurvey, hasMappingSetup);
+		ui.setEnabled(fields.btnCreateForm, hasMappingSetup);
+		ui.setEnabled(fields.btnCreateSurvey, hasMappingSetup);
 		syncDialog.hideDialog();
 		this.ui.alert(error);
 	}
@@ -493,4 +500,6 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
 	}
 
 	public void uploadedIncident(Incident incident) {}
+	
+	public void failedIncident(Incident incident) {}
 }

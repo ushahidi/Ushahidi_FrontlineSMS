@@ -3,13 +3,13 @@ package com.ushahidi.plugins.mapping.maps.providers.yahoo;
 import com.ushahidi.plugins.mapping.maps.core.Coordinate;
 import com.ushahidi.plugins.mapping.maps.providers.MapProvider;
 
-public abstract class AbstractProvider extends MapProvider {
+public abstract class YahooAbstractProvider extends MapProvider {
 	
 	protected String ROAD_VERSION = "3.52";
 	protected String AERIAL_VERSION = "1.7";
 	protected String HYBRID_VERSION = "2.2";
 	
-	public AbstractProvider() {
+	public YahooAbstractProvider() {
 		super(MIN_ZOOM, MAX_ZOOM);
 		
 	}

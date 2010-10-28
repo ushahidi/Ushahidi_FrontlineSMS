@@ -1,7 +1,5 @@
 package com.ushahidi.plugins.mapping.ui;
 
-import java.io.File;
-
 import thinlet.Thinlet;
 
 import com.ushahidi.plugins.mapping.MappingPluginController;
@@ -22,7 +20,6 @@ import com.ushahidi.plugins.mapping.util.MappingMessages;
 import com.ushahidi.plugins.mapping.util.MappingProperties;
 
 import net.frontlinesms.FrontlineSMS;
-import net.frontlinesms.data.DuplicateKeyException;
 import net.frontlinesms.data.domain.Contact;
 import net.frontlinesms.data.domain.FrontlineMessage;
 import net.frontlinesms.data.domain.FrontlineMessage.Status;
@@ -48,8 +45,6 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 	private final FrontlineSMS frontlineController;
 	private final UiGeneratorController ui;
 	
-	private final Object mainPanel;
-	
 	private final IncidentDao incidentDao;
 	private final CategoryDao categoryDao;
 	private final MessageDao messageDao;
@@ -57,15 +52,22 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 	private SurveyResponseDao surveyResponseDao;
 	private FormResponseDao formResponseDao;
 	private final MappingSetupDao mappingSetupDao;
-	
 	private final MapBean mapBean;
-	private final Object lblCoordinates;
-	private final Object sldZoomLevel;
-	private final Object cbxCategories;
-	private final Object cbxShowMessages;
-	private final Object cbxShowForms;
-	private final Object cbxShowSurveys;
-	private final Object cbxShowIncidents;
+	
+	private final Object mainPanel;
+	private final UIFields fields;
+	private class UIFields extends Fields {
+		public UIFields(UiGeneratorController uiController, Object parent) {
+			super(uiController, parent);
+		}
+		public Object lblCoordinates;
+		public Object sldZoomLevel;
+		public Object cbxCategories;
+		public Object cbxShowMessages;
+		public Object cbxShowForms;
+		public Object cbxShowSurveys;
+		public Object cbxShowIncidents;
+	}
 	
 	public MapPanelHandler(MappingPluginController pluginController, FrontlineSMS frontlineController, UiGeneratorController uiController) {
 		this.pluginController = pluginController;
@@ -80,13 +82,7 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 		
 		this.mainPanel = this.ui.loadComponentFromFile(UI_PANEL_XML, this);
 		this.mapBean = (MapBean)get(this.find(this.mainPanel, "mapBean"), BEAN);
-		this.lblCoordinates = this.ui.find(this.mainPanel, "lblCoordinates");
-		this.sldZoomLevel = this.ui.find(this.mainPanel, "sldZoomLevel");
-		this.cbxCategories = this.ui.find(this.mainPanel, "cbxCategories");
-		this.cbxShowMessages = this.ui.find(this.mainPanel, "cbxShowMessages");
-		this.cbxShowForms = this.ui.find(this.mainPanel, "cbxShowForms");
-		this.cbxShowSurveys = this.ui.find(this.mainPanel, "cbxShowSurveys");
-		this.cbxShowIncidents = this.ui.find(this.mainPanel, "cbxShowIncidents");
+		this.fields = new UIFields(ui, mainPanel);
 	}
 	
 	public Object getMainPanel() {
@@ -94,61 +90,43 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 	}
 	
 	public void init() {
-		ui.removeAll(cbxCategories);
+		ui.removeAll(fields.cbxCategories);
 		mapBean.setMapProvider(MappingProperties.getDefaultMapProvider());
 		if(mappingSetupDao.getDefaultSetup() != null) {
 			MappingSetup defaultSetup = mappingSetupDao.getDefaultSetup();
 			double latitude = defaultSetup.getLatitude();
 			double longitude = defaultSetup.getLongitude();
 			LOG.debug("Default Setup: " + defaultSetup.getSourceURL());
-			if(mappingSetupDao.getDefaultSetup().isOffline()){				
-				String fileName = defaultSetup.getOfflineMapFile();
-				File file = new File(fileName);
-				if (file.exists()) {
-					mapBean.setOfflineMapFile(fileName);
-				}
-				else {
-					defaultSetup.setOffline(false);
-					defaultSetup.setOfflineMapFile(null);
-					try{
-						mappingSetupDao.updateMappingSetup(defaultSetup);
-					}
-					catch(DuplicateKeyException de) {
-						LOG.debug(de);
-						ui.alert("Unable to update the map setup");
-					}					
-				}
-			}
 			mapBean.setLocationAndZoomLevel(longitude, latitude, MappingProperties.getDefaultZoomLevel());			
 			mapBean.clearMarkers(false);
 			for(Incident incident : incidentDao.getAllIncidents(mappingSetupDao.getDefaultSetup())) {
 				mapBean.addMarker(new IncidentMarker(incident), false);
 			}
 			mapBean.addMapListener(this);
-			ui.setEnabled(sldZoomLevel, true);
-			ui.add(cbxCategories, createComboboxChoice(MappingMessages.getAllCategories(), null));
+			ui.setEnabled(fields.sldZoomLevel, true);
+			ui.add(fields.cbxCategories, createComboboxChoice(MappingMessages.getAllCategories(), null));
 			for(Category category : categoryDao.getAllCategories(mappingSetupDao.getDefaultSetup())){
 				LOG.debug("Loading category %s", category.getTitle());
-				ui.add(cbxCategories, createComboboxChoice(category.getTitle(), category));
+				ui.add(fields.cbxCategories, createComboboxChoice(category.getTitle(), category));
 			}
-			ui.setSelectedIndex(cbxCategories, 0);
-			ui.setEnabled(cbxCategories, true);
-			if (getBoolean(cbxShowIncidents, Thinlet.ENABLED) == false) {
-				ui.setSelected(cbxShowIncidents, true);
+			ui.setSelectedIndex(fields.cbxCategories, 0);
+			ui.setEnabled(fields.cbxCategories, true);
+			if (getBoolean(fields.cbxShowIncidents, Thinlet.ENABLED) == false) {
+				ui.setSelected(fields.cbxShowIncidents, true);
 			}
-			ui.setEnabled(cbxShowIncidents, true);
+			ui.setEnabled(fields.cbxShowIncidents, true);
 		} 
 		else {
 			double latitude = MappingProperties.getDefaultLatitude();
 			double longitude = MappingProperties.getDefaultLongitude();
 			mapBean.setLocationAndZoomLevel(longitude, latitude, MappingProperties.getDefaultZoomLevel());			
 			mapBean.addMapListener(this);
-			ui.setEnabled(sldZoomLevel, true);
-			ui.setEnabled(cbxCategories, false);
-			ui.setEnabled(cbxShowIncidents, false);
-			ui.setSelected(cbxShowIncidents, false);
+			ui.setEnabled(fields.sldZoomLevel, true);
+			ui.setEnabled(fields.cbxCategories, false);
+			ui.setEnabled(fields.cbxShowIncidents, false);
+			ui.setSelected(fields.cbxShowIncidents, false);
 		}
-		ui.setInteger(sldZoomLevel, VALUE, MappingProperties.getDefaultZoomLevel());
+		ui.setInteger(fields.sldZoomLevel, VALUE, MappingProperties.getDefaultZoomLevel());
 	}
 	
 	/**
@@ -157,18 +135,18 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 	public void refresh() {
 		LOG.debug("MapPanelHandler.refresh");
 		if(mappingSetupDao.getDefaultSetup() != null) {
-			if (getBoolean(cbxShowIncidents, Thinlet.ENABLED) == false) {
-				ui.setSelected(cbxShowIncidents, true);
+			if (getBoolean(fields.cbxShowIncidents, Thinlet.ENABLED) == false) {
+				ui.setSelected(fields.cbxShowIncidents, true);
 			}
-			ui.setEnabled(cbxShowIncidents, true);
+			ui.setEnabled(fields.cbxShowIncidents, true);
 		}
 		else {
-			ui.setEnabled(cbxShowIncidents, false);
-			ui.setSelected(cbxShowIncidents, false);
+			ui.setEnabled(fields.cbxShowIncidents, false);
+			ui.setSelected(fields.cbxShowIncidents, false);
 		}
 		if (mapBean != null) {
 			mapBean.clearMarkers(false);
-			if(getBoolean(cbxShowMessages, Thinlet.SELECTED) && contactDao != null) {
+			if(getBoolean(fields.cbxShowMessages, Thinlet.SELECTED) && contactDao != null) {
 				LOG.debug("Showing Messages");
 				for(FrontlineMessage message : messageDao.getMessages(Type.RECEIVED, Status.RECEIVED)) {
 					Contact contact = contactDao.getFromMsisdn(message.getSenderMsisdn());
@@ -180,7 +158,7 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 					}
 				}
 			}
-			if(getBoolean(cbxShowSurveys, Thinlet.SELECTED) && surveyResponseDao != null) {
+			if(getBoolean(fields.cbxShowSurveys, Thinlet.SELECTED) && surveyResponseDao != null) {
 				LOG.debug("Showing Surveys");	
 				for(SurveyResponse surveyResponse : surveyResponseDao.getAllSurveyResponses()) {
 					Contact contact = surveyResponse.getContact();
@@ -192,7 +170,7 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 					}
 				}		
 			}
-			if(getBoolean(cbxShowForms, Thinlet.SELECTED) && formResponseDao != null) {
+			if(getBoolean(fields.cbxShowForms, Thinlet.SELECTED) && formResponseDao != null) {
 				LOG.debug("Showing Forms");
 				for(FormResponse formResponse : formResponseDao.getAllFormResponses()) {
 					Contact contact = contactDao.getFromMsisdn(formResponse.getSubmitter());
@@ -204,7 +182,7 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 					}
 				}
 			}
-			if(getBoolean(cbxShowIncidents, Thinlet.SELECTED) && incidentDao != null) {
+			if(getBoolean(fields.cbxShowIncidents, Thinlet.SELECTED) && incidentDao != null) {
 				LOG.debug("Showing Incidents");
 				for(Incident incident : incidentDao.getAllIncidents(mappingSetupDao.getDefaultSetup())) {
 					mapBean.addMarker(new IncidentMarker(incident), false);
@@ -248,7 +226,7 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 	/** @see {@link MapListener#mapZoomed(int)} */
 	public void zoomChanged(int zoom){
 	    LOG.info("Updating zoom controller to level " + zoom);
-	    ui.setInteger(sldZoomLevel, VALUE, zoom);
+	    ui.setInteger(fields.sldZoomLevel, VALUE, zoom);
 	}
 	
 	/**
@@ -268,14 +246,6 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 		mapBean.setZoomLevel(zoomValue);
 	}
 	
-	/**
-	 * Show the map save dialog
-	 */
-	public void saveMap() {
-		MapSaveDialogHandler mapSaveDialog = new MapSaveDialogHandler(pluginController, frontlineController, ui);
-		mapSaveDialog.showDialog(mapBean);
-	}
-
 	public void locationHovered(double latitude, double longitude) {
 		String latitudeString = Double.toString(latitude);
 		if (latitudeString.length() > 8) {
@@ -285,7 +255,7 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 		if (longitudeString.length() > 8) {
 			longitudeString = longitudeString.substring(0,8);
 		}
-		ui.setText(lblCoordinates, String.format("%s, %s", latitudeString, longitudeString));
+		ui.setText(fields.lblCoordinates, String.format("%s, %s", latitudeString, longitudeString));
 	}
 
 	public void locationSelected(double latitude, double longitude) {}

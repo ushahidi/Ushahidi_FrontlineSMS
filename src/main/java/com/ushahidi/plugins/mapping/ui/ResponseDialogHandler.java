@@ -42,15 +42,21 @@ public class ResponseDialogHandler extends ExtendedThinlet implements ThinletUiE
 	private FormResponseDao formResponseDao;
 	
 	private final Object mainDialog;
-	private final Object txtContactName;
-	private final Object txtContactPhone;
-	private final Object txtLocation;
-	private final Object txtCoordinates;
-	private final Object tblResponses;
-	private final Object txtDate;
-	private final Object txtMessage;
-	private final Object lblMessage;
-	private final Object lblDate;
+	private final UIFields fields;
+	private class UIFields extends Fields {
+		public UIFields(UiGeneratorController uiController, Object parent) {
+			super(uiController, parent);
+		}
+		public Object txtContactName;
+		public Object txtContactPhone;
+		public Object txtLocation;
+		public Object txtCoordinates;
+		public Object tblResponses;
+		public Object txtDate;
+		public Object txtMessage;
+		public Object lblMessage;
+		public Object lblDate;
+	}
 	
 	public ResponseDialogHandler(MappingPluginController pluginController, FrontlineSMS frontlineController, UiGeneratorController uiController) {
 		this.pluginController = pluginController;
@@ -60,15 +66,7 @@ public class ResponseDialogHandler extends ExtendedThinlet implements ThinletUiE
 		this.contactDao = pluginController.getContactDao();
 			
 		this.mainDialog = ui.loadComponentFromFile(UI_DIALOG_XML, this);
-		this.txtContactName = this.ui.find(this.mainDialog, "txtContactName");
-		this.txtContactPhone = this.ui.find(this.mainDialog, "txtContactPhone");
-		this.txtLocation = this.ui.find(this.mainDialog, "txtLocation");
-		this.txtCoordinates = this.ui.find(this.mainDialog, "txtCoordinates");
-		this.tblResponses = this.ui.find(this.mainDialog, "tblResponses");
-		this.txtDate = this.ui.find(this.mainDialog, "txtDate");
-		this.lblDate = this.ui.find(this.mainDialog, "lblDate");
-		this.txtMessage = this.ui.find(this.mainDialog, "txtMessage");
-		this.lblMessage = this.ui.find(this.mainDialog, "lblMessage");
+		this.fields = new UIFields(ui, mainDialog);
 	}
 	
 	public void setFormResponseDao(FormResponseDao formResponseDao) {
@@ -78,20 +76,20 @@ public class ResponseDialogHandler extends ExtendedThinlet implements ThinletUiE
 	public void showDialog(SurveyResponse surveyResponse, Location location) {
 		LOG.debug("showDialog: %s", surveyResponse);
 		ui.setAttachedObject(mainDialog, surveyResponse);
-		ui.setText(txtContactName, surveyResponse.getContactName());
-		ui.setText(txtContactPhone, surveyResponse.getContactPhoneNumber());
-		ui.setText(txtLocation, location.getName());
-		ui.setText(txtCoordinates, location.getCoordinates());
-		ui.setText(txtDate, surveyResponse.getStartedString());
-		ui.removeAll(tblResponses);
+		ui.setText(fields.txtContactName, surveyResponse.getContactName());
+		ui.setText(fields.txtContactPhone, surveyResponse.getContactPhoneNumber());
+		ui.setText(fields.txtLocation, location.getName());
+		ui.setText(fields.txtCoordinates, location.getCoordinates());
+		ui.setText(fields.txtDate, surveyResponse.getStartedString());
+		ui.removeAll(fields.tblResponses);
 		for(Answer<?> answer : surveyResponse.getAnswers()) {
-			ui.add(tblResponses, getRow(answer.getQuestionName(), answer.getAnswerValue()));
+			ui.add(fields.tblResponses, getRow(answer.getQuestionName(), answer.getAnswerValue()));
 		}
-		ui.setVisible(txtMessage, false);
-		ui.setVisible(lblMessage, false);
-		ui.setVisible(tblResponses, true);
-		ui.setVisible(lblDate, true);
-		ui.setVisible(txtDate, true);
+		ui.setVisible(fields.txtMessage, false);
+		ui.setVisible(fields.lblMessage, false);
+		ui.setVisible(fields.tblResponses, true);
+		ui.setVisible(fields.lblDate, true);
+		ui.setVisible(fields.txtDate, true);
 		ui.setIcon(mainDialog, "/icons/survey.png");
 		ui.setText(mainDialog, MappingMessages.getSurveyResponse());
 		ui.add(mainDialog);
@@ -102,22 +100,22 @@ public class ResponseDialogHandler extends ExtendedThinlet implements ThinletUiE
 		ui.setAttachedObject(mainDialog, formResponse);
 		Contact contact = contactDao.getFromMsisdn(formResponse.getSubmitter());
 		if (contact != null) {
-			ui.setText(txtContactName, contact.getName());
+			ui.setText(fields.txtContactName, contact.getName());
 		}
 		else {
-			ui.setText(txtContactName, "");
+			ui.setText(fields.txtContactName, "");
 		}
-		ui.setText(txtContactPhone, formResponse.getSubmitter());
-		ui.setText(txtLocation, location.getName());
-		ui.setText(txtCoordinates, location.getCoordinates());
-		ui.setText(txtDate, "");
-		ui.removeAll(tblResponses);
+		ui.setText(fields.txtContactPhone, formResponse.getSubmitter());
+		ui.setText(fields.txtLocation, location.getName());
+		ui.setText(fields.txtCoordinates, location.getCoordinates());
+		ui.setText(fields.txtDate, "");
+		ui.removeAll(fields.tblResponses);
 		try {
 			int index = 0;
 			for (FormField formField : formResponse.getParentForm().getFields()) {
 				if (formField.getType().hasValue()) {
 					ResponseValue value = formResponse.getResults().get(index);
-					ui.add(tblResponses, getRow(formField.getLabel(), value.toString()));
+					ui.add(fields.tblResponses, getRow(formField.getLabel(), value.toString()));
 				}
 				index++;
 			}	
@@ -127,15 +125,15 @@ public class ResponseDialogHandler extends ExtendedThinlet implements ThinletUiE
 			ex.printStackTrace();
 			int index = 1;
 			for(ResponseValue value : formResponse.getResults()) {
-				ui.add(tblResponses, getRow(String.format("Field %d", index), value.toString()));
+				ui.add(fields.tblResponses, getRow(String.format("Field %d", index), value.toString()));
 				index++;
 			}
 		}
-		ui.setVisible(txtMessage, false);
-		ui.setVisible(lblMessage, false);
-		ui.setVisible(tblResponses, true);
-		ui.setVisible(lblDate, false);
-		ui.setVisible(txtDate, false);
+		ui.setVisible(fields.txtMessage, false);
+		ui.setVisible(fields.lblMessage, false);
+		ui.setVisible(fields.tblResponses, true);
+		ui.setVisible(fields.lblDate, false);
+		ui.setVisible(fields.txtDate, false);
 		ui.setIcon(mainDialog, "/icons/form.png");
 		ui.setText(mainDialog, MappingMessages.getFormResponse());
 		ui.add(mainDialog);
@@ -146,21 +144,21 @@ public class ResponseDialogHandler extends ExtendedThinlet implements ThinletUiE
 		ui.setAttachedObject(mainDialog, message);
 		Contact contact = contactDao.getFromMsisdn(message.getSenderMsisdn());
 		if (contact != null) {
-			ui.setText(txtContactName, contact.getName());
+			ui.setText(fields.txtContactName, contact.getName());
 		}
 		else {
-			ui.setText(txtContactName, "");
+			ui.setText(fields.txtContactName, "");
 		}
-		ui.setText(txtContactPhone, message.getSenderMsisdn());
-		ui.setText(txtLocation, location.getName());
-		ui.setText(txtCoordinates, location.getCoordinates());
-		ui.setText(txtDate, InternationalisationUtils.getDatetimeFormat().format(new Date(message.getDate())));
-		ui.setText(txtMessage, message.getTextContent());
-		ui.setVisible(txtMessage, true);
-		ui.setVisible(lblMessage, true);
-		ui.setVisible(tblResponses, false);
-		ui.setVisible(lblDate, true);
-		ui.setVisible(txtDate, true);
+		ui.setText(fields.txtContactPhone, message.getSenderMsisdn());
+		ui.setText(fields.txtLocation, location.getName());
+		ui.setText(fields.txtCoordinates, location.getCoordinates());
+		ui.setText(fields.txtDate, InternationalisationUtils.getDatetimeFormat().format(new Date(message.getDate())));
+		ui.setText(fields.txtMessage, message.getTextContent());
+		ui.setVisible(fields.txtMessage, true);
+		ui.setVisible(fields.lblMessage, true);
+		ui.setVisible(fields.tblResponses, false);
+		ui.setVisible(fields.lblDate, true);
+		ui.setVisible(fields.txtDate, true);
 		ui.setIcon(mainDialog, "/icons/sms.png");
 		ui.setText(mainDialog, MappingMessages.getMessageReceived());
 		ui.add(mainDialog);

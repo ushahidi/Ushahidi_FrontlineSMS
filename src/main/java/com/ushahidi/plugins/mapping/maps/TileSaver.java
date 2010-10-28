@@ -145,11 +145,11 @@ public class TileSaver implements TileRequestor {
 	 * .plugins.mapping.maps.TileRequest)
 	 */
 	public synchronized void renderTile(TileRequest tile) {
-		Coordinate coord = tile.getCoord();
+		Coordinate coord = tile.getCoordinate();
 		LOG.debug("Got " + coord);
 		File targetDir = new File(tmpDir, Integer.toString((int) coord.zoom));
-		File targetFile = new File(targetDir, (int) tile.getCoord().row + "-"
-				+ (int) tile.getCoord().col + ".png");
+		File targetFile = new File(targetDir, (int) tile.getCoordinate().row + "-"
+				+ (int) tile.getCoordinate().col + ".png");
 		if (!targetFile.getParentFile().exists()) {
 			targetFile.getParentFile().mkdirs();
 		}

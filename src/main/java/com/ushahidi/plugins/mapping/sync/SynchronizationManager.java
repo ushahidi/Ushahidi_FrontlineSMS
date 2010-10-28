@@ -135,6 +135,9 @@ public class SynchronizationManager {
 	 */
 	public synchronized void updateFailedIncidents(Incident incident){
 		failedIncidents.add(incident);
+		if (callback != null) {
+			callback.failedIncident(incident);
+		}
 	}
 	
 	/**

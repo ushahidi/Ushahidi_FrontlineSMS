@@ -34,13 +34,20 @@
 		<textfield name="txtReportCoordinates" columns="50" weightx="1" editable="false"/>
        
        	<label name="lblPhotos" text="i18n.plugins.ushahidi.incident.photos" icon="/icons/photos.png" valign="top" />
-       	<panel name="pnlPhotos" columns="1" width="1" scrollable="true" border="true" height="225"/>
+       	<list name="lstPhotos" selection="single" weightx="1" weighty="1" height="500"/>
+       	<panel name="pnlAddPhoto" columns="2" gap="5" visible="false">
+       		<textfield name="txtAddPhoto" weightx="1" editable="false" />
+       		<button name="btnAddPhoto" text="i18n.plugins.ushahidi.browse.file" icon="/icons/browse.png" action="showFileChooser(txtAddPhoto)"/>
+       	</panel>
        	
 		<label name="lblSenderName" text="i18n.plugins.ushahidi.sender.name" icon="/icons/user.png" valign="top"/>
  		<textfield name="txtSenderName" columns="50" />
  		
  		<label name="lblSenderEmail" text="i18n.plugins.ushahidi.sender.email" icon="/icons/email.png" valign="top"/>
  		<textfield name="txtSenderEmail" columns="50" />
+ 		
+ 		<label name="lblSyncStatus" text="i18n.plugins.ushahidi.sync.status" icon="/icons/sync_error.png" valign="top"/>
+ 		<textarea name="txtSyncStatus" columns="50" rows="3" editable="false" />
  		
  		<button name="btnCancel" icon="/icons/cross.png" text="i18n.action.cancel" action="removeDialog(dialogReportDetails)" weightx="1"/>
  		<button name="btnSave" icon="/icons/tick.png" text="i18n.action.save" action="saveReport(dialogReportDetails)" weightx="1"/>	

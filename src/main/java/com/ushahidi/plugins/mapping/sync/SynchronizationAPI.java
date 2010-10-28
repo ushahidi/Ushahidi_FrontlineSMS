@@ -77,9 +77,11 @@ public final class SynchronizationAPI {
 	/* Push task */
 	public static final String PUSH_TASK = "PUSH";
 	
-	/* URI prefix used for fetching information from an Ushahidi instance */
-	public static final String REQUEST_URL_PREFIX = "api?task=";
+	/* JSON */
+	public static final String JSON = "json";
 	
+	/* URI prefix used for fetching information from an Ushahidi instance */
+	public static final String REQUEST_URL_PREFIX = "api?resp=json&task=";
 	
 	/* Status messages for the tasks */
 	public static final String STATUS_SUCCESS  = "0";
@@ -89,6 +91,10 @@ public final class SynchronizationAPI {
 	public static final String STATUS_INVALID_PARAMETER = "002";
 	
 	public static final String STATUS_FORM_POST_FAILED = "003";
+	
+	public static final String STATUS_INVALID_CREDENTIALS = "005";
+	
+	public static final String STATUS_ACCESS_DENIED = "006";
 	
 	public static final String STATUS_NOT_FOUND = "999";
 	
@@ -110,5 +116,7 @@ public final class SynchronizationAPI {
 	public static final String POST_EMAIL = "person_email";
 	public static final String POST_MEDIA_ID = "id";
 	public static final String POST_MEDIA_URL = "url";
+	public static final String POST_PHOTO = "incident_photo[]";
+
 	
 }

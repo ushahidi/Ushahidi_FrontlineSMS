@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.ushahidi.plugins.mapping.maps.core.Coordinate;
 
-public class MicrosoftRoadProvider extends AbstractProvider {
+public class MicrosoftRoadProvider extends MicrosoftAbstractProvider {
 	public MicrosoftRoadProvider() {}
 	
     public List<String> getTileUrls(Coordinate coordinate) {
@@ -26,6 +26,11 @@ public class MicrosoftRoadProvider extends AbstractProvider {
     
     @Override
     public String toString() {
-    	return "MICROSFT_ROAD";
+    	return "Microsoft Virtual Earth Provider (Road)";
     }
+    
+    @Override
+	public String getTileName(Coordinate coordinate) {
+		return String.format("MR_%d_%d_%d.png", coordinate.zoom, (int)coordinate.col, (int)coordinate.row); 
+	}
 }

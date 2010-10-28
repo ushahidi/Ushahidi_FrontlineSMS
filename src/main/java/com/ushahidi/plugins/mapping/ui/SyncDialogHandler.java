@@ -24,23 +24,27 @@ public class SyncDialogHandler extends ExtendedThinlet implements ThinletUiEvent
 	private final UiGeneratorController ui;
 	
 	private final Object mainDialog;
-	private final Object pbarSynchronization;
-	private final Object lblCurrentTask;
-	private final Object lblTotalTasks;
+	private final UIFields fields;
+	private class UIFields extends Fields {
+		public UIFields(UiGeneratorController uiController, Object parent) {
+			super(uiController, parent);
+		}
+		public Object pbarSynchronization;
+		public Object lblCurrentTask;
+		public Object lblTotalTasks;
+	}
 	
 	public SyncDialogHandler(MappingPluginController pluginController, FrontlineSMS frontlineController, UiGeneratorController uiController) {
 		this.pluginController = pluginController;
 		this.ui = uiController;
 		this.frontlineController = frontlineController;
 		this.mainDialog = this.ui.loadComponentFromFile(UI_SYNCHRONIZATION_DIALOG, this);
-		this.pbarSynchronization = this.ui.find(this.mainDialog, "pbarSynchronization");
-		this.lblCurrentTask = this.ui.find(this.mainDialog, "lblCurrentTask");
-		this.lblTotalTasks = this.ui.find(this.mainDialog, "lblTotalTasks");
+		this.fields = new UIFields(ui, mainDialog);
 	}
 	
 	public void showDialog() {
-		ui.setText(lblCurrentTask, "1");
-		ui.setText(lblTotalTasks, "1");
+		ui.setText(fields.lblCurrentTask, "1");
+		ui.setText(fields.lblTotalTasks, "1");
 		ui.add(mainDialog);
 	}
 	
@@ -53,11 +57,11 @@ public class SyncDialogHandler extends ExtendedThinlet implements ThinletUiEvent
 	 * 
 	 */
 	public synchronized void setProgress(int tasks, int completed){
-		int maximum = getInteger(pbarSynchronization, Thinlet.MAXIMUM);
+		int maximum = getInteger(fields.pbarSynchronization, Thinlet.MAXIMUM);
 		float progress = (completed <= tasks) ? ((float)completed / (float)tasks) * (float)maximum : (float)maximum;
-		ui.setInteger(pbarSynchronization, Thinlet.VALUE, Math.round(progress));
-		ui.setText(lblCurrentTask, Integer.toString(completed));
-		ui.setText(lblTotalTasks, Integer.toString(tasks));
+		ui.setInteger(fields.pbarSynchronization, Thinlet.VALUE, Math.round(progress));
+		ui.setText(fields.lblCurrentTask, Integer.toString(completed));
+		ui.setText(fields.lblTotalTasks, Integer.toString(tasks));
 	}
 	
 	public void removeDialog(Object dialog) {

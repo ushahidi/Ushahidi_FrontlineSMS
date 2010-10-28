@@ -24,24 +24,21 @@ public abstract class MapProvider{
     protected Coordinate bottomRightInLimit;
 
     public MapProvider(int minZoom, int maxZoom) {
-
         MIN_ZOOM = minZoom;
         MAX_ZOOM = maxZoom;
-        // see:
-        // http://modestmaps.mapstraction.com/trac/wiki/TileCoordinateComparisons#TileGeolocations
-        Transformation t = new Transformation(1.068070779e7, 0, 3.355443185e7,
-                0, -1.068070890e7, 3.355443057e7);
+        // see: http://modestmaps.mapstraction.com/trac/wiki/TileCoordinateComparisons#TileGeolocations
+        Transformation t = new Transformation(1.068070779e7, 0, 3.355443185e7, 0, -1.068070890e7, 3.355443057e7);
         projection = new MercatorProjection(26, t);
-
         topLeftOutLimit = new Coordinate(0, Double.NEGATIVE_INFINITY, minZoom);
-        bottomRightInLimit = new Coordinate(1, Double.POSITIVE_INFINITY, 0)
-        .zoomTo(maxZoom);
+        bottomRightInLimit = new Coordinate(1, Double.POSITIVE_INFINITY, 0).zoomTo(maxZoom);
     }
 
     public abstract List<String> getTileUrls(Coordinate coordinate);
 
     public abstract String getTileId(Coordinate coordinate);
 
+    public abstract String getTileName(Coordinate coordinate);
+    
     public abstract int tileWidth();
 
     public abstract int tileHeight();
@@ -63,7 +60,6 @@ public abstract class MapProvider{
     public int getZoomLevel(){
         return this.zoomLevel;
     }
-
 
     public AbstractProjection getProjection() {
         return projection;

@@ -1,12 +1,6 @@
 <panel name="pnlMap" columns="1" weightx="1" weighty="1">
 	<panel weightx="1" weighty="1" border="true">
-		<bean name="mapBean" bean="com.ushahidi.plugins.mapping.ui.MapBean" weightx="1" weighty="1">
-			<popupmenu name="menu">
-			    <menu name="onlineMapsMenu" text="i18n.action.add.to.group"/>
-			    <separator name="sp1"/>
-			    <menuitem icon="/icons/tick.png" name="saveMap" text="i18n.plugins.ushahidi.map.save" action="saveMap" />		                    		                    
-			</popupmenu>					
-		</bean>
+		<bean name="mapBean" bean="com.ushahidi.plugins.mapping.ui.MapBean" weightx="1" weighty="1"/>
 	</panel>
 	<panel weightx="1" columns="5" gap="15" top="10" valign="fill">
 		<label text="i18n.plugins.ushahidi.show" />

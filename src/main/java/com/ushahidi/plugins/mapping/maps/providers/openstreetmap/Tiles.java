@@ -7,7 +7,6 @@ public class Tiles {
 		double r = coordinate.row;
 		double c = coordinate.col;
 		int z = 18 - coordinate.zoom;
-		
 		return new Coordinate(r, c, z);
 	}
 }

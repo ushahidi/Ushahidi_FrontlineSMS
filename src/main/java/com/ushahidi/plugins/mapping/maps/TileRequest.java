@@ -2,6 +2,7 @@ package com.ushahidi.plugins.mapping.maps;
 
 import java.awt.Point;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -9,17 +10,20 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.List;
 
 import javax.imageio.ImageIO;
 
-import net.frontlinesms.FrontlineUtils;
-
-import org.apache.log4j.Logger;
+import net.frontlinesms.resources.ResourceUtils;
 
 import com.ushahidi.plugins.mapping.maps.core.Coordinate;
 import com.ushahidi.plugins.mapping.maps.providers.MapProvider;
+import com.ushahidi.plugins.mapping.util.MappingLogger;
 
+/**
+ * TileRequest
+ * @author dalezak
+ *
+ */
 public class TileRequest implements Runnable {
 
 	public static final int MAX_ATTEMPTS = 5;
@@ -29,39 +33,36 @@ public class TileRequest implements Runnable {
 	int attempts = 1;
 	Boolean done;
 	MapProvider provider;
-	private Coordinate coord;
+	private Coordinate coordinate;
 	private TileRequestor requestor;
 
-	public static Logger LOG = FrontlineUtils.getLogger(TileRequest.class);
+	private static final MappingLogger LOG = MappingLogger.getLogger(TileRequest.class);	
+	
+	private static final Map<String, ArrayList<BufferedImage>> tileCache = Collections.synchronizedMap(new HashMap<String, ArrayList<BufferedImage>>());
 
-	private static final Map<String, ArrayList<BufferedImage>> tileCache = Collections
-			.synchronizedMap(new HashMap<String, ArrayList<BufferedImage>>());
-
-	public TileRequest(MapProvider provider, Coordinate coord, Point offset, long updateId) {
+	public TileRequest(MapProvider provider, Coordinate coordinate, Point offset, long updateId) {
 		this.done = false;
 		this.provider = provider;
-		this.setCoord(coord);
+		this.setCoordinate(coordinate);
 		this.setOffset(offset);
 		this.updateId = updateId;
 	}
 
 	public boolean isLoaded() {
-		String tileKey = provider.getTileId(getCoord());
+		String tileKey = provider.getTileId(getCoordinate());
 		if (!tileCache.containsKey(tileKey)) {
 			tileCache.put(tileKey, new ArrayList<BufferedImage>());
 		}
-		ArrayList<BufferedImage> imgs = tileCache.get(tileKey);
-		return !imgs.isEmpty();
+		return !tileCache.get(tileKey).isEmpty();
 	}
 
 	public BufferedImage getImage() {
-		BufferedImage ret = null;
-		String tileKey = provider.getTileId(getCoord());
+		BufferedImage image = null;
+		String tileKey = provider.getTileId(getCoordinate());
 		if (tileCache.containsKey(tileKey)) {
-			// FIXME tiles can be several layers of images...
-			ret = tileCache.get(tileKey).get(0);
+			image = tileCache.get(tileKey).get(0);
 		}
-		return ret;
+		return image;
 	}
 
 	/**
@@ -69,38 +70,52 @@ public class TileRequest implements Runnable {
 	 * requestor's renderTile method when done.
 	 */
 	public void load() {
-		String tileKey = provider.getTileId(getCoord());
+		String tileKey = provider.getTileId(getCoordinate());
 		if (!tileCache.containsKey(tileKey)) {
 			tileCache.put(tileKey, new ArrayList<BufferedImage>());
 		}
-
-		ArrayList<BufferedImage> imgs = tileCache.get(tileKey);
-		// Acquire lock on the tile images. Thread with lock will load
-		// tile if not already loaded
-		LOG.debug("Acquiring lock on " + getCoord().toString());
-		synchronized (imgs) {
-		LOG.debug("Lock acquired ");
-			if (imgs.isEmpty()) {
-				List<String> urls = provider.getTileUrls(getCoord());
-				tileCache.put(tileKey, imgs);
-
-				for (String url : urls) {
-					LOG.debug("Loading tile at " + url);
-
-					// Read the Image
-					BufferedImage image;
-					try {
-						image = ImageIO.read(new URL(url));
-						LOG.debug("Tile loaded " + url);
-						imgs.add(image);
-						done = true;
-					} catch (MalformedURLException e) {
-						LOG.debug(e);
-					} catch (IOException e) {
-						LOG.debug(e);
+		ArrayList<BufferedImage> images = tileCache.get(tileKey);
+		File mapsDirectory = new File(ResourceUtils.getConfigDirectoryPath(), "maps");
+		if (mapsDirectory.exists() == false) {
+			mapsDirectory.mkdir();
+			LOG.debug("Directory Created: %s", mapsDirectory.getAbsolutePath());
+		}
+		// Acquire lock on the tile images. Thread with lock will load tile if not already loaded
+		synchronized (images) {
+			if (images.isEmpty()) {
+				Coordinate coordinate = getCoordinate();
+				tileCache.put(tileKey, images);
+				for (String url : provider.getTileUrls(coordinate)) {
+					File file = new File(mapsDirectory, provider.getTileName(coordinate));
+					if (file.exists()) {
+						try {
+							BufferedImage image = ImageIO.read(file);
+							LOG.debug("Tile Loaded: %s", file.getAbsolutePath());
+							images.add(image);
+							done = true;
+						} 
+						catch (IOException e) {
+							LOG.error(e);
+						}
+					}
+					else {
+						try {
+							LOG.debug("Tile Downloading: %s", url);
+							BufferedImage image = ImageIO.read(new URL(url));
+							LOG.debug("Tile Downloaded: %s", url);
+							ImageIO.write(image, "png", file);
+							LOG.debug("Tile Saved: %s", file.getAbsolutePath());
+							images.add(image);
+							done = true;
+						} 
+						catch (MalformedURLException e) {
+							LOG.error(e);
+						} 
+						catch (IOException e) {
+							LOG.error(e);
+						}	
 					}
 				}
-
 			}
 		}
 		if (requestor != null) {
@@ -116,12 +131,12 @@ public class TileRequest implements Runnable {
 		this.requestor = requestor;
 	}
 
-	public void setCoord(Coordinate coord) {
-		this.coord = coord;
+	public void setCoordinate(Coordinate coord) {
+		this.coordinate = coord;
 	}
 
-	public Coordinate getCoord() {
-		return coord;
+	public Coordinate getCoordinate() {
+		return coordinate;
 	}
 
 	public void setOffset(Point offset) {

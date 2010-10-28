@@ -13,7 +13,6 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.image.ImageObserver;
-import java.io.IOException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,7 +26,6 @@ import com.ushahidi.plugins.mapping.maps.MapFactory;
 import com.ushahidi.plugins.mapping.maps.geo.Location;
 import com.ushahidi.plugins.mapping.maps.providers.MapProvider;
 import com.ushahidi.plugins.mapping.maps.providers.openstreetmap.OpenStreetMapProvider;
-import com.ushahidi.plugins.mapping.maps.providers.offline.OfflineProvider;
 import com.ushahidi.plugins.mapping.ui.markers.Marker;
 import com.ushahidi.plugins.mapping.util.MappingLogger;
 
@@ -57,10 +55,7 @@ public class MapBean extends CustomComponent implements ImageObserver {
     /** Markers to be plotted on the map */
     private final List<Marker> markers = new ArrayList<Marker>();
     private final Map<Polygon, Marker> polygons = new HashMap<Polygon, Marker>();
-    /** Instance of the UI controller for the mapping plugin */
-    /** Name of the file containing the offline maps*/
-    private String offlineMapFile;
-
+    
     private static final int DEFAULT_ZOOM_LEVEL = 7;
     private static final int DEFAULT_POINT_SIZE = 18;
     private int pointSize = DEFAULT_POINT_SIZE;
@@ -85,10 +80,6 @@ public class MapBean extends CustomComponent implements ImageObserver {
     		this.mapProvider = new OpenStreetMapProvider();
     	}
     	return this.mapProvider;
-    }
-
-    public void setOfflineMapFile(String fileName){
-        this.offlineMapFile = fileName;
     }
 
     public synchronized void clearMarkers(boolean repaint) {
@@ -159,16 +150,7 @@ public class MapBean extends CustomComponent implements ImageObserver {
             return;
         }
         if (map == null && location != null) {
-            if(offlineMapFile == null){
-                map = MapFactory.mapByCenterZoom(this.getMapProvider(), location, zoomLevel, dimensions);
-            }
-            else{
-                try {
-                    map = MapFactory.mapByCenterZoom(new OfflineProvider(offlineMapFile), location, zoomLevel, dimensions);
-                } catch (IOException e) {
-                    LOG.debug(e);
-                }				
-            }
+        	map = MapFactory.mapByCenterZoom(this.getMapProvider(), location, zoomLevel, dimensions);
             map.setObserver(this);
             image = map.draw();
         }

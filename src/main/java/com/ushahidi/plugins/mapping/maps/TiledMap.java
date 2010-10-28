@@ -222,7 +222,7 @@ public class TiledMap implements TileRequestor{
 	}
 
 	protected void renderTile(TileRequest tile, boolean update) {
-		String tileKey = provider.getTileId(tile.getCoord());
+		String tileKey = provider.getTileId(tile.getCoordinate());
 		if (tileRequests.containsKey(tileKey)) {
 			tileRequests.remove(tileKey);
 		}

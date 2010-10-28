@@ -261,4 +261,20 @@ public final class MappingMessages {
 		return getI18NString("plugins.ushahidi.incident.updated.via.survey");
 	}
 	
+	public static String getIncidentAddPhoto() {
+		return getI18NString("plugins.ushahidi.incident.add.photo");
+	}
+	
+	public static String getSelectFile() {
+		return getI18NString("plugins.ushahidi.select.file");
+	}
+	
+	public static String getMapCacheSize() {
+		return getI18NString("plugins.ushahidi.setup.cache.size");
+	}
+	
+	public static String getMapCacheFilesDeleted() {
+		return getI18NString("plugins.ushahidi.setup.cache.files.deleted");
+	}
+	
 }

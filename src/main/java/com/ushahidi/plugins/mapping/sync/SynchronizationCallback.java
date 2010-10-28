@@ -28,4 +28,6 @@ public interface SynchronizationCallback {
 	public void downloadedIncident(Incident incident);
 	
 	public void uploadedIncident(Incident incident);
+	
+	public void failedIncident(Incident incident);
 }

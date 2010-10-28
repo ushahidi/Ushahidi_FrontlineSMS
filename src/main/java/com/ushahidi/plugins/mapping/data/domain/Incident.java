@@ -70,6 +70,8 @@ public class Incident implements Serializable {
 	private static final String FIELD_EMAIL_ADDRESS = "emailAddress";
 	/** Column name for {@link #surveyResponse } */
 	private static final String FIELD_SURVEY_RESPONSE = "surveyResponse";
+	/** Column name for  {@link #status} */
+	private static final String FIELD_SYNC_STATUS = "syncStatus";
 	
 	/** Field mapping for the properties contained in this class/entity */
 	public enum Field implements EntityField<Incident>{
@@ -100,7 +102,9 @@ public class Incident implements Serializable {
 		/** Field mapping for {@link Incident#emailAddress} */
 		EMAIL_ADDRESS(FIELD_EMAIL_ADDRESS),
 		/** Field mapping for {@link Incident#surveyResponse} */
-		SURVEY_RESPONSE(FIELD_SURVEY_RESPONSE);
+		SURVEY_RESPONSE(FIELD_SURVEY_RESPONSE),
+		/** Field mapping for {@link Incident#syncStatus} */
+		SYNC_STATUS(FIELD_SYNC_STATUS);
 		
 		/** name of a field */
 		private final String fieldName;
@@ -156,6 +160,9 @@ public class Incident implements Serializable {
 	
 	@Column(name=FIELD_EMAIL_ADDRESS)
 	private String emailAddress;
+
+	@Column(name=FIELD_SYNC_STATUS, length=2147483647)
+	private String syncStatus;
 	
 	/** Categories of this incident */
 	@ManyToMany(cascade={CascadeType.PERSIST, CascadeType.MERGE}, fetch=FetchType.EAGER)
@@ -528,5 +535,27 @@ public class Incident implements Serializable {
 			}
 		}
 		return false;
+	}
+	
+	public List<Photo> getPhotos() {
+		List<Photo> photos = new ArrayList<Photo>();
+		for(Media m : media) {
+			if (m instanceof Photo) {
+				photos.add((Photo)m);
+			}
+		}
+		return photos;
+	}
+	
+	public void setSyncStatus(String syncStatus){
+		this.syncStatus = syncStatus;
+	}
+	
+	public String getSyncStatus(){
+		return syncStatus;
+	}
+	
+	public boolean hasSyncStatus(){
+		return syncStatus != null && syncStatus.length() > 0;
 	}
 }

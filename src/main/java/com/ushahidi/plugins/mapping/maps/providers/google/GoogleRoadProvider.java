@@ -5,10 +5,10 @@ import java.util.List;
 
 import com.ushahidi.plugins.mapping.maps.core.Coordinate;
 
-public class GoogleRoadProvider extends AbstractProvider {
+public class GoogleRoadProvider extends GoogleAbstractProvider {
 	
 	public GoogleRoadProvider(){}
-	
+
     public List<String> getTileUrls(Coordinate coordinate) {
     	ArrayList<String> ret = new ArrayList<String>();
     	// http://mt3.google.com/vt/v=w2t.99&hl=en&x=615&y=516&z=10&s=G
@@ -18,8 +18,13 @@ public class GoogleRoadProvider extends AbstractProvider {
     }
     
     @Override
+	public String getTileName(Coordinate coordinate) {
+		return String.format("GR_%d_%d_%d.png", coordinate.zoom, (int)coordinate.col, (int)coordinate.row); 
+	}
+    
+    @Override
     public String toString() {
-    	return "GOOGLE_ROAD";
+    	return "Google Maps Provider (Road)";
     }
 
 	@Override

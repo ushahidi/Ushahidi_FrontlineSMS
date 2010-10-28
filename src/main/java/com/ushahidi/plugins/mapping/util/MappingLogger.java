@@ -71,6 +71,14 @@ public class MappingLogger extends Logger {
 	    error(String.format(format, sb));
 	}
 	
+	public void error(String format, Exception ex) {
+		StringBuffer sb = new StringBuffer();
+		sb.append(ex.getClass().getSimpleName());
+		sb.append(" : ");
+		sb.append(ex.getMessage());
+		error(String.format(format, sb));
+	}
+	
 	@Override
 	public void error(Object text) {
 		if (MappingProperties.isDebugMode()) {
