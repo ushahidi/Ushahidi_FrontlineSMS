@@ -58,6 +58,8 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 		public Object txtReportTitle;
 		public Object txtReportDescription;
 		public Object txtReportCategories;
+		public Object lblReportVerified;
+		public Object txtReportVerified;
 		public Object lstReportCategories;
 		public Object txtReportDate;
 		public Object txtReportLocation;
@@ -162,7 +164,6 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 			else {
 				ui.setHeight(fields.lstPhotos, 12);
 			}
-			
 			if (incident.hasSyncStatus()) {
 				ui.setVisible(fields.lblSyncStatus, true);
 				ui.setVisible(fields.txtSyncStatus, true);
@@ -171,6 +172,12 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 			else {
 				ui.setVisible(fields.lblSyncStatus, false);
 				ui.setVisible(fields.txtSyncStatus, false);
+			}
+			if (incident.isVerified()) {
+				ui.setText(fields.txtReportVerified, MappingMessages.getYes());
+			}
+			else {
+				ui.setText(fields.txtReportVerified, MappingMessages.getNo());
 			}
 			ui.setVisible(fields.lblPhotos, true);
 		}
@@ -186,6 +193,7 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 			ui.setVisible(fields.pnlAddPhoto, false);
 			ui.setVisible(fields.lblSyncStatus, false);
 			ui.setVisible(fields.txtSyncStatus, false);
+			ui.setText(fields.txtReportVerified, "");
 		}
 		boolean editMode = incident == null || incident.isMarked();
 		ui.setVisible(fields.txtReportLocation, !editMode);
@@ -207,6 +215,9 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 		ui.setEditable(fields.txtReportDescription, editMode);
 		ui.setEditable(fields.txtReportLocation, editMode);
 		ui.setVisible(fields.btnReportDate, editMode);
+		
+		ui.setVisible(fields.lblReportVerified, true);
+		ui.setVisible(fields.txtReportVerified, true);
 		
 		ui.add(mainDialog);
 	}
@@ -239,6 +250,9 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 		
 		ui.setVisible(fields.lblSyncStatus, false);
 		ui.setVisible(fields.txtSyncStatus, false);
+		
+		ui.setVisible(fields.lblReportVerified, false);
+		ui.setVisible(fields.txtReportVerified, false);
 		
 		removeAll(fields.cboReportLocations);
 		for(Location location: locationDao.getAllLocations(mappingSetupDao.getDefaultSetup())) {	
