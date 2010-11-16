@@ -252,34 +252,44 @@ public class SynchronizationThread extends Thread{
 				else if(baseTask.equals(SynchronizationAPI.INCIDENTS)){
 					JSONObject incidentJSON = item.getJSONObject(SynchronizationAPI.INCIDENT_KEY);
 					Incident incident = parseIncident(incidentJSON);
-					if (item.has(SynchronizationAPI.CATEGORIES)) {
-						JSONArray categories = (JSONArray)item.getJSONArray(SynchronizationAPI.CATEGORIES);
-						if (categories != null) {
-							for(int j=0; j < categories.length(); j++){
-								JSONObject categoryItem = categories.getJSONObject(j);
-								if (categoryItem.has(SynchronizationAPI.CATEGORY_KEY)) {
-									JSONObject categoryJSON = categoryItem.getJSONObject(SynchronizationAPI.CATEGORY_KEY);
-									Category category = parseCategory(categoryJSON);
-									if (category != null) {
-										incident.addCategory(category);		
-									}		
+					try {
+						if (item.has(SynchronizationAPI.CATEGORIES)) {
+							JSONArray categories = (JSONArray)item.getJSONArray(SynchronizationAPI.CATEGORIES);
+							if (categories != null) {
+								for(int j=0; j < categories.length(); j++){
+									JSONObject categoryItem = categories.getJSONObject(j);
+									if (categoryItem.has(SynchronizationAPI.CATEGORY_KEY)) {
+										JSONObject categoryJSON = categoryItem.getJSONObject(SynchronizationAPI.CATEGORY_KEY);
+										Category category = parseCategory(categoryJSON);
+										if (category != null) {
+											incident.addCategory(category);		
+										}		
+									}
 								}
-							}
-						}		
+							}		
+						}	
 					}
-					if (item.has(SynchronizationAPI.MEDIA)) {
-						JSONArray mediaItems = (JSONArray)item.getJSONArray(SynchronizationAPI.MEDIA);
-						if (mediaItems != null) {
-							for(int j=0; j < mediaItems.length(); j++){
-								JSONObject mediaItem = mediaItems.getJSONObject(j);
-								LOG.debug("Media: %s", mediaItem);
-								Media media = parseMedia(mediaItem);
-								if(media != null) {
-									LOG.debug("Adding Media: %s", media);
-									incident.addMedia(media);
+					catch(Exception e) {
+						e.printStackTrace();
+					}
+					try {
+						if (item.has(SynchronizationAPI.MEDIA)) {
+							JSONArray mediaItems = (JSONArray)item.getJSONArray(SynchronizationAPI.MEDIA);
+							if (mediaItems != null) {
+								for(int j=0; j < mediaItems.length(); j++){
+									JSONObject mediaItem = mediaItems.getJSONObject(j);
+									LOG.debug("Media: %s", mediaItem);
+									Media media = parseMedia(mediaItem);
+									if(media != null) {
+										LOG.debug("Adding Media: %s", media);
+										incident.addMedia(media);
+									}
 								}
 							}
-						}
+						}	
+					}
+					catch(Exception e) {
+						e.printStackTrace();
 					}
 					syncManager.downloadedIncident(incident);
 				}
