@@ -42,8 +42,8 @@
 	<panel text="i18n.plugins.ushahidi.setup.forms" icon="/icons/form.png" border="true" columns="1" gap="5" weightx="1" top="9" left="9" bottom="9" right="9">
 		<button name="btnCreateForm"  text="i18n.plugins.ushahidi.setup.forms.button" icon="/icons/form_add.png" weightx="1" action="createFormFields"/>
 	</panel>
-	<panel text="i18n.plugins.ushahidi.setup.surveys" icon="/icons/surveys.png" border="true" columns="1" gap="5" weightx="1" top="9" left="9" bottom="9" right="9">
-		<button name="btnCreateSurvey" text="i18n.plugins.ushahidi.setup.surveys.button" icon="/icons/question_add.png" weightx="1" action="createSurveyQuestions"/>
+	<panel text="i18n.plugins.ushahidi.setup.textforms" icon="/icons/textforms.png" border="true" columns="1" gap="5" weightx="1" top="9" left="9" bottom="9" right="9">
+		<button name="btnCreateTextForm" text="i18n.plugins.ushahidi.setup.textforms.button" icon="/icons/question_add.png" weightx="1" action="createTextFormQuestions"/>
 	</panel>
 	<button icon="/icons/cross.png" text="i18n.action.close" weightx="1" action="removeDialog(dlgSetup)"/>
 </dialog>

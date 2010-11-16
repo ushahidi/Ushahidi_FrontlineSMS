@@ -16,7 +16,7 @@
 			</panel>
 		</panel>
 		
-		<label text="i18n.plugins.ushahidi.incident.coordinates" icon="/icons/coordinates.png" valign="top" />
+		<label text="i18n.plugins.ushahidi.report.coordinates" icon="/icons/coordinates.png" valign="top" />
 		<textfield name="txtCoordinates" columns="50" weightx="1" editable="false"/>
 		
 		<button name="btnCancel" icon="/icons/cross.png" text="i18n.action.cancel" action="removeDialog(dlgContact)" weightx="1"/>

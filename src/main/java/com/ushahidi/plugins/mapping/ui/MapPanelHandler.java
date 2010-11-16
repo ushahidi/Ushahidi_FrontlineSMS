@@ -14,7 +14,7 @@ import com.ushahidi.plugins.mapping.ui.markers.FormMarker;
 import com.ushahidi.plugins.mapping.ui.markers.IncidentMarker;
 import com.ushahidi.plugins.mapping.ui.markers.Marker;
 import com.ushahidi.plugins.mapping.ui.markers.MessageMarker;
-import com.ushahidi.plugins.mapping.ui.markers.SurveyMarker;
+import com.ushahidi.plugins.mapping.ui.markers.TextFormMarker;
 import com.ushahidi.plugins.mapping.util.MappingLogger;
 import com.ushahidi.plugins.mapping.util.MappingMessages;
 import com.ushahidi.plugins.mapping.util.MappingProperties;
@@ -28,8 +28,8 @@ import net.frontlinesms.data.repository.ContactDao;
 import net.frontlinesms.data.repository.MessageDao;
 import net.frontlinesms.plugins.forms.data.domain.FormResponse;
 import net.frontlinesms.plugins.forms.data.repository.FormResponseDao;
-import net.frontlinesms.plugins.surveys.data.domain.SurveyResponse;
-import net.frontlinesms.plugins.surveys.data.repository.SurveyResponseDao;
+import net.frontlinesms.plugins.textforms.data.domain.TextFormResponse;
+import net.frontlinesms.plugins.textforms.data.repository.TextFormResponseDao;
 import net.frontlinesms.ui.ExtendedThinlet;
 import net.frontlinesms.ui.ThinletUiEventHandler;
 import net.frontlinesms.ui.UiGeneratorController;
@@ -49,7 +49,7 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 	private final CategoryDao categoryDao;
 	private final MessageDao messageDao;
 	private final ContactDao contactDao;
-	private SurveyResponseDao surveyResponseDao;
+	private TextFormResponseDao textformResponseDao;
 	private FormResponseDao formResponseDao;
 	private final MappingSetupDao mappingSetupDao;
 	private final MapBean mapBean;
@@ -65,7 +65,7 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 		public Object cbxCategories;
 		public Object cbxShowMessages;
 		public Object cbxShowForms;
-		public Object cbxShowSurveys;
+		public Object cbxShowTextForms;
 		public Object cbxShowIncidents;
 	}
 	
@@ -158,14 +158,14 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 					}
 				}
 			}
-			if(getBoolean(fields.cbxShowSurveys, Thinlet.SELECTED) && surveyResponseDao != null) {
-				LOG.debug("Showing Surveys");	
-				for(SurveyResponse surveyResponse : surveyResponseDao.getAllSurveyResponses()) {
-					Contact contact = surveyResponse.getContact();
+			if(getBoolean(fields.cbxShowTextForms, Thinlet.SELECTED) && textformResponseDao != null) {
+				LOG.debug("Showing TextForms");	
+				for(TextFormResponse textformResponse : textformResponseDao.getAllTextFormResponses()) {
+					Contact contact = textformResponse.getContact();
 					if (contact != null) {
 						LocationDetails locationDetails = contact.getDetails(LocationDetails.class);
 						if (locationDetails != null && locationDetails.getLocation() != null) {
-							mapBean.addMarker(new SurveyMarker(surveyResponse, locationDetails.getLocation()), false);
+							mapBean.addMarker(new TextFormMarker(textformResponse, locationDetails.getLocation()), false);
 						}
 					}
 				}		
@@ -192,8 +192,8 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 		}
 	}
 	
-	public void setSurveyResponseDao(SurveyResponseDao surveyResponseDao) {
-		this.surveyResponseDao = surveyResponseDao;
+	public void setTextFormResponseDao(TextFormResponseDao textformResponseDao) {
+		this.textformResponseDao = textformResponseDao;
 	}
 	
 	public void setFormResponseDao(FormResponseDao formResponseDao) {
@@ -286,12 +286,12 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 				responseDialog.showDialog(formMarker.getFormResponse(), formMarker.getLocation(), formMarker.getForm());
 			}
 		}
-		else if (marker instanceof SurveyMarker) {
-			SurveyMarker surveyMarker = (SurveyMarker)marker;
-			if(surveyMarker != null && surveyMarker.getSurveyResponse() != null) {
-				LOG.debug("Survey: %s", surveyMarker.getSurveyResponse());
+		else if (marker instanceof TextFormMarker) {
+			TextFormMarker textformMarker = (TextFormMarker)marker;
+			if(textformMarker != null && textformMarker.getTextFormResponse() != null) {
+				LOG.debug("TextForm: %s", textformMarker.getTextFormResponse());
 				ResponseDialogHandler responseDialog = new ResponseDialogHandler(pluginController, frontlineController, ui);
-				responseDialog.showDialog(surveyMarker.getSurveyResponse(), surveyMarker.getLocation());
+				responseDialog.showDialog(textformMarker.getTextFormResponse(), textformMarker.getLocation());
 			}
 		}
 	}

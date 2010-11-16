@@ -6,7 +6,7 @@
 		<label text="i18n.plugins.ushahidi.show" />
 		<checkbox name="cbxShowMessages" text="i18n.plugins.ushahidi.messages" icon="/icons/sms.png" selected="true" action="refresh()" />
 		<checkbox name="cbxShowForms" text="i18n.plugins.ushahidi.forms" icon="/icons/form.png" selected="true" action="refresh()"/>
-		<checkbox name="cbxShowSurveys" text="i18n.plugins.ushahidi.surveys" icon="/icons/surveys.png" selected="true" action="refresh()"/>
+		<checkbox name="cbxShowTextForms" text="i18n.plugins.ushahidi.textforms" icon="/icons/textforms.png" selected="true" action="refresh()"/>
 		<checkbox name="cbxShowIncidents" text="i18n.plugins.ushahidi.reports" icon="/icons/ushahidi.png" selected="true" action="refresh()"/>
 	</panel>
 	<panel weightx="1" columns="3" gap="15" top="10" valign="fill">

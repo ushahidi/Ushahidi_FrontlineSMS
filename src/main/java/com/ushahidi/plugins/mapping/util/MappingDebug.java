@@ -11,7 +11,7 @@ import net.frontlinesms.data.repository.ContactDao;
 import net.frontlinesms.data.repository.MessageDao;
 
 import com.ushahidi.plugins.mapping.managers.FormsManager;
-import com.ushahidi.plugins.mapping.managers.SurveysManager;
+import com.ushahidi.plugins.mapping.managers.TextFormsManager;
 
 /**
  * MappingDebug
@@ -23,7 +23,7 @@ public class MappingDebug {
 	private static MappingLogger LOG = MappingLogger.getLogger(MappingDebug.class);	
 	
 	private final FormsManager formsManager;
-	private final SurveysManager surveysManager;
+	private final TextFormsManager textformsManager;
 	private final MessageDao messageDao;
 	private final ContactDao contactDao;
 	
@@ -31,9 +31,9 @@ public class MappingDebug {
 	 * MappingDebug
 	 * @param pluginController MappingPluginController
 	 */
-	public MappingDebug(FormsManager formsManager, SurveysManager surveysManager, MessageDao messageDao, ContactDao contactDao) {
+	public MappingDebug(FormsManager formsManager, TextFormsManager textformsManager, MessageDao messageDao, ContactDao contactDao) {
 		this.formsManager = formsManager;
-		this.surveysManager = surveysManager;
+		this.textformsManager = textformsManager;
 		this.messageDao = messageDao;
 		this.contactDao = contactDao;
 	}
@@ -81,13 +81,13 @@ public class MappingDebug {
 	            	formsManager.addFormResponse(title);
 	            	LOG.debug("Form Created: %s", title);
 	            }
-	            else if (message.toLowerCase().startsWith("survey")){
+	            else if (message.toLowerCase().startsWith("textform")){
 	            	String title = words.length > 1 ? words[1] : null;
-	            	surveysManager.addSurveyAnswers(title);
-	            	LOG.debug("Survey Created: %s", title);
+	            	textformsManager.addTextFormAnswers(title);
+	            	LOG.debug("TextForm Created: %s", title);
 	            }
 	            else if (message.equalsIgnoreCase("help")){
-	            	LOG.out("Enter 'form' to create a sample Form, 'survey' to create a sample Survey or 'exit' to terminate console.");
+	            	LOG.out("Enter 'form' to create a sample Form, 'textform' to create a sample TextForm or 'exit' to terminate console.");
 	            }
 	            else {
 	            	long dateReceived = Calendar.getInstance().getTimeInMillis();

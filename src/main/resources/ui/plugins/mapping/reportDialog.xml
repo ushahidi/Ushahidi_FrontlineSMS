@@ -1,22 +1,22 @@
 <dialog name="dialogReportDetails" text="i18n.plugins.ushahidi.report" icon="/icons/report.png" modal="true" closable="true" close="removeDialog(this)" gap="10" top="3" right="3" bottom="3" left="3">
    <panel columns="2" gap="10" top="3" right="3" bottom="3" left="3">
-      	<label text="i18n.plugins.ushahidi.incident.title" icon="/icons/title.png" valign="top" />
+      	<label text="i18n.plugins.ushahidi.report.title" icon="/icons/title.png" valign="top" />
 		<textfield name="txtReportTitle" weightx="1" editable="false"/>
        
-		<label text="i18n.plugins.ushahidi.incident.description" icon="/icons/description.png" valign="top" />
+		<label text="i18n.plugins.ushahidi.report.description" icon="/icons/description.png" valign="top" />
 		<textarea name="txtReportDescription" columns="55" rows="10" editable="false"/>
        
-		<label text="i18n.plugins.ushahidi.incident.categories" icon="/icons/categories.png" valign="top" />
+		<label text="i18n.plugins.ushahidi.report.categories" icon="/icons/categories.png" valign="top" />
 		<textarea name="txtReportCategories" columns="55" rows="2" editable="false"/>
        	<list name="lstReportCategories" selection="multiple" />
        	
-		<label text="i18n.plugins.ushahidi.incident.date" icon="/icons/date.png" valign="top" />
+		<label text="i18n.plugins.ushahidi.report.date" icon="/icons/date.png" valign="top" />
 		<panel weightx="1" gap="5">
 			<textfield name="txtReportDate" weightx="1" editable="false"/>
        		<button name="btnReportDate" action="showDateSelecter(txtReportDate)" icon="/icons/date.png" />
 		</panel>
 		
-		<label text="i18n.plugins.ushahidi.incident.location" icon="/icons/map.png" valign="top" />
+		<label text="i18n.plugins.ushahidi.report.location" icon="/icons/map.png" valign="top" />
 		<textfield name="txtReportLocation" weightx="1" editable="false" />
 		<panel name="pnlReportLocation" columns="2" weightx="1" visible="false" gap="5">
 			<checkbox name="cbxExistingLocation" text="i18n.plugins.ushahidi.location.existing" group="location" selected="true" action="showExistingLocations"/>
@@ -30,10 +30,10 @@
 			</panel>
 		</panel>
 		
-		<label text="i18n.plugins.ushahidi.incident.coordinates" icon="/icons/coordinates.png" valign="top" />
+		<label text="i18n.plugins.ushahidi.report.coordinates" icon="/icons/coordinates.png" valign="top" />
 		<textfield name="txtReportCoordinates" columns="50" weightx="1" editable="false"/>
        
-       	<label name="lblPhotos" text="i18n.plugins.ushahidi.incident.photos" icon="/icons/photos.png" valign="top" />
+       	<label name="lblPhotos" text="i18n.plugins.ushahidi.report.photos" icon="/icons/photos.png" valign="top" />
        	<list name="lstPhotos" selection="single" weightx="1" weighty="1" height="500"/>
        	<panel name="pnlAddPhoto" columns="2" gap="5" visible="false">
        		<textfield name="txtAddPhoto" weightx="1" editable="false" />

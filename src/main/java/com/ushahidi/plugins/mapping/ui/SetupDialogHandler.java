@@ -19,7 +19,7 @@ import com.ushahidi.plugins.mapping.data.repository.IncidentDao;
 import com.ushahidi.plugins.mapping.data.repository.LocationDao;
 import com.ushahidi.plugins.mapping.data.repository.MappingSetupDao;
 import com.ushahidi.plugins.mapping.managers.FormsManager;
-import com.ushahidi.plugins.mapping.managers.SurveysManager;
+import com.ushahidi.plugins.mapping.managers.TextFormsManager;
 import com.ushahidi.plugins.mapping.maps.providers.MapProvider;
 import com.ushahidi.plugins.mapping.maps.providers.MapProviderFactory;
 import com.ushahidi.plugins.mapping.sync.SynchronizationCallback;
@@ -51,7 +51,7 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
 	private final FrontlineSMS frontlineController;
 	private final UiGeneratorController ui;
 	
-	private final SurveysManager surveysManager;
+	private final TextFormsManager textformsManager;
 	private final FormsManager formsManager;
 	
 	private final LocationDao locationDao;
@@ -73,7 +73,7 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
 		public Object btnDelete;
 		public Object btnCancel;
 		public Object btnCreateForm;
-		public Object btnCreateSurvey;
+		public Object btnCreateTextForm;
 		public Object txtDefaultLatitude;
 		public Object txtDefaultLongitude;
 		public Object cbxMapProviders;
@@ -82,13 +82,13 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
 	
 	private SyncDialogHandler syncDialog;
 	
-	public SetupDialogHandler(MappingPluginController pluginController, FrontlineSMS frontlineController, UiGeneratorController uiController, FormsManager formsManager, SurveysManager surveysManager) {
+	public SetupDialogHandler(MappingPluginController pluginController, FrontlineSMS frontlineController, UiGeneratorController uiController, FormsManager formsManager, TextFormsManager textformsManager) {
 		this.pluginController = pluginController;
 		this.ui = uiController;
 		this.frontlineController = frontlineController;
 		
 		this.formsManager = formsManager;
-		this.surveysManager = surveysManager;
+		this.textformsManager = textformsManager;
 		
 		this.locationDao = pluginController.getLocationDao();
 		this.categoryDao = pluginController.getCategoryDao();
@@ -106,11 +106,11 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
 				ui.add(fields.tblSources, getRow(setup));
 			}
 			ui.setEnabled(fields.btnCreateForm, true);
-			ui.setEnabled(fields.btnCreateSurvey, true);
+			ui.setEnabled(fields.btnCreateTextForm, true);
 		}
 		else {
 			ui.setEnabled(fields.btnCreateForm, false);
-			ui.setEnabled(fields.btnCreateSurvey, false);
+			ui.setEnabled(fields.btnCreateTextForm, false);
 		}
 		ui.setText(fields.txtDefaultLatitude, MappingProperties.getDefaultLatitudeString());
 		ui.setText(fields.txtDefaultLongitude, MappingProperties.getDefaultLongitudeString());
@@ -351,14 +351,14 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
 		ui.setEnabled(fields.btnCancel, false);
 	}
 	
-	public void createSurveyQuestions() {
-		LOG.debug("createSurveyQuestions");
-		if(surveysManager.addSurveyQuestions()) {
-			ui.setStatus(MappingMessages.getSurveyCreated());
-        	ui.alert(MappingMessages.getSurveyCreated());
+	public void createTextFormQuestions() {
+		LOG.debug("createTextFormQuestions");
+		if(textformsManager.addTextFormQuestions()) {
+			ui.setStatus(MappingMessages.getTextFormCreated());
+        	ui.alert(MappingMessages.getTextFormCreated());
         }
         else {
-        	ui.alert(MappingMessages.getSurveyFailed());
+        	ui.alert(MappingMessages.getTextFormFailed());
         }
 	}
 	
@@ -422,7 +422,7 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
 	public void synchronizationFinished() {
 		boolean hasMappingSetup = mappingSetupDao.getCount() > 0;
 		ui.setEnabled(fields.btnCreateForm, hasMappingSetup);
-		ui.setEnabled(fields.btnCreateSurvey, hasMappingSetup);
+		ui.setEnabled(fields.btnCreateTextForm, hasMappingSetup);
 		syncDialog.hideDialog();
 		pluginController.showIncidentMap();
 	}
@@ -442,7 +442,7 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
 	public void synchronizationFailed(String error) {
 		boolean hasMappingSetup = mappingSetupDao.getCount() > 0;
 		ui.setEnabled(fields.btnCreateForm, hasMappingSetup);
-		ui.setEnabled(fields.btnCreateSurvey, hasMappingSetup);
+		ui.setEnabled(fields.btnCreateTextForm, hasMappingSetup);
 		syncDialog.hideDialog();
 		this.ui.alert(error);
 	}

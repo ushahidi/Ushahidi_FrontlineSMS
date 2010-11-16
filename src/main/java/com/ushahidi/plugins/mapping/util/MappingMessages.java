@@ -17,168 +17,168 @@ public final class MappingMessages {
 		return getI18NString("plugins.ushahidi.form.response");
 	}
 	
-	public static String getSurveyResponse() {
-		return getI18NString("plugins.ushahidi.survey.response");
+	public static String getTextFormResponse() {
+		return getI18NString("plugins.ushahidi.textform.response");
 	}
 	
 	public static String getIncidentReport() {
-		return getI18NString("plugins.ushahidi.incident.report");
+		return getI18NString("plugins.ushahidi.report.report");
 	}
 	
 	public static String getTitle() {
-		return getI18NString("plugins.ushahidi.incident.title");
+		return getI18NString("plugins.ushahidi.report.title");
 	}
 
 	public static String getTitleInfo() {
-		return getI18NString("plugins.ushahidi.incident.title.info");
+		return getI18NString("plugins.ushahidi.report.title.info");
 	}
 	
 	public static String getTitleKeyword() {
-		return getI18NString("plugins.ushahidi.incident.title.keyword");
+		return getI18NString("plugins.ushahidi.report.title.keyword");
 	}
 	
 	public static String getDescription() {
-		return getI18NString("plugins.ushahidi.incident.description");
+		return getI18NString("plugins.ushahidi.report.description");
 	}
 
 	public static String getDescriptionInfo() {
-		return getI18NString("plugins.ushahidi.incident.description.info");
+		return getI18NString("plugins.ushahidi.report.description.info");
 	}
 	
 	public static String getDescriptionKeyword() {
-		return getI18NString("plugins.ushahidi.incident.description.keyword");
+		return getI18NString("plugins.ushahidi.report.description.keyword");
 	}
 	
 	public static String getDate() {
-		return getI18NString("plugins.ushahidi.incident.date");
+		return getI18NString("plugins.ushahidi.report.date");
 	}
 	
 	public static String getDateInfo() {
-		return getI18NString("plugins.ushahidi.incident.date.info");
+		return getI18NString("plugins.ushahidi.report.date.info");
 	}
 	
 	public static String getDateKeyword() {
-		return getI18NString("plugins.ushahidi.incident.date.keyword");
+		return getI18NString("plugins.ushahidi.report.date.keyword");
 	}
 	
 	public static String getDateInvalid() {
-		return getI18NString("plugins.ushahidi.incident.date.invalid");
+		return getI18NString("plugins.ushahidi.report.date.invalid");
 	}
 
 	public static String getDateNow() {
-		return getI18NString("plugins.ushahidi.incident.datenow");
+		return getI18NString("plugins.ushahidi.report.datenow");
 	}
 	
 	public static String getDateNowInfo() {
-		return getI18NString("plugins.ushahidi.incident.datenow.info");
+		return getI18NString("plugins.ushahidi.report.datenow.info");
 	}
 	
 	public static String getDateNowKeyword() {
-		return getI18NString("plugins.ushahidi.incident.datenow.keyword");
+		return getI18NString("plugins.ushahidi.report.datenow.keyword");
 	}
 	
 	public static String getTime() {
-		return getI18NString("plugins.ushahidi.incident.time");
+		return getI18NString("plugins.ushahidi.report.time");
 	}
 	
 	public static String getLocation() {
-		return getI18NString("plugins.ushahidi.incident.location");
+		return getI18NString("plugins.ushahidi.report.location");
 	}
 	
 	public static String getLocationOther() {
-		return getI18NString("plugins.ushahidi.incident.location.other");
+		return getI18NString("plugins.ushahidi.report.location.other");
 	}
 	
 	public static String getLocationInfo() {
-		return getI18NString("plugins.ushahidi.incident.location.info");
+		return getI18NString("plugins.ushahidi.report.location.info");
 	}
 	
 	public static String getLocationKeyword() {
-		return getI18NString("plugins.ushahidi.incident.location.keyword");
+		return getI18NString("plugins.ushahidi.report.location.keyword");
 	}
 	
 	public static String getDefaultLocation() {
-		return getI18NString("plugins.ushahidi.incident.default.location");
+		return getI18NString("plugins.ushahidi.report.default.location");
 	}
 
 	public static String getDefaultLocationInfo() {
-		return getI18NString("plugins.ushahidi.incident.default.location.info");
+		return getI18NString("plugins.ushahidi.report.default.location.info");
 	}
 	
 	public static String getDefaultLocationKeyword() {
-		return getI18NString("plugins.ushahidi.incident.default.location.keyword");
+		return getI18NString("plugins.ushahidi.report.default.location.keyword");
 	}
 	
 	public static String getCategories() {
-		return getI18NString("plugins.ushahidi.incident.categories");
+		return getI18NString("plugins.ushahidi.report.categories");
 	}
 	
 	public static String getCategoriesInfo() {
-		return getI18NString("plugins.ushahidi.incident.categories.info");
+		return getI18NString("plugins.ushahidi.report.categories.info");
 	}
 	
 	public static String getCategoriesKeyword() {
-		return getI18NString("plugins.ushahidi.incident.categories.keyword");
+		return getI18NString("plugins.ushahidi.report.categories.keyword");
 	}
 	
 	public static String getFirstName() {
-		return getI18NString("plugins.ushahidi.incident.firstname");
+		return getI18NString("plugins.ushahidi.report.firstname");
 	}
 
 	public static String getFirstNameInfo() {
-		return getI18NString("plugins.ushahidi.incident.firstname.info");
+		return getI18NString("plugins.ushahidi.report.firstname.info");
 	}
 	
 	public static String getFirstNameKeyword() {
-		return getI18NString("plugins.ushahidi.incident.firstname.keyword");
+		return getI18NString("plugins.ushahidi.report.firstname.keyword");
 	}
 	
 	public static String getLastName() {
-		return getI18NString("plugins.ushahidi.incident.lastname");
+		return getI18NString("plugins.ushahidi.report.lastname");
 	}
 	
 	public static String getLastNameInfo() {
-		return getI18NString("plugins.ushahidi.incident.lastname.info");
+		return getI18NString("plugins.ushahidi.report.lastname.info");
 	}
 	
 	public static String getLastNameKeyword() {
-		return getI18NString("plugins.ushahidi.incident.lastname.keyword");
+		return getI18NString("plugins.ushahidi.report.lastname.keyword");
 	}
 	
 	public static String getEmail() {
-		return getI18NString("plugins.ushahidi.incident.email");
+		return getI18NString("plugins.ushahidi.report.email");
 	}
 	
 	public static String getEmailInfo() {
-		return getI18NString("plugins.ushahidi.incident.email.info");
+		return getI18NString("plugins.ushahidi.report.email.info");
 	}
 	
 	public static String getEmailKeyword() {
-		return getI18NString("plugins.ushahidi.incident.email.keyword");
+		return getI18NString("plugins.ushahidi.report.email.keyword");
 	}
 	
 	public static String getNews() {
-		return getI18NString("plugins.ushahidi.incident.news");
+		return getI18NString("plugins.ushahidi.report.news");
 	}
 	
 	public static String getNewsInfo() {
-		return getI18NString("plugins.ushahidi.incident.news.info");
+		return getI18NString("plugins.ushahidi.report.news.info");
 	}
 	
 	public static String getNewsKeyword() {
-		return getI18NString("plugins.ushahidi.incident.news.keyword");
+		return getI18NString("plugins.ushahidi.report.news.keyword");
 	}
 	
 	public static String getVideo() {
-		return getI18NString("plugins.ushahidi.incident.video");
+		return getI18NString("plugins.ushahidi.report.video");
 	}
 	
 	public static String getVideoInfo() {
-		return getI18NString("plugins.ushahidi.incident.video.info");
+		return getI18NString("plugins.ushahidi.report.video.info");
 	}
 	
 	public static String getVideoKeyword() {
-		return getI18NString("plugins.ushahidi.incident.video.keyword");
+		return getI18NString("plugins.ushahidi.report.video.keyword");
 	}
 	
 	public static String getFormCreated() {
@@ -189,12 +189,12 @@ public final class MappingMessages {
 		return getI18NString("plugins.ushahidi.setup.forms.failed");
 	}
 	
-	public static String getSurveyCreated() {
-		return getI18NString("plugins.ushahidi.setup.surveys.created");
+	public static String getTextFormCreated() {
+		return getI18NString("plugins.ushahidi.setup.textforms.created");
 	}
 	
-	public static String getSurveyFailed() {
-		return getI18NString("plugins.ushahidi.setup.surveys.failed");
+	public static String getTextFormFailed() {
+		return getI18NString("plugins.ushahidi.setup.textforms.failed");
 	}
 	
 	public static String getSourceNameMissing() {
@@ -226,15 +226,15 @@ public final class MappingMessages {
 	}
 	
 	public static String getErrorCreatingIncident() {
-		return getI18NString("plugins.ushahidi.incident.error.creating");
+		return getI18NString("plugins.ushahidi.report.error.creating");
 	}
 	
 	public static String getErrorUpdatingIncident() {
-		return getI18NString("plugins.ushahidi.incident.error.updating");
+		return getI18NString("plugins.ushahidi.report.error.updating");
 	}
 	
 	public static String getErrorInvalidLocation() {
-		return getI18NString("plugins.ushahidi.incident.error.location");
+		return getI18NString("plugins.ushahidi.report.error.location");
 	}
 	
 	public static String getSearchMessages() {
@@ -250,19 +250,19 @@ public final class MappingMessages {
 	}
 	
 	public static String getIncidentCreatedFromForm() {
-		return getI18NString("plugins.ushahidi.incident.created.via.form");
+		return getI18NString("plugins.ushahidi.report.created.via.form");
 	}
 	
-	public static String getIncidentCreatedFromSurvey() {
-		return getI18NString("plugins.ushahidi.incident.created.via.survey");
+	public static String getIncidentCreatedFromTextForm() {
+		return getI18NString("plugins.ushahidi.report.created.via.textform");
 	}
 	
-	public static String getIncidentUpdatedFromSurvey() {
-		return getI18NString("plugins.ushahidi.incident.updated.via.survey");
+	public static String getIncidentUpdatedFromTextForm() {
+		return getI18NString("plugins.ushahidi.report.updated.via.textform");
 	}
 	
 	public static String getIncidentAddPhoto() {
-		return getI18NString("plugins.ushahidi.incident.add.photo");
+		return getI18NString("plugins.ushahidi.report.add.photo");
 	}
 	
 	public static String getSelectFile() {

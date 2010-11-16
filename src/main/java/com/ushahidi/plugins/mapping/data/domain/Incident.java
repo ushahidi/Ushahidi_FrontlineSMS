@@ -30,7 +30,7 @@ import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
 import net.frontlinesms.data.EntityField;
-import net.frontlinesms.plugins.surveys.data.domain.SurveyResponse;
+import net.frontlinesms.plugins.textforms.data.domain.TextFormResponse;
 
 @SuppressWarnings("serial")
 @Entity
@@ -68,8 +68,8 @@ public class Incident implements Serializable {
 	private static final String FIELD_LAST_NAME = "lastName";
 	/** Column name for {@link #emailAddress } */
 	private static final String FIELD_EMAIL_ADDRESS = "emailAddress";
-	/** Column name for {@link #surveyResponse } */
-	private static final String FIELD_SURVEY_RESPONSE = "surveyResponse";
+	/** Column name for {@link #textformResponse } */
+	private static final String FIELD_TEXTFORM_RESPONSE = "textformResponse";
 	/** Column name for  {@link #status} */
 	private static final String FIELD_SYNC_STATUS = "syncStatus";
 	
@@ -101,8 +101,8 @@ public class Incident implements Serializable {
 		LAST_NAME(FIELD_LAST_NAME),
 		/** Field mapping for {@link Incident#emailAddress} */
 		EMAIL_ADDRESS(FIELD_EMAIL_ADDRESS),
-		/** Field mapping for {@link Incident#surveyResponse} */
-		SURVEY_RESPONSE(FIELD_SURVEY_RESPONSE),
+		/** Field mapping for {@link Incident#textformResponse} */
+		TEXTFORM_RESPONSE(FIELD_TEXTFORM_RESPONSE),
 		/** Field mapping for {@link Incident#syncStatus} */
 		SYNC_STATUS(FIELD_SYNC_STATUS);
 		
@@ -183,7 +183,7 @@ public class Incident implements Serializable {
 	private MappingSetup mappingSetup;
 	
 	@OneToOne(optional=true)
-	private SurveyResponse surveyResponse;
+	private TextFormResponse textformResponse;
 	
 	@OneToMany(cascade=CascadeType.ALL, fetch=FetchType.EAGER)
 	@LazyCollection(LazyCollectionOption.FALSE)
@@ -501,12 +501,12 @@ public class Incident implements Serializable {
 		return emailAddress;
 	}
 	
-	public SurveyResponse getSurveyResponse() {
-		return surveyResponse;
+	public TextFormResponse getTextFormResponse() {
+		return textformResponse;
 	}
 	
-	public void setSurveyResponse(SurveyResponse surveyResponse) {
-		this.surveyResponse = surveyResponse;
+	public void setTextFormResponse(TextFormResponse textformResponse) {
+		this.textformResponse = textformResponse;
 	}
 	
 	public List<Media> getMedia() {

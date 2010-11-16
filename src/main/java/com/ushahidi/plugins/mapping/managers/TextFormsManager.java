@@ -25,45 +25,45 @@ import net.frontlinesms.data.events.EntitySavedNotification;
 import net.frontlinesms.data.events.EntityUpdatedNotification;
 import net.frontlinesms.events.FrontlineEventNotification;
 
-import net.frontlinesms.plugins.surveys.SurveysPluginController;
-import net.frontlinesms.plugins.surveys.data.domain.Survey;
-import net.frontlinesms.plugins.surveys.data.domain.SurveyResponse;
-import net.frontlinesms.plugins.surveys.data.domain.questions.Question;
-import net.frontlinesms.plugins.surveys.data.domain.questions.QuestionType;
-import net.frontlinesms.plugins.surveys.data.domain.answers.Answer;
-import net.frontlinesms.plugins.surveys.data.repository.QuestionDao;
-import net.frontlinesms.plugins.surveys.data.repository.QuestionFactory;
-import net.frontlinesms.plugins.surveys.data.repository.SurveyDao;
-import net.frontlinesms.plugins.surveys.data.repository.SurveyResponseDao;
+import net.frontlinesms.plugins.textforms.TextFormsPluginController;
+import net.frontlinesms.plugins.textforms.data.domain.TextForm;
+import net.frontlinesms.plugins.textforms.data.domain.TextFormResponse;
+import net.frontlinesms.plugins.textforms.data.domain.questions.Question;
+import net.frontlinesms.plugins.textforms.data.domain.questions.QuestionType;
+import net.frontlinesms.plugins.textforms.data.domain.answers.Answer;
+import net.frontlinesms.plugins.textforms.data.repository.QuestionDao;
+import net.frontlinesms.plugins.textforms.data.repository.QuestionFactory;
+import net.frontlinesms.plugins.textforms.data.repository.TextFormDao;
+import net.frontlinesms.plugins.textforms.data.repository.TextFormResponseDao;
 
 /**
- * SurveysManager
+ * TextFormsManager
  * @author dalezak
  *
  */
-public class SurveysManager extends Manager {
+public class TextFormsManager extends Manager {
 
-	public static MappingLogger LOG = MappingLogger.getLogger(SurveysManager.class);	
+	public static MappingLogger LOG = MappingLogger.getLogger(TextFormsManager.class);	
 	
 	private final MappingPluginController pluginController;
 	private final QuestionDao questionDao;
-	private final SurveyDao surveyDao;
-	private final SurveyResponseDao surveyResponseDao;
+	private final TextFormDao textformDao;
+	private final TextFormResponseDao textformResponseDao;
 	
 	private final CategoryDao categoryDao;
 	private final LocationDao locationDao;
 	private final IncidentDao incidentDao;
 	private final MappingSetupDao mappingSetupDao;
 
-	private final String surveyName;
+	private final String textformName;
 	
 	/**
-	 * SurveysManager
+	 * TextFormsManager
 	 * @param frontlineController FrontlineSMS
 	 * @param pluginController FrontlineSMS
 	 * @param appContext ApplicationContext
 	 */
-	public SurveysManager(FrontlineSMS frontlineController, MappingPluginController pluginController) {
+	public TextFormsManager(FrontlineSMS frontlineController, MappingPluginController pluginController) {
 		frontlineController.getEventBus().registerObserver(this);
 		this.pluginController = pluginController;
 		this.categoryDao = pluginController.getCategoryDao();
@@ -71,12 +71,12 @@ public class SurveysManager extends Manager {
 		this.incidentDao = pluginController.getIncidentDao();
 		this.mappingSetupDao = pluginController.getMappingSetupDao();
 
-		SurveysPluginController surveysPluginController = getPluginController(frontlineController, SurveysPluginController.class);
-		this.questionDao = surveysPluginController.getQuestionDao();
-		this.surveyDao = surveysPluginController.getSurveyDao();
-		this.surveyResponseDao = surveysPluginController.getSurveyResponseDao();
+		TextFormsPluginController textformsPluginController = getPluginController(frontlineController, TextFormsPluginController.class);
+		this.questionDao = textformsPluginController.getQuestionDao();
+		this.textformDao = textformsPluginController.getTextFormDao();
+		this.textformResponseDao = textformsPluginController.getTextFormResponseDao();
 		
-		this.surveyName = MappingMessages.getIncidentReport();
+		this.textformName = MappingMessages.getIncidentReport();
 	}
 	
 	/**
@@ -90,27 +90,27 @@ public class SurveysManager extends Manager {
 				Question question = answer.getQuestion();
 				LOG.error("Answer Received [%s, %s, %s, %s]", question.getName(), question.getKeyword(), question.getType(), answer.getAnswerValue());
 			}
-			else if (entitySavedNotification.getDatabaseEntity() instanceof SurveyResponse) {
-				SurveyResponse surveyResponse = (SurveyResponse)entitySavedNotification.getDatabaseEntity();
-				if (surveyResponse.isCompleted()) {
-					LOG.debug("Survey '%s' IS completed", surveyResponse.getSurveyName());
-					saveIncidentFromSurveryResponse(surveyResponse);
+			else if (entitySavedNotification.getDatabaseEntity() instanceof TextFormResponse) {
+				TextFormResponse textformResponse = (TextFormResponse)entitySavedNotification.getDatabaseEntity();
+				if (textformResponse.isCompleted()) {
+					LOG.debug("TextForm '%s' IS completed", textformResponse.getTextFormName());
+					saveIncidentFromSurveryResponse(textformResponse);
 				}
 				else {
-					LOG.debug("Survey '%s' NOT completed", surveyResponse.getSurveyName());
+					LOG.debug("TextForm '%s' NOT completed", textformResponse.getTextFormName());
 				}
 			}
 		}
 		else if (notification instanceof EntityUpdatedNotification<?>) {
 			EntityUpdatedNotification<?> entityUpdatedNotification = (EntityUpdatedNotification<?>)notification;
-			if (entityUpdatedNotification.getDatabaseEntity() instanceof SurveyResponse) {
-				SurveyResponse surveyResponse = (SurveyResponse)entityUpdatedNotification.getDatabaseEntity();
-				if (surveyResponse.isCompleted()) {
-					LOG.debug("Survey '%s' IS completed", surveyResponse.getSurveyName());
-					saveIncidentFromSurveryResponse(surveyResponse);
+			if (entityUpdatedNotification.getDatabaseEntity() instanceof TextFormResponse) {
+				TextFormResponse textformResponse = (TextFormResponse)entityUpdatedNotification.getDatabaseEntity();
+				if (textformResponse.isCompleted()) {
+					LOG.debug("TextForm '%s' IS completed", textformResponse.getTextFormName());
+					saveIncidentFromSurveryResponse(textformResponse);
 				}
 				else {
-					LOG.debug("Survey '%s' NOT completed", surveyResponse.getSurveyName());
+					LOG.debug("TextForm '%s' NOT completed", textformResponse.getTextFormName());
 				}
 			}
 		}
@@ -118,22 +118,22 @@ public class SurveysManager extends Manager {
 	
 	/**
 	 * Save incident from survery response
-	 * @param surveyResponse SurveyResponse
+	 * @param textformResponse TextFormResponse
 	 */
-	private void saveIncidentFromSurveryResponse(SurveyResponse surveyResponse) {
-		Incident incident = incidentDao.getIncidentBySurveyResponse(surveyResponse);
+	private void saveIncidentFromSurveryResponse(TextFormResponse textformResponse) {
+		Incident incident = incidentDao.getIncidentByTextFormResponse(textformResponse);
 		if (incident == null) {
 			incident = new Incident();
 		}
 		incident.setMarked(true);
 		incident.setMappingSetup(mappingSetupDao.getDefaultSetup());
-		incident.setSurveyResponse(surveyResponse);
-		Contact contact = surveyResponse.getContact();
+		incident.setTextFormResponse(textformResponse);
+		Contact contact = textformResponse.getContact();
 		if (contact != null) {
 			incident.setFirstName(contact.getName());
 			incident.setEmailAddress(contact.getEmailAddress());
 		}
-		for (Answer<?> answer : surveyResponse.getAnswers()) {
+		for (Answer<?> answer : textformResponse.getAnswers()) {
 			LOG.debug("%s = %s", answer.getQuestionName(), answer.getAnswerValue());
 			if (answer.getQuestionName().equalsIgnoreCase(MappingMessages.getTitle())) {
 				//TODO use answer.getAnswerValue()
@@ -175,7 +175,7 @@ public class SurveysManager extends Manager {
 		try {
 			incidentDao.saveIncident(incident);
 			LOG.debug("New Incident Created: %s", incident.getTitle());
-			pluginController.setStatus(MappingMessages.getIncidentCreatedFromSurvey());
+			pluginController.setStatus(MappingMessages.getIncidentCreatedFromTextForm());
 			pluginController.refreshIncidentMap();
 			pluginController.refreshIncidentReports();
 		} 
@@ -185,9 +185,9 @@ public class SurveysManager extends Manager {
 	}
 	
 	/**
-	 * Create Ushahidi-friendly survey questions
+	 * Create Ushahidi-friendly textform questions
 	 */
-	public boolean addSurveyQuestions() {
+	public boolean addTextFormQuestions() {
 		LOG.debug("createUshahidiQuestions");
 		try {
 			List<Question> questions = new ArrayList<Question>();
@@ -212,30 +212,30 @@ public class SurveysManager extends Manager {
 			}
 			createChecklistQuestion(questions, MappingMessages.getLocation(), MappingMessages.getLocationKeyword(), MappingMessages.getLocationInfo(), locations.toArray(new String[locations.size()]));
 			
-			Survey survey = new Survey(surveyName, "report", questions);
-			this.surveyDao.saveSurvey(survey);
-			LOG.debug("Survey Created: %s", survey.getName());
+			TextForm textform = new TextForm(textformName, "report", questions);
+			this.textformDao.saveTextForm(textform);
+			LOG.debug("TextForm Created: %s", textform.getName());
 			return true;	
 		}
 		catch(Exception ex){
-			LOG.error("Exception in addSurveyQuestions", ex);
+			LOG.error("Exception in addTextFormQuestions", ex);
 		}
 		return false;
 	}
 	
-	public boolean addSurveyAnswers(String title) {
+	public boolean addTextFormAnswers(String title) {
 		try {
 			
 			return true;
 		}
 		catch (Exception ex){
-			LOG.error("Exception in addSurveyAnswers", ex);
+			LOG.error("Exception in addTextFormAnswers", ex);
 		}
 		return false;
 	}
 	
-	public SurveyResponseDao getSurveyResponseDao() {
-		return surveyResponseDao;
+	public TextFormResponseDao getTextFormResponseDao() {
+		return textformResponseDao;
 	}
 	
 	protected Question createPlainTextQuestion(List<Question> questions, String name, String keyword, String infoSnippet) {

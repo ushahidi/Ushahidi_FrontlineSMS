@@ -41,7 +41,7 @@
 					<button icon="/icons/map_sync.png" text="i18n.plugins.ushahidi.synchronize" action="beginSynchronization" weightx="1"/>
 				</panel>
 			</panel>
-			<panel columns="1" weightx="1" weighty="1" text="i18n.plugins.ushahidi.incidents" border="true" gap="5" top="9" bottom="9" left="9" right="9">
+			<panel columns="1" weightx="1" weighty="1" text="i18n.plugins.ushahidi.reports" border="true" gap="5" top="9" bottom="9" left="9" right="9">
 				<panel weightx="1" gap="10" columns="2">
 					<checkbox name="cbxIncidentMap" text="i18n.plugins.ushahidi.view.map" icon="/icons/map.png" group="mapOrReports" selected="true" action="showIncidentMap" />
 					<checkbox name="cbxIncidentList" text="i18n.plugins.ushahidi.view.reports" icon="/icons/report.png" group="mapOrReports" action="showIncidentReports" />

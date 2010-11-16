@@ -20,8 +20,8 @@ import net.frontlinesms.plugins.forms.data.domain.FormField;
 import net.frontlinesms.plugins.forms.data.domain.FormResponse;
 import net.frontlinesms.plugins.forms.data.domain.ResponseValue;
 import net.frontlinesms.plugins.forms.data.repository.FormResponseDao;
-import net.frontlinesms.plugins.surveys.data.domain.SurveyResponse;
-import net.frontlinesms.plugins.surveys.data.domain.answers.Answer;
+import net.frontlinesms.plugins.textforms.data.domain.TextFormResponse;
+import net.frontlinesms.plugins.textforms.data.domain.answers.Answer;
 import net.frontlinesms.ui.ExtendedThinlet;
 import net.frontlinesms.ui.ThinletUiEventHandler;
 import net.frontlinesms.ui.UiGeneratorController;
@@ -73,16 +73,16 @@ public class ResponseDialogHandler extends ExtendedThinlet implements ThinletUiE
 		this.formResponseDao = formResponseDao;
 	}
 	
-	public void showDialog(SurveyResponse surveyResponse, Location location) {
-		LOG.debug("showDialog: %s", surveyResponse);
-		ui.setAttachedObject(mainDialog, surveyResponse);
-		ui.setText(fields.txtContactName, surveyResponse.getContactName());
-		ui.setText(fields.txtContactPhone, surveyResponse.getContactPhoneNumber());
+	public void showDialog(TextFormResponse textformResponse, Location location) {
+		LOG.debug("showDialog: %s", textformResponse);
+		ui.setAttachedObject(mainDialog, textformResponse);
+		ui.setText(fields.txtContactName, textformResponse.getContactName());
+		ui.setText(fields.txtContactPhone, textformResponse.getContactPhoneNumber());
 		ui.setText(fields.txtLocation, location.getName());
 		ui.setText(fields.txtCoordinates, location.getCoordinates());
-		ui.setText(fields.txtDate, surveyResponse.getStartedString());
+		ui.setText(fields.txtDate, textformResponse.getStartedString());
 		ui.removeAll(fields.tblResponses);
-		for(Answer<?> answer : surveyResponse.getAnswers()) {
+		for(Answer<?> answer : textformResponse.getAnswers()) {
 			ui.add(fields.tblResponses, getRow(answer.getQuestionName(), answer.getAnswerValue()));
 		}
 		ui.setVisible(fields.txtMessage, false);
@@ -90,8 +90,8 @@ public class ResponseDialogHandler extends ExtendedThinlet implements ThinletUiE
 		ui.setVisible(fields.tblResponses, true);
 		ui.setVisible(fields.lblDate, true);
 		ui.setVisible(fields.txtDate, true);
-		ui.setIcon(mainDialog, "/icons/survey.png");
-		ui.setText(mainDialog, MappingMessages.getSurveyResponse());
+		ui.setIcon(mainDialog, "/icons/textform.png");
+		ui.setText(mainDialog, MappingMessages.getTextFormResponse());
 		ui.add(mainDialog);
 	}
 	

@@ -7,7 +7,7 @@ import thinlet.Thinlet;
 
 import com.ushahidi.plugins.mapping.MappingPluginController;
 import com.ushahidi.plugins.mapping.managers.FormsManager;
-import com.ushahidi.plugins.mapping.managers.SurveysManager;
+import com.ushahidi.plugins.mapping.managers.TextFormsManager;
 import com.ushahidi.plugins.mapping.sync.SynchronizationCallback;
 import com.ushahidi.plugins.mapping.sync.SynchronizationManager;
 import com.ushahidi.plugins.mapping.util.MappingDebug;
@@ -47,7 +47,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	private final FrontlineSMS frontlineController;
 	private final UiGeneratorController ui;
 	
-    private SurveysManager surveysManager;
+    private TextFormsManager textformsManager;
 	private FormsManager formsManager;
 	
 	private SyncDialogHandler syncDialog;
@@ -98,7 +98,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		this.fields = new UIFields(ui, mainTab);
 		
 		try {
-			this.surveysManager = new SurveysManager(frontlineController, pluginController);
+			this.textformsManager = new TextFormsManager(frontlineController, pluginController);
 			this.formsManager = new FormsManager(frontlineController, pluginController);	
 		}
 		catch(Exception ex) {
@@ -106,7 +106,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		}
 		
 		if (MappingProperties.isDebugMode()) {
-			MappingDebug mappingDebug = new MappingDebug(formsManager, surveysManager, messageDao, contactDao);
+			MappingDebug mappingDebug = new MappingDebug(formsManager, textformsManager, messageDao, contactDao);
 			mappingDebug.startDebugTerminal();
 		}
 	}
@@ -216,7 +216,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 	 * Displays the mapping setup dialog
 	 */
 	public SetupDialogHandler showSetupDialog(){
-		SetupDialogHandler dialog = new SetupDialogHandler(pluginController, frontlineController, ui, formsManager, surveysManager);
+		SetupDialogHandler dialog = new SetupDialogHandler(pluginController, frontlineController, ui, formsManager, textformsManager);
 		dialog.showDialog();
 		return dialog;
 	}
@@ -301,7 +301,7 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		LOG.debug("showIncidentMap");
 		if (mapPanelHandler == null) {
 			mapPanelHandler = new MapPanelHandler(pluginController, frontlineController, ui);
-			mapPanelHandler.setSurveyResponseDao(surveysManager.getSurveyResponseDao());
+			mapPanelHandler.setTextFormResponseDao(textformsManager.getTextFormResponseDao());
 			mapPanelHandler.setFormResponseDao(formsManager.getFormResponseDao());
 		}
 		ui.setSelected(fields.cbxIncidentMap, true);
