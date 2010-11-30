@@ -81,7 +81,8 @@ public class ContactDialogHandler extends ExtendedThinlet implements ThinletUiEv
 			ui.setSelectedIndex(fields.cboLocations, -1);
 			for(Location location: locationDao.getAllLocations()) {	
 				if (location.getName() != null && location.getName().equalsIgnoreCase(UNKNOWN) == false) {
-					ui.add(fields.cboLocations, createComboboxChoice(location.getName(), location));
+					String locationName = location.getName().length() > 50 ? location.getName().substring(0, 50) : location.getName();
+					ui.add(fields.cboLocations, createComboboxChoice(locationName, location));
 					if (locationDetails != null && location.getId() == locationDetails.getLocationID()) {
 						ui.setSelectedIndex(fields.cboLocations, index);
 					}

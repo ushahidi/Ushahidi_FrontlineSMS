@@ -5,10 +5,8 @@ import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
@@ -304,11 +302,8 @@ public class SynchronizationThread extends Thread{
 					destinationDirectory.mkdir();
 				}
 				File destinationFilePath = new File(destinationDirectory, link);
-				URI baseURI = new URI(baseURL.toLowerCase());
 				if (destinationFilePath.exists() == false) {
-					String sourceFilePath = baseURI.getHost().indexOf(".crowdmap.com") > -1 
-						? String.format("%s/media/uploads/%s/%s", baseURL, baseURI.getHost().split("\\.")[0], link)
-						: String.format("%s/media/uploads/%s", baseURL, link);
+					String sourceFilePath = String.format("%s/media/uploads/%s", baseURL, link);
 					URL url = new URL(sourceFilePath);
 					BufferedImage image = ImageIO.read(url);
 					ImageIO.write(image, "jpg", destinationFilePath);
@@ -319,9 +314,6 @@ public class SynchronizationThread extends Thread{
 				}
 				return new Photo(id, link, destinationFilePath.getAbsolutePath());
 			} 
-			catch (URISyntaxException e) {
-				LOG.error("URISyntaxException Parsing URI: %s", baseURL);
-			}
 			catch (IOException ex) {
 				LOG.error("IOException Downloading Media %s : %s", link, ex);
 			}

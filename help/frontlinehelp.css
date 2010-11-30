@@ -1,0 +1,167 @@
+body {
+	background-color: #F4F4F4;
+}
+
+a { color: #800000; }
+a:link  { text-decoration: none; }
+a:visited  { text-decoration: none; }
+a:active { text-decoration: none; }
+a:hover {text-decoration: underline; }
+
+li {
+	font-family: "Arial", 'sans-serif';
+	font-size: 13px;
+	color: #369;
+}
+
+li a {
+	color: #369;
+}
+
+
+h1, h2, h3, h4, h5, h6 {
+	font-family: "Arial", 'sans-serif';
+	font-weight: normal;
+}
+
+h1 {
+	font-weight: bold;
+	font-size: 24px;
+}
+
+h2 {
+	font-weight: bold;
+	font-size: 16px;
+	color: #333;
+	margin: 45px 0 20px 0;
+}
+
+h3 {
+	font-size: 13px;
+	color: #666;
+}
+
+h3 a {
+	color: #800000;
+}
+
+h4 {
+	font-size: 13px;
+	font-style: italic;
+	color: #666;
+}
+
+h5 {
+	font-size: 13px;
+	color: #666;
+	font-style: italic;
+}
+
+h6 {
+	color: #551A8B;
+	font-size: 10px;
+}
+
+.left_aligned_image {
+	text-align: left;
+	margin: 20px 0 20px 0;
+}
+
+.content {
+	width: 950;
+	margin-left: auto;
+	margin-right: auto;
+	text-align: justify;
+}
+
+.emphase {
+	font-style: italic;
+}
+
+.feature {
+	font-size: 13px;
+	font-weight: bold;
+	color: #080;
+}
+
+.header img {
+	border: 0px;
+	margin: 35px 0 25px 0;
+}
+
+.header {
+	border-bottom: 1px solid #CC0066;
+	width: 950;
+	margin-left: auto;
+	margin-right: auto;
+	text-align: right;
+}
+
+.highlight {
+	font-size: 13px;
+	font-weight: bold;
+	color: #111;
+}
+
+li .highlight, .note .highlight, .tip .highlight {
+	color: #369;
+}
+
+.note {
+	font-weight: normal;
+	color: #369;
+	margin: 15px 0 15px 0;
+	display: block;
+}
+
+.note:before {
+	content: "NOTE: ";
+	font-weight: bold;
+	font-style: italic;
+}
+
+
+.reference {
+	font-family: "Arial", 'sans-serif';
+	font-size: 13px;
+	font-weight: bold;
+	color: #FF9900;
+}
+
+.reference:before {
+	font-weight: normal;
+	content: "[";
+}
+.reference:after {
+	font-weight: normal;
+	content: "]";
+}
+
+.special {
+	font-size: 13px;
+	font-weight: bold;
+	color: #369;
+}
+
+.subtitle {
+	font-family: "Arial", 'sans-serif';
+	font-weight: bold;
+	font-size: 14px;
+	color: #333;
+	margin: 45px 0 20px 0;
+	display: block;
+}
+
+.tip {
+	font-weight: normal;
+	font-style: italic;
+	color: #369;
+	margin: 15px 0 15px 0;
+	display: block;
+}
+
+.tip:before {
+	content: "TIP: ";
+	font-weight: bold;
+	font-style: italic;
+}

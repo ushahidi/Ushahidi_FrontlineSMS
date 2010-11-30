@@ -1,4 +1,1 @@
 com.ushahidi.plugins.mapping.maps.providers.openstreetmap.OpenStreetMapProvider
-com.ushahidi.plugins.mapping.maps.providers.google.GoogleRoadProvider
-com.ushahidi.plugins.mapping.maps.providers.microsoft.MicrosoftRoadProvider
-com.ushahidi.plugins.mapping.maps.providers.yahoo.YahooRoadProvider

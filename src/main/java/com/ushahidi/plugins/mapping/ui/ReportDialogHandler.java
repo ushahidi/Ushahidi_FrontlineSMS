@@ -106,7 +106,8 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 		removeAll(fields.cboReportLocations);
 		for(Location location: locationDao.getAllLocations(mappingSetupDao.getDefaultSetup())) {
 			if (location.getName() != null && location.getName().equalsIgnoreCase(UNKNOWN) == false) {
-				ui.add(fields.cboReportLocations, createComboboxChoice(location.getName(), location));
+				String locationName = location.getName().length() > 50 ? location.getName().substring(0, 50) : location.getName();
+				ui.add(fields.cboReportLocations, createComboboxChoice(locationName, location));
 			}
 		}
 		
@@ -156,6 +157,7 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 			if (incident.getPhotos().size() > 0) {
 				for(Photo photo : incident.getPhotos()) {
 					Object item = ui.createListItem("", photo);
+					LOG.debug("Photo: %s", photo.getLocalPath());
 					ui.setIcon(item, photo.getImage());
 					ui.add(fields.lstPhotos, item);
 				}
@@ -257,7 +259,8 @@ public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEve
 		removeAll(fields.cboReportLocations);
 		for(Location location: locationDao.getAllLocations(mappingSetupDao.getDefaultSetup())) {	
 			if (location.getName() != null && location.getName().equalsIgnoreCase(UNKNOWN) == false) {
-				ui.add(fields.cboReportLocations, createComboboxChoice(location.getName(), location));
+				String locationName = location.getName().length() > 50 ? location.getName().substring(0, 50) : location.getName();
+				ui.add(fields.cboReportLocations, createComboboxChoice(locationName, location));
 			}
 		}
 		
