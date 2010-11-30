@@ -128,6 +128,10 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		ui.setStatus(status);
 	}
 	
+	public void showHelpPage(String page) {
+		ui.showHelpPage(page);
+	}
+	
 	public void showMessages() {
 		LOG.debug("showMessages");
 		ui.removeAll(fields.tblMessages);

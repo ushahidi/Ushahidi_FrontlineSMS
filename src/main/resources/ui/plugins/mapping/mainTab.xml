@@ -51,6 +51,6 @@
 				</panel>
 			</panel>
 		</splitpane>
-		<button tooltip="i18n.tooltip.click.for.help" valign="bottom" icon="/icons/big_help.png" type="link" />
+		<button tooltip="i18n.tooltip.click.for.help" valign="bottom" icon="/icons/big_help.png" type="link" action="showHelpPage('mapping.htm')" />
 	</panel>
 </tab>
