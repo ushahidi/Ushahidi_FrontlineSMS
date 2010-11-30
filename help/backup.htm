@@ -1,0 +1,178 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-gb">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>FrontlineSMS Help :: Mapping</title>
+</head>
+
+<style type="text/css">
+A:link {text-decoration: none}
+A:visited {text-decoration: none}
+A:active {text-decoration: none}
+A:hover {text-decoration: underline; }
+</style>
+
+<body bgcolor="#F4F4F4">
+
+<p>&nbsp;</p>
+<div align="center">
+  <center>
+  <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="950">
+    <tr>
+      <td width="763" style="border-bottom-style: solid; border-bottom-width: 1" bordercolor="#CC0066">
+      <br>
+&nbsp;<p>&nbsp;</p>
+      <p>&nbsp;</td>
+      <td width="187" valign="top" style="border-bottom-style: solid; border-bottom-width: 1" bordercolor="#CC0066">
+      <a href="help-menu.htm">
+      <img border="0" src="img/flsmslogo.png" align="right" hspace="0" width="150" height="87"></a></td>
+    </tr>
+  </table>
+  </center>
+</div>
+<div align="center">
+  <center>
+  <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="950">
+    <tr>
+      <td><b><font face="Arial" size="4"><br>
+      </font><font face="Arial" size="5">Mapping</font></b><p>
+	  <font face="Arial" size="2" color="#666666"> Mapping allows you to work with an Ushahidi instance while offline (not connected to the Internet)</font></i></p>
+      <p>
+      <img border="0" src="img/mapping-main.jpg" vspace="5"></p>
+      
+	<p><b><font face="Arial" color="#333333">What can I do in Mapping?</font></b></p>
+      <p><font face="Arial" size="2" color="#111111"><b>Mapping</b></font><font face="Arial" size="2" color="#666666"> 
+      is a data visualization tool which makes use of online mapping services such as Open Street Maps  
+      to report and plot incidents on a map. Incidents can be fetched from an Ushahidi instance or they can be
+      created from the incoming text messages. An "Ushahidi instance" is a deployment of the Ushahidi platform e.g.
+      <a href="http://www.stopstockouts.org">http://www.stopstockouts.org</a>, 
+      <a href="http://drc.ushahidi.com">http://drc.ushahidi.com</a>, 
+      <a href="http://swineflu.ushahidi.com">http://swineflu.ushahidi.com</a> 
+	  </font></p>
+	  
+      <p><font face="Arial" size="2" color="#666666">The Ushahidi instance to be 
+      synchronized <font face="Arial" size="2" color="#FF9900">[<b>8</b>]</font>
+       with is determined by the default mapping setup. During synchronization, locally created incidents 
+      (via <b>Mapping</b>) are posted to the Ushahidi instance. New categories, locations and incidents created 
+      on the online instance are also fetched. Synchronization requires an Internet connection.<br/><br/>
+      The Events Filter <font face="Arial" size="2" color="#FF9900">[<b>1</b>]</font> allows you 
+      to drill down the incidents by Keyword or by a Date range (when the incidents occurred).<br/><br/>
+      During the initial setup, <b>Mapping </b> requires you to be connected to the Internet so that the Map 
+      <font face="Arial" size="2" color="#FF9900">[<b>4</b>]</font> can be downloaded. The map
+      can then be saved on the local computer once it has loaded. To do so, right-click inside the map and select &quot;<b>Save</b>&quot;  
+      </font></p>
+      
+      <p><i><font face="Arial" size="2" color="#111111"><b>Mapping</b></font><font face="Arial" size="2" color="#666666">
+	  requires some familiarity with the Ushahidi platform. You may therefore want to find out more about Ushahidi and what it's about
+      from the </font><font face="Arial" size="2">
+      <a target="_blank" href="http://www.ushahidi.com">
+      <font color="#800000">Ushahidi website</font></a></font><font face="Arial" size="2" color="#666666">.</font>
+      <br>
+      <br>
+      <a name="formseditor">&nbsp;</a></font></i><b><font face="Arial" color="#333333"><br>
+      Activating the Mapping module</font></b></p>
+      <p><font face="Arial" size="2" color="#666666">When FrontlineSMS is 
+      installed for the first time, the </font><b>
+      <font face="Arial" size="2" color="#111111">Mapping</font></b><font face="Arial" size="2" color="#666666"> 
+      module is initially hidden from view. To activate the </font><b>
+      <font face="Arial" size="2" color="#111111">Mapping</font></b><font face="Arial" size="2" color="#666666"> 
+      module, go to the </font><b><font face="Arial" size="2" color="#336699">
+      View</font></b><font face="Arial" size="2" color="#336699"><b> </b></font>
+      <font face="Arial" size="2" color="#666666">menu, then select </font><b>
+      <font face="Arial" size="2" color="#336699">Tabs</font></b><font face="Arial" size="2" color="#666666">, 
+      and make sure </font><b><font face="Arial" size="2" color="#336699">
+      &quot;Mapping&quot;</font></b><font face="Arial" size="2" color="#336699"><b> </b></font>
+      <font face="Arial" size="2" color="#666666">is ticked. A new Mapping tab 
+      should then appear with your other menus along the top of the screen. To 
+      hide the </font><b>
+      <font face="Arial" size="2" color="#111111">Forms</font></b><font face="Arial" size="2" color="#666666"> 
+      module, go back into the same menu and remove the tick/check from the </font>
+      <b><font face="Arial" size="2" color="#336699">&quot;Mapping&quot;</font></b><font face="Arial" size="2" color="#666666"> 
+      entry</font></p>
+      <p><b><font face="Arial" color="#333333"><br>
+      Mapping Configuration </font></b></p>
+      <p><font face="Arial" size="2" color="#666666">To begin using the mapping plugin, 
+      click on &quot;</font><b><font face="Arial" size="2" color="#008000">Setup</font></b><font face="Arial" size="2" color="#666666">&quot; 
+      </font><font face="Arial" size="2" color="#FF9900">[<b>5</b>]</font><font face="Arial" size="2" color="#666666"> 
+      from the main window </font><font face="Arial" size="2" color="#FF9900">[<b>1</b>]</font><font face="Arial" size="2" color="#666666">. 
+      The following window will appear:</font></p>
+      <p>
+      <img border="0" src="img/mappingsetup.jpg" vspace="5" width="611" height="470"></p>
+      <p><font face="Arial" size="2" color="#336699"><b>Mapping Configurations
+      </b></font><font face="Arial" size="2" color="#FF9900">[<b>9</b>]</font><font face="Arial" size="2" color="#336699"><b> <br>
+      </b>This is where the list of all mapping configurations are listed. When an item is selected from the list, the details 
+      of the configurations are displayed in the input fields <font face="Arial" size="2" color="#FF9900">[<b>10</b>]</font>, 
+      <font face="Arial" size="2" color="#FF9900">[<b>11</b>]</font>and 
+      <font face="Arial" size="2" color="#FF9900">[<b>12</b>]</font>. This allows you to edit the settings of the selected configuration.</font></p>
+      
+      <p><b><font face="Arial" size="2" color="#336699">Source for the Mapping Data </font></b><font face="Arial" size="2" color="#FF9900">[<b>10</b>]</font><font face="Arial" size="2" color="#336699"><b><br>
+      </b>This is where you specify a name <font face="Arial" size="2"><i>(Source name)</i></font> for url 
+      <font face="Arial" size="2"><i>(Source URL)</i></font> which shall be used by Mapping for synchronization <font face="Arial" size="2" color="#FF9900">[<b>8</b>]</font>. 
+       The Source URL is the source for the incidents plotted on the map <font face="Arial" size="2" color="#FF9900">[<b>4</b>]</font>.
+      </font></p>
+      
+      <p><font face="Arial" size="2" color="#336699"><b>Area covered by the map</b></font><font face="Arial" size="2" color="#666666"> </font><font face="Arial" size="2" color="#FF9900">[<b>11</b>]</font><font face="Arial" size="2" color="#336699"><b><br>
+      </b>This is where you specify the </font>
+      <font face="Arial" size="2"><i>Longitude</i></font><font face="Arial" size="2" color="#336699"> 
+      and </font><font face="Arial" size="2"><i>Latitude</i></font><font face="Arial" size="2" color="#336699"> 
+      of the area covered by the map <font face="Arial" size="2" color="#FF9900">[<b>4</b>]</font>. These values can be obtained 
+      from the Admin dashboard of the Ushahidi instance which you would like to synchronize to.</font></p>
+      
+      <p><b><font face="Arial" size="2" color="#336699">Default</font></b><font face="Arial" size="2" color="#666666"> </font><font face="Arial" size="2" color="#FF9900">[<b>12</b>]</font><font face="Arial" size="2" color="#336699"><b><br>
+      </b>Select this option if you would like to set the mapping configurations being input as the default. <b>Mapping </b> 
+      only allows one set of configurations to be set as the default. If no mapping configurations exist, the new
+      settings are designated as default.</font></p>
+      
+      <p><b><font face="Arial" size="2" color="#336699">Save/Cancel</font></b><font face="Arial" size="2" color="#666666"> </font><font face="Arial" size="2" color="#FF9900">[<b>13</b>]</font><font face="Arial" size="2" color="#336699"><b><br>
+      </b>Once you've finished keying in all the information in the provided input fields, you can </font>
+      <font face="Arial" size="2" color="#008000"><b>Save</b></font><font face="Arial" size="2" color="#336699"> 
+      it or, if you want to discard it, </font>
+      <font face="Arial" size="2" color="#008000"><b>Cancel</b></font><font face="Arial" size="2" color="#336699"> 
+      </font><font face="Arial" size="2" color="#FF9900">[<b>13</b>]</font><font face="Arial" size="2" color="#336699">. 
+      </font></p>
+      
+      <p><b><font face="Arial" color="#333333"><br> Reporting an Incident</font></b></p>
+      <p><font face="Arial" size="2" color="#666666">To create an incident, double click on an item/message on 
+      the </font><font face="Arial" size="2" color="#336699"><b>
+      Messages Window
+      </b></font><font face="Arial" size="2" color="#FF9900">[<b>2</b>]</font>
+      <font face="Arial" size="2" color="#666666">. The following window shall appear: </font>
+      </p>
+      <img border="0" src="img/mapping-create-incident.jpg"/>
+      <p>
+      <font face="Arial" size="2" color="#666666">Fill in the necessary information in the provided fields. When you are finished, either </font>
+      <font face="Arial" size="2" color="#008000"><b>Save</b></font><font face="Arial" size="2" color="#336699">
+      </font><font face="Arial" size="2" color="#666666">it </font>
+      <font face="Arial" size="2" color="#666666">or, if you want to discard it, hit</font>
+      <font face="Arial" size="2" color="#008000"><b>Cancel</b></font>.
+      </p>
+     
+      <p><b><font face="Arial" color="#333333"><br>Viewing Incident Reports</font></b></p>
+      <p><font face="Arial" size="2" color="#666666">To view the incident reports, 
+      click on <font face="Arial" size="2" color="#336699"><b>Reports </b> </font><font face="Arial" size="2" color="#FF9900">[<b>6</b>]</font> 
+      . The following window will appear:</font><br/>
+      <img border="0" src="img/mapping-reports.jpg"/>
+      
+      <p><font face="Arial" size="2" color="#666666">To view the details of the incident, double click the selected incident report. 
+      The details of the report are shown in the following dialog: </font>
+      <br/>
+      <img border="0" src="img/mapping-report-details.jpg"/>
+      </p> 
+
+      <p>&nbsp;</p>
+      </td>
+    </tr>
+    <tr>
+      <td><font size="1" face="Arial"><a href="help-menu.htm">Return to Help 
+      main menu</a></font><p>&nbsp;</td>
+    </tr>
+  </table>
+  </center>
+</div>
+
+</body>
+
+</html>
