@@ -3,23 +3,23 @@
 		<bean name="mapBean" bean="com.ushahidi.plugins.mapping.ui.MapBean" weightx="1" weighty="1"/>
 	</panel>
 	<panel weightx="1" columns="5" gap="15" top="10" valign="fill">
-		<label text="i18n.plugins.ushahidi.show" />
-		<checkbox name="cbxShowMessages" text="i18n.plugins.ushahidi.messages" icon="/icons/sms.png" selected="true" action="refresh()" />
-		<checkbox name="cbxShowForms" text="i18n.plugins.ushahidi.forms" icon="/icons/form.png" selected="true" action="refresh()"/>
-		<checkbox name="cbxShowTextForms" text="i18n.plugins.ushahidi.textforms" icon="/icons/textforms.png" selected="true" action="refresh()"/>
-		<checkbox name="cbxShowIncidents" text="i18n.plugins.ushahidi.reports" icon="/icons/ushahidi.png" selected="true" action="refresh()"/>
+		<label text="i18n.plugins.mapping.show" />
+		<checkbox name="cbxShowMessages" text="i18n.plugins.mapping.messages" icon="/icons/sms.png" selected="true" action="refresh()" />
+		<checkbox name="cbxShowForms" text="i18n.plugins.mapping.forms" icon="/icons/form.png" selected="true" action="refresh()"/>
+		<checkbox name="cbxShowTextForms" text="i18n.plugins.mapping.textforms" icon="/icons/textforms.png" selected="true" action="refresh()"/>
+		<checkbox name="cbxShowIncidents" text="i18n.plugins.mapping.reports" icon="/icons/ushahidi.png" selected="true" action="refresh()"/>
 	</panel>
 	<panel weightx="1" columns="3" gap="15" top="10" valign="fill">
 		<panel gap="5" columns="2" valign="center">
-			<label text="i18n.plugins.ushahidi.map.zoom" valign="center"/>
+			<label text="i18n.plugins.mapping.map.zoom" valign="center"/>
 			<slider name="sldZoomLevel" height="2" width="100" minimum="2" unit="1" block="1" maximum="24" value="7" orientation="horizontal" action="zoomChanged(this)"/>		
 		</panel>
 		<panel gap="5" columns="2" valign="center">
-			<label text="i18n.plugins.ushahidi.map.location" valign="center"/>	
+			<label text="i18n.plugins.mapping.map.location" valign="center"/>	
 			<label name="lblCoordinates" text="0.00000, 0.00000" valign="center"/>		
 		</panel>
 		<panel gap="5" columns="2" weightx="1" valign="center">
-			<label text="i18n.plugins.ushahidi.categories" for="cbxCategories" valign="center"/>
+			<label text="i18n.plugins.mapping.categories" for="cbxCategories" valign="center"/>
 			<combobox name="cbxCategories" action="search(this)" editable="false" weightx="1" valign="center"/>
 		</panel>
 	</panel>

@@ -1,13 +1,13 @@
 <panel name="panelReports" gap="10" top="3" right="3" bottom="3" left="3" columns="1" weightx="1" weighty="1">
 	<table name="tblReports" weightx="1" weighty="1" perform="showReportDetails(this,item)">
 		<header>
-			<column text="i18n.plugins.ushahidi.report.pending" width="55"/>
-			<column text="i18n.plugins.ushahidi.report.verified" width="55"/>
-			<column text="i18n.plugins.ushahidi.report.title" width="300"/>
-			<column text="i18n.plugins.ushahidi.report.location" width="130"/>
-			<column text="i18n.plugins.ushahidi.report.date" width="100"/>
-			<column text="i18n.plugins.ushahidi.report.categories" width="200"/>
-			<column text="i18n.plugins.ushahidi.report.description" width="400"/>
+			<column text="i18n.plugins.mapping.report.pending" width="55"/>
+			<column text="i18n.plugins.mapping.report.verified" width="55"/>
+			<column text="i18n.plugins.mapping.report.title" width="300"/>
+			<column text="i18n.plugins.mapping.report.location" width="130"/>
+			<column text="i18n.plugins.mapping.report.date" width="100"/>
+			<column text="i18n.plugins.mapping.report.categories" width="200"/>
+			<column text="i18n.plugins.mapping.report.description" width="400"/>
 		</header>
 	</table>
 	<panel gap="15" columns="2" weightx="1">
@@ -16,7 +16,7 @@
 			<textfield name="txtSearch" columns="30" action="search(this, cbxCategories)" focusgained="focusGained(this)" focuslost="focusLost(this)"/>
 		</panel>
 		<panel gap="5" columns="2" weightx="1" valign="fill">
-			<label text="i18n.plugins.ushahidi.categories" for="cbxCategories" />
+			<label text="i18n.plugins.mapping.categories" for="cbxCategories" />
 			<combobox name="cbxCategories" action="search(txtSearch, this)" editable="false" weightx="1"/>
 		</panel>
 	</panel>

@@ -3,9 +3,9 @@
 		<progressbar name="pbarSynchronization" width="220" height="15" minimum="0" value="1" maximum="100" orientation="horizontal"/>
 	</panel>
 	<panel gap="5" weightx="1" halign="center">
-		<label text="i18n.plugins.ushahidi.sync.task"/>
+		<label text="i18n.plugins.mapping.sync.task"/>
 		<label name="lblCurrentTask" text=""/>
-		<label text="i18n.plugins.ushahidi.sync.of"/>
+		<label text="i18n.plugins.mapping.sync.of"/>
 		<label name="lblTotalTasks" text=""/>
 	</panel>	
 </dialog>

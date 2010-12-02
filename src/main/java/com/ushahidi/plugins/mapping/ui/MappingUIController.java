@@ -103,6 +103,15 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		}
 		catch(Exception ex) {
 			LOG.error(ex);
+			if (this.formsManager == null && this.textformsManager == null) {
+				ui.alert(MappingMessages.getWarningFormsAndTextFormsMissing());
+			}
+			else if (this.formsManager == null) {
+				ui.alert(MappingMessages.getWarningFormsMissing());
+			}
+			else if (this.textformsManager == null) {
+				ui.alert(MappingMessages.getWarningTextFormsMissing());
+			}
 		}
 		
 		if (MappingProperties.isDebugMode()) {
@@ -305,8 +314,12 @@ public class MappingUIController extends ExtendedThinlet implements ThinletUiEve
 		LOG.debug("showIncidentMap");
 		if (mapPanelHandler == null) {
 			mapPanelHandler = new MapPanelHandler(pluginController, frontlineController, ui);
-			mapPanelHandler.setTextFormResponseDao(textformsManager.getTextFormResponseDao());
-			mapPanelHandler.setFormResponseDao(formsManager.getFormResponseDao());
+			if (textformsManager != null) {
+				mapPanelHandler.setTextFormResponseDao(textformsManager.getTextFormResponseDao());
+			}
+			if (formsManager != null) {
+				mapPanelHandler.setFormResponseDao(formsManager.getFormResponseDao());
+			}
 		}
 		ui.setSelected(fields.cbxIncidentMap, true);
 		ui.setSelected(fields.cbxIncidentList, false);

@@ -44,8 +44,8 @@ public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEven
 	
 	private static final String UI_SETUP_DIALOG = "/ui/plugins/mapping/setupDialog.xml";
 	
-	private static final String CONFIRM_DELETE_KEY = "plugins.ushahidi.setup.confirm.delete";
-	private static final String CONFIRM_SYNCHRONIZE_KEY = "plugins.ushahidi.setup.synchronize";
+	private static final String CONFIRM_DELETE_KEY = "plugins.mapping.setup.confirm.delete";
+	private static final String CONFIRM_SYNCHRONIZE_KEY = "plugins.mapping.setup.synchronize";
 	
 	private final MappingPluginController pluginController;
 	private final FrontlineSMS frontlineController;

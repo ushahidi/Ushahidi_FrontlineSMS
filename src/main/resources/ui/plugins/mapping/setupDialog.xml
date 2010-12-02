@@ -1,49 +1,49 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<dialog text="i18n.plugins.ushahidi.setup" name="dlgSetup" icon="/icons/setup.png" closable="true" close="removeDialog(this)" 
+<dialog text="i18n.plugins.mapping.setup" name="dlgSetup" icon="/icons/setup.png" closable="true" close="removeDialog(this)" 
 	modal="true" columns="1" resizable="true" gap="15" top="9" left="9" bottom="9" right="9">
-	<panel text="i18n.plugins.ushahidi.setup.mapping" icon="/icons/map.png" weightx="1" border="true" columns="2" top="9" left="9" bottom="9" right="9" gap="5">
-		<label text="i18n.plugins.ushahidi.setup.default.latitude" icon="/icons/coordinates.png"/>
-		<textfield name="txtDefaultLatitude" weightx="1" columns="50" tooltip="i18n.plugins.ushahidi.setup.default.latitude.info" action="latitudeLongitudeChanged(this, txtDefaultLongitude)"/>
+	<panel text="i18n.plugins.mapping.setup.mapping" icon="/icons/map.png" weightx="1" border="true" columns="2" top="9" left="9" bottom="9" right="9" gap="5">
+		<label text="i18n.plugins.mapping.setup.default.latitude" icon="/icons/coordinates.png"/>
+		<textfield name="txtDefaultLatitude" weightx="1" columns="50" tooltip="i18n.plugins.mapping.setup.default.latitude.info" action="latitudeLongitudeChanged(this, txtDefaultLongitude)"/>
 		
-		<label text="i18n.plugins.ushahidi.setup.default.longitude" icon="/icons/coordinates.png"/>
-		<textfield name="txtDefaultLongitude" weightx="1" columns="50" tooltip="i18n.plugins.ushahidi.setup.default.longitude.info" action="latitudeLongitudeChanged(txtDefaultLatitude, this)"/>
+		<label text="i18n.plugins.mapping.setup.default.longitude" icon="/icons/coordinates.png"/>
+		<textfield name="txtDefaultLongitude" weightx="1" columns="50" tooltip="i18n.plugins.mapping.setup.default.longitude.info" action="latitudeLongitudeChanged(txtDefaultLatitude, this)"/>
 		
-		<label text="i18n.plugins.ushahidi.setup.default.zoom" icon="/icons/search.png"/>
+		<label text="i18n.plugins.mapping.setup.default.zoom" icon="/icons/search.png"/>
 		<slider name="sldDefaultZoom" height="2" weightx="1" minimum="1" unit="1" block="1" maximum="25" value="7" orientation="horizontal" 
-				tooltip="i18n.plugins.ushahidi.setup.default.zoom.info" action="zoomChanged(this)"/>
+				tooltip="i18n.plugins.mapping.setup.default.zoom.info" action="zoomChanged(this)"/>
 		
-		<label text="i18n.plugins.ushahidi.setup.map.provider" icon="/icons/map.png"/>
+		<label text="i18n.plugins.mapping.setup.map.provider" icon="/icons/map.png"/>
 		<combobox name="cbxMapProviders" editable="false" weightx="1" action="mapProviderChanged(this)"/>
 		
-		<label text="i18n.plugins.ushahidi.setup.cache" icon="/icons/import.png"/>
-		<button name="btnClearCache" text="i18n.plugins.ushahidi.setup.clear.cache" icon="/icons/clear.png" weightx="1" action="clearMapCache(this)"/>		
+		<label text="i18n.plugins.mapping.setup.cache" icon="/icons/import.png"/>
+		<button name="btnClearCache" text="i18n.plugins.mapping.setup.clear.cache" icon="/icons/clear.png" weightx="1" action="clearMapCache(this)"/>		
 	</panel>
-	<panel text="i18n.plugins.ushahidi.setup.ushahidi" icon="/icons/ushahidi.png" weightx="1" border="true" columns="2" top="9" left="9" bottom="9" right="9" gap="5">
+	<panel text="i18n.plugins.mapping.setup.ushahidi" icon="/icons/ushahidi.png" weightx="1" border="true" columns="2" top="9" left="9" bottom="9" right="9" gap="5">
 		<table weightx="1" weighty="1" colspan="2" name="tblSources" action="editMappingSource(dlgSetup, tblSources)">
 			<header>
-				<column text="i18n.plugins.ushahidi.setup.default" width="50"/>
-				<column text="i18n.plugins.ushahidi.setup.sourcename" icon="/icons/sms_http_edit.png" width="100" />
-				<column text="i18n.plugins.ushahidi.setup.source" icon="/icons/httpRequest.png" width="240" />
+				<column text="i18n.plugins.mapping.setup.default" width="50"/>
+				<column text="i18n.plugins.mapping.setup.sourcename" icon="/icons/sms_http_edit.png" width="100" />
+				<column text="i18n.plugins.mapping.setup.source" icon="/icons/httpRequest.png" width="240" />
 			</header>
 		</table>
-		<label text="i18n.plugins.ushahidi.setup.sourcename" icon="/icons/sms_http_edit.png"/>
-		<textfield name="txtSourceName" weightx="1" columns="50" tooltip="i18n.plugins.ushahidi.setup.sourcename.info" action="sourceChanged(this, txtSourceURL)"/>
+		<label text="i18n.plugins.mapping.setup.sourcename" icon="/icons/sms_http_edit.png"/>
+		<textfield name="txtSourceName" weightx="1" columns="50" tooltip="i18n.plugins.mapping.setup.sourcename.info" action="sourceChanged(this, txtSourceURL)"/>
 			
-		<label text="i18n.plugins.ushahidi.setup.source" icon="/icons/httpRequest.png"/>
-		<textfield name="txtSourceURL" weightx="1" columns="50" tooltip="i18n.plugins.ushahidi.setup.source.info" action="sourceChanged(txtSourceName, this)"/>
+		<label text="i18n.plugins.mapping.setup.source" icon="/icons/httpRequest.png"/>
+		<textfield name="txtSourceURL" weightx="1" columns="50" tooltip="i18n.plugins.mapping.setup.source.info" action="sourceChanged(txtSourceName, this)"/>
 			
-		<checkbox name="chkSourceDefault" text="i18n.plugins.ushahidi.setup.default" />
+		<checkbox name="chkSourceDefault" text="i18n.plugins.mapping.setup.default" />
 		<panel weightx="1" gap="5" columns="3">
 			<button name="btnDelete" icon="/icons/delete.png" text="i18n.action.delete" action="showConfirmationDialog('deleteMappingSource')" weightx="1" enabled="false"/>
 			<button name="btnSave" icon="/icons/tick.png" text="i18n.action.save" action="addMappingSource(dlgSetup)" weightx="1" enabled="false"/>
 			<button name="btnCancel" icon="/icons/clear.png" text="i18n.action.cancel" action="clearSourceFields(dlgSetup)" weightx="1" enabled="false"/>
 		</panel>
 	</panel>
-	<panel text="i18n.plugins.ushahidi.setup.forms" icon="/icons/form.png" border="true" columns="1" gap="5" weightx="1" top="9" left="9" bottom="9" right="9">
-		<button name="btnCreateForm"  text="i18n.plugins.ushahidi.setup.forms.button" icon="/icons/form_add.png" weightx="1" action="createFormFields"/>
+	<panel text="i18n.plugins.mapping.setup.forms" icon="/icons/form.png" border="true" columns="1" gap="5" weightx="1" top="9" left="9" bottom="9" right="9">
+		<button name="btnCreateForm"  text="i18n.plugins.mapping.setup.forms.button" icon="/icons/form_add.png" weightx="1" action="createFormFields"/>
 	</panel>
-	<panel text="i18n.plugins.ushahidi.setup.textforms" icon="/icons/textforms.png" border="true" columns="1" gap="5" weightx="1" top="9" left="9" bottom="9" right="9">
-		<button name="btnCreateTextForm" text="i18n.plugins.ushahidi.setup.textforms.button" icon="/icons/question_add.png" weightx="1" action="createTextFormQuestions"/>
+	<panel text="i18n.plugins.mapping.setup.textforms" icon="/icons/textforms.png" border="true" columns="1" gap="5" weightx="1" top="9" left="9" bottom="9" right="9">
+		<button name="btnCreateTextForm" text="i18n.plugins.mapping.setup.textforms.button" icon="/icons/question_add.png" weightx="1" action="createTextFormQuestions"/>
 	</panel>
 	<button icon="/icons/cross.png" text="i18n.action.close" weightx="1" action="removeDialog(dlgSetup)"/>
 </dialog>

@@ -6,10 +6,10 @@
       	<label text="i18n.common.phone" icon="/icons/phone.png" valign="top" />
       	<textfield name="txtContactPhone" columns="50" editable="false"/>
       	
-      	<label text="i18n.plugins.ushahidi.location" icon="/icons/map.png" valign="top" />
+      	<label text="i18n.plugins.mapping.location" icon="/icons/map.png" valign="top" />
       	<textfield name="txtLocation" columns="50" editable="false"/>
       	
-      	<label text="i18n.plugins.ushahidi.report.coordinates" icon="/icons/coordinates.png" valign="top" />
+      	<label text="i18n.plugins.mapping.report.coordinates" icon="/icons/coordinates.png" valign="top" />
 		<textfield name="txtCoordinates" columns="50" weightx="1" editable="false"/>
 		
 		<label name="lblDate" text="i18n.common.date" icon="/icons/date.png" valign="top" />
