@@ -188,7 +188,7 @@ public class FormsManager extends Manager {
 					}
 					try {
 						incidentDao.saveIncident(incident);
-						LOG.out("New Incident Created: %s", incident.getTitle());
+						LOG.debug("New Incident Created: %s", incident.getTitle());
 						pluginController.setStatus(MappingMessages.getIncidentCreatedFromForm());
 						pluginController.refreshIncidentMap();
 						pluginController.refreshIncidentReports();

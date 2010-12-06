@@ -87,7 +87,7 @@ public class MappingDebug {
 	            	LOG.debug("TextForm Created: %s", title);
 	            }
 	            else if (message.equalsIgnoreCase("help")){
-	            	LOG.out("Enter 'form' to create a sample Form, 'textform' to create a sample TextForm or 'exit' to terminate console.");
+	            	LOG.debug("Enter 'form' to create a sample Form, 'textform' to create a sample TextForm or 'exit' to terminate console.");
 	            }
 	            else {
 	            	long dateReceived = Calendar.getInstance().getTimeInMillis();
