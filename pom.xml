@@ -35,26 +35,11 @@
     
     <repositories>
 		<repository>
-			<id>cleone.net.repo</id>
-			<name>Temporary FrontlineSMS repository on cleone.net</name>
-			<url>http://m2repo.cleone.net</url>
-        </repository>
-    
-		<repository>
-			<!-- Repository from the makers of Jetty -->
-			<id>codehaus-release-repo</id>
-			<name>Codehaus Release Repo</name>
-			<url>http://repository.codehaus.org</url>
-		</repository>
+			<id>dev.frontlinesms.com</id>
+			<name>FrontlineSMS repository</name>
+			<url>http://dev.frontlinesms.com/m2repo</url>
+        </repository>    
 	</repositories>
-
-    <distributionManagement>
-        <repository>
-            <id>cleone.net.repo</id>
-            <name>Temporary FrontlineSMS repository on cleone.net</name>
-            <url>http://m2repo.cleone.net</url>
-        </repository>
-    </distributionManagement>
     
     <properties>
         <!-- Force Maven to use UTF-8 encoding when copying resources, rather than using the platform default -->
@@ -112,7 +97,7 @@
 		<dependency>
 			<groupId>net.frontlinesms.core</groupId>
 			<artifactId>frontlinesms</artifactId>
-			<version>1.6.16.2-SNAPSHOT</version>
+			<version>1.7.00-Beta4-SNAPSHOT</version>
 			<type>jar</type>
 		</dependency>
 		<dependency>
