@@ -40,7 +40,7 @@ import com.ushahidi.plugins.mapping.util.MappingMessages;
  */
 public class FormsManager extends Manager {
 
-	public static MappingLogger LOG = MappingLogger.getLogger(FormsManager.class);	
+	public static MappingLogger LOG = new MappingLogger(FormsManager.class);	
 	
 	private final MappingPluginController pluginController;
 	private final ContactDao contactDao;

@@ -9,7 +9,7 @@ import java.io.File;
  */
 public class FileUtils {
 	
-	private static MappingLogger LOG = MappingLogger.getLogger(FileUtils.class);
+	private static MappingLogger LOG = new MappingLogger(FileUtils.class);
 	
 	/**
 	 * Get directory size

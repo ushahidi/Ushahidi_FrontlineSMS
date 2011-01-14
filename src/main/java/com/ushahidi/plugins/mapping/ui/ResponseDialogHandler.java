@@ -30,7 +30,7 @@ import net.frontlinesms.ui.i18n.InternationalisationUtils;
 @SuppressWarnings({ "unused", "serial" })
 public class ResponseDialogHandler extends ExtendedThinlet implements ThinletUiEventHandler {
 	
-	private static MappingLogger LOG = MappingLogger.getLogger(ResponseDialogHandler.class);
+	private static MappingLogger LOG = new MappingLogger(ResponseDialogHandler.class);
 	
 	private static final String UI_DIALOG_XML = "/ui/plugins/mapping/responseDialog.xml";
 

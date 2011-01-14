@@ -20,7 +20,7 @@ import com.ushahidi.plugins.mapping.util.MappingLogger;
 @DiscriminatorValue(value="photo")
 public class Photo extends Media {
 	
-	private static MappingLogger LOG = MappingLogger.getLogger(Photo.class);
+	private static MappingLogger LOG = new MappingLogger(Photo.class);
 	
 	public Photo(){}
 	public Photo(String localPath) {

@@ -22,7 +22,7 @@ import net.frontlinesms.ui.UiGeneratorController;
 @SuppressWarnings({"serial", "unused"})
 public class ContactDialogHandler extends ExtendedThinlet implements ThinletUiEventHandler, MapListener {
 	
-	private static MappingLogger LOG = MappingLogger.getLogger(ContactDialogHandler.class);
+	private static MappingLogger LOG = new MappingLogger(ContactDialogHandler.class);
 	
 	private static final String UI_DIALOG_XML = "/ui/plugins/mapping/contactDialog.xml";
 

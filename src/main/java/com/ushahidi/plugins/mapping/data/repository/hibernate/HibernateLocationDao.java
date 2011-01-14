@@ -16,7 +16,7 @@ import com.ushahidi.plugins.mapping.util.MappingLogger;
 
 public class HibernateLocationDao extends BaseHibernateDao<Location> implements LocationDao {
 
-	public static MappingLogger LOG = MappingLogger.getLogger(HibernateLocationDao.class);
+	public static MappingLogger LOG = new MappingLogger(HibernateLocationDao.class);
 	
 	public HibernateLocationDao(){
 		super(Location.class);

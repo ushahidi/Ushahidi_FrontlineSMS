@@ -1,22 +1,44 @@
 package com.ushahidi.plugins.mapping.util;
 
+import net.frontlinesms.FrontlineUtils;
+
 import org.apache.log4j.Logger;
-import org.apache.log4j.spi.LoggerFactory;
+import org.apache.log4j.Level;
+import java.lang.reflect.Method;
 
-public class MappingLogger extends Logger {
+/**
+ * @author bmuita
+ * Borrowed from The complete log4j manual  
+ */
+public class MappingLogger {
+	// Our fully qualified class name.
+	static String FQCN = MappingLogger.class.getName();
 
-	private static final MappingLoggerFactory LoggerFactory = new MappingLoggerFactory();
-	
-	public static MappingLogger getLogger(String name) {
-		return (MappingLogger) Logger.getLogger(name, LoggerFactory);
+	static boolean JDK14 = false;
+	static {
+		String version = System.getProperty("java.version");
+		if (version != null) {
+			JDK14 = version.startsWith("1.4");
+		}
 	}
-	
-	public static MappingLogger getLogger(Class<? extends Object> clazz) {
-		return (MappingLogger) Logger.getLogger(clazz.getName(), LoggerFactory);
+
+	private final Logger logger;
+
+	public MappingLogger(Class<? extends Object> clazz) {
+		this.logger = FrontlineUtils.getLogger(clazz);
 	}
-	
-	protected MappingLogger(String name) {
-		super(name);
+
+	public void trace(Object msg) {
+		logger.log(FQCN, Level.TRACE, msg, null);
+	}
+
+	public void trace(Object msg, Throwable t) {
+		logger.log(FQCN, Level.TRACE, msg, t);
+		logNestedException(Level.TRACE, msg, t);
+	}
+
+	public boolean isTraceEnabled() {
+		return logger.isEnabledFor(Level.TRACE);
 	}
 	
 	public void debug(String format, Object ... args) {
@@ -36,20 +58,42 @@ public class MappingLogger extends Logger {
 		}
 		sb.append("]");
 		debug(String.format(format, sb));
+	}	
+
+	public void debug(Object msg) {
+		logger.log(FQCN, Level.DEBUG, msg, null);
 	}
 
-	@Override
-	public void debug(Object text) {
-		if (MappingProperties.isDebugMode()) {
-			StringBuilder stringBuilder = new StringBuilder();
-			stringBuilder.append(this.getName());
-			stringBuilder.append(" - ");
-			stringBuilder.append(text);
-			System.out.println(stringBuilder);
-		}
-		else {
-			super.debug(text);
-		}
+	public void debug(Object msg, Throwable t) {
+		logger.log(FQCN, Level.DEBUG, msg, t);
+		logNestedException(Level.DEBUG, msg, t);
+	}
+
+	public boolean isDebugEnabled() {
+		return logger.isDebugEnabled();
+	}
+
+	public void info(Object msg) {
+		logger.log(FQCN, Level.INFO, msg, null);
+	}
+
+	public void info(Object msg, Throwable t) {
+		logger.log(FQCN, Level.INFO, msg, t);
+		logNestedException(Level.INFO, msg, t);
+	}
+
+	public boolean isInfoEnabled() {
+		return logger.isInfoEnabled();
+
+	}
+
+	public void warn(Object msg) {
+		logger.log(FQCN, Level.WARN, msg, null);
+	}
+
+	public void warn(Object msg, Throwable t) {
+		logger.log(FQCN, Level.WARN, msg, t);
+		logNestedException(Level.WARN, msg, t);
 	}
 	
 	public void error(String format, Object ... args) {
@@ -69,45 +113,58 @@ public class MappingLogger extends Logger {
 		}
 		sb.append("]");
 	    error(String.format(format, sb));
-	}
-	
-	public void error(String format, Exception ex) {
-		StringBuffer sb = new StringBuffer();
-		sb.append(ex.getClass().getSimpleName());
-		sb.append(" : ");
-		sb.append(ex.getMessage());
-		error(String.format(format, sb));
-	}
-	
-	@Override
-	public void error(Object text) {
-		if (MappingProperties.isDebugMode()) {
-			StringBuilder stringBuilder = new StringBuilder();
-			stringBuilder.append(this.getName());
-			stringBuilder.append(" - ");
-			stringBuilder.append(text);
-			System.err.println(stringBuilder);
-		}
-		else {
-			super.error(text);
-		}
-	}
-	
-	public void out(String message) {
-		System.out.println(message);
-	}
-	
-	public void out(String format, Object ... args) {
-		System.out.println(String.format(format, args));
-	}
-	
-}
+	}	
 
-class MappingLoggerFactory implements LoggerFactory {
-    public MappingLoggerFactory() { 
-    }
+	public void error(Object msg) {
+		logger.log(FQCN, Level.ERROR, msg, null);
+	}
 
-    public Logger makeNewLoggerInstance(String name) {
-        return new MappingLogger(name);
-    }
+	public void error(Object msg, Throwable t) {
+		logger.log(FQCN, Level.ERROR, msg, t);
+		logNestedException(Level.ERROR, msg, t);
+	}
+
+	public void fatal(Object msg) {
+		logger.log(FQCN, Level.FATAL, msg, null);
+	}
+
+	public void fatal(Object msg, Throwable t) {
+		logger.log(FQCN, Level.FATAL, msg, t);
+		logNestedException(Level.FATAL, msg, t);
+	}
+
+	void logNestedException(Level level, Object msg, Throwable t) {
+		if (t == null)
+			return;
+		try {
+			Class<? extends Object> tC = t.getClass();
+			Method mA[] = tC.getMethods();
+			Method nextThrowableMethod = null;
+			for (int i = 0; i < mA.length; i++) {
+				if (("getCause".equals(mA[i].getName()) && !JDK14)
+						|| "getRootCause".equals(mA[i].getName())
+						|| "getNextException".equals(mA[i].getName())
+						|| "getException".equals(mA[i].getName())) {
+					// check param types
+					Class<? extends Object> params[] = mA[i].getParameterTypes();
+					if (params == null || params.length == 0) {
+						// just found the getter for the nested throwable
+						nextThrowableMethod = mA[i];
+						break; // no need to search further
+					}
+				}
+			}
+			if (nextThrowableMethod != null) { // get the nested throwable and
+												// log it
+				Throwable nextT = (Throwable) nextThrowableMethod.invoke(t,
+						new Object[0]);
+				if (nextT != null) {
+					this.logger.log(FQCN, level, "Previous log CONTINUED",
+							nextT);
+				}
+			}
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
 }

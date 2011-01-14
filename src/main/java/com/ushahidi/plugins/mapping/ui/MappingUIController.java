@@ -38,7 +38,7 @@ import net.frontlinesms.ui.UiGeneratorController;
 @SuppressWarnings("serial")
 public class MappingUIController extends ExtendedThinlet implements ThinletUiEventHandler, SynchronizationCallback, EventObserver  {
 
-	private static MappingLogger LOG = MappingLogger.getLogger(MappingUIController.class);
+	private static MappingLogger LOG = new MappingLogger(MappingUIController.class);
 	
     /** Filename and path of the XML containing the mapping tab */
     private static final String XML_MAIN_TAB = "/ui/plugins/mapping/mainTab.xml";

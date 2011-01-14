@@ -14,7 +14,7 @@ import net.frontlinesms.ui.UiGeneratorController;
  */
 public abstract class Fields {
 	
-	private final static MappingLogger LOG = MappingLogger.getLogger(Fields.class);
+	private final static MappingLogger LOG = new MappingLogger(Fields.class);
 	
 	/**
 	 * Load all declared fields

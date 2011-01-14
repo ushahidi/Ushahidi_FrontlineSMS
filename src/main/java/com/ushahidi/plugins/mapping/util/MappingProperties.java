@@ -7,7 +7,7 @@ import net.frontlinesms.resources.UserHomeFilePropertySet;
 
 public class MappingProperties extends UserHomeFilePropertySet {
 
-	private static MappingLogger LOG = MappingLogger.getLogger(MappingProperties.class);
+	private static MappingLogger LOG = new MappingLogger(MappingProperties.class);
 	
 	private static MappingProperties instance;
 	

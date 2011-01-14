@@ -36,7 +36,7 @@ public class TileRequest implements Runnable {
 	private Coordinate coordinate;
 	private TileRequestor requestor;
 
-	private static final MappingLogger LOG = MappingLogger.getLogger(TileRequest.class);	
+	private static final MappingLogger LOG = new MappingLogger(TileRequest.class);	
 	
 	private static final Map<String, ArrayList<BufferedImage>> tileCache = Collections.synchronizedMap(new HashMap<String, ArrayList<BufferedImage>>());
 

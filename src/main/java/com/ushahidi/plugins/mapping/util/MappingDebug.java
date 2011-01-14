@@ -20,7 +20,7 @@ import com.ushahidi.plugins.mapping.managers.TextFormsManager;
  */
 public class MappingDebug {
 	
-	private static MappingLogger LOG = MappingLogger.getLogger(MappingDebug.class);	
+	private static MappingLogger LOG = new MappingLogger(MappingDebug.class);	
 	
 	private final FormsManager formsManager;
 	private final TextFormsManager textformsManager;

@@ -43,7 +43,7 @@ import net.frontlinesms.plugins.textforms.data.repository.TextFormResponseDao;
  */
 public class TextFormsManager extends Manager {
 
-	public static MappingLogger LOG = MappingLogger.getLogger(TextFormsManager.class);	
+	public static MappingLogger LOG = new MappingLogger(TextFormsManager.class);	
 	
 	private final MappingPluginController pluginController;
 	private final QuestionDao questionDao;

@@ -13,7 +13,7 @@ import net.frontlinesms.ui.UiGeneratorController;
 @SuppressWarnings("serial")
 public class SyncDialogHandler extends ExtendedThinlet implements ThinletUiEventHandler {
 
-	public static MappingLogger LOG = MappingLogger.getLogger(SyncDialogHandler.class);
+	public static MappingLogger LOG = new MappingLogger(SyncDialogHandler.class);
 	
 	private static final String UI_SYNCHRONIZATION_DIALOG = "/ui/plugins/mapping/syncDialog.xml";
 	

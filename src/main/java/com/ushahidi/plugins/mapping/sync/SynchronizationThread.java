@@ -42,7 +42,7 @@ import com.ushahidi.plugins.mapping.util.MappingLogger;
  */
 public class SynchronizationThread extends Thread{
 //>	STATIC	
-	public static MappingLogger LOG = MappingLogger.getLogger(SynchronizationThread.class);	
+	public static MappingLogger LOG = new MappingLogger(SynchronizationThread.class);	
 	
 //>	INSTANCE VARIABLES
 	/** The base task to be performed by the API; that which requires no extra parameters*/

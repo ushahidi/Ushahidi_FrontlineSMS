@@ -15,7 +15,7 @@ import com.ushahidi.plugins.mapping.data.domain.*;
  */
 public class SynchronizationManager {	
 	/** Logger */
-	public static MappingLogger LOG = MappingLogger.getLogger(SynchronizationManager.class);
+	public static MappingLogger LOG = new MappingLogger(SynchronizationManager.class);
 	
 	private final SynchronizationCallback callback;
 	

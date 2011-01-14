@@ -14,7 +14,7 @@ import com.ushahidi.plugins.mapping.util.MappingLogger;
  */
 public class MapProviderFactory {
 	
-	private static MappingLogger LOG = MappingLogger.getLogger(MapProviderFactory.class);	
+	private static MappingLogger LOG = new MappingLogger(MapProviderFactory.class);	
 	
 	public static List<MapProvider> getMapProviders() {
 		if (mapProviders == null) {

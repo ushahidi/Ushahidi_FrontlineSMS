@@ -38,7 +38,7 @@ public class MapBean extends CustomComponent implements ImageObserver {
 
 	private static final long serialVersionUID = 1L;
 
-	public static MappingLogger LOG = MappingLogger.getLogger(MapBean.class);
+	public static MappingLogger LOG = new MappingLogger(MapBean.class);
 	
     private TiledMap map = null;
 

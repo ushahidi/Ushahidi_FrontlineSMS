@@ -39,7 +39,7 @@ public class MapPanelHandler extends ExtendedThinlet implements ThinletUiEventHa
 
 	private static final String UI_PANEL_XML = "/ui/plugins/mapping/mapPanel.xml";
 	
-	private static MappingLogger LOG = MappingLogger.getLogger(MapPanelHandler.class);	
+	private static MappingLogger LOG = new MappingLogger(MapPanelHandler.class);	
 	
 	private final MappingPluginController pluginController;
 	private final FrontlineSMS frontlineController;

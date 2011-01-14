@@ -33,7 +33,7 @@ import net.frontlinesms.ui.i18n.InternationalisationUtils;
 @SuppressWarnings("serial")
 public class ReportDialogHandler extends ExtendedThinlet implements ThinletUiEventHandler, MapListener {
 
-	private static MappingLogger LOG = MappingLogger.getLogger(ReportDialogHandler.class);
+	private static MappingLogger LOG = new MappingLogger(ReportDialogHandler.class);
 	
 	private static final String UI_DIALOG_XML = "/ui/plugins/mapping/reportDialog.xml";
 

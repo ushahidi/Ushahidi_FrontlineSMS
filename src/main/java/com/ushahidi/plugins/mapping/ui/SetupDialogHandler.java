@@ -40,7 +40,7 @@ import net.frontlinesms.ui.UiGeneratorController;
 @SuppressWarnings("serial")
 public class SetupDialogHandler extends ExtendedThinlet implements ThinletUiEventHandler, SynchronizationCallback {
 
-	public static MappingLogger LOG = MappingLogger.getLogger(SetupDialogHandler.class);
+	public static MappingLogger LOG = new MappingLogger(SetupDialogHandler.class);
 	
 	private static final String UI_SETUP_DIALOG = "/ui/plugins/mapping/setupDialog.xml";
 	

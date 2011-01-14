@@ -21,7 +21,7 @@ import net.frontlinesms.ui.i18n.InternationalisationUtils;
 @SuppressWarnings("serial")
 public class ReportsPanelHandler extends ExtendedThinlet implements ThinletUiEventHandler {
 
-	private static MappingLogger LOG = MappingLogger.getLogger(ReportsPanelHandler.class);
+	private static MappingLogger LOG = new MappingLogger(ReportsPanelHandler.class);
 	
 	private static final String UI_PANEL_XML = "/ui/plugins/mapping/reportsPanel.xml";
 	

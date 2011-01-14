@@ -27,7 +27,7 @@ import org.springframework.context.ApplicationContext;
         springConfigLocation="classpath:com/ushahidi/plugins/mapping/mapping-spring-hibernate.xml",
         hibernateConfigPath="classpath:com/ushahidi/plugins/mapping/mapping.hibernate.cfg.xml")
 public class MappingPluginController extends BasePluginController {
-    private static MappingLogger LOG = MappingLogger.getLogger(MappingPluginController.class);	
+    private static MappingLogger LOG = new MappingLogger(MappingPluginController.class);	
 
     private FrontlineSMS frontlineController;
     @SuppressWarnings("unused")

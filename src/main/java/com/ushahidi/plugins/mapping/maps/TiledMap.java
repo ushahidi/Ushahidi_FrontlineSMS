@@ -22,7 +22,7 @@ public class TiledMap implements TileRequestor{
 	/** Size of the thread pool for to be used for fetching the tiles */
 	public static final int THREAD_POOL_SIZE = 5;
 	/** Logger object */
-	public static MappingLogger LOG = MappingLogger.getLogger(TiledMap.class);
+	public static MappingLogger LOG = new MappingLogger(TiledMap.class);
 	/** Thread pool to be used to perform the tile requests */
 	private final ExecutorService e = Executors.newFixedThreadPool(5);
 	/** Cache for the tile requests */

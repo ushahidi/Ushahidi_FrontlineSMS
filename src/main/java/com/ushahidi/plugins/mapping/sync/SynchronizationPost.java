@@ -25,7 +25,7 @@ import com.ushahidi.plugins.mapping.util.MappingLogger;
  */
 public class SynchronizationPost {
 	
-	public static final MappingLogger LOG = MappingLogger.getLogger(SynchronizationPost.class);	
+	public static final MappingLogger LOG = new MappingLogger(SynchronizationPost.class);	
 	
 	/**
 	 * Post body
