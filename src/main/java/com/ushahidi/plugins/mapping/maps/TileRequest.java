@@ -9,7 +9,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
-import java.util.HashMap;
 
 import javax.imageio.ImageIO;
 
@@ -38,7 +37,7 @@ public class TileRequest implements Runnable {
 
 	private static final MappingLogger LOG = new MappingLogger(TileRequest.class);	
 	
-	private static final Map<String, ArrayList<BufferedImage>> tileCache = Collections.synchronizedMap(new HashMap<String, ArrayList<BufferedImage>>());
+	private static final Map<String, ArrayList<BufferedImage>> tileCache = Collections.synchronizedMap(new TileCache());
 
 	public TileRequest(MapProvider provider, Coordinate coordinate, Point offset, long updateId) {
 		this.done = false;
@@ -52,6 +51,7 @@ public class TileRequest implements Runnable {
 		String tileKey = provider.getTileId(getCoordinate());
 		if (!tileCache.containsKey(tileKey)) {
 			tileCache.put(tileKey, new ArrayList<BufferedImage>());
+			LOG.debug("Tile cache size now at %d tiles. Free memory at %dKB", tileCache.size(), Runtime.getRuntime().freeMemory()/1024);
 		}
 		return !tileCache.get(tileKey).isEmpty();
 	}
@@ -73,6 +73,7 @@ public class TileRequest implements Runnable {
 		String tileKey = provider.getTileId(getCoordinate());
 		if (!tileCache.containsKey(tileKey)) {
 			tileCache.put(tileKey, new ArrayList<BufferedImage>());
+			LOG.debug("Tile cache size now at %d tiles. Free memory at %dKB", tileCache.size(), Runtime.getRuntime().freeMemory()/1024);
 		}
 		ArrayList<BufferedImage> images = tileCache.get(tileKey);
 		File mapsDirectory = new File(ResourceUtils.getConfigDirectoryPath(), "maps");
